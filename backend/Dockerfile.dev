@@ -1,0 +1,46 @@
+# ============================================
+# Dockerfile para DESARROLLO
+# ApiRestExternos - Actualizado 2026-01-08
+# ============================================
+# Usa Flask dev server con hot-reload
+FROM python:3.11-slim
+
+# Variables de entorno
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=development
+ENV FLASK_DEBUG=1
+
+# Instalar dependencias del sistema para ODBC Driver 18
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    gnupg2 \
+    apt-transport-https \
+    && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
+    && curl https://packages.microsoft.com/config/debian/12/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y msodbcsql18 \
+    && apt-get install -y unixodbc-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Configurar OpenSSL para permitir TLS legacy (necesario para SQL Server 2008)
+RUN sed -i 's/openssl_conf = openssl_init/openssl_conf = openssl_init\n\n[openssl_init]\nssl_conf = ssl_sect\n\n[ssl_sect]\nsystem_default = system_default_sect\n\n[system_default_sect]\nMinProtocol = TLSv1\nCipherString = DEFAULT@SECLEVEL=0/' /etc/ssl/openssl.cnf || \
+    echo -e "\n[openssl_init]\nssl_conf = ssl_sect\n\n[ssl_sect]\nsystem_default = system_default_sect\n\n[system_default_sect]\nMinProtocol = TLSv1\nCipherString = DEFAULT@SECLEVEL=0" >> /etc/ssl/openssl.cnf
+
+# Directorio de trabajo
+WORKDIR /app
+
+# Copiar requirements e instalar dependencias Python
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# El codigo se monta como volumen en docker-compose.dev.yml
+# No se copia aqui para permitir hot-reload
+
+# Puerto de la aplicacion
+EXPOSE 5000
+
+# Comando para ejecutar Flask dev server con hot-reload
+CMD ["python", "app.py"]

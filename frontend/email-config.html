@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración Email - Administración</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        // Cargar tema guardado inmediatamente para evitar flash
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
+            document.documentElement.setAttribute('data-color-theme', colorTheme);
+            // Crear favicon desde localStorage (sin link estático para evitar flash)
+            const faviconUrl = localStorage.getItem('faviconUrl');
+            if (faviconUrl) {
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                link.href = faviconUrl;
+                document.head.appendChild(link);
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header de la página -->
+        <div class="page-header">
+            <div class="logo-section">
+                <a href="#" onclick="goBack(); return false;" style="display: flex; align-items: center;">
+                    <img src="" alt="Logo" class="logo" style="cursor: pointer; visibility: hidden;">
+                </a>
+                <h1 data-i18n="menu.emailConfig">Configuración Email</h1>
+            </div>
+            <div class="header-actions">
+                <div class="lang-selector-wrapper">
+                    <select id="lang-selector" class="lang-selector lang-selector-header" onchange="I18n.setLanguage(this.value)">
+                        <option value="es">ES</option>
+                        <option value="en">EN</option>
+                        <option value="fr">FR</option>
+                    </select>
+                </div>
+                <button class="back-btn" onclick="goBack()">
+                    <span data-i18n="proposals.backToStocks">Volver a Stocks</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenedor principal -->
+        <div class="email-config-container">
+            <div class="email-config-content">
+                <!-- Loading state -->
+                <div class="email-config-loading" id="email-config-loading">
+                    <div class="spinner"></div>
+                    <p data-i18n="common.loading">Cargando...</p>
+                </div>
+
+                <!-- Empty state -->
+                <div class="email-config-empty" id="email-config-empty" style="display: none;">
+                    <div class="email-config-empty-icon">📧</div>
+                    <h3>No hay configuraciones de email</h3>
+                    <button class="btn-action btn-edit" onclick="openNewConfigModal()" style="margin-top: 20px; padding: 12px 24px;">
+                        + Crear Nueva Configuración
+                    </button>
+                </div>
+
+                <!-- Botón crear nueva (visible cuando hay configuraciones) -->
+                <div id="add-config-btn" style="display: none; margin-bottom: 20px;">
+                    <button class="btn-action btn-edit" onclick="openNewConfigModal()" style="padding: 12px 24px;">
+                        + Nueva Configuración
+                    </button>
+                </div>
+
+                <!-- Lista de configuraciones -->
+                <div class="config-list" id="config-list" style="display: none;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de edición -->
+    <div id="edit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Configuración</h2>
+                <button class="modal-close" onclick="closeEditModal()">×</button>
+            </div>
+            <div class="edit-modal-content">
+                <form id="edit-form">
+                    <input type="hidden" id="config-id">
+
+                    <div class="form-group">
+                        <label>Nombre de Configuración</label>
+                        <input type="text" id="config-nombre" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Servidor SMTP</label>
+                            <input type="text" id="config-smtp-server" required placeholder="smtp.gmail.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Puerto SMTP</label>
+                            <input type="number" id="config-smtp-port" required placeholder="587">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email Remitente</label>
+                        <input type="email" id="config-email-from" required placeholder="tu@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        <input type="password" id="config-email-password" placeholder="Dejar vacío para no cambiar">
+                        <p class="form-help">Dejar vacío si no desea cambiar la contraseña actual.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email Destino (para solicitudes)</label>
+                        <input type="email" id="config-email-to" required placeholder="destino@email.com">
+                        <p class="form-help">Email donde se reciben las solicitudes de los clientes.</p>
+                    </div>
+
+                    <div class="edit-modal-actions">
+                        <button type="button" class="btn-test" onclick="testConnection()" id="btn-test-connection">
+                            🔌 Probar Conexión
+                        </button>
+                        <button type="button" class="btn-cancel" onclick="closeEditModal()" data-i18n="common.cancel">Cancelar</button>
+                        <button type="submit" class="btn-save" data-i18n="common.save">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/i18n/i18n.js"></script>
+    <script>
+        // ==================== CONFIGURACIÓN ====================
+        const hostname = window.location.hostname;
+        const protocol = window.location.protocol;
+        const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+        const API_URL = isLocalhost ? `${protocol}//${hostname}:5000` : `${protocol}//${hostname}`;
+
+        // ==================== LOGO DINÁMICO POR EMPRESA ====================
+        function applyColorTheme(tema) {
+            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito'];
+            if (!validThemes.includes(tema)) tema = 'rubi';
+            document.documentElement.setAttribute('data-color-theme', tema);
+            localStorage.setItem('colorTheme', tema);
+        }
+
+        async function cargarLogoEmpresa() {
+            const empresaId = localStorage.getItem('empresa_id') || '1';
+            const logoElements = document.querySelectorAll('.logo');
+            try {
+                const configResponse = await fetch(`${API_URL}/api/empresa/${empresaId}/config`);
+                const config = await configResponse.json();
+                applyColorTheme(config.tema || 'rubi');
+                const invertirFilter = config.invertir_logo ? 'brightness(0) invert(1)' : 'none';
+                if (config.tiene_logo) {
+                    const logoUrl = `${API_URL}/api/empresa/${empresaId}/logo?t=${Date.now()}`;
+                    logoElements.forEach(el => {
+                        el.src = logoUrl;
+                        el.style.filter = invertirFilter;
+                        el.style.visibility = 'visible';
+                    });
+                } else {
+                    logoElements.forEach(el => {
+                        el.src = 'assets/logo.svg';
+                        el.style.filter = 'brightness(0) invert(1)';
+                        el.style.visibility = 'visible';
+                    });
+                }
+            } catch (error) {
+                console.log('Error al cargar logo:', error);
+                applyColorTheme('rubi');
+                logoElements.forEach(el => {
+                    el.src = 'assets/logo.svg';
+                    el.style.filter = 'brightness(0) invert(1)';
+                    el.style.visibility = 'visible';
+                });
+            }
+        }
+
+        let configs = [];
+
+        // ==================== INICIALIZACIÓN ====================
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Verificar empresa_id
+            const urlParams = new URLSearchParams(window.location.search);
+            let empresaId = urlParams.get('empresa');
+
+            if (empresaId) {
+                localStorage.setItem('empresa_id', empresaId);
+            } else {
+                empresaId = localStorage.getItem('empresa_id');
+            }
+
+            if (!empresaId) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Cargar logo de empresa PRIMERO
+            await cargarLogoEmpresa();
+
+            // Inicializar i18n
+            await I18n.init();
+
+            // Actualizar selector de idioma
+            const langSelector = document.getElementById('lang-selector');
+            if (langSelector) {
+                langSelector.value = I18n.currentLang;
+            }
+
+            // Verificar autenticación y permisos
+            await checkAuth();
+
+            // Cargar configuraciones
+            await loadConfigs();
+
+            // Setup form submit
+            document.getElementById('edit-form').addEventListener('submit', saveConfig);
+        });
+
+        // ==================== AUTENTICACIÓN ====================
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_URL}/api/current-user`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const user = await response.json();
+
+                // Verificar que sea administrador o superusuario
+                if (user.rol !== 'administrador' && user.rol !== 'superusuario') {
+                    alert('No tienes permisos para acceder a esta página');
+                    window.location.href = 'index.html';
+                    return;
+                }
+            } catch (error) {
+                console.error('Error checking auth:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // ==================== CARGAR CONFIGURACIONES ====================
+        async function loadConfigs() {
+            const loadingEl = document.getElementById('email-config-loading');
+            const emptyEl = document.getElementById('email-config-empty');
+            const listEl = document.getElementById('config-list');
+            const addBtnEl = document.getElementById('add-config-btn');
+
+            try {
+                const empresaId = localStorage.getItem('empresa_id') || '1';
+                console.log('Cargando configuraciones desde:', `${API_URL}/api/email-config?empresa_id=${empresaId}`);
+                const response = await fetch(`${API_URL}/api/email-config?empresa_id=${empresaId}`, {
+                    credentials: 'include'
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                configs = await response.json();
+                console.log('Configuraciones cargadas:', configs);
+
+                loadingEl.style.display = 'none';
+
+                if (configs.length === 0) {
+                    emptyEl.style.display = 'block';
+                    listEl.style.display = 'none';
+                    addBtnEl.style.display = 'none';
+                } else {
+                    emptyEl.style.display = 'none';
+                    listEl.style.display = 'grid';
+                    addBtnEl.style.display = 'block';
+                    renderConfigs();
+                }
+            } catch (error) {
+                console.error('Error loading configs:', error);
+                loadingEl.innerHTML = `<p style="color: #dc3545;">Error al cargar las configuraciones: ${error.message}</p>`;
+            }
+        }
+
+        // ==================== RENDERIZAR CONFIGURACIONES ====================
+        function renderConfigs() {
+            const listEl = document.getElementById('config-list');
+
+            listEl.innerHTML = configs.map(config => `
+                <div class="config-card ${config.activo ? 'active' : ''}">
+                    <div class="config-card-header">
+                        <span class="config-card-name">${config.nombre_configuracion}</span>
+                        <span class="config-card-badge ${config.activo ? 'badge-active' : 'badge-inactive'}">
+                            ${config.activo ? 'Activa' : 'Inactiva'}
+                        </span>
+                    </div>
+                    <div class="config-card-details">
+                        <div class="config-detail-item">
+                            <label>Servidor SMTP</label>
+                            <span>${config.smtp_server}:${config.smtp_port}</span>
+                        </div>
+                        <div class="config-detail-item">
+                            <label>Email Remitente</label>
+                            <span>${config.email_from}</span>
+                        </div>
+                        <div class="config-detail-item">
+                            <label>Email Destino</label>
+                            <span>${config.email_to}</span>
+                        </div>
+                    </div>
+                    <div class="config-card-actions">
+                        ${!config.activo ? `
+                            <button class="btn-action btn-activate" onclick="activateConfig(${config.id})">
+                                Activar
+                            </button>
+                        ` : ''}
+                        <button class="btn-action btn-edit" onclick="editConfig(${config.id})">
+                            Editar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==================== ACTIVAR CONFIGURACIÓN ====================
+        async function activateConfig(configId) {
+            if (!confirm('¿Activar esta configuración de email?')) return;
+
+            try {
+                const empresaId = localStorage.getItem('empresa_id') || '1';
+                const response = await fetch(`${API_URL}/api/email-config/${configId}/activate?empresa_id=${empresaId}`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error activating config');
+                }
+
+                // Recargar configuraciones
+                await loadConfigs();
+            } catch (error) {
+                console.error('Error activating config:', error);
+                alert('Error al activar la configuración');
+            }
+        }
+
+        // ==================== ABRIR MODAL NUEVA CONFIGURACIÓN ====================
+        function openNewConfigModal() {
+            document.getElementById('config-id').value = '';
+            document.getElementById('config-nombre').value = '';
+            document.getElementById('config-smtp-server').value = '';
+            document.getElementById('config-smtp-port').value = '587';
+            document.getElementById('config-email-from').value = '';
+            document.getElementById('config-email-password').value = '';
+            document.getElementById('config-email-to').value = '';
+
+            document.querySelector('#edit-modal .modal-header h2').textContent = 'Nueva Configuración';
+            document.getElementById('edit-modal').style.display = 'flex';
+        }
+
+        // ==================== EDITAR CONFIGURACIÓN ====================
+        function editConfig(configId) {
+            const config = configs.find(c => c.id === configId);
+            if (!config) return;
+
+            document.getElementById('config-id').value = config.id;
+            document.getElementById('config-nombre').value = config.nombre_configuracion;
+            document.getElementById('config-smtp-server').value = config.smtp_server;
+            document.getElementById('config-smtp-port').value = config.smtp_port;
+            document.getElementById('config-email-from').value = config.email_from;
+            document.getElementById('config-email-password').value = '';
+            document.getElementById('config-email-to').value = config.email_to;
+
+            document.querySelector('#edit-modal .modal-header h2').textContent = 'Editar Configuración';
+            document.getElementById('edit-modal').style.display = 'flex';
+        }
+
+        // ==================== GUARDAR CONFIGURACIÓN ====================
+        async function saveConfig(e) {
+            e.preventDefault();
+
+            const configId = document.getElementById('config-id').value;
+            const isNew = !configId;
+            const empresaId = localStorage.getItem('empresa_id') || '1';
+
+            const data = {
+                nombre_configuracion: document.getElementById('config-nombre').value,
+                smtp_server: document.getElementById('config-smtp-server').value,
+                smtp_port: parseInt(document.getElementById('config-smtp-port').value),
+                email_from: document.getElementById('config-email-from').value,
+                email_to: document.getElementById('config-email-to').value,
+                empresa_id: empresaId
+            };
+
+            const password = document.getElementById('config-email-password').value;
+            if (password) {
+                data.email_password = password;
+            } else if (isNew) {
+                alert('La contraseña es obligatoria para una nueva configuración');
+                return;
+            }
+
+            try {
+                let url, method;
+                if (isNew) {
+                    url = `${API_URL}/api/email-config`;
+                    method = 'POST';
+                } else {
+                    url = `${API_URL}/api/email-config/${configId}`;
+                    method = 'PUT';
+                }
+
+                const response = await fetch(url, {
+                    method: method,
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Error saving config');
+                }
+
+                closeEditModal();
+                await loadConfigs();
+                alert(isNew ? 'Configuración creada correctamente' : 'Configuración actualizada correctamente');
+            } catch (error) {
+                console.error('Error saving config:', error);
+                alert('Error al guardar la configuración: ' + error.message);
+            }
+        }
+
+        // ==================== PROBAR CONEXIÓN ====================
+        async function testConnection() {
+            const btn = document.getElementById('btn-test-connection');
+            const originalText = btn.innerHTML;
+
+            // Obtener datos del formulario
+            const configId = document.getElementById('config-id').value;
+            const empresaId = localStorage.getItem('empresa_id') || '1';
+            const data = {
+                smtp_server: document.getElementById('config-smtp-server').value,
+                smtp_port: parseInt(document.getElementById('config-smtp-port').value),
+                email_from: document.getElementById('config-email-from').value,
+                email_password: document.getElementById('config-email-password').value || '********',
+                config_id: configId || null,
+                empresa_id: empresaId
+            };
+
+            // Validar campos requeridos
+            if (!data.smtp_server || !data.smtp_port || !data.email_from) {
+                alert('Por favor, completa los campos de servidor SMTP, puerto y email remitente');
+                return;
+            }
+
+            // Si es nueva config y no hay contraseña
+            if (!configId && data.email_password === '********') {
+                alert('Debes introducir la contraseña para probar la conexión');
+                return;
+            }
+
+            // Mostrar estado de carga
+            btn.innerHTML = '⏳ Probando...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/api/email-config/test`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    btn.innerHTML = '✅ Conexión exitosa';
+                    btn.style.background = '#28a745';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.style.background = '';
+                    }, 3000);
+                } else {
+                    alert('❌ Error: ' + result.error);
+                    btn.innerHTML = originalText;
+                }
+            } catch (error) {
+                console.error('Error testing connection:', error);
+                alert('Error al probar la conexión: ' + error.message);
+                btn.innerHTML = originalText;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // ==================== CERRAR MODAL ====================
+        function closeEditModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+
+        // ==================== UTILIDADES ====================
+        function goBack() {
+            const empresaId = localStorage.getItem('empresa_id');
+            window.location.href = `index.html?empresa=${empresaId}`;
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('edit-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+
+        // Cerrar modal con Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeEditModal();
+            }
+        });
+    </script>
+</body>
+</html>

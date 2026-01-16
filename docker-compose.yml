@@ -1,0 +1,74 @@
+# ============================================
+# Docker Compose - PRODUCCION
+# ApiRestExternos - Actualizado 2026-01-12
+# ============================================
+# Usar: docker compose up -d --build
+# Ver logs: docker compose logs -f
+# Detener: docker compose down
+
+services:
+  # ==================== REDIS ====================
+  # Almacenamiento para rate limiting (compartido entre workers)
+  redis:
+    image: redis:7-alpine
+    container_name: apirest-redis
+    restart: unless-stopped
+    networks:
+      - apirest-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ==================== BACKEND ====================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: apirest-backend
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    volumes:
+      # Frontend montado como solo lectura
+      - ./frontend:/frontend:ro
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - PYTHONUNBUFFERED=1
+      # ==================== SEGURIDAD ====================
+      # Configurar en archivo .env (ver .env.example)
+      - SECRET_KEY=${SECRET_KEY:-cambiar-esta-clave-en-produccion}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      # ==================== RATE LIMITING ====================
+      - REDIS_URL=redis://redis:6379
+      # ==================== BASE DE DATOS ====================
+      - DB_SERVER=${DB_SERVER:-192.168.63.25\SQL2008,1433}
+      - DB_NAME=${DB_NAME:-ApiRestStocks}
+      - DB_USER=${DB_USER:-sa}
+      - DB_PASSWORD=${DB_PASSWORD:-Desa1}
+      # ==================== OPCIONALES ====================
+      # URL base para emails (opcional - se detecta automaticamente)
+      # - BASE_URL=https://tu-dominio.com
+    restart: unless-stopped
+    # Healthcheck configurado en Dockerfile
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/registro-habilitado"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - apirest-network
+
+networks:
+  apirest-network:
+    driver: bridge

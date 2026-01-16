@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación de Email - Gestión de Stocks</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script>
+        // Cargar tema guardado inmediatamente para evitar flash
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
+            document.documentElement.setAttribute('data-color-theme', colorTheme);
+            // Crear favicon desde localStorage (sin link estático para evitar flash)
+            const faviconUrl = localStorage.getItem('faviconUrl');
+            if (faviconUrl) {
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                link.href = faviconUrl;
+                document.head.appendChild(link);
+            }
+        })();
+    </script>
+</head>
+<body>
+    <!-- Selector de idioma fijo -->
+    <div class="lang-selector-fixed">
+        <select id="lang-selector" class="lang-selector" onchange="I18n.setLanguage(this.value)">
+            <option value="es">ES</option>
+            <option value="en">EN</option>
+            <option value="fr">FR</option>
+        </select>
+    </div>
+
+    <div class="login-wrapper">
+        <div class="login-sidebar">
+            <div class="sidebar-content">
+                <img id="sidebar-logo" src="/assets/logojobers.png" alt="Logo" class="sidebar-logo">
+                <h2 data-i18n="header.title">Gestión de Stocks</h2>
+                <p><span data-i18n="header.subtitle">Sistema de consulta de inventario en tiempo real</span></p>
+            </div>
+        </div>
+
+        <div class="login-container">
+            <div class="login-box">
+                <img id="mobile-logo" src="/assets/logojobers.png" alt="Logo" class="mobile-logo">
+                <script>
+                    // Cargar logo desde localStorage inmediatamente para evitar flash
+                    (function() {
+                        const logoUrl = localStorage.getItem('logoUrl');
+                        if (logoUrl) {
+                            document.getElementById('sidebar-logo').src = logoUrl;
+                            document.getElementById('mobile-logo').src = logoUrl;
+                        }
+                    })();
+                </script>
+
+                <div id="verify-content">
+                    <div class="verify-icon loading">⏳</div>
+                    <h1 class="verify-title" data-i18n="verification.verifying">Verificando...</h1>
+                    <p class="verify-message" data-i18n="verification.verifyingMessage">Estamos verificando tu cuenta, por favor espera un momento.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/i18n/i18n.js"></script>
+    <script>
+        // Usar el host completo de la URL actual (incluye puerto si existe)
+        const API_URL = window.location.origin;
+
+        // Capturar empresa_id de la URL y guardarlo en localStorage
+        function capturarEmpresaId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const empresaId = urlParams.get('empresa');
+            if (empresaId) {
+                localStorage.setItem('empresa_id', empresaId);
+                console.log(`📍 Empresa capturada desde verificación: ${empresaId}`);
+            }
+            return empresaId || localStorage.getItem('empresa_id') || '1';
+        }
+
+        const empresaId = capturarEmpresaId();
+
+        // Aplicar tema de color
+        function applyColorTheme(tema) {
+            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito'];
+            if (!validThemes.includes(tema)) tema = 'rubi';
+            document.documentElement.setAttribute('data-color-theme', tema);
+            localStorage.setItem('colorTheme', tema);
+        }
+
+        // Cargar tema de color desde la API
+        async function cargarTemaColor() {
+            try {
+                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/config`);
+                const config = await response.json();
+                applyColorTheme(config.tema || 'rubi');
+            } catch (error) {
+                console.log('Error cargando tema:', error);
+                applyColorTheme('rubi');
+            }
+        }
+
+        // Cargar logo de la empresa desde la BD
+        async function cargarLogoEmpresa() {
+            try {
+                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/logo/exists`);
+                const data = await response.json();
+
+                if (data.exists) {
+                    const logoUrl = `${API_URL}/api/empresa/${empresaId}/logo`;
+                    const sidebarLogo = document.getElementById('sidebar-logo');
+                    const mobileLogo = document.getElementById('mobile-logo');
+
+                    if (sidebarLogo) sidebarLogo.src = logoUrl;
+                    if (mobileLogo) mobileLogo.src = logoUrl;
+                }
+            } catch (error) {
+                console.log('Error cargando logo:', error);
+            }
+        }
+
+        async function verificarEmail() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const content = document.getElementById('verify-content');
+
+            if (!token) {
+                mostrarError(t('verification.invalidToken'), t('verification.invalidTokenMessage'));
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/verify-email?token=${token}`);
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    mostrarExito(data.message);
+                } else {
+                    mostrarError(t('verification.verificationError'), data.message || t('verification.couldNotVerify'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError(t('verification.connectionError'), t('verification.connectionErrorMessage'));
+            }
+        }
+
+        function mostrarExito(mensaje) {
+            const content = document.getElementById('verify-content');
+            const loginUrl = `/login?empresa=${empresaId}`;
+            content.innerHTML = `
+                <div class="verify-icon success">✓</div>
+                <h1 class="verify-title">${t('verification.verified')}</h1>
+                <p class="verify-message">${mensaje}</p>
+                <a href="${loginUrl}" class="btn-login">${t('verification.goToLogin')}</a>
+            `;
+        }
+
+        function mostrarError(titulo, mensaje) {
+            const content = document.getElementById('verify-content');
+            const loginUrl = `/login?empresa=${empresaId}`;
+            content.innerHTML = `
+                <div class="verify-icon error">✗</div>
+                <h1 class="verify-title">${titulo}</h1>
+                <p class="verify-message">${mensaje}</p>
+                <a href="${loginUrl}" class="btn-login">${t('verification.backToLogin')}</a>
+            `;
+        }
+
+        // Inicializar: cargar tema, logo, i18n y luego verificar email
+        Promise.all([cargarTemaColor(), cargarLogoEmpresa()]).then(() => {
+            I18n.init().then(() => {
+                verificarEmail();
+            });
+        });
+    </script>
+</body>
+</html>

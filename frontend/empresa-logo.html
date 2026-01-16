@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logo de Empresa - Gestión de Stocks</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        // Cargar tema guardado inmediatamente para evitar flash
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
+            document.documentElement.setAttribute('data-color-theme', colorTheme);
+            // Crear favicon desde localStorage (sin link estático para evitar flash)
+            const faviconUrl = localStorage.getItem('faviconUrl');
+            if (faviconUrl) {
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                link.href = faviconUrl;
+                document.head.appendChild(link);
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="page-header">
+            <div class="logo-section">
+                <a href="/" title="Volver a Stocks">
+                    <img src="" alt="Logo" class="logo" style="visibility: hidden;">
+                </a>
+                <div class="header-titles">
+                    <h1 data-i18n="empresaLogo.title">Logo de Empresa</h1>
+                    <p class="subtitle" data-i18n="empresaLogo.subtitle">Gestión de logo y favicon</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <select id="lang-selector" class="lang-selector lang-selector-header" onchange="I18n.setLanguage(this.value)">
+                    <option value="es">ES</option>
+                    <option value="en">EN</option>
+                    <option value="fr">FR</option>
+                </select>
+                <a href="/" class="back-btn" data-i18n="common.back">Volver</a>
+            </div>
+        </header>
+
+        <!-- Contenido -->
+        <div class="logo-container">
+            <div id="alert-container"></div>
+
+            <div class="empresa-info">
+                <span data-i18n="empresaLogo.currentEmpresa">Empresa actual:</span>
+                <strong id="empresa-id-display">-</strong>
+            </div>
+
+            <!-- Logo -->
+            <div class="logo-card">
+                <h3>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <span data-i18n="empresaLogo.logo">Logo</span>
+                </h3>
+                <div class="logo-preview-container">
+                    <img id="logo-preview" src="" alt="Logo" class="logo-preview" style="display: none;">
+                    <span id="no-logo" class="no-image" data-i18n="empresaLogo.noLogo">No hay logo configurado</span>
+                </div>
+                <div class="upload-section">
+                    <div class="file-input-wrapper">
+                        <button class="btn-upload">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            <span data-i18n="empresaLogo.uploadLogo">Subir Logo</span>
+                        </button>
+                        <input type="file" id="logo-input" accept="image/*,.svg,image/svg+xml" onchange="handleLogoUpload(this)">
+                    </div>
+                    <button class="btn-delete" id="btn-delete-logo" onclick="deleteLogo()" disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                        <span data-i18n="empresaLogo.deleteLogo">Eliminar Logo</span>
+                    </button>
+                </div>
+                <p class="info-text" data-i18n="empresaLogo.logoInfo">Formatos recomendados: PNG, SVG. Tamaño máximo: 2MB</p>
+            </div>
+
+            <!-- Configuración de Apariencia -->
+            <div class="logo-card">
+                <h3>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    <span data-i18n="empresaLogo.appearance">Apariencia</span>
+                </h3>
+                <div class="config-option">
+                    <div class="config-option-info">
+                        <span class="config-option-label" data-i18n="empresaLogo.invertLogo">Invertir logo en header</span>
+                        <span class="config-option-desc" data-i18n="empresaLogo.invertLogoDesc">Activa esta opción si el logo tiene letras claras/blancas para que se vea bien sobre el fondo del header</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="invertir-logo-switch" onchange="toggleInvertirLogo()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Selector de Tema de Color -->
+                <div class="theme-selector-section" style="margin-top: 25px;">
+                    <div class="config-option-info" style="margin-bottom: 15px;">
+                        <span class="config-option-label" data-i18n="empresaLogo.colorTheme">Tema de color</span>
+                        <span class="config-option-desc" data-i18n="empresaLogo.colorThemeDesc">Selecciona el tema de colores para los headers y botones</span>
+                    </div>
+                    <div class="theme-grid" id="theme-grid">
+                        <div class="theme-card" data-theme="rubi" onclick="selectTheme('rubi')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #FF4338 0%, #D32F2F 100%);"></div>
+                            <span class="theme-name">Rubí</span>
+                        </div>
+                        <div class="theme-card" data-theme="zafiro" onclick="selectTheme('zafiro')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #2196F3 0%, #1565C0 100%);"></div>
+                            <span class="theme-name">Zafiro</span>
+                        </div>
+                        <div class="theme-card" data-theme="esmeralda" onclick="selectTheme('esmeralda')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);"></div>
+                            <span class="theme-name">Esmeralda</span>
+                        </div>
+                        <div class="theme-card" data-theme="amatista" onclick="selectTheme('amatista')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%);"></div>
+                            <span class="theme-name">Amatista</span>
+                        </div>
+                        <div class="theme-card" data-theme="ambar" onclick="selectTheme('ambar')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #FF9800 0%, #E65100 100%);"></div>
+                            <span class="theme-name">Ámbar</span>
+                        </div>
+                        <div class="theme-card" data-theme="grafito" onclick="selectTheme('grafito')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #607D8B 0%, #37474F 100%);"></div>
+                            <span class="theme-name">Grafito</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Favicon -->
+            <div class="logo-card">
+                <h3>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                    <span data-i18n="empresaLogo.favicon">Favicon</span>
+                </h3>
+                <div class="logo-preview-container">
+                    <img id="favicon-preview" src="" alt="Favicon" class="favicon-preview" style="display: none;">
+                    <span id="no-favicon" class="no-image" data-i18n="empresaLogo.noFavicon">No hay favicon configurado</span>
+                </div>
+                <div class="upload-section">
+                    <div class="file-input-wrapper">
+                        <button class="btn-upload">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            <span data-i18n="empresaLogo.uploadFavicon">Subir Favicon</span>
+                        </button>
+                        <input type="file" id="favicon-input" accept="image/*,.ico" onchange="handleFaviconUpload(this)">
+                    </div>
+                    <button class="btn-delete" id="btn-delete-favicon" onclick="deleteFavicon()" disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                        <span data-i18n="empresaLogo.deleteFavicon">Eliminar Favicon</span>
+                    </button>
+                </div>
+                <p class="info-text" data-i18n="empresaLogo.faviconInfo">Formatos recomendados: ICO, PNG 32x32 o 64x64</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/i18n/i18n.js"></script>
+    <script>
+        const protocol = window.location.protocol;
+        const hostname = window.location.hostname;
+        const port = window.location.port;
+
+        let API_URL;
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            API_URL = `${protocol}//${hostname}:5000`;
+        } else {
+            API_URL = `${protocol}//${hostname}${port ? ':' + port : ''}`;
+        }
+
+        let empresaId = localStorage.getItem('empresa_id') || '1';
+
+        // Cargar logo de empresa desde BD
+        async function cargarLogoEmpresa() {
+            const logoElements = document.querySelectorAll('.page-header .logo');
+            try {
+                // Obtener configuración completa
+                const configResponse = await fetch(`${API_URL}/api/empresa/${empresaId}/config`);
+                const config = await configResponse.json();
+
+                if (config.tiene_logo) {
+                    const logoUrl = `${API_URL}/api/empresa/${empresaId}/logo?t=${Date.now()}`;
+                    const invertir = config.invertir_logo;
+                    logoElements.forEach(el => {
+                        el.src = logoUrl;
+                        el.style.filter = invertir ? 'brightness(0) invert(1)' : 'none';
+                        el.style.visibility = 'visible';
+                    });
+                } else {
+                    logoElements.forEach(el => {
+                        el.src = '/assets/logo.svg';
+                        el.style.filter = 'brightness(0) invert(1)';
+                        el.style.visibility = 'visible';
+                    });
+                }
+            } catch (error) {
+                console.log('Error al cargar logo:', error);
+                logoElements.forEach(el => {
+                    el.src = '/assets/logo.svg';
+                    el.style.filter = 'brightness(0) invert(1)';
+                    el.style.visibility = 'visible';
+                });
+            }
+        }
+
+        // Cargar tema
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+
+        // Mostrar alerta
+        function showAlert(message, type = 'success') {
+            const container = document.getElementById('alert-container');
+            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+
+        // Cargar estado actual
+        async function loadCurrentState() {
+            document.getElementById('empresa-id-display').textContent = empresaId;
+
+            try {
+                // Verificar si existe logo
+                const existsResponse = await fetch(`${API_URL}/api/empresa/${empresaId}/logo/exists`, {
+                    credentials: 'include'
+                });
+                const existsData = await existsResponse.json();
+
+                const logoPreview = document.getElementById('logo-preview');
+                const noLogo = document.getElementById('no-logo');
+                const btnDeleteLogo = document.getElementById('btn-delete-logo');
+
+                if (existsData.exists) {
+                    logoPreview.src = `${API_URL}/api/empresa/${empresaId}/logo?t=${Date.now()}`;
+                    logoPreview.style.display = 'block';
+                    noLogo.style.display = 'none';
+                    btnDeleteLogo.disabled = false;
+
+                    // Cargar favicon también
+                    const faviconPreview = document.getElementById('favicon-preview');
+                    const noFavicon = document.getElementById('no-favicon');
+                    const btnDeleteFavicon = document.getElementById('btn-delete-favicon');
+
+                    faviconPreview.src = `${API_URL}/api/empresa/${empresaId}/favicon?t=${Date.now()}`;
+                    faviconPreview.style.display = 'block';
+                    noFavicon.style.display = 'none';
+                    btnDeleteFavicon.disabled = false;
+                } else {
+                    logoPreview.style.display = 'none';
+                    noLogo.style.display = 'block';
+                    btnDeleteLogo.disabled = true;
+
+                    document.getElementById('favicon-preview').style.display = 'none';
+                    document.getElementById('no-favicon').style.display = 'block';
+                    document.getElementById('btn-delete-favicon').disabled = true;
+                }
+            } catch (error) {
+                console.error('Error cargando estado:', error);
+            }
+        }
+
+        // Subir logo
+        async function handleLogoUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            if (file.size > 2 * 1024 * 1024) {
+                showAlert(t('empresaLogo.fileTooLarge'), 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const response = await fetch(`${API_URL}/api/empresa/${empresaId}/logo`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ logo: e.target.result })
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        showAlert(t('empresaLogo.logoSaved'), 'success');
+                        loadCurrentState();
+                    } else {
+                        showAlert(data.error || t('empresaLogo.errorSaving'), 'error');
+                    }
+                } catch (error) {
+                    showAlert(t('empresaLogo.errorSaving'), 'error');
+                }
+            };
+            reader.readAsDataURL(file);
+            input.value = '';
+        }
+
+        // Subir favicon
+        async function handleFaviconUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            if (file.size > 1 * 1024 * 1024) {
+                showAlert(t('empresaLogo.fileTooLarge'), 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const response = await fetch(`${API_URL}/api/empresa/${empresaId}/favicon`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ favicon: e.target.result })
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        showAlert(t('empresaLogo.faviconSaved'), 'success');
+                        loadCurrentState();
+                    } else {
+                        showAlert(data.error || t('empresaLogo.errorSaving'), 'error');
+                    }
+                } catch (error) {
+                    showAlert(t('empresaLogo.errorSaving'), 'error');
+                }
+            };
+            reader.readAsDataURL(file);
+            input.value = '';
+        }
+
+        // Eliminar logo
+        async function deleteLogo() {
+            if (!confirm(t('empresaLogo.confirmDeleteLogo'))) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/logo`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    showAlert(t('empresaLogo.logoDeleted'), 'success');
+                    loadCurrentState();
+                } else {
+                    showAlert(t('empresaLogo.errorDeleting'), 'error');
+                }
+            } catch (error) {
+                showAlert(t('empresaLogo.errorDeleting'), 'error');
+            }
+        }
+
+        // Eliminar favicon
+        async function deleteFavicon() {
+            if (!confirm(t('empresaLogo.confirmDeleteFavicon'))) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/favicon`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    showAlert(t('empresaLogo.faviconDeleted'), 'success');
+                    loadCurrentState();
+                } else {
+                    showAlert(t('empresaLogo.errorDeleting'), 'error');
+                }
+            } catch (error) {
+                showAlert(t('empresaLogo.errorDeleting'), 'error');
+            }
+        }
+
+        // Toggle invertir logo
+        async function toggleInvertirLogo() {
+            const checkbox = document.getElementById('invertir-logo-switch');
+            const invertir = checkbox.checked;
+
+            try {
+                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/invertir`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ invertir: invertir })
+                });
+
+                if (response.ok) {
+                    showAlert(t('empresaLogo.configSaved'), 'success');
+                    // Actualizar la previsualización del logo en el header
+                    await cargarLogoEmpresa();
+                } else {
+                    showAlert(t('empresaLogo.errorSaving'), 'error');
+                    checkbox.checked = !invertir; // Revertir
+                }
+            } catch (error) {
+                showAlert(t('empresaLogo.errorSaving'), 'error');
+                checkbox.checked = !invertir; // Revertir
+            }
+        }
+
+        // Cargar configuración de invertir logo
+        async function loadInvertirConfig() {
+            try {
+                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/invertir`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                document.getElementById('invertir-logo-switch').checked = data.invertir || false;
+            } catch (error) {
+                console.error('Error cargando config invertir:', error);
+            }
+        }
+
+        // Aplicar tema de color
+        function applyColorTheme(tema) {
+            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito'];
+            if (!validThemes.includes(tema)) tema = 'rubi';
+            document.documentElement.setAttribute('data-color-theme', tema);
+            localStorage.setItem('colorTheme', tema);
+
+            // Marcar tarjeta seleccionada
+            document.querySelectorAll('.theme-card').forEach(card => {
+                card.classList.toggle('selected', card.dataset.theme === tema);
+            });
+        }
+
+        // Seleccionar tema
+        async function selectTheme(tema) {
+            try {
+                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/tema`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ tema: tema })
+                });
+
+                if (response.ok) {
+                    applyColorTheme(tema);
+                    showAlert(t('empresaLogo.themeSaved') || 'Tema guardado correctamente', 'success');
+                } else {
+                    showAlert(t('empresaLogo.errorSaving'), 'error');
+                }
+            } catch (error) {
+                showAlert(t('empresaLogo.errorSaving'), 'error');
+            }
+        }
+
+        // Cargar configuración de tema de color
+        async function loadThemeConfig() {
+            try {
+                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/config`, {
+                    credentials: 'include'
+                });
+                const config = await response.json();
+                applyColorTheme(config.tema || 'rubi');
+            } catch (error) {
+                console.error('Error cargando config tema:', error);
+                applyColorTheme('rubi');
+            }
+        }
+
+        // Inicializar
+        window.onload = async function() {
+            loadTheme();
+            await I18n.init();
+            await loadThemeConfig();
+            await cargarLogoEmpresa();
+            await loadCurrentState();
+            await loadInvertirConfig();
+        };
+    </script>
+</body>
+</html>

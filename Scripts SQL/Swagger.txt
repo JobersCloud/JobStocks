@@ -1,0 +1,4 @@
+Swagger
+http://localhost:5000/apidocs/
+ApiKey
+720656659a558a47a95269ae7cab14e10d488583a2d6116476beaf24739fe870

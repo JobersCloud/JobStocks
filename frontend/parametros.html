@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parámetros del Sistema - Administración</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        // Cargar tema guardado inmediatamente para evitar flash
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
+            document.documentElement.setAttribute('data-color-theme', colorTheme);
+            // Crear favicon desde localStorage (sin link estático para evitar flash)
+            const faviconUrl = localStorage.getItem('faviconUrl');
+            if (faviconUrl) {
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                link.href = faviconUrl;
+                document.head.appendChild(link);
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header de la página -->
+        <div class="page-header">
+            <div class="logo-section">
+                <a href="#" onclick="goBack(); return false;" style="display: flex; align-items: center;">
+                    <img src="" alt="Logo" class="logo" style="cursor: pointer; visibility: hidden;">
+                </a>
+                <h1 data-i18n="menu.parameters">Parámetros</h1>
+            </div>
+            <div class="header-actions">
+                <div class="lang-selector-wrapper">
+                    <select id="lang-selector" class="lang-selector lang-selector-header" onchange="I18n.setLanguage(this.value)">
+                        <option value="es">ES</option>
+                        <option value="en">EN</option>
+                        <option value="fr">FR</option>
+                    </select>
+                </div>
+                <button class="back-btn" onclick="goBack()">
+                    <span data-i18n="proposals.backToStocks">Volver a Stocks</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenedor principal -->
+        <div class="params-container">
+            <div class="params-content">
+                <div class="info-box">
+                    <p>Los parámetros del sistema controlan el comportamiento de la aplicación. Los cambios se aplican inmediatamente.</p>
+                </div>
+
+                <!-- Loading state -->
+                <div class="params-loading" id="params-loading">
+                    <div class="spinner"></div>
+                    <p data-i18n="common.loading">Cargando...</p>
+                </div>
+
+                <!-- Empty state -->
+                <div class="params-empty" id="params-empty" style="display: none;">
+                    <div class="params-empty-icon">⚙️</div>
+                    <h3>No hay parámetros configurados</h3>
+                </div>
+
+                <!-- Lista de parámetros -->
+                <div class="params-list" id="params-list" style="display: none;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/i18n/i18n.js"></script>
+    <script>
+        // ==================== CONFIGURACIÓN ====================
+        const hostname = window.location.hostname;
+        const protocol = window.location.protocol;
+        const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+        const API_URL = isLocalhost ? `${protocol}//${hostname}:5000` : `${protocol}//${hostname}`;
+
+        // ==================== LOGO DINÁMICO POR EMPRESA ====================
+        function applyColorTheme(tema) {
+            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito'];
+            if (!validThemes.includes(tema)) tema = 'rubi';
+            document.documentElement.setAttribute('data-color-theme', tema);
+            localStorage.setItem('colorTheme', tema);
+        }
+
+        async function cargarLogoEmpresa() {
+            const empresaId = localStorage.getItem('empresa_id') || '1';
+            const logoElements = document.querySelectorAll('.logo');
+            try {
+                const configResponse = await fetch(`${API_URL}/api/empresa/${empresaId}/config`);
+                const config = await configResponse.json();
+                applyColorTheme(config.tema || 'rubi');
+                const invertirFilter = config.invertir_logo ? 'brightness(0) invert(1)' : 'none';
+                if (config.tiene_logo) {
+                    const logoUrl = `${API_URL}/api/empresa/${empresaId}/logo?t=${Date.now()}`;
+                    logoElements.forEach(el => {
+                        el.src = logoUrl;
+                        el.style.filter = invertirFilter;
+                        el.style.visibility = 'visible';
+                    });
+                } else {
+                    logoElements.forEach(el => {
+                        el.src = 'assets/logo.svg';
+                        el.style.filter = 'brightness(0) invert(1)';
+                        el.style.visibility = 'visible';
+                    });
+                }
+            } catch (error) {
+                console.log('Error al cargar logo:', error);
+                applyColorTheme('rubi');
+                logoElements.forEach(el => {
+                    el.src = 'assets/logo.svg';
+                    el.style.filter = 'brightness(0) invert(1)';
+                    el.style.visibility = 'visible';
+                });
+            }
+        }
+
+        let params = [];
+
+        // ==================== INICIALIZACIÓN ====================
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Verificar empresa_id
+            const urlParams = new URLSearchParams(window.location.search);
+            let empresaId = urlParams.get('empresa');
+
+            if (empresaId) {
+                localStorage.setItem('empresa_id', empresaId);
+            } else {
+                empresaId = localStorage.getItem('empresa_id');
+            }
+
+            if (!empresaId) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Cargar logo de empresa PRIMERO
+            await cargarLogoEmpresa();
+
+            // Inicializar i18n
+            await I18n.init();
+
+            // Actualizar selector de idioma
+            const langSelector = document.getElementById('lang-selector');
+            if (langSelector) {
+                langSelector.value = I18n.currentLang;
+            }
+
+            // Verificar autenticación y permisos
+            await checkAuth();
+
+            // Cargar parámetros
+            await loadParams();
+        });
+
+        // ==================== AUTENTICACIÓN ====================
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_URL}/api/current-user`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const user = await response.json();
+
+                // Verificar que sea administrador o superusuario
+                if (user.rol !== 'administrador' && user.rol !== 'superusuario') {
+                    alert('No tienes permisos para acceder a esta página');
+                    window.location.href = 'index.html';
+                    return;
+                }
+            } catch (error) {
+                console.error('Error checking auth:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // ==================== CARGAR PARÁMETROS ====================
+        async function loadParams() {
+            const loadingEl = document.getElementById('params-loading');
+            const emptyEl = document.getElementById('params-empty');
+            const listEl = document.getElementById('params-list');
+            const empresaId = localStorage.getItem('empresa_id') || '1';
+
+            try {
+                const response = await fetch(`${API_URL}/api/parametros?empresa_id=${empresaId}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error loading params');
+                }
+
+                const data = await response.json();
+                params = data.parametros || [];
+
+                loadingEl.style.display = 'none';
+
+                if (params.length === 0) {
+                    emptyEl.style.display = 'block';
+                    listEl.style.display = 'none';
+                } else {
+                    emptyEl.style.display = 'none';
+                    listEl.style.display = 'grid';
+                    renderParams();
+                }
+            } catch (error) {
+                console.error('Error loading params:', error);
+                loadingEl.innerHTML = `<p style="color: #dc3545;">Error al cargar los parámetros</p>`;
+            }
+        }
+
+        // ==================== RENDERIZAR PARÁMETROS ====================
+        function renderParams() {
+            const listEl = document.getElementById('params-list');
+
+            listEl.innerHTML = params.map(param => {
+                const isBoolean = param.valor === '0' || param.valor === '1';
+                const isTrue = param.valor === '1';
+
+                return `
+                    <div class="param-card" data-key="${param.clave}">
+                        <div class="param-info">
+                            <span class="param-key">${param.clave}</span>
+                            <p class="param-description">${param.descripcion || 'Sin descripción'}</p>
+                            <span class="param-meta">
+                                Última modificación: ${formatDate(param.fecha_modificacion)}
+                            </span>
+                        </div>
+                        <div class="param-value-section">
+                            ${isBoolean ? `
+                                <label class="switch">
+                                    <input type="checkbox" ${isTrue ? 'checked' : ''} onchange="toggleParam('${param.clave}', this.checked)">
+                                    <span class="slider"></span>
+                                </label>
+                                <span class="param-value-display ${isTrue ? 'value-true' : 'value-false'}">
+                                    ${isTrue ? 'Activo' : 'Inactivo'}
+                                </span>
+                            ` : `
+                                <input type="text" class="param-input" id="input-${param.clave}" value="${param.valor}" />
+                                <button class="btn-save-param" onclick="saveTextParam('${param.clave}')">
+                                    Guardar
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== TOGGLE PARÁMETRO BOOLEANO ====================
+        async function toggleParam(clave, checked) {
+            const newValue = checked ? '1' : '0';
+            const empresaId = localStorage.getItem('empresa_id') || '1';
+
+            try {
+                const response = await fetch(`${API_URL}/api/parametros/${clave}`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ valor: newValue, empresa_id: empresaId })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error updating param');
+                }
+
+                // Actualizar UI
+                const card = document.querySelector(`[data-key="${clave}"]`);
+                const valueDisplay = card.querySelector('.param-value-display');
+                valueDisplay.textContent = checked ? 'Activo' : 'Inactivo';
+                valueDisplay.className = `param-value-display ${checked ? 'value-true' : 'value-false'}`;
+
+                // Actualizar array local
+                const index = params.findIndex(p => p.clave === clave);
+                if (index !== -1) {
+                    params[index].valor = newValue;
+                    params[index].fecha_modificacion = new Date().toISOString();
+                }
+
+                showToast('Parámetro actualizado correctamente', 'success');
+            } catch (error) {
+                console.error('Error updating param:', error);
+                showToast('Error al actualizar el parámetro', 'error');
+
+                // Revertir el switch
+                const card = document.querySelector(`[data-key="${clave}"]`);
+                const input = card.querySelector('input[type="checkbox"]');
+                input.checked = !checked;
+            }
+        }
+
+        // ==================== GUARDAR PARÁMETRO DE TEXTO ====================
+        async function saveTextParam(clave) {
+            const input = document.getElementById(`input-${clave}`);
+            const newValue = input.value;
+            const empresaId = localStorage.getItem('empresa_id') || '1';
+
+            try {
+                const response = await fetch(`${API_URL}/api/parametros/${clave}`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ valor: newValue, empresa_id: empresaId })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error updating param');
+                }
+
+                // Actualizar array local
+                const index = params.findIndex(p => p.clave === clave);
+                if (index !== -1) {
+                    params[index].valor = newValue;
+                    params[index].fecha_modificacion = new Date().toISOString();
+                }
+
+                showToast('Parámetro actualizado correctamente', 'success');
+            } catch (error) {
+                console.error('Error updating param:', error);
+                showToast('Error al actualizar el parámetro', 'error');
+            }
+        }
+
+        // ==================== TOAST NOTIFICATION ====================
+        function showToast(message, type) {
+            // Remover toast existente si hay
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // ==================== UTILIDADES ====================
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function goBack() {
+            const empresaId = localStorage.getItem('empresa_id');
+            window.location.href = `index.html?empresa=${empresaId}`;
+        }
+    </script>
+</body>
+</html>

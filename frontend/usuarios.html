@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - Administración</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        // Cargar tema guardado inmediatamente para evitar flash
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
+            document.documentElement.setAttribute('data-color-theme', colorTheme);
+            // Crear favicon desde localStorage (sin link estático para evitar flash)
+            const faviconUrl = localStorage.getItem('faviconUrl');
+            if (faviconUrl) {
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                link.href = faviconUrl;
+                document.head.appendChild(link);
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header de la página -->
+        <div class="page-header">
+            <div class="logo-section">
+                <a href="#" onclick="goBack(); return false;" style="display: flex; align-items: center;">
+                    <img src="" alt="Logo" class="logo" style="cursor: pointer; visibility: hidden;">
+                </a>
+                <h1 data-i18n="users.title">Gestión de Usuarios</h1>
+            </div>
+            <div class="header-actions">
+                <div class="lang-selector-wrapper">
+                    <select id="lang-selector" class="lang-selector lang-selector-header" onchange="I18n.setLanguage(this.value)">
+                        <option value="es">ES</option>
+                        <option value="en">EN</option>
+                        <option value="fr">FR</option>
+                    </select>
+                </div>
+                <button class="back-btn" onclick="goBack()">
+                    <span data-i18n="proposals.backToStocks">Volver a Stocks</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenedor principal de usuarios -->
+        <div class="users-container">
+            <div class="users-content">
+                <!-- Toolbar -->
+                <div class="users-toolbar" id="users-toolbar" style="display: none;">
+                    <button class="btn-new-user" onclick="openCreateUserModal()">
+                        <span class="btn-icon">➕</span>
+                        <span data-i18n="users.newUser">Nuevo Usuario</span>
+                    </button>
+                </div>
+
+                <!-- Loading state -->
+                <div class="users-loading" id="users-loading">
+                    <div class="spinner"></div>
+                    <p data-i18n="users.loading">Cargando usuarios...</p>
+                </div>
+
+                <!-- Empty state -->
+                <div class="users-empty" id="users-empty" style="display: none;">
+                    <div class="users-empty-icon">👥</div>
+                    <h3 data-i18n="users.noUsers">No hay usuarios</h3>
+                    <button class="btn-new-user btn-new-empty" onclick="openCreateUserModal()">
+                        <span class="btn-icon">➕</span>
+                        <span data-i18n="users.newUser">Nuevo Usuario</span>
+                    </button>
+                </div>
+
+                <!-- Table view (desktop) -->
+                <div class="users-table-wrapper" id="users-table-wrapper" style="display: none;">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="users.username">Usuario</th>
+                                <th data-i18n="users.fullName">Nombre Completo</th>
+                                <th data-i18n="users.email">Email</th>
+                                <th data-i18n="users.country">País</th>
+                                <th data-i18n="users.role">Rol</th>
+                                <th data-i18n="users.status">Estado</th>
+                                <th data-i18n="users.actions">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Cards view (mobile) -->
+                <div class="users-cards" id="users-cards">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de cambio de rol -->
+    <div id="role-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 data-i18n="users.changeRole">Cambiar Rol</h2>
+                <button class="modal-close" onclick="closeRoleModal()">×</button>
+            </div>
+            <div class="role-modal-content">
+                <div class="form-group">
+                    <label data-i18n="users.role">Rol</label>
+                    <select id="new-role-select">
+                        <option value="usuario" data-i18n="roles.user">Usuario</option>
+                        <option value="administrador" data-i18n="roles.admin">Administrador</option>
+                        <option value="superusuario" data-i18n="roles.superuser">Superusuario</option>
+                    </select>
+                </div>
+                <div class="role-modal-actions">
+                    <button class="btn-cancel" onclick="closeRoleModal()" data-i18n="common.cancel">Cancelar</button>
+                    <button class="btn-save" onclick="saveRole()" data-i18n="common.save">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de crear/editar usuario -->
+    <div id="user-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="user-modal-title" data-i18n="users.createUser">Crear Usuario</h2>
+                <button class="modal-close" onclick="closeUserModal()">×</button>
+            </div>
+            <div class="user-modal-content">
+                <form id="user-form" onsubmit="saveUser(event)">
+                    <input type="hidden" id="user-id">
+
+                    <div class="form-group">
+                        <label data-i18n="users.username">Usuario *</label>
+                        <input type="text" id="user-username" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="users.password">Contraseña *</label>
+                        <input type="password" id="user-password">
+                        <p class="form-help" id="password-help" data-i18n="users.passwordHelpCreate">Mínimo 6 caracteres</p>
+                    </div>
+
+                    <div class="form-group" id="send-email-group" style="display: none;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="user-send-email">
+                            <span data-i18n="users.sendWelcomeEmail">Enviar email de bienvenida con credenciales</span>
+                        </label>
+                        <p class="form-help" data-i18n="users.sendWelcomeEmailHelp">El usuario deberá cambiar la contraseña en su primer inicio de sesión</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="users.fullName">Nombre Completo</label>
+                        <input type="text" id="user-fullname">
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="users.email">Email</label>
+                        <input type="email" id="user-email">
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="users.country">País</label>
+                        <select id="user-pais">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="users.client">Cliente</label>
+                        <div class="client-search-container">
+                            <div class="client-search-input-wrapper" id="client-search-wrapper">
+                                <input type="text" id="client-search" placeholder="Buscar cliente..." autocomplete="off">
+                                <span class="client-search-icon">🔍</span>
+                            </div>
+                            <div class="client-suggestions" id="client-suggestions"></div>
+                            <div class="client-selected" id="client-selected">
+                                <div class="client-selected-info">
+                                    <span class="client-selected-code" id="selected-client-code"></span>
+                                    <span class="client-selected-name" id="selected-client-name"></span>
+                                </div>
+                                <button type="button" class="client-clear-btn" onclick="clearClientSelection()" title="Limpiar">×</button>
+                            </div>
+                        </div>
+                        <input type="hidden" id="user-cliente-id">
+                        <p class="form-help" data-i18n="users.clientHelp">Escribe al menos 3 caracteres para buscar</p>
+                    </div>
+
+                    <div class="form-group" id="role-group" style="display: none;">
+                        <label data-i18n="users.role">Rol</label>
+                        <select id="user-rol">
+                            <option value="usuario" data-i18n="roles.user">Usuario</option>
+                            <option value="administrador" data-i18n="roles.admin">Administrador</option>
+                            <option value="superusuario" data-i18n="roles.superuser">Superusuario</option>
+                        </select>
+                    </div>
+
+                    <div class="user-modal-actions">
+                        <button type="button" class="btn-cancel" onclick="closeUserModal()" data-i18n="common.cancel">Cancelar</button>
+                        <button type="submit" class="btn-save" id="btn-save-user" data-i18n="common.save">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/i18n/i18n.js"></script>
+    <script>
+        // ==================== CONFIGURACIÓN ====================
+        const hostname = window.location.hostname;
+        const protocol = window.location.protocol;
+        const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+        const API_URL = isLocalhost ? `${protocol}//${hostname}:5000` : `${protocol}//${hostname}`;
+
+        // ==================== LOGO DINÁMICO POR EMPRESA ====================
+        function applyColorTheme(tema) {
+            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito'];
+            if (!validThemes.includes(tema)) tema = 'rubi';
+            document.documentElement.setAttribute('data-color-theme', tema);
+            localStorage.setItem('colorTheme', tema);
+        }
+
+        async function cargarLogoEmpresa() {
+            const empresaId = localStorage.getItem('empresa_id') || '1';
+            const logoElements = document.querySelectorAll('.logo');
+            try {
+                const configResponse = await fetch(`${API_URL}/api/empresa/${empresaId}/config`);
+                const config = await configResponse.json();
+                applyColorTheme(config.tema || 'rubi');
+                const invertirFilter = config.invertir_logo ? 'brightness(0) invert(1)' : 'none';
+                if (config.tiene_logo) {
+                    const logoUrl = `${API_URL}/api/empresa/${empresaId}/logo?t=${Date.now()}`;
+                    logoElements.forEach(el => {
+                        el.src = logoUrl;
+                        el.style.filter = invertirFilter;
+                        el.style.visibility = 'visible';
+                    });
+                } else {
+                    logoElements.forEach(el => {
+                        el.src = 'assets/logo.svg';
+                        el.style.filter = 'brightness(0) invert(1)';
+                        el.style.visibility = 'visible';
+                    });
+                }
+            } catch (error) {
+                console.log('Error al cargar logo:', error);
+                applyColorTheme('rubi');
+                logoElements.forEach(el => {
+                    el.src = 'assets/logo.svg';
+                    el.style.filter = 'brightness(0) invert(1)';
+                    el.style.visibility = 'visible';
+                });
+            }
+        }
+
+        let users = [];
+        let currentUser = null;
+        let selectedUserId = null;
+        let editingUserId = null;
+        let clientSearchTimeout = null;
+        let paises = [];
+
+        // ==================== INICIALIZACIÓN ====================
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Verificar empresa_id
+            const urlParams = new URLSearchParams(window.location.search);
+            let empresaId = urlParams.get('empresa');
+
+            if (empresaId) {
+                localStorage.setItem('empresa_id', empresaId);
+            } else {
+                empresaId = localStorage.getItem('empresa_id');
+            }
+
+            if (!empresaId) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Cargar logo de empresa PRIMERO
+            await cargarLogoEmpresa();
+
+            // Inicializar i18n
+            await I18n.init();
+
+            // Actualizar selector de idioma
+            const langSelector = document.getElementById('lang-selector');
+            if (langSelector) {
+                langSelector.value = I18n.currentLang;
+            }
+
+            // Verificar autenticación y permisos de admin
+            await checkAuth();
+
+            // Cargar países y usuarios en paralelo
+            await Promise.all([loadPaises(), loadUsers()]);
+
+            // Inicializar buscador de clientes
+            initClientAutocomplete();
+        });
+
+        // ==================== AUTENTICACIÓN ====================
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_URL}/api/current-user`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                currentUser = await response.json();
+
+                // Verificar que sea administrador o superusuario
+                if (currentUser.rol !== 'administrador' && currentUser.rol !== 'superusuario') {
+                    alert('No tienes permisos para acceder a esta página');
+                    window.location.href = 'index.html';
+                    return;
+                }
+            } catch (error) {
+                console.error('Error checking auth:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // ==================== CARGAR PAÍSES ====================
+        async function loadPaises() {
+            try {
+                const response = await fetch(`${API_URL}/api/paises`);
+                paises = await response.json();
+
+                const select = document.getElementById('user-pais');
+                paises.forEach(pais => {
+                    const option = document.createElement('option');
+                    option.value = pais.alfa2;
+                    option.textContent = pais.nombre;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading countries:', error);
+            }
+        }
+
+        // ==================== CARGAR USUARIOS ====================
+        async function loadUsers() {
+            const loadingEl = document.getElementById('users-loading');
+            const emptyEl = document.getElementById('users-empty');
+            const tableWrapper = document.getElementById('users-table-wrapper');
+            const toolbarEl = document.getElementById('users-toolbar');
+            const empresaId = localStorage.getItem('empresa_id');
+
+            try {
+                const response = await fetch(`${API_URL}/api/usuarios?empresa_id=${empresaId}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        alert('No tienes permisos para ver los usuarios');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    throw new Error('Error loading users');
+                }
+
+                const data = await response.json();
+                users = data.usuarios || [];
+
+                loadingEl.style.display = 'none';
+
+                if (users.length === 0) {
+                    emptyEl.style.display = 'block';
+                    tableWrapper.style.display = 'none';
+                    toolbarEl.style.display = 'none';
+                } else {
+                    emptyEl.style.display = 'none';
+                    tableWrapper.style.display = 'block';
+                    toolbarEl.style.display = 'flex';
+                    renderUsers();
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                loadingEl.innerHTML = `<p style="color: #dc3545;">Error al cargar los usuarios</p>`;
+            }
+        }
+
+        // ==================== RENDERIZAR USUARIOS ====================
+        function renderUsers() {
+            const tableBody = document.getElementById('users-table-body');
+            const cardsEl = document.getElementById('users-cards');
+
+            // Renderizar tabla
+            tableBody.innerHTML = users.map(user => `
+                <tr>
+                    <td><strong>${user.username}</strong></td>
+                    <td>${user.full_name || '-'}</td>
+                    <td>
+                        <div class="email-cell">
+                            ${user.email || '-'}
+                            ${user.email ? (user.email_verificado ?
+                                '<span class="email-verified" title="Email verificado">✓</span>' :
+                                '<span class="email-not-verified" title="Email no verificado">✗</span>') : ''}
+                        </div>
+                    </td>
+                    <td>${user.pais || '-'}</td>
+                    <td>${getRoleBadge(user.rol)}</td>
+                    <td>${getStatusBadge(user.active)}</td>
+                    <td>
+                        <div class="user-actions">
+                            ${getActionButtons(user)}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Renderizar cards (móvil)
+            cardsEl.innerHTML = users.map(user => `
+                <div class="user-card">
+                    <div class="user-card-header">
+                        <div>
+                            <div class="user-card-name">${user.full_name || user.username}</div>
+                            <div class="user-card-username">@${user.username}</div>
+                        </div>
+                        ${getStatusBadge(user.active)}
+                    </div>
+                    <div class="user-card-info">
+                        <div class="user-card-info-item">
+                            <label>Email:</label> ${user.email || '-'}
+                        </div>
+                        <div class="user-card-info-item">
+                            <label>${t('users.role')}:</label> ${getRoleBadge(user.rol)}
+                        </div>
+                        <div class="user-card-info-item">
+                            <label>${t('users.country')}:</label> ${user.pais || '-'}
+                        </div>
+                    </div>
+                    <div class="user-card-actions">
+                        ${getActionButtons(user)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==================== OBTENER BOTONES DE ACCIÓN ====================
+        function getActionButtons(user) {
+            let buttons = [];
+
+            // No permitir acciones sobre sí mismo
+            if (user.id === currentUser.id) {
+                return '<span style="color: #999; font-size: 12px;">👤</span>';
+            }
+
+            // Botón editar
+            buttons.push(`
+                <button class="btn-action btn-edit" onclick="openEditUserModal(${user.id})" title="${t('users.editUser')}">✏️</button>
+            `);
+
+            // Botón activar/desactivar
+            if (user.active) {
+                buttons.push(`
+                    <button class="btn-action btn-deactivate" onclick="deactivateUser(${user.id})" title="${t('users.deactivate')}">🚫</button>
+                `);
+            } else {
+                buttons.push(`
+                    <button class="btn-action btn-activate" onclick="activateUser(${user.id})" title="${t('users.activate')}">✅</button>
+                `);
+            }
+
+            // Botón reenviar verificación (solo si tiene email y no está verificado)
+            if (user.email && !user.email_verificado) {
+                buttons.push(`
+                    <button class="btn-action btn-resend" onclick="resendVerification('${escapeHtml(user.email)}')" title="${t('users.resendVerification')}">📧</button>
+                `);
+            }
+
+            // Botón para cambiar estado de verificación de email (solo si tiene email)
+            if (user.email) {
+                if (user.email_verificado) {
+                    buttons.push(`
+                        <button class="btn-action btn-unverify" onclick="toggleVerification(${user.id}, false)" title="${t('users.markAsUnverified')}">🔓</button>
+                    `);
+                } else {
+                    buttons.push(`
+                        <button class="btn-action btn-verify" onclick="toggleVerification(${user.id}, true)" title="${t('users.markAsVerified')}">🔒</button>
+                    `);
+                }
+            }
+
+            return buttons.join('');
+        }
+
+        // ==================== ACTIVAR USUARIO ====================
+        async function activateUser(userId) {
+            if (!confirm('¿Activar este usuario?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}/activar`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error activating user');
+                }
+
+                // Actualizar usuario en la lista local
+                const index = users.findIndex(u => u.id === userId);
+                if (index !== -1) {
+                    users[index].active = true;
+                }
+
+                renderUsers();
+            } catch (error) {
+                console.error('Error activating user:', error);
+                alert('Error al activar el usuario');
+            }
+        }
+
+        // ==================== DESACTIVAR USUARIO ====================
+        async function deactivateUser(userId) {
+            if (!confirm('¿Desactivar este usuario?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}/desactivar`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error deactivating user');
+                }
+
+                // Actualizar usuario en la lista local
+                const index = users.findIndex(u => u.id === userId);
+                if (index !== -1) {
+                    users[index].active = false;
+                }
+
+                renderUsers();
+            } catch (error) {
+                console.error('Error deactivating user:', error);
+                alert('Error al desactivar el usuario');
+            }
+        }
+
+        // ==================== REENVIAR VERIFICACIÓN ====================
+        async function resendVerification(email) {
+            if (!confirm(t('users.confirmResendVerification'))) return;
+
+            try {
+                const empresaId = localStorage.getItem('empresa_id');
+                const response = await fetch(`${API_URL}/api/resend-verification`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, empresa_id: empresaId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(t('users.verificationSent'));
+                } else {
+                    alert(data.message || t('users.verificationError'));
+                }
+            } catch (error) {
+                console.error('Error resending verification:', error);
+                alert(t('users.verificationError'));
+            }
+        }
+
+        // ==================== CAMBIAR ESTADO DE VERIFICACIÓN ====================
+        async function toggleVerification(userId, verificado) {
+            const mensaje = verificado
+                ? t('users.confirmMarkVerified')
+                : t('users.confirmMarkUnverified');
+
+            if (!confirm(mensaje)) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}/verificacion-email`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ verificado })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Actualizar usuario en la lista local
+                    const index = users.findIndex(u => u.id === userId);
+                    if (index !== -1) {
+                        users[index].email_verificado = verificado;
+                    }
+                    renderUsers();
+                } else {
+                    alert(data.error || t('users.verificationChangeError'));
+                }
+            } catch (error) {
+                console.error('Error changing verification status:', error);
+                alert(t('users.verificationChangeError'));
+            }
+        }
+
+        // ==================== MODAL DE ROL ====================
+        function openRoleModal(userId, currentRole) {
+            selectedUserId = userId;
+            document.getElementById('new-role-select').value = currentRole;
+            document.getElementById('role-modal').style.display = 'flex';
+        }
+
+        function closeRoleModal() {
+            document.getElementById('role-modal').style.display = 'none';
+            selectedUserId = null;
+        }
+
+        async function saveRole() {
+            if (!selectedUserId) return;
+
+            const newRole = document.getElementById('new-role-select').value;
+
+            try {
+                const response = await fetch(`${API_URL}/api/usuarios/${selectedUserId}/rol`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ rol: newRole })
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Error changing role');
+                }
+
+                // Actualizar usuario en la lista local
+                const index = users.findIndex(u => u.id === selectedUserId);
+                if (index !== -1) {
+                    users[index].rol = newRole;
+                }
+
+                closeRoleModal();
+                renderUsers();
+            } catch (error) {
+                console.error('Error changing role:', error);
+                alert('Error al cambiar el rol: ' + error.message);
+            }
+        }
+
+        // ==================== UTILIDADES ====================
+        function getRoleBadge(role) {
+            const roleMap = {
+                'usuario': { class: 'role-usuario', key: 'roles.user' },
+                'administrador': { class: 'role-administrador', key: 'roles.admin' },
+                'superusuario': { class: 'role-superusuario', key: 'roles.superuser' }
+            };
+
+            const roleInfo = roleMap[role] || { class: 'role-usuario', key: 'roles.user' };
+            return `<span class="role-badge ${roleInfo.class}">${t(roleInfo.key)}</span>`;
+        }
+
+        function getStatusBadge(isActive) {
+            if (isActive) {
+                return `<span class="status-badge status-active">${t('users.active')}</span>`;
+            }
+            return `<span class="status-badge status-inactive">${t('users.inactive')}</span>`;
+        }
+
+        function goBack() {
+            const empresaId = localStorage.getItem('empresa_id');
+            window.location.href = `index.html?empresa=${empresaId}`;
+        }
+
+        // ==================== MODAL CREAR/EDITAR USUARIO ====================
+        function openCreateUserModal() {
+            editingUserId = null;
+            document.getElementById('user-modal-title').textContent = t('users.createUser');
+            document.getElementById('user-form').reset();
+            document.getElementById('user-id').value = '';
+            document.getElementById('user-password').required = true;
+            document.getElementById('password-help').textContent = t('users.passwordHelpCreate');
+            document.getElementById('user-username').disabled = false;
+
+            // Mostrar checkbox de enviar email (solo en crear)
+            document.getElementById('send-email-group').style.display = 'block';
+            document.getElementById('user-send-email').checked = false;
+
+            // Mostrar selector de rol solo para superusuario
+            document.getElementById('role-group').style.display =
+                currentUser.rol === 'superusuario' ? 'block' : 'none';
+
+            // Limpiar selección de cliente
+            clearClientSelection();
+
+            document.getElementById('user-modal').style.display = 'flex';
+        }
+
+        async function openEditUserModal(userId) {
+            const empresaId = localStorage.getItem('empresa_id');
+
+            try {
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}?empresa_id=${empresaId}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Error loading user');
+
+                const data = await response.json();
+                const user = data.usuario;
+
+                editingUserId = userId;
+                document.getElementById('user-modal-title').textContent = t('users.editUser');
+                document.getElementById('user-id').value = userId;
+                document.getElementById('user-username').value = user.username;
+                document.getElementById('user-username').disabled = true;
+                document.getElementById('user-password').value = '';
+                document.getElementById('user-password').required = false;
+                document.getElementById('password-help').textContent = t('users.passwordHelpEdit');
+                document.getElementById('user-fullname').value = user.full_name || '';
+                document.getElementById('user-email').value = user.email || '';
+                document.getElementById('user-pais').value = user.pais || '';
+                document.getElementById('user-rol').value = user.rol || 'usuario';
+
+                // Ocultar checkbox de enviar email (solo en crear)
+                document.getElementById('send-email-group').style.display = 'none';
+
+                // Mostrar selector de rol solo para superusuario
+                document.getElementById('role-group').style.display =
+                    currentUser.rol === 'superusuario' ? 'block' : 'none';
+
+                // Establecer cliente si existe
+                if (user.cliente_id) {
+                    selectClient(user.cliente_id, '');
+                    // Cargar nombre del cliente
+                    loadClientName(user.cliente_id);
+                } else {
+                    clearClientSelection();
+                }
+
+                document.getElementById('user-modal').style.display = 'flex';
+            } catch (error) {
+                console.error('Error loading user:', error);
+                alert('Error al cargar el usuario');
+            }
+        }
+
+        async function loadClientName(clienteId) {
+            const empresaId = localStorage.getItem('empresa_id');
+            try {
+                const response = await fetch(`${API_URL}/api/clientes/${clienteId}?empresa=${empresaId}`, {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    // La API devuelve el cliente directamente
+                    const cliente = await response.json();
+                    if (cliente && !cliente.error) {
+                        document.getElementById('selected-client-name').textContent = cliente.razon || '';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading client name:', error);
+            }
+        }
+
+        function closeUserModal() {
+            document.getElementById('user-modal').style.display = 'none';
+            editingUserId = null;
+        }
+
+        async function saveUser(event) {
+            event.preventDefault();
+
+            const empresaId = localStorage.getItem('empresa_id');
+            const userId = document.getElementById('user-id').value;
+            const isEditing = !!userId;
+
+            const password = document.getElementById('user-password').value;
+
+            // Validar contraseña en creación
+            if (!isEditing && (!password || password.length < 6)) {
+                alert(t('users.passwordRequired') + ' - ' + t('users.passwordHelpCreate'));
+                return;
+            }
+
+            // Validar contraseña en edición (si se proporciona)
+            if (isEditing && password && password.length < 6) {
+                alert(t('users.passwordHelpCreate'));
+                return;
+            }
+
+            // Validar que si se quiere enviar email, debe tener email
+            const enviarEmail = !isEditing && document.getElementById('user-send-email').checked;
+            const email = document.getElementById('user-email').value;
+            if (enviarEmail && !email) {
+                alert(t('users.emailRequiredForWelcome'));
+                return;
+            }
+
+            const data = {
+                username: document.getElementById('user-username').value,
+                full_name: document.getElementById('user-fullname').value || null,
+                email: document.getElementById('user-email').value || null,
+                pais: document.getElementById('user-pais').value || null,
+                cliente_id: document.getElementById('user-cliente-id').value || null,
+                empresa_id: empresaId
+            };
+
+            // Añadir password solo si se proporciona
+            if (password) {
+                data.password = password;
+            }
+
+            // Añadir rol si es superusuario
+            if (currentUser.rol === 'superusuario') {
+                data.rol = document.getElementById('user-rol').value;
+            }
+
+            // Añadir flag de enviar email (solo en crear)
+            if (!isEditing) {
+                data.enviar_email = document.getElementById('user-send-email').checked;
+            }
+
+            const btn = document.getElementById('btn-save-user');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = t('users.saving');
+
+            try {
+                const url = isEditing
+                    ? `${API_URL}/api/usuarios/${userId}`
+                    : `${API_URL}/api/usuarios`;
+
+                const response = await fetch(url, {
+                    method: isEditing ? 'PUT' : 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Error saving user');
+                }
+
+                // Mostrar mensaje según el resultado
+                if (isEditing) {
+                    alert(t('users.userUpdated'));
+                } else {
+                    if (result.email_enviado) {
+                        alert(t('users.userCreatedWithEmail'));
+                    } else if (result.email_error) {
+                        // Usuario creado pero error al enviar email
+                        alert(t('users.userCreated') + '\n\n⚠️ Error al enviar email: ' + result.email_error);
+                    } else {
+                        alert(t('users.userCreated'));
+                    }
+                }
+                closeUserModal();
+                await loadUsers();
+            } catch (error) {
+                console.error('Error saving user:', error);
+                alert(error.message || 'Error al guardar el usuario');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // ==================== AUTOCOMPLETE DE CLIENTES ====================
+        function initClientAutocomplete() {
+            const searchInput = document.getElementById('client-search');
+
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+
+                // Limpiar timeout anterior
+                if (clientSearchTimeout) {
+                    clearTimeout(clientSearchTimeout);
+                }
+
+                // Ocultar sugerencias si menos de 3 caracteres
+                if (query.length < 3) {
+                    document.getElementById('client-suggestions').classList.remove('show');
+                    return;
+                }
+
+                // Debounce de 300ms
+                clientSearchTimeout = setTimeout(() => {
+                    searchClients(query);
+                }, 300);
+            });
+
+            // Cerrar sugerencias al hacer clic fuera
+            document.addEventListener('click', function(e) {
+                const container = document.querySelector('.client-search-container');
+                if (container && !container.contains(e.target)) {
+                    document.getElementById('client-suggestions').classList.remove('show');
+                }
+            });
+        }
+
+        async function searchClients(query) {
+            const suggestionsEl = document.getElementById('client-suggestions');
+            const empresaId = localStorage.getItem('empresa_id');
+
+            suggestionsEl.innerHTML = `<div class="client-suggestions-loading">${t('users.searchingClients')}</div>`;
+            suggestionsEl.classList.add('show');
+
+            try {
+                const response = await fetch(
+                    `${API_URL}/api/clientes/search?empresa=${empresaId}&razon=${encodeURIComponent(query)}`,
+                    { credentials: 'include' }
+                );
+
+                if (!response.ok) throw new Error('Error searching clients');
+
+                // La API devuelve un array directamente
+                const clientes = await response.json();
+
+                if (!clientes || clientes.length === 0) {
+                    suggestionsEl.innerHTML = `<div class="client-suggestions-empty">${t('users.noClientsFound')}</div>`;
+                } else {
+                    suggestionsEl.innerHTML = clientes.map(cliente => `
+                        <div class="client-suggestion" onclick="selectClient('${escapeHtml(cliente.codigo)}', '${escapeHtml(cliente.razon || '')}')">
+                            <span class="client-suggestion-code">${escapeHtml(cliente.codigo)}</span>
+                            <span class="client-suggestion-name">${escapeHtml(cliente.razon || '')}</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error searching clients:', error);
+                suggestionsEl.innerHTML = `<div class="client-suggestions-empty">Error al buscar</div>`;
+            }
+        }
+
+        function selectClient(codigo, razon) {
+            document.getElementById('user-cliente-id').value = codigo;
+            document.getElementById('selected-client-code').textContent = codigo;
+            document.getElementById('selected-client-name').textContent = razon;
+
+            document.getElementById('client-search-wrapper').style.display = 'none';
+            document.getElementById('client-selected').classList.add('show');
+            document.getElementById('client-suggestions').classList.remove('show');
+        }
+
+        function clearClientSelection() {
+            document.getElementById('user-cliente-id').value = '';
+            document.getElementById('client-search').value = '';
+            document.getElementById('selected-client-code').textContent = '';
+            document.getElementById('selected-client-name').textContent = '';
+
+            document.getElementById('client-search-wrapper').style.display = 'block';
+            document.getElementById('client-selected').classList.remove('show');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('role-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRoleModal();
+            }
+        });
+
+        document.getElementById('user-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeUserModal();
+            }
+        });
+
+        // Cerrar modal con Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeRoleModal();
+                closeUserModal();
+            }
+        });
+    </script>
+</body>
+</html>

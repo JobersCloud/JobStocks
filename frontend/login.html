@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Gestión de Stocks</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" type="image/x-icon" href="/assets/faviconjobers.ico">
+    <script>
+        // Cargar tema guardado inmediatamente para evitar flash
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
+            document.documentElement.setAttribute('data-color-theme', colorTheme);
+        })();
+    </script>
+</head>
+<body>
+    <!-- Selector de idioma fijo -->
+    <div class="lang-selector-fixed">
+        <select id="lang-selector" class="lang-selector" onchange="I18n.setLanguage(this.value)">
+            <option value="es">ES</option>
+            <option value="en">EN</option>
+            <option value="fr">FR</option>
+        </select>
+    </div>
+
+    <div class="login-wrapper">
+        <div class="login-sidebar">
+            <div class="sidebar-content">
+                <img id="sidebar-logo" src="assets/logojobers.png" alt="Logo" class="sidebar-logo">
+                <h2 data-i18n="header.title">Gestión de Stocks</h2>
+                <p><span data-i18n="header.subtitle">Sistema de consulta de inventario en tiempo real</span></p>
+            </div>
+        </div>
+
+        <div class="login-container">
+            <div class="login-box">
+                <div class="login-header">
+                    <img id="mobile-logo" src="assets/logojobers.png" alt="Logo" class="mobile-logo">
+                    <h1 data-i18n="auth.loginTitle">Iniciar Sesión</h1>
+                    <p class="login-subtitle" data-i18n="auth.loginSubtitle">Accede a tu cuenta para continuar</p>
+                </div>
+
+                <div id="alert-container"></div>
+
+                <form class="login-form" id="login-form">
+                    <div class="form-group">
+                        <label for="username" data-i18n="auth.username">Usuario</label>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            data-i18n-placeholder="authPlaceholders.username"
+                            placeholder="Ingresa tu usuario"
+                            required
+                            autocomplete="username"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" data-i18n="auth.password">Contraseña</label>
+                        <div class="password-wrapper">
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                data-i18n-placeholder="authPlaceholders.password"
+                                placeholder="Ingresa tu contraseña"
+                                required
+                                autocomplete="current-password"
+                            >
+                            <button type="button" class="password-toggle" onclick="togglePassword('password', this)" aria-label="Mostrar contraseña">
+                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login" id="btn-login" data-i18n="auth.loginButton">
+                        Iniciar Sesión
+                    </button>
+                </form>
+
+                <div id="register-link-container" class="login-link" style="display: none;">
+                    <span data-i18n="auth.noAccount">¿No tienes cuenta?</span> <a href="/register" data-i18n="auth.createAccount">Crear cuenta</a>
+                </div>
+
+                <div id="resend-link-container" class="login-link" style="display: none; margin-top: 10px;">
+                    <a href="#" onclick="mostrarFormularioReenvio(event)" data-i18n="auth.resendVerification">¿No recibiste el email de verificación?</a>
+                </div>
+
+                <!-- Formulario para reenviar verificación (oculto por defecto) -->
+                <div id="resend-form" class="resend-form-container" style="display: none;">
+                    <h3 data-i18n="auth.resendVerificationTitle">Reenviar email de verificación</h3>
+                    <div class="form-group">
+                        <input type="email" id="resend-email" placeholder="tu@email.com" data-i18n-placeholder="authPlaceholders.email" required>
+                    </div>
+                    <button type="button" class="btn-login" onclick="reenviarVerificacion()" id="btn-resend" data-i18n="auth.resendButton">
+                        Reenviar
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="ocultarFormularioReenvio()" style="margin-left: 10px;" data-i18n="common.cancel">
+                        Cancelar
+                    </button>
+                    <div id="resend-alert" style="margin-top: 15px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicador de versión -->
+    <div class="version-indicator" id="version-indicator"></div>
+
+    <!-- Modal de cambio de contraseña obligatorio -->
+    <div id="change-password-modal" class="password-modal" style="display: none;">
+        <div class="password-modal-overlay"></div>
+        <div class="password-modal-content">
+            <div class="password-modal-header">
+                <h2 data-i18n="changePassword.title">Cambiar Contraseña</h2>
+            </div>
+            <div class="password-modal-body">
+                <p class="password-modal-subtitle" data-i18n="changePassword.subtitle">
+                    Debes cambiar tu contraseña antes de continuar
+                </p>
+                <div id="password-alert-container"></div>
+                <form id="change-password-form">
+                    <div class="form-group">
+                        <label for="new-password" data-i18n="changePassword.newPassword">Nueva Contraseña</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="new-password" required autocomplete="new-password">
+                            <button type="button" class="password-toggle" onclick="togglePassword('new-password', this)" aria-label="Mostrar contraseña">
+                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-password" data-i18n="changePassword.confirmPassword">Confirmar Nueva Contraseña</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="confirm-password" required autocomplete="new-password">
+                            <button type="button" class="password-toggle" onclick="togglePassword('confirm-password', this)" aria-label="Mostrar contraseña">
+                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-login" id="btn-change-password" data-i18n="changePassword.changeButton">
+                        Cambiar Contraseña
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/i18n/i18n.js"></script>
+    <script src="js/login.js"></script>
+    <script>
+        // Cargar versión desde API
+        fetch('/api/version')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('version-indicator').textContent = data.version;
+            })
+            .catch(() => {
+                document.getElementById('version-indicator').style.display = 'none';
+            });
+    </script>
+</body>
+</html>

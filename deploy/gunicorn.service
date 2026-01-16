@@ -1,0 +1,20 @@
+# ============================================
+# Servicio systemd para Gunicorn/Flask
+# Copiar a: /etc/systemd/system/apirest.service
+# ============================================
+
+[Unit]
+Description=ApiRestExternos Flask Application
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/ApiRestExternos/backend
+Environment="PATH=/opt/ApiRestExternos/venv/bin"
+ExecStart=/opt/ApiRestExternos/venv/bin/gunicorn --workers 4 --threads 2 --bind 127.0.0.1:5000 --timeout 120 app:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

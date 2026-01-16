@@ -1,0 +1,32 @@
+# ============================================
+# Docker Compose - DESARROLLO
+# ApiRestExternos - Actualizado 2026-01-08
+# ============================================
+# Usar: docker compose -f docker-compose.dev.yml up --build
+# Ver logs: docker compose -f docker-compose.dev.yml logs -f
+# Detener: docker compose -f docker-compose.dev.yml down
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: apirest-backend-dev
+    ports:
+      - "5000:5000"
+    volumes:
+      # Frontend montado como solo lectura
+      - ./frontend:/frontend:ro
+      # Backend montado para hot-reload (desarrollo)
+      - ./backend:/app
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    networks:
+      - apirest-network-dev
+
+networks:
+  apirest-network-dev:
+    driver: bridge

@@ -1,0 +1,26 @@
+# Windows
+nul
+~$*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# Secrets
+*.APIKEY
+cookies.txt
+
+# Large media files
+*.mp4
+*.mp3
+
+# Temp files
+screenshots_promo/*_frame_*.png
+audio_promo/

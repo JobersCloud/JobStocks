@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Stocks - API REST</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        // Cargar tema guardado inmediatamente para evitar flash
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
+            document.documentElement.setAttribute('data-color-theme', colorTheme);
+            // Crear favicon desde localStorage (sin link estático para evitar flash)
+            const faviconUrl = localStorage.getItem('faviconUrl');
+            if (faviconUrl) {
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                link.href = faviconUrl;
+                document.head.appendChild(link);
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <div class="logo-section">
+                <img src="" alt="Logo" class="logo" style="visibility: hidden;">
+                <div class="header-titles">
+                    <h1 data-i18n="header.title">Gestión de Stocks</h1>
+                    <p class="subtitle" data-i18n="header.subtitle">Sistema de consulta de inventario en tiempo real</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="lang-selector-wrapper">
+                    <select id="lang-selector" class="lang-selector lang-selector-header" onchange="I18n.setLanguage(this.value)">
+                        <option value="es">ES</option>
+                        <option value="en">EN</option>
+                        <option value="fr">FR</option>
+                    </select>
+                </div>
+                <!-- Menú de usuario -->
+                <div class="menu-container">
+                    <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
+                        <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <span class="user-name-display" id="user-name-display">Usuario</span>
+                        <span class="menu-arrow">▼</span>
+                    </button>
+                    <div class="menu-dropdown" id="menu-dropdown">
+                        <div class="menu-header">
+                            <div class="user-name" id="menu-user-name">Usuario</div>
+                            <div class="user-rol" id="menu-user-rol">usuario</div>
+                        </div>
+                        <!-- Sección para todos los usuarios -->
+                        <div class="menu-section">
+                            <div class="menu-item" onclick="navigateTo('mis-propuestas')">
+                                <span class="menu-item-icon">📋</span>
+                                <span data-i18n="menu.myProposals">Mis Propuestas</span>
+                            </div>
+                        </div>
+                        <!-- Sección solo para admin -->
+                        <div class="menu-section" id="menu-admin-section" style="display: none;">
+                            <div class="menu-section-title" data-i18n="menu.administration">Administración</div>
+                            <div class="menu-item" onclick="navigateTo('dashboard')">
+                                <span class="menu-item-icon">📈</span>
+                                <span data-i18n="menu.dashboard">Dashboard</span>
+                            </div>
+                            <div class="menu-item" onclick="navigateTo('todas-propuestas')">
+                                <span class="menu-item-icon">📊</span>
+                                <span data-i18n="menu.allProposals">Todas las Propuestas</span>
+                            </div>
+                            <div class="menu-item" onclick="navigateTo('todas-consultas')">
+                                <span class="menu-item-icon">❓</span>
+                                <span data-i18n="menu.allInquiries">Todas las Consultas</span>
+                            </div>
+                            <div class="menu-item" onclick="navigateTo('usuarios')">
+                                <span class="menu-item-icon">👥</span>
+                                <span data-i18n="menu.users">Gestión de Usuarios</span>
+                            </div>
+                            <div class="menu-item" onclick="navigateTo('email-config')">
+                                <span class="menu-item-icon">📧</span>
+                                <span data-i18n="menu.emailConfig">Configuración Email</span>
+                            </div>
+                            <div class="menu-item" onclick="navigateTo('parametros')">
+                                <span class="menu-item-icon">⚙️</span>
+                                <span data-i18n="menu.parameters">Parámetros</span>
+                            </div>
+                            <div class="menu-item" onclick="navigateTo('empresa-logo')">
+                                <span class="menu-item-icon">🖼️</span>
+                                <span data-i18n="menu.companyLogo">Logo de Empresa</span>
+                            </div>
+                        </div>
+                        <!-- Apariencia -->
+                        <div class="menu-section">
+                            <div class="menu-section-title" data-i18n="menu.appearance">Apariencia</div>
+                            <div class="menu-item theme-toggle" onclick="toggleTheme()">
+                                <span class="menu-item-icon" id="theme-icon">🌙</span>
+                                <span data-i18n="menu.darkMode">Modo Oscuro</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="theme-switch" onchange="toggleTheme()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <!-- Cerrar sesión -->
+                        <div class="menu-section">
+                            <div class="menu-item danger" onclick="logout()">
+                                <span class="menu-item-icon">🚪</span>
+                                <span data-i18n="menu.logout">Cerrar Sesión</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="filters">
+                <h2 data-i18n="filters.title">Filtros de Búsqueda</h2>
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label data-i18n="filters.format">Formato</label>
+                        <select id="filter-formato">
+                            <option value="" data-i18n="filters.allFormats">Todos los formatos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="filters.model">Modelo</label>
+                        <select id="filter-serie">
+                            <option value="" data-i18n="filters.allModels">Todos los modelos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="filters.color">Color</label>
+                        <select id="filter-color">
+                            <option value="" data-i18n="filters.allColors">Todos los colores</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="filters.quality">Calidad</label>
+                        <select id="filter-calidad">
+                            <option value="" data-i18n="filters.allQualities">Todas las calidades</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="filters.minStock">Existencias Mínimas</label>
+                        <input type="number" id="filter-existencias" data-i18n-placeholder="filters.placeholder" placeholder="Ej: 100">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="buscarStocks()">
+                        <span data-i18n="common.search">Buscar</span>
+                    </button>
+                    <button class="btn-secondary" onclick="cargarTodos()">
+                        <span data-i18n="common.viewAll">Ver Todos</span>
+                    </button>
+                    <button class="btn-clear" onclick="limpiarFiltros()">
+                        <span data-i18n="common.clear">Limpiar</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container" id="table-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p data-i18n="common.loading">Cargando datos...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de detalle del stock (ORIGINAL) -->
+    <div class="detail-modal" id="detail-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 data-i18n="detail.title">Detalle del Stock</h2>
+                <button class="modal-close" onclick="cerrarModal()">×</button>
+            </div>
+            <div class="detail-grid" id="detail-content"></div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL DEL CARRITO (NUEVO) ==================== -->
+    <div id="carrito-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 data-i18n="cart.title">Mi Lista de Solicitudes</h2>
+                <button class="modal-close" onclick="cerrarCarrito()">×</button>
+            </div>
+            <div id="carrito-content"></div>
+        </div>
+    </div>
+
+    <!-- ==================== BOTÓN FLOTANTE DEL CARRITO (NUEVO) ==================== -->
+    <button class="carrito-btn" onclick="verCarrito()" title="Ver carrito">
+        🛒
+        <span class="carrito-badge" id="carrito-badge" style="display: none;">0</span>
+    </button>
+
+    <script src="js/i18n/i18n.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
