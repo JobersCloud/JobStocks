@@ -1,6 +1,6 @@
 # ============================================
 # Docker Compose - PRODUCCION
-# ApiRestExternos - Actualizado 2026-01-12
+# ApiRestExternos - Actualizado 2026-01-19
 # ============================================
 # Usar: docker compose up -d --build
 # Ver logs: docker compose logs -f
@@ -13,6 +13,9 @@ services:
     image: redis:7-alpine
     container_name: apirest-redis
     restart: unless-stopped
+    # Exponer puerto para que backend (network_mode: host) pueda acceder
+    ports:
+      - "127.0.0.1:6379:6379"
     networks:
       - apirest-network
     healthcheck:
@@ -30,8 +33,8 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    ports:
-      - "5000:5000"
+    # Usar network_mode: host para acceso a BD externas
+    network_mode: host
     volumes:
       # Frontend montado como solo lectura
       - ./frontend:/frontend:ro
@@ -44,9 +47,11 @@ services:
       - SECRET_KEY=${SECRET_KEY:-cambiar-esta-clave-en-produccion}
       - CORS_ORIGINS=${CORS_ORIGINS:-*}
       # ==================== RATE LIMITING ====================
-      - REDIS_URL=redis://redis:6379
+      # Con network_mode: host, Redis accesible en localhost
+      - REDIS_URL=redis://127.0.0.1:6379
       # ==================== BD CENTRAL (SQL Server 2022) ====================
-      - DB_CENTRAL_SERVER=${DB_CENTRAL_SERVER:-sqlserver,1433}
+      # Con network_mode: host, usar IP del contenedor SQL Server
+      - DB_CENTRAL_SERVER=${DB_CENTRAL_SERVER:-172.24.0.2,1433}
       - DB_CENTRAL_NAME=${DB_CENTRAL_NAME:-jobers_control_usuarios}
       - DB_CENTRAL_USER=${DB_CENTRAL_USER:-sa}
       - DB_CENTRAL_PASSWORD=${DB_CENTRAL_PASSWORD:-DesaJob2012.}
@@ -71,8 +76,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    networks:
-      - apirest-network
 
 networks:
   apirest-network:

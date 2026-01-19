@@ -127,17 +127,17 @@ login_manager.login_view = 'login_page'
 
 @login_manager.user_loader
 def load_user(user_id):
-    # Obtener empresa_cli_id y empresa_erp de la sesión
-    empresa_cli_id = session.get('empresa_cli_id')
-    empresa_erp = session.get('empresa_erp')
+    # Obtener connection y empresa_id de la sesión
+    connection = session.get('connection')
+    empresa_id = session.get('empresa_id')
 
-    print(f"[DEBUG] load_user - user_id: {user_id}, empresa_cli_id: {empresa_cli_id}, empresa_erp: {empresa_erp}", flush=True)
+    print(f"[DEBUG] load_user - user_id: {user_id}, connection: {connection}, empresa_id: {empresa_id}", flush=True)
 
-    if not empresa_cli_id:
-        print(f"[DEBUG] load_user - No empresa_cli_id en sesión, retornando None", flush=True)
+    if not connection:
+        print(f"[DEBUG] load_user - No connection en sesión, retornando None", flush=True)
         return None
 
-    user_data = get_user_by_id(int(user_id), empresa_cli_id, empresa_erp)
+    user_data = get_user_by_id(int(user_id), connection, empresa_id)
     if user_data:
         rol = user_data.get('rol', 'usuario')
         print(f"[DEBUG] load_user - Usuario encontrado: {user_data.get('username')}, rol: {rol}", flush=True)
@@ -147,7 +147,7 @@ def load_user(user_id):
             email=user_data.get('email'),
             full_name=user_data.get('full_name'),
             rol=rol,
-            empresa_id=user_data.get('empresa_erp', empresa_erp),  # empresa_erp para compatibilidad
+            empresa_id=user_data.get('empresa_id', empresa_id),
             cliente_id=user_data.get('cliente_id'),
             debe_cambiar_password=user_data.get('debe_cambiar_password', False)
         )
@@ -290,26 +290,27 @@ def login():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-    empresa_cli_id = data.get('empresa_cli_id') or data.get('empresa_id') or data.get('empresa')
+    # Aceptar 'connection' o 'empresa_cli_id' para compatibilidad
+    connection = data.get('connection') or data.get('empresa_cli_id') or data.get('empresa_id') or data.get('empresa')
 
     if not username or not password:
         return jsonify({'success': False, 'message': 'Usuario y contraseña requeridos'}), 400
 
-    if not empresa_cli_id:
-        return jsonify({'success': False, 'message': 'Se requiere empresa_cli_id'}), 400
+    if not connection:
+        return jsonify({'success': False, 'message': 'Se requiere connection'}), 400
 
     # Limpiar caché para asegurar datos frescos de BD central
     EmpresaClienteModel.clear_cache()
 
     # Obtener datos de empresa de BD central
-    empresa_info = EmpresaClienteModel.get_by_id(empresa_cli_id)
+    empresa_info = EmpresaClienteModel.get_by_id(connection)
     if not empresa_info:
-        return jsonify({'success': False, 'message': f'Empresa {empresa_cli_id} no encontrada'}), 404
+        return jsonify({'success': False, 'message': f'Empresa {connection} no encontrada'}), 404
 
-    empresa_erp = empresa_info.get('empresa_erp')
+    empresa_id = empresa_info.get('empresa_erp')
 
     # Verificar usuario con conexión dinámica
-    user_data = verify_user(username, password, empresa_cli_id, empresa_erp)
+    user_data = verify_user(username, password, connection, empresa_id)
 
     if user_data:
         user = User(
@@ -318,7 +319,7 @@ def login():
             email=user_data.get('email'),
             full_name=user_data.get('full_name'),
             rol=user_data.get('rol', 'usuario'),
-            empresa_id=empresa_erp,  # empresa_erp para compatibilidad
+            empresa_id=empresa_id,
             cliente_id=user_data.get('cliente_id')
         )
         login_user(user)
@@ -332,11 +333,10 @@ def login():
         else:
             app.permanent_session_lifetime = SESSION_LIFETIME_USUARIO
 
-        # ⭐ Guardar empresa_cli_id, empresa_erp y carrito en sesión
-        session['empresa_cli_id'] = empresa_cli_id
-        session['empresa_erp'] = empresa_erp
+        # ⭐ Guardar connection, empresa_id y carrito en sesión
+        session['connection'] = connection
+        session['empresa_id'] = empresa_id
         session['empresa_nombre'] = empresa_info.get('nombre')
-        session['empresa_id'] = empresa_erp  # Compatibilidad con código antiguo
         session['carrito'] = []
         session['user_id'] = user_data['id']
 
@@ -345,7 +345,7 @@ def login():
             ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
             if ip_address and ',' in ip_address:
                 ip_address = ip_address.split(',')[0].strip()
-            session_token = UserSessionModel.create(user_data['id'], empresa_erp, ip_address)
+            session_token = UserSessionModel.create(user_data['id'], empresa_id, ip_address)
             if session_token:
                 session['session_token'] = session_token
         except Exception as e:
@@ -362,10 +362,9 @@ def login():
                 'username': user.username,
                 'full_name': user.full_name,
                 'rol': user.rol,
-                'empresa_cli_id': empresa_cli_id,
-                'empresa_erp': empresa_erp,
+                'connection': connection,
+                'empresa_id': empresa_id,
                 'empresa_nombre': empresa_info.get('nombre'),
-                'empresa_id': empresa_erp,  # Compatibilidad
                 'cliente_id': user.cliente_id
             }
         })
@@ -450,7 +449,7 @@ def get_current_user():
         'rol': current_user.rol,
         'debe_cambiar_password': getattr(current_user, 'debe_cambiar_password', False),
         'empresa_id': session.get('empresa_id'),
-        'empresa_cli_id': session.get('empresa_cli_id'),
+        'connection': session.get('connection'),
         'empresa_nombre': session.get('empresa_nombre')
     })
 

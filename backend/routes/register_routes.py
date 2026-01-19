@@ -36,37 +36,43 @@ PAISES_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'paises.json
 with open(PAISES_FILE, 'r', encoding='utf-8') as f:
     PAISES = json.load(f)
 
-def get_empresa_cli_id():
-    """Obtiene el empresa_cli_id del request (ID de conexión)"""
+def get_connection():
+    """Obtiene el connection del request (ID de conexión)"""
     # Aceptar 'connection', 'empresa_cli_id', 'empresa_id' o 'empresa' para compatibilidad
-    empresa_cli_id = (request.args.get('connection') or
-                      request.args.get('empresa_cli_id') or
-                      request.args.get('empresa_id') or
-                      request.args.get('empresa'))
-    if empresa_cli_id:
-        return empresa_cli_id
+    connection = (request.args.get('connection') or
+                  request.args.get('empresa_cli_id') or
+                  request.args.get('empresa_id') or
+                  request.args.get('empresa'))
+    if connection:
+        return connection
 
     # Buscar en el body si es JSON
     if request.is_json:
         data = request.get_json(silent=True)
         if data:
-            empresa_cli_id = (data.get('connection') or
-                             data.get('empresa_cli_id') or
-                             data.get('empresa_id') or
-                             data.get('empresa'))
-            if empresa_cli_id:
-                return empresa_cli_id
+            connection = (data.get('connection') or
+                         data.get('empresa_cli_id') or
+                         data.get('empresa_id') or
+                         data.get('empresa'))
+            if connection:
+                return connection
 
     # Default
     return '10049'
 
-def get_empresa_erp(empresa_cli_id):
-    """Obtiene el empresa_erp desde el empresa_cli_id"""
+def get_empresa_id_from_connection(connection):
+    """Obtiene el empresa_id desde el connection"""
     from models.empresa_cliente_model import EmpresaClienteModel
-    empresa = EmpresaClienteModel.get_by_id(empresa_cli_id)
+    empresa = EmpresaClienteModel.get_by_id(connection)
     if empresa:
         return empresa.get('empresa_erp', '1')
     return '1'
+
+
+def get_empresa_id():
+    """Obtiene el empresa_id (para uso en parámetros y registro)"""
+    connection = get_connection()
+    return get_empresa_id_from_connection(connection)
 
 @register_bp.route('/registro-habilitado', methods=['GET'])
 def registro_habilitado():
@@ -84,9 +90,9 @@ def registro_habilitado():
             habilitado:
               type: boolean
     """
-    empresa_cli_id = get_empresa_cli_id()
-    empresa_erp = get_empresa_erp(empresa_cli_id)
-    habilitado = ParametrosModel.permitir_registro(empresa_erp, empresa_cli_id)
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+    habilitado = ParametrosModel.permitir_registro(empresa_id, connection)
     return jsonify({'habilitado': habilitado}), 200
 
 @register_bp.route('/paises', methods=['GET'])

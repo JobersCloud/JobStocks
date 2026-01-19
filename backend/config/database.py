@@ -63,7 +63,7 @@ class Database:
         if empresa_cli_id is None:
             from flask import session, has_request_context
             if has_request_context():
-                empresa_cli_id = session.get('empresa_cli_id')
+                empresa_cli_id = session.get('connection')
 
         if empresa_cli_id is None:
             raise ValueError("No hay empresa en contexto. Accede con ?empresa=X primero.")
@@ -108,14 +108,14 @@ class Database:
         # Primero intentar de la sesión (más rápido, ya está cacheado)
         from flask import session, has_request_context
         if has_request_context():
-            empresa_erp = session.get('empresa_erp')
-            if empresa_erp:
-                return empresa_erp
+            empresa_id = session.get('empresa_id')
+            if empresa_id:
+                return empresa_id
 
         # Si no está en sesión, obtener de BD central
         if empresa_cli_id is None:
             if has_request_context():
-                empresa_cli_id = session.get('empresa_cli_id')
+                empresa_cli_id = session.get('connection')
 
         if empresa_cli_id:
             from models.empresa_cliente_model import EmpresaClienteModel

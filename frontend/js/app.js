@@ -37,7 +37,7 @@ let allStocksData = [];  // Todos los datos sin paginar
 
 // Cargar tema guardado
 function loadTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedTheme = localStorage.getItem('theme') || 'dark';
     applyTheme(savedTheme);
 }
 
@@ -148,6 +148,24 @@ async function cargarLogoEmpresa() {
             el.style.filter = 'brightness(0) invert(1)';
             el.style.visibility = 'visible';
         });
+    }
+
+    // Cargar nombre de la empresa
+    try {
+        const response = await fetch(`${API_URL}/api/empresa/current`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.empresa && data.empresa.nombre) {
+                const headerName = document.getElementById('header-company-name');
+                if (headerName) {
+                    headerName.textContent = data.empresa.nombre;
+                    headerName.style.display = 'block';
+                    document.title = `${data.empresa.nombre} - Gestión de Stocks`;
+                }
+            }
+        }
+    } catch (e) {
+        console.log('Error cargando nombre empresa:', e);
     }
 }
 
@@ -390,15 +408,15 @@ async function checkAuth() {
                 'Content-Type': 'application/json'
             }
         });
-        
+
         console.log('Auth response status:', response.status);
-        
+
         if (!response.ok) {
             console.log('❌ No autenticado, redirigiendo a login...');
             window.location.href = '/login';
             return false;
         }
-        
+
         const user = await response.json();
         console.log('✅ Usuario autenticado:', user.username);
 
@@ -472,7 +490,7 @@ function toggleUserMenu() {
 }
 
 // Cerrar menú al hacer clic fuera
-document.addEventListener('click', function(event) {
+document.addEventListener('click', function (event) {
     const menuContainer = document.querySelector('.menu-container');
     const menuDropdown = document.getElementById('menu-dropdown');
     const menuBtn = document.getElementById('menu-btn');
@@ -493,7 +511,7 @@ function navigateTo(section) {
     if (menuBtn) menuBtn.classList.remove('active');
 
     // Navegar según la sección (sin parámetros - el backend usa la sesión)
-    switch(section) {
+    switch (section) {
         case 'mis-propuestas':
             window.location.href = 'mis-propuestas.html';
             break;
@@ -554,27 +572,27 @@ async function cargarOpcionesFiltros() {
                 'Content-Type': 'application/json'
             }
         });
-        
+
         console.log('Filtros response status:', response.status);
-        
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const stocks = await response.json();
         console.log('✅ Stocks cargados:', stocks.length, 'registros');
-        
+
         // Extraer valores únicos
         const formatos = [...new Set(stocks.map(s => s.formato).filter(Boolean))].sort();
         const series = [...new Set(stocks.map(s => s.serie).filter(Boolean))].sort();
         const calidades = [...new Set(stocks.map(s => s.calidad).filter(Boolean))].sort();
         const colores = [...new Set(stocks.map(s => s.color).filter(Boolean))].sort();
-        
+
         console.log('Formatos únicos:', formatos.length);
         console.log('Series únicas:', series.length);
         console.log('Calidades únicas:', calidades.length);
         console.log('Colores únicos:', colores.length);
-        
+
         // Llenar select de formatos
         const selectFormato = document.getElementById('filter-formato');
         formatos.forEach(formato => {
@@ -583,7 +601,7 @@ async function cargarOpcionesFiltros() {
             option.textContent = formato;
             selectFormato.appendChild(option);
         });
-        
+
         // Llenar select de series
         const selectSerie = document.getElementById('filter-serie');
         series.forEach(serie => {
@@ -592,7 +610,7 @@ async function cargarOpcionesFiltros() {
             option.textContent = serie;
             selectSerie.appendChild(option);
         });
-        
+
         // Llenar select de calidades
         const selectCalidad = document.getElementById('filter-calidad');
         calidades.forEach(calidad => {
@@ -601,7 +619,7 @@ async function cargarOpcionesFiltros() {
             option.textContent = calidad;
             selectCalidad.appendChild(option);
         });
-        
+
         // Llenar select de colores
         const selectColor = document.getElementById('filter-color');
         colores.forEach(color => {
@@ -610,7 +628,7 @@ async function cargarOpcionesFiltros() {
             option.textContent = color;
             selectColor.appendChild(option);
         });
-        
+
         console.log('✅ Filtros cargados correctamente');
     } catch (error) {
         console.error('❌ Error al cargar opciones de filtros:', error);
@@ -1033,14 +1051,14 @@ async function verDetalle(stock) {
                     <div class="detail-packaging-info">
                         <div class="detail-packaging-label">${t('detail.unitsPerPallet')}</div>
                         <div class="detail-packaging-value">${(() => {
-                            const decimalesUnidadesCaja = getDecimalPlaces(stock.unidadescaja);
-                            const unidadesPallet = stock.unidadescaja * stock.cajaspallet;
-                            const unidadesPalletRedondeado = redondearADecimales(unidadesPallet, decimalesUnidadesCaja);
-                            return parseFloat(unidadesPalletRedondeado).toLocaleString('en-US', {
-                                minimumFractionDigits: decimalesUnidadesCaja,
-                                maximumFractionDigits: decimalesUnidadesCaja
-                            });
-                        })()} ${stock.unidad || ''}</div>
+                    const decimalesUnidadesCaja = getDecimalPlaces(stock.unidadescaja);
+                    const unidadesPallet = stock.unidadescaja * stock.cajaspallet;
+                    const unidadesPalletRedondeado = redondearADecimales(unidadesPallet, decimalesUnidadesCaja);
+                    return parseFloat(unidadesPalletRedondeado).toLocaleString('en-US', {
+                        minimumFractionDigits: decimalesUnidadesCaja,
+                        maximumFractionDigits: decimalesUnidadesCaja
+                    });
+                })()} ${stock.unidad || ''}</div>
                     </div>
                 </div>
                 ` : ''}
@@ -1050,9 +1068,9 @@ async function verDetalle(stock) {
                     <div class="detail-packaging-info">
                         <div class="detail-packaging-label">${t('detail.weightPerBox')}</div>
                         <div class="detail-packaging-value">${stock.pesocaja.toLocaleString('en-US', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        })} kg</div>
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })} kg</div>
                     </div>
                 </div>
                 ` : ''}
@@ -1062,9 +1080,9 @@ async function verDetalle(stock) {
                     <div class="detail-packaging-info">
                         <div class="detail-packaging-label">${t('detail.weightPerPallet')}</div>
                         <div class="detail-packaging-value">${stock.pesopallet.toLocaleString('en-US', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        })} kg</div>
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })} kg</div>
                     </div>
                 </div>
                 ` : ''}
@@ -1401,10 +1419,10 @@ window.abrirWhatsApp = abrirWhatsApp;
 function getBadgeWithUnit(existencias, unidad) {
     const num = parseFloat(existencias);
     let badgeClass = 'badge-success';
-    
+
     if (num < 100) badgeClass = 'badge-danger';
     else if (num < 500) badgeClass = 'badge-warning';
-    
+
     const unidadText = unidad ? ` ${unidad}` : '';
     // Formatear con separador de miles
     const numFormatted = num.toLocaleString('en-US', {
@@ -1449,7 +1467,7 @@ async function cargarCarrito() {
                 'Content-Type': 'application/json'
             }
         });
-        
+
         if (response.ok) {
             carrito = await response.json();
             actualizarContadorCarrito();
@@ -1960,7 +1978,7 @@ function cerrarCarrito() {
 // ==================== EVENT LISTENERS ====================
 
 // Cerrar modal al hacer clic fuera
-window.onclick = function(event) {
+window.onclick = function (event) {
     const modal = document.getElementById('detail-modal');
     const carritoModal = document.getElementById('carrito-modal');
     if (event.target === modal) {
@@ -1972,7 +1990,7 @@ window.onclick = function(event) {
 }
 
 // Cargar datos al iniciar
-window.onload = async function() {
+window.onload = async function () {
     console.log('🚀 Iniciando aplicación...');
 
     // Cargar logo y favicon de la empresa (usa connection de localStorage si existe)
@@ -1999,10 +2017,10 @@ window.onload = async function() {
 };
 
 // Buscar al presionar Enter en los filtros
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const inputs = document.querySelectorAll('.filters input');
     inputs.forEach(input => {
-        input.addEventListener('keypress', function(e) {
+        input.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 buscarStocks();
             }
@@ -2012,7 +2030,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cerrar modal de detalle al hacer clic fuera del contenido
     const detailModal = document.getElementById('detail-modal');
     if (detailModal) {
-        detailModal.addEventListener('click', function(e) {
+        detailModal.addEventListener('click', function (e) {
             if (e.target === this) {
                 cerrarModal();
             }
@@ -2020,7 +2038,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Cerrar modal de detalle con tecla Escape
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             const detailModal = document.getElementById('detail-modal');
             if (detailModal && detailModal.style.display === 'flex') {
@@ -2031,7 +2049,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Re-renderizar tabla cuando cambie el idioma
-document.addEventListener('languageChanged', function() {
+document.addEventListener('languageChanged', function () {
     if (stocksData && stocksData.length > 0) {
         mostrarTabla(stocksData);
     }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,7 @@
     <link rel="stylesheet" href="css/styles.css">
     <script>
         // Cargar tema guardado inmediatamente para evitar flash
-        (function() {
+        (function () {
             const theme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', theme);
             const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
@@ -23,6 +24,7 @@
         })();
     </script>
 </head>
+
 <body>
     <div class="container">
         <!-- Header -->
@@ -33,11 +35,13 @@
                 </a>
                 <div class="header-titles">
                     <h1 data-i18n="empresaLogo.title">Logo de Empresa</h1>
+                    <h2 id="header-company-name" class="company-name" style="display: none;"></h2>
                     <p class="subtitle" data-i18n="empresaLogo.subtitle">Gestión de logo y favicon</p>
                 </div>
             </div>
             <div class="header-actions">
-                <select id="lang-selector" class="lang-selector lang-selector-header" onchange="I18n.setLanguage(this.value)">
+                <select id="lang-selector" class="lang-selector lang-selector-header"
+                    onchange="I18n.setLanguage(this.value)">
                     <option value="es">ES</option>
                     <option value="en">EN</option>
                     <option value="fr">FR</option>
@@ -59,9 +63,9 @@
             <div class="logo-card">
                 <h3>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                        <polyline points="21 15 16 10 5 21"/>
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21 15 16 10 5 21" />
                     </svg>
                     <span data-i18n="empresaLogo.logo">Logo</span>
                 </h3>
@@ -72,39 +76,46 @@
                 <div class="upload-section">
                     <div class="file-input-wrapper">
                         <button class="btn-upload">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="17 8 12 3 7 8"/>
-                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
                             </svg>
                             <span data-i18n="empresaLogo.uploadLogo">Subir Logo</span>
                         </button>
-                        <input type="file" id="logo-input" accept="image/*,.svg,image/svg+xml" onchange="handleLogoUpload(this)">
+                        <input type="file" id="logo-input" accept="image/*,.svg,image/svg+xml"
+                            onchange="handleLogoUpload(this)">
                     </div>
                     <button class="btn-delete" id="btn-delete-logo" onclick="deleteLogo()" disabled>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                         </svg>
                         <span data-i18n="empresaLogo.deleteLogo">Eliminar Logo</span>
                     </button>
                 </div>
-                <p class="info-text" data-i18n="empresaLogo.logoInfo">Formatos recomendados: PNG, SVG. Tamaño máximo: 2MB</p>
+                <p class="info-text" data-i18n="empresaLogo.logoInfo">Formatos recomendados: PNG, SVG. Tamaño máximo:
+                    2MB</p>
             </div>
 
             <!-- Configuración de Apariencia -->
             <div class="logo-card">
                 <h3>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
                     </svg>
                     <span data-i18n="empresaLogo.appearance">Apariencia</span>
                 </h3>
                 <div class="config-option">
                     <div class="config-option-info">
-                        <span class="config-option-label" data-i18n="empresaLogo.invertLogo">Invertir logo en header</span>
-                        <span class="config-option-desc" data-i18n="empresaLogo.invertLogoDesc">Activa esta opción si el logo tiene letras claras/blancas para que se vea bien sobre el fondo del header</span>
+                        <span class="config-option-label" data-i18n="empresaLogo.invertLogo">Invertir logo en
+                            header</span>
+                        <span class="config-option-desc" data-i18n="empresaLogo.invertLogoDesc">Activa esta opción si el
+                            logo tiene letras claras/blancas para que se vea bien sobre el fondo del header</span>
                     </div>
                     <label class="toggle-switch">
                         <input type="checkbox" id="invertir-logo-switch" onchange="toggleInvertirLogo()">
@@ -116,31 +127,38 @@
                 <div class="theme-selector-section" style="margin-top: 25px;">
                     <div class="config-option-info" style="margin-bottom: 15px;">
                         <span class="config-option-label" data-i18n="empresaLogo.colorTheme">Tema de color</span>
-                        <span class="config-option-desc" data-i18n="empresaLogo.colorThemeDesc">Selecciona el tema de colores para los headers y botones</span>
+                        <span class="config-option-desc" data-i18n="empresaLogo.colorThemeDesc">Selecciona el tema de
+                            colores para los headers y botones</span>
                     </div>
                     <div class="theme-grid" id="theme-grid">
                         <div class="theme-card" data-theme="rubi" onclick="selectTheme('rubi')">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #FF4338 0%, #D32F2F 100%);"></div>
+                            <div class="theme-preview"
+                                style="background: linear-gradient(135deg, #FF4338 0%, #D32F2F 100%);"></div>
                             <span class="theme-name">Rubí</span>
                         </div>
                         <div class="theme-card" data-theme="zafiro" onclick="selectTheme('zafiro')">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #2196F3 0%, #1565C0 100%);"></div>
+                            <div class="theme-preview"
+                                style="background: linear-gradient(135deg, #2196F3 0%, #1565C0 100%);"></div>
                             <span class="theme-name">Zafiro</span>
                         </div>
                         <div class="theme-card" data-theme="esmeralda" onclick="selectTheme('esmeralda')">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);"></div>
+                            <div class="theme-preview"
+                                style="background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);"></div>
                             <span class="theme-name">Esmeralda</span>
                         </div>
                         <div class="theme-card" data-theme="amatista" onclick="selectTheme('amatista')">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%);"></div>
+                            <div class="theme-preview"
+                                style="background: linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%);"></div>
                             <span class="theme-name">Amatista</span>
                         </div>
                         <div class="theme-card" data-theme="ambar" onclick="selectTheme('ambar')">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #FF9800 0%, #E65100 100%);"></div>
+                            <div class="theme-preview"
+                                style="background: linear-gradient(135deg, #FF9800 0%, #E65100 100%);"></div>
                             <span class="theme-name">Ámbar</span>
                         </div>
                         <div class="theme-card" data-theme="grafito" onclick="selectTheme('grafito')">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #607D8B 0%, #37474F 100%);"></div>
+                            <div class="theme-preview"
+                                style="background: linear-gradient(135deg, #607D8B 0%, #37474F 100%);"></div>
                             <span class="theme-name">Grafito</span>
                         </div>
                     </div>
@@ -151,37 +169,42 @@
             <div class="logo-card">
                 <h3>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                        <line x1="8" y1="21" x2="16" y2="21"/>
-                        <line x1="12" y1="17" x2="12" y2="21"/>
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                        <line x1="8" y1="21" x2="16" y2="21" />
+                        <line x1="12" y1="17" x2="12" y2="21" />
                     </svg>
                     <span data-i18n="empresaLogo.favicon">Favicon</span>
                 </h3>
                 <div class="logo-preview-container">
                     <img id="favicon-preview" src="" alt="Favicon" class="favicon-preview" style="display: none;">
-                    <span id="no-favicon" class="no-image" data-i18n="empresaLogo.noFavicon">No hay favicon configurado</span>
+                    <span id="no-favicon" class="no-image" data-i18n="empresaLogo.noFavicon">No hay favicon
+                        configurado</span>
                 </div>
                 <div class="upload-section">
                     <div class="file-input-wrapper">
                         <button class="btn-upload">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="17 8 12 3 7 8"/>
-                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
                             </svg>
                             <span data-i18n="empresaLogo.uploadFavicon">Subir Favicon</span>
                         </button>
-                        <input type="file" id="favicon-input" accept="image/*,.ico" onchange="handleFaviconUpload(this)">
+                        <input type="file" id="favicon-input" accept="image/*,.ico"
+                            onchange="handleFaviconUpload(this)">
                     </div>
                     <button class="btn-delete" id="btn-delete-favicon" onclick="deleteFavicon()" disabled>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                         </svg>
                         <span data-i18n="empresaLogo.deleteFavicon">Eliminar Favicon</span>
                     </button>
                 </div>
-                <p class="info-text" data-i18n="empresaLogo.faviconInfo">Formatos recomendados: ICO, PNG 32x32 o 64x64</p>
+                <p class="info-text" data-i18n="empresaLogo.faviconInfo">Formatos recomendados: ICO, PNG 32x32 o 64x64
+                </p>
             </div>
         </div>
     </div>
@@ -213,7 +236,18 @@
                     return null;
                 }
                 const user = await response.json();
-                return user.empresa_id || '1';
+
+                // Mostrar nombre de empresa en header si existe
+                if (user.empresa_nombre) {
+                    const headerName = document.getElementById('header-company-name');
+                    if (headerName) {
+                        headerName.textContent = user.empresa_nombre;
+                        headerName.style.display = 'block';
+                    }
+                }
+
+                // IMPORTANTE: Para las rutas de logo (públicas/mixtas), usamos el connection ID
+                return user.connection || user.empresa_id || '1';
             } catch (error) {
                 console.error('Error obteniendo empresa_id:', error);
                 window.location.href = 'login.html';
@@ -322,7 +356,7 @@
             }
 
             const reader = new FileReader();
-            reader.onload = async function(e) {
+            reader.onload = async function (e) {
                 try {
                     const response = await fetch(`${API_URL}/api/empresa/${empresaId}/logo`, {
                         method: 'POST',
@@ -357,7 +391,7 @@
             }
 
             const reader = new FileReader();
-            reader.onload = async function(e) {
+            reader.onload = async function (e) {
                 try {
                     const response = await fetch(`${API_URL}/api/empresa/${empresaId}/favicon`, {
                         method: 'POST',
@@ -512,7 +546,7 @@
         }
 
         // Inicializar
-        window.onload = async function() {
+        window.onload = async function () {
             loadTheme();
             await I18n.init();
 
@@ -527,4 +561,5 @@
         };
     </script>
 </body>
+
 </html>

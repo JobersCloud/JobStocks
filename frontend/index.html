@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +8,8 @@
     <link rel="stylesheet" href="css/styles.css">
     <script>
         // Cargar tema guardado inmediatamente para evitar flash
-        (function() {
-            const theme = localStorage.getItem('theme') || 'light';
+        (function () {
+            const theme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
             const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
             document.documentElement.setAttribute('data-color-theme', colorTheme);
@@ -23,6 +24,7 @@
         })();
     </script>
 </head>
+
 <body>
     <div class="container">
         <div class="page-header">
@@ -30,12 +32,14 @@
                 <img src="" alt="Logo" class="logo" style="visibility: hidden;">
                 <div class="header-titles">
                     <h1 data-i18n="header.title">Gestión de Stocks</h1>
+                    <h2 id="header-company-name" class="company-name" style="display: none;"></h2>
                     <p class="subtitle" data-i18n="header.subtitle">Sistema de consulta de inventario en tiempo real</p>
                 </div>
             </div>
             <div class="header-actions">
                 <div class="lang-selector-wrapper">
-                    <select id="lang-selector" class="lang-selector lang-selector-header" onchange="I18n.setLanguage(this.value)">
+                    <select id="lang-selector" class="lang-selector lang-selector-header"
+                        onchange="I18n.setLanguage(this.value)">
                         <option value="es">ES</option>
                         <option value="en">EN</option>
                         <option value="fr">FR</option>
@@ -44,7 +48,11 @@
                 <!-- Menú de usuario -->
                 <div class="menu-container">
                     <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
-                        <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
                         <span class="user-name-display" id="user-name-display">Usuario</span>
                         <span class="menu-arrow">▼</span>
                     </button>
@@ -146,7 +154,8 @@
                     </div>
                     <div class="form-group">
                         <label data-i18n="filters.minStock">Existencias Mínimas</label>
-                        <input type="number" id="filter-existencias" data-i18n-placeholder="filters.placeholder" placeholder="Ej: 100">
+                        <input type="number" id="filter-existencias" data-i18n-placeholder="filters.placeholder"
+                            placeholder="Ej: 100">
                     </div>
                 </div>
                 <div class="button-group">
@@ -202,4 +211,5 @@
     <script src="js/i18n/i18n.js"></script>
     <script src="js/app.js"></script>
 </body>
+
 </html>

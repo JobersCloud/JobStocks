@@ -23,40 +23,40 @@ from utils.auth import administrador_required
 parametros_bp = Blueprint('parametros', __name__)
 
 
-def get_empresa_cli_id():
-    """Obtiene el empresa_cli_id del request o sesión (ID para conexión)"""
+def get_connection():
+    """Obtiene el connection del request o sesión (ID para conexión)"""
     # Primero de la sesión
-    empresa_cli_id = session.get('empresa_cli_id')
-    if empresa_cli_id:
-        return empresa_cli_id
+    connection = session.get('connection')
+    if connection:
+        return connection
 
     # Del query param
-    empresa_cli_id = request.args.get('empresa_id') or request.args.get('empresa')
-    if empresa_cli_id:
-        return empresa_cli_id
+    connection = request.args.get('connection') or request.args.get('empresa')
+    if connection:
+        return connection
 
     # Del body JSON
     if request.is_json:
         data = request.get_json(silent=True)
         if data:
-            empresa_cli_id = data.get('empresa_id') or data.get('empresa')
-            if empresa_cli_id:
-                return empresa_cli_id
+            connection = data.get('connection') or data.get('empresa')
+            if connection:
+                return connection
 
     return None
 
 
-def get_empresa_erp(empresa_cli_id):
-    """Obtiene el empresa_erp desde el empresa_cli_id"""
+def get_empresa_id_from_connection(connection):
+    """Obtiene el empresa_id desde el connection"""
     # Primero de la sesión
-    empresa_erp = session.get('empresa_erp')
-    if empresa_erp:
-        return empresa_erp
+    empresa_id = session.get('empresa_id')
+    if empresa_id:
+        return empresa_id
 
     # Sino, de la BD central
-    if empresa_cli_id:
+    if connection:
         from models.empresa_cliente_model import EmpresaClienteModel
-        empresa = EmpresaClienteModel.get_by_id(empresa_cli_id)
+        empresa = EmpresaClienteModel.get_by_id(connection)
         if empresa:
             return empresa.get('empresa_erp')
 
@@ -65,9 +65,9 @@ def get_empresa_erp(empresa_cli_id):
 
 def get_empresa_id():
     """Obtiene el empresa_id de la sesión o del request (para compatibilidad)"""
-    empresa_cli_id = get_empresa_cli_id()
-    empresa_erp = get_empresa_erp(empresa_cli_id)
-    return empresa_erp or empresa_cli_id or '1'
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+    return empresa_id or connection or '1'
 
 # ============================================
 # ENDPOINTS PÚBLICOS (sin autenticación)
@@ -94,9 +94,9 @@ def propuestas_habilitadas():
             habilitado:
               type: boolean
     """
-    empresa_cli_id = get_empresa_cli_id()
-    empresa_erp = get_empresa_erp(empresa_cli_id)
-    habilitado = ParametrosModel.permitir_propuestas(empresa_erp, empresa_cli_id)
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+    habilitado = ParametrosModel.permitir_propuestas(empresa_id, connection)
     return jsonify({'habilitado': habilitado}), 200
 
 @parametros_bp.route('/grid-con-imagenes', methods=['GET'])
@@ -120,9 +120,9 @@ def grid_con_imagenes():
             habilitado:
               type: boolean
     """
-    empresa_cli_id = get_empresa_cli_id()
-    empresa_erp = get_empresa_erp(empresa_cli_id)
-    habilitado = ParametrosModel.grid_con_imagenes(empresa_erp, empresa_cli_id)
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+    habilitado = ParametrosModel.grid_con_imagenes(empresa_id, connection)
     return jsonify({'habilitado': habilitado}), 200
 
 # ============================================
@@ -166,7 +166,8 @@ def get_all_parametros():
                     type: string
     """
     empresa_id = get_empresa_id()
-    parametros = ParametrosModel.get_all(empresa_id)
+    connection = get_connection()
+    parametros = ParametrosModel.get_all(empresa_id, connection)
     return jsonify({'parametros': parametros})
 
 @parametros_bp.route('/<clave>', methods=['GET'])
@@ -196,7 +197,8 @@ def get_parametro(clave):
         description: Parámetro no encontrado
     """
     empresa_id = get_empresa_id()
-    valor = ParametrosModel.get(clave, empresa_id)
+    connection = get_connection()
+    valor = ParametrosModel.get(clave, empresa_id, connection)
     if valor is None:
         return jsonify({'error': 'Parámetro no encontrado'}), 404
 
@@ -249,11 +251,12 @@ def update_parametro(clave):
     empresa_id = data.get('empresa_id') or get_empresa_id()
 
     # Verificar que el parámetro existe
-    valor_actual = ParametrosModel.get(clave, empresa_id)
+    connection = get_connection()
+    valor_actual = ParametrosModel.get(clave, empresa_id, connection)
     if valor_actual is None:
         return jsonify({'error': 'Parámetro no encontrado'}), 404
 
-    success = ParametrosModel.set(clave, nuevo_valor, empresa_id)
+    success = ParametrosModel.set(clave, nuevo_valor, empresa_id, connection)
 
     if success:
         return jsonify({

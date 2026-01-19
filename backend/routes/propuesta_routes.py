@@ -46,10 +46,10 @@ def get_mis_propuestas():
         description: No autenticado
     """
     # Usar empresa_erp de sesión para filtrar
-    empresa_erp = session.get('empresa_erp', '1')
+    empresa_id = session.get('empresa_id', '1')
 
     try:
-        propuestas = PropuestaModel.get_by_user(current_user.id, empresa_id=empresa_erp)
+        propuestas = PropuestaModel.get_by_user(current_user.id, empresa_id=empresa_id)
         return jsonify({
             'success': True,
             'total': len(propuestas),
@@ -89,11 +89,11 @@ def get_todas_propuestas():
       403:
         description: No autorizado (requiere rol administrador)
     """
-    empresa_erp = session.get('empresa_erp', '1')
+    empresa_id = session.get('empresa_id', '1')
     estado = request.args.get('estado')
 
     try:
-        propuestas = PropuestaModel.get_all(empresa_id=empresa_erp, estado=estado)
+        propuestas = PropuestaModel.get_all(empresa_id=empresa_id, estado=estado)
         return jsonify({
             'success': True,
             'total': len(propuestas),
@@ -133,10 +133,10 @@ def get_pendientes():
         description: No autenticado
     """
     incluir_lineas = request.args.get('incluir_lineas', 'false').lower() == 'true'
-    empresa_erp = session.get('empresa_erp', '1')
+    empresa_id = session.get('empresa_id', '1')
 
     try:
-        propuestas = PropuestaModel.get_pendientes(incluir_lineas=incluir_lineas, empresa_id=empresa_erp)
+        propuestas = PropuestaModel.get_pendientes(incluir_lineas=incluir_lineas, empresa_id=empresa_id)
         return jsonify({
             'success': True,
             'total': len(propuestas),

@@ -19,15 +19,15 @@ from config.database import Database
 
 class ParametrosModel:
     @staticmethod
-    def get(clave, empresa_id, empresa_cli_id=None):
+    def get(clave, empresa_id, connection=None):
         """Obtiene el valor de un parámetro por su clave y empresa
 
         Args:
             clave: Nombre del parámetro
-            empresa_id: empresa_erp para filtrar en BD (o empresa_cli_id si es endpoint público)
-            empresa_cli_id: ID para conexión (opcional, si no se pasa usa empresa_id)
+            empresa_id: ID empresa_erp para filtrar en BD
+            connection: ID para conexión (opcional, si no se pasa obtiene de sesión)
         """
-        conn = Database.get_connection(empresa_cli_id or empresa_id)
+        conn = Database.get_connection(connection)
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -41,15 +41,15 @@ class ParametrosModel:
         return row[0] if row else None
 
     @staticmethod
-    def get_bool(clave, empresa_id, empresa_cli_id=None):
+    def get_bool(clave, empresa_id, connection=None):
         """Obtiene un parámetro como booleano (1=True, 0=False)"""
-        valor = ParametrosModel.get(clave, empresa_id, empresa_cli_id)
+        valor = ParametrosModel.get(clave, empresa_id, connection)
         return valor == '1' if valor else False
 
     @staticmethod
-    def set(clave, valor, empresa_id):
+    def set(clave, valor, empresa_id, connection=None):
         """Actualiza el valor de un parámetro para una empresa"""
-        conn = Database.get_connection()
+        conn = Database.get_connection(connection)
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -66,9 +66,9 @@ class ParametrosModel:
         return affected > 0
 
     @staticmethod
-    def get_all(empresa_id):
+    def get_all(empresa_id, connection=None):
         """Obtiene todos los parámetros de una empresa"""
-        conn = Database.get_connection()
+        conn = Database.get_connection(connection)
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -93,24 +93,24 @@ class ParametrosModel:
         return parametros
 
     @staticmethod
-    def permitir_registro(empresa_id, empresa_cli_id=None):
+    def permitir_registro(empresa_id, connection=None):
         """Verifica si el registro público está permitido para una empresa"""
-        return ParametrosModel.get_bool('PERMITIR_REGISTRO', empresa_id, empresa_cli_id or empresa_id)
+        return ParametrosModel.get_bool('PERMITIR_REGISTRO', empresa_id, connection)
 
     @staticmethod
-    def permitir_propuestas(empresa_id, empresa_cli_id=None):
+    def permitir_propuestas(empresa_id, connection=None):
         """Verifica si las propuestas/solicitudes están permitidas para una empresa"""
-        return ParametrosModel.get_bool('PERMITIR_PROPUESTAS', empresa_id, empresa_cli_id or empresa_id)
+        return ParametrosModel.get_bool('PERMITIR_PROPUESTAS', empresa_id, connection)
 
     @staticmethod
-    def grid_con_imagenes(empresa_id, empresa_cli_id=None):
+    def grid_con_imagenes(empresa_id, connection=None):
         """Verifica si se deben mostrar imágenes en la tabla/tarjetas de stock"""
-        return ParametrosModel.get_bool('GRID_CON_IMAGENES', empresa_id, empresa_cli_id or empresa_id)
+        return ParametrosModel.get_bool('GRID_CON_IMAGENES', empresa_id, connection)
 
     @staticmethod
-    def create_if_not_exists(clave, valor, descripcion, empresa_id):
+    def create_if_not_exists(clave, valor, descripcion, empresa_id, connection=None):
         """Crea un parámetro si no existe para la empresa"""
-        conn = Database.get_connection()
+        conn = Database.get_connection(connection)
         cursor = conn.cursor()
 
         # Verificar si existe
