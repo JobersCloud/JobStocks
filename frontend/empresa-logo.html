@@ -199,12 +199,26 @@
             API_URL = `${protocol}//${hostname}${port ? ':' + port : ''}`;
         }
 
-        // empresa_id (empresa_erp) para llamadas API de logo y para mostrar
-        let empresaId = localStorage.getItem('empresa_id') || '1';
+        // empresa_id se obtiene del servidor (sesión) via /api/current-user
+        let empresaId = null;
 
-        if (!empresaId) {
-            console.warn('No hay empresa_id en localStorage');
-            window.location.href = 'login.html';
+        // Obtener empresa_id de la sesión del servidor
+        async function getEmpresaIdFromSession() {
+            try {
+                const response = await fetch(`${API_URL}/api/current-user`, {
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    window.location.href = 'login.html';
+                    return null;
+                }
+                const user = await response.json();
+                return user.empresa_id || '1';
+            } catch (error) {
+                console.error('Error obteniendo empresa_id:', error);
+                window.location.href = 'login.html';
+                return null;
+            }
         }
 
         // Cargar logo de empresa desde BD
@@ -501,6 +515,11 @@
         window.onload = async function() {
             loadTheme();
             await I18n.init();
+
+            // Obtener empresa_id de la sesión PRIMERO
+            empresaId = await getEmpresaIdFromSession();
+            if (!empresaId) return;
+
             await loadThemeConfig();
             await cargarLogoEmpresa();
             await loadCurrentState();
