@@ -2374,6 +2374,58 @@ tbody tr:hover {
     z-index: 100;
 }
 
+/* Controles superiores en login (tema + idioma) */
+.login-top-controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.theme-toggle-login {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 5px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    transition: background 0.3s;
+}
+
+.theme-toggle-login:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.theme-toggle-login .theme-icon {
+    font-size: 1.1rem;
+}
+
+.theme-toggle-login .switch {
+    margin: 0;
+}
+
+/* Dark mode para controles de login */
+[data-theme="dark"] .theme-toggle-login {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .theme-toggle-login:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Light mode para controles de login */
+[data-theme="light"] .theme-toggle-login {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .theme-toggle-login:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
 /* Selector de idioma en headers con fondo oscuro/rojo */
 .lang-selector-header {
     background: rgba(255, 255, 255, 0.15) !important;
@@ -2529,6 +2581,20 @@ tbody tr:hover {
         padding: 6px 10px;
         font-size: 0.8rem;
         min-width: 60px;
+    }
+
+    .login-top-controls {
+        top: 10px;
+        right: 10px;
+        gap: 10px;
+    }
+
+    .theme-toggle-login {
+        padding: 4px 8px;
+    }
+
+    .theme-toggle-login .theme-icon {
+        font-size: 1rem;
     }
 }
 
@@ -3140,6 +3206,57 @@ tbody tr:hover {
     max-width: 440px;
     width: 100%;
     border: 1px solid var(--border);
+}
+
+/* Dark mode para login */
+[data-theme="dark"] .login-wrapper {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+[data-theme="dark"] .login-sidebar {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+}
+
+[data-theme="dark"] .login-sidebar h2,
+[data-theme="dark"] .login-sidebar p {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .login-container {
+    background: transparent;
+}
+
+[data-theme="dark"] .login-box {
+    background: var(--bg-secondary, #1e1e2e);
+    border-color: var(--border, #333);
+}
+
+[data-theme="dark"] .login-header h1 {
+    color: var(--text-primary, #fff);
+    -webkit-text-fill-color: var(--text-primary, #fff);
+}
+
+[data-theme="dark"] .login-subtitle {
+    color: var(--text-secondary, #aaa);
+}
+
+[data-theme="dark"] .login-form input {
+    background: var(--bg-tertiary, #2a2a3e);
+    border-color: var(--border, #444);
+    color: var(--text-primary, #fff);
+}
+
+[data-theme="dark"] .login-form input::placeholder {
+    color: var(--text-muted, #666);
+}
+
+[data-theme="dark"] .login-link,
+[data-theme="dark"] .login-link a {
+    color: var(--text-secondary, #aaa);
+}
+
+[data-theme="dark"] .version-indicator {
+    color: var(--text-muted, #666);
 }
 
 .login-header {

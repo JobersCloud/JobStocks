@@ -9,7 +9,7 @@
     <script>
         // Cargar tema guardado inmediatamente para evitar flash
         (function() {
-            const theme = localStorage.getItem('theme') || 'light';
+            const theme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
             const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
             document.documentElement.setAttribute('data-color-theme', colorTheme);
@@ -17,8 +17,15 @@
     </script>
 </head>
 <body>
-    <!-- Selector de idioma fijo -->
-    <div class="lang-selector-fixed">
+    <!-- Selector de idioma y tema fijo -->
+    <div class="login-top-controls">
+        <div class="theme-toggle-login" onclick="toggleTheme()">
+            <span class="theme-icon" id="theme-icon">☀️</span>
+            <label class="switch">
+                <input type="checkbox" id="theme-switch" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
         <select id="lang-selector" class="lang-selector" onchange="I18n.setLanguage(this.value)">
             <option value="es">ES</option>
             <option value="en">EN</option>

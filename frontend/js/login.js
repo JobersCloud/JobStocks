@@ -49,6 +49,41 @@ function applyColorTheme(tema) {
     localStorage.setItem('colorTheme', tema);
 }
 
+// ==================== MODO OSCURO ====================
+
+// Cargar tema guardado
+function loadTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    applyTheme(savedTheme);
+}
+
+// Aplicar tema oscuro/claro
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+
+    // Actualizar switch y icono
+    const themeSwitch = document.getElementById('theme-switch');
+    const themeIcon = document.getElementById('theme-icon');
+
+    if (themeSwitch) {
+        themeSwitch.checked = theme === 'dark';
+    }
+    if (themeIcon) {
+        themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+}
+
+// Alternar tema
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme(newTheme);
+}
+
+// Exponer función globalmente
+window.toggleTheme = toggleTheme;
+
 // Cargar tema de color desde la API
 // Usa connection (empresa_cli_id) porque el endpoint necesita conectar a la BD del cliente
 async function cargarTemaColor(connection) {
@@ -114,6 +149,9 @@ async function verificarSesionActiva() {
 
 // Inicializar después de que i18n esté listo
 async function initLogin() {
+    // Cargar tema oscuro/claro inmediatamente
+    loadTheme();
+
     // Capturar connection de la URL (OBLIGATORIO) - hacer esto primero
     const connection = getConnectionFromURL();
 
