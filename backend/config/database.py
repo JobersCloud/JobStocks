@@ -38,7 +38,7 @@ class Database:
 
     Flujo:
     1. Se recibe empresa_cli_id por parámetro
-    2. Se consulta empresa_cliente en BD central
+    2. Se consulta empresa_cliente en BD central (con caché)
     3. Se conecta a la BD de esa empresa
     """
 
@@ -71,7 +71,7 @@ class Database:
         # Importar aquí para evitar imports circulares
         from models.empresa_cliente_model import EmpresaClienteModel
 
-        # Obtener datos de conexión de la empresa (con caché)
+        # Obtener datos de conexión de la empresa (con caché en EmpresaClienteModel)
         empresa = EmpresaClienteModel.get_by_id(empresa_cli_id)
 
         if not empresa:

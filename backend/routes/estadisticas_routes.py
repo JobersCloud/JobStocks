@@ -25,15 +25,9 @@ estadisticas_bp = Blueprint('estadisticas', __name__)
 
 
 def get_empresa_id():
-    """Obtiene el empresa_id del contexto actual."""
-    # Primero intenta del usuario actual
-    if hasattr(current_user, 'empresa_id') and current_user.empresa_id:
-        return current_user.empresa_id
-    # Luego de la sesion
-    if 'empresa_id' in session:
-        return session['empresa_id']
-    # Por defecto
-    return request.args.get('empresa_id', '1')
+    """Obtiene el empresa_erp de la sesión para filtros (usuario logueado)."""
+    # Todos los endpoints de estadísticas requieren login, usar sesión
+    return session.get('empresa_erp', '1')
 
 
 @estadisticas_bp.route('/api/estadisticas/resumen', methods=['GET'])

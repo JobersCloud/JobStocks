@@ -15,7 +15,7 @@
 # ============================================
 # ARCHIVO: routes/empresa_logo_routes.py
 # ============================================
-from flask import Blueprint, Response, request, send_from_directory, jsonify
+from flask import Blueprint, Response, request, send_from_directory, jsonify, session
 from flask_login import login_required, current_user
 from models.empresa_logo_model import EmpresaLogoModel
 from utils.auth import administrador_required
@@ -23,6 +23,25 @@ import os
 import base64
 
 empresa_logo_bp = Blueprint('empresa_logo', __name__, url_prefix='/api/empresa')
+
+
+def get_empresa_cli_id_from_session():
+    """Obtiene el empresa_cli_id de la sesión (después de login)."""
+    return session.get('empresa_cli_id')
+
+
+def get_empresa_erp_from_session():
+    """Obtiene el empresa_erp de la sesión (después de login)."""
+    return session.get('empresa_erp')
+
+
+def get_empresa_erp_from_cli_id(empresa_cli_id):
+    """Obtiene el empresa_erp consultando BD central."""
+    from models.empresa_cliente_model import EmpresaClienteModel
+    empresa = EmpresaClienteModel.get_by_id(empresa_cli_id)
+    if empresa:
+        return empresa.get('empresa_erp')
+    return '1'
 
 # Directorio de assets como fallback
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'frontend')
@@ -39,14 +58,18 @@ def get_logo(empresa_id):
         in: path
         type: string
         required: true
-        description: ID de la empresa
+        description: ID de la empresa (empresa_cli_id)
     responses:
       200:
         description: Imagen del logo
       404:
         description: Logo no encontrado
     """
-    logo = EmpresaLogoModel.get_logo(empresa_id)
+    # empresa_id en URL es empresa_cli_id
+    # Obtenemos empresa_erp de BD central para filtrar en tabla empresa_logo
+    empresa_cli_id = empresa_id
+    empresa_erp = get_empresa_erp_from_cli_id(empresa_cli_id)
+    logo = EmpresaLogoModel.get_logo(empresa_erp, empresa_cli_id)
 
     if logo:
         # Detectar tipo de imagen por magic bytes
@@ -80,14 +103,16 @@ def get_favicon(empresa_id):
         in: path
         type: string
         required: true
-        description: ID de la empresa
+        description: ID de la empresa (empresa_cli_id)
     responses:
       200:
         description: Favicon
       404:
         description: Favicon no encontrado
     """
-    favicon = EmpresaLogoModel.get_favicon(empresa_id)
+    empresa_cli_id = empresa_id
+    empresa_erp = get_empresa_erp_from_cli_id(empresa_cli_id)
+    favicon = EmpresaLogoModel.get_favicon(empresa_erp, empresa_cli_id)
 
     if favicon:
         # Detectar tipo de imagen
@@ -119,7 +144,9 @@ def logo_exists(empresa_id):
       200:
         description: Resultado de la verificación
     """
-    logo = EmpresaLogoModel.get_logo(empresa_id)
+    empresa_cli_id = empresa_id
+    empresa_erp = get_empresa_erp_from_cli_id(empresa_cli_id)
+    logo = EmpresaLogoModel.get_logo(empresa_erp, empresa_cli_id)
     return {"exists": logo is not None}
 
 
@@ -139,11 +166,13 @@ def get_config(empresa_id):
       200:
         description: Configuración de logo
     """
-    config = EmpresaLogoModel.get_config(empresa_id)
+    empresa_cli_id = empresa_id
+    empresa_erp = get_empresa_erp_from_cli_id(empresa_cli_id)
+    config = EmpresaLogoModel.get_config(empresa_erp, empresa_cli_id)
     if config:
         return jsonify(config)
     return jsonify({
-        'empresa_id': empresa_id,
+        'empresa_id': empresa_erp,
         'invertir_logo': False,
         'tiene_logo': False,
         'tiene_favicon': False,
@@ -159,7 +188,9 @@ def get_invertir(empresa_id):
     tags:
       - Empresa Logo
     """
-    invertir = EmpresaLogoModel.get_invertir_logo(empresa_id)
+    empresa_cli_id = empresa_id
+    empresa_erp = get_empresa_erp_from_cli_id(empresa_cli_id)
+    invertir = EmpresaLogoModel.get_invertir_logo(empresa_erp, empresa_cli_id)
     return {"invertir": invertir}
 
 
@@ -174,10 +205,13 @@ def set_invertir(empresa_id):
       - Empresa Logo
     """
     try:
+        # Usar sesión (usuario logueado)
+        empresa_cli_id = get_empresa_cli_id_from_session()
+        empresa_erp = get_empresa_erp_from_session()
         data = request.json
         invertir = data.get('invertir', False)
 
-        if EmpresaLogoModel.set_invertir_logo(empresa_id, invertir):
+        if EmpresaLogoModel.set_invertir_logo(empresa_erp, invertir, empresa_cli_id):
             return jsonify({"message": "Configuración actualizada"}), 200
         else:
             return jsonify({"error": "Error al guardar configuración"}), 500
@@ -216,6 +250,9 @@ def upload_logo(empresa_id):
         description: Error en la solicitud
     """
     try:
+        # Usar sesión (usuario logueado)
+        empresa_cli_id = get_empresa_cli_id_from_session()
+        empresa_erp = get_empresa_erp_from_session()
         data = request.json
         logo_base64 = data.get('logo')
 
@@ -228,7 +265,7 @@ def upload_logo(empresa_id):
 
         logo_bytes = base64.b64decode(logo_base64)
 
-        if EmpresaLogoModel.save_logo(empresa_id, logo_bytes):
+        if EmpresaLogoModel.save_logo(empresa_erp, logo_bytes, empresa_cli_id):
             return jsonify({"message": "Logo actualizado correctamente"}), 200
         else:
             return jsonify({"error": "Error al guardar logo"}), 500
@@ -267,6 +304,9 @@ def upload_favicon(empresa_id):
         description: Error en la solicitud
     """
     try:
+        # Usar sesión (usuario logueado)
+        empresa_cli_id = get_empresa_cli_id_from_session()
+        empresa_erp = get_empresa_erp_from_session()
         data = request.json
         favicon_base64 = data.get('favicon')
 
@@ -279,7 +319,7 @@ def upload_favicon(empresa_id):
 
         favicon_bytes = base64.b64decode(favicon_base64)
 
-        if EmpresaLogoModel.save_favicon(empresa_id, favicon_bytes):
+        if EmpresaLogoModel.save_favicon(empresa_erp, favicon_bytes, empresa_cli_id):
             return jsonify({"message": "Favicon actualizado correctamente"}), 200
         else:
             return jsonify({"error": "Error al guardar favicon"}), 500
@@ -296,7 +336,10 @@ def delete_logo(empresa_id):
     Elimina el logo de una empresa
     """
     try:
-        if EmpresaLogoModel.delete_logo(empresa_id):
+        # Usar sesión (usuario logueado)
+        empresa_cli_id = get_empresa_cli_id_from_session()
+        empresa_erp = get_empresa_erp_from_session()
+        if EmpresaLogoModel.delete_logo(empresa_erp, empresa_cli_id):
             return jsonify({"message": "Logo eliminado correctamente"}), 200
         else:
             return jsonify({"error": "Error al eliminar logo"}), 500
@@ -312,7 +355,10 @@ def delete_favicon(empresa_id):
     Elimina el favicon de una empresa
     """
     try:
-        if EmpresaLogoModel.delete_favicon(empresa_id):
+        # Usar sesión (usuario logueado)
+        empresa_cli_id = get_empresa_cli_id_from_session()
+        empresa_erp = get_empresa_erp_from_session()
+        if EmpresaLogoModel.delete_favicon(empresa_erp, empresa_cli_id):
             return jsonify({"message": "Favicon eliminado correctamente"}), 200
         else:
             return jsonify({"error": "Error al eliminar favicon"}), 500
@@ -336,7 +382,10 @@ def get_tema(empresa_id):
       200:
         description: Tema de colores
     """
-    tema = EmpresaLogoModel.get_tema(empresa_id)
+    # Público: usar empresa_cli_id de la URL
+    empresa_cli_id = empresa_id
+    empresa_erp = get_empresa_erp_from_cli_id(empresa_cli_id)
+    tema = EmpresaLogoModel.get_tema(empresa_erp, empresa_cli_id)
     return jsonify({"tema": tema})
 
 
@@ -370,10 +419,13 @@ def set_tema(empresa_id):
         description: Tema no válido
     """
     try:
+        # Usar sesión (usuario logueado)
+        empresa_cli_id = get_empresa_cli_id_from_session()
+        empresa_erp = get_empresa_erp_from_session()
         data = request.json
         tema = data.get('tema', 'rubi')
 
-        if EmpresaLogoModel.set_tema(empresa_id, tema):
+        if EmpresaLogoModel.set_tema(empresa_erp, tema, empresa_cli_id):
             return jsonify({"message": "Tema actualizado correctamente"}), 200
         else:
             return jsonify({"error": "Tema no válido. Valores permitidos: rubi, zafiro, esmeralda, amatista, ambar, grafito"}), 400

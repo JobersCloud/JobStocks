@@ -22,28 +22,52 @@ from utils.auth import administrador_required
 
 parametros_bp = Blueprint('parametros', __name__)
 
-def get_empresa_id():
-    """Obtiene el empresa_id de la sesión o del request"""
-    # Primero intentar obtener de la sesión
-    empresa_id = session.get('empresa_id')
-    if empresa_id:
-        return empresa_id
 
-    # Si no está en sesión, buscar en query params
-    empresa_id = request.args.get('empresa_id') or request.args.get('empresa')
-    if empresa_id:
-        return empresa_id
+def get_empresa_cli_id():
+    """Obtiene el empresa_cli_id del request o sesión (ID para conexión)"""
+    # Primero de la sesión
+    empresa_cli_id = session.get('empresa_cli_id')
+    if empresa_cli_id:
+        return empresa_cli_id
 
-    # Buscar en el body si es JSON
+    # Del query param
+    empresa_cli_id = request.args.get('empresa_id') or request.args.get('empresa')
+    if empresa_cli_id:
+        return empresa_cli_id
+
+    # Del body JSON
     if request.is_json:
         data = request.get_json(silent=True)
         if data:
-            empresa_id = data.get('empresa_id') or data.get('empresa')
-            if empresa_id:
-                return empresa_id
+            empresa_cli_id = data.get('empresa_id') or data.get('empresa')
+            if empresa_cli_id:
+                return empresa_cli_id
 
-    # Default
-    return '1'
+    return None
+
+
+def get_empresa_erp(empresa_cli_id):
+    """Obtiene el empresa_erp desde el empresa_cli_id"""
+    # Primero de la sesión
+    empresa_erp = session.get('empresa_erp')
+    if empresa_erp:
+        return empresa_erp
+
+    # Sino, de la BD central
+    if empresa_cli_id:
+        from models.empresa_cliente_model import EmpresaClienteModel
+        empresa = EmpresaClienteModel.get_by_id(empresa_cli_id)
+        if empresa:
+            return empresa.get('empresa_erp')
+
+    return None
+
+
+def get_empresa_id():
+    """Obtiene el empresa_id de la sesión o del request (para compatibilidad)"""
+    empresa_cli_id = get_empresa_cli_id()
+    empresa_erp = get_empresa_erp(empresa_cli_id)
+    return empresa_erp or empresa_cli_id or '1'
 
 # ============================================
 # ENDPOINTS PÚBLICOS (sin autenticación)
@@ -70,8 +94,9 @@ def propuestas_habilitadas():
             habilitado:
               type: boolean
     """
-    empresa_id = get_empresa_id()
-    habilitado = ParametrosModel.permitir_propuestas(empresa_id)
+    empresa_cli_id = get_empresa_cli_id()
+    empresa_erp = get_empresa_erp(empresa_cli_id)
+    habilitado = ParametrosModel.permitir_propuestas(empresa_erp, empresa_cli_id)
     return jsonify({'habilitado': habilitado}), 200
 
 @parametros_bp.route('/grid-con-imagenes', methods=['GET'])
@@ -95,8 +120,9 @@ def grid_con_imagenes():
             habilitado:
               type: boolean
     """
-    empresa_id = get_empresa_id()
-    habilitado = ParametrosModel.grid_con_imagenes(empresa_id)
+    empresa_cli_id = get_empresa_cli_id()
+    empresa_erp = get_empresa_erp(empresa_cli_id)
+    habilitado = ParametrosModel.grid_con_imagenes(empresa_erp, empresa_cli_id)
     return jsonify({'habilitado': habilitado}), 200
 
 # ============================================

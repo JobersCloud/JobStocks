@@ -22,9 +22,9 @@ class EmpresaLogoModel:
     """Modelo para gestionar logos y favicons por empresa"""
 
     @staticmethod
-    def get_logo(empresa_id):
+    def get_logo(empresa_id, empresa_cli_id=None):
         """Obtiene el logo de una empresa en formato binario"""
-        conn = Database.get_connection()
+        conn = Database.get_connection(empresa_cli_id)
         if not conn:
             return None
 
@@ -53,9 +53,9 @@ class EmpresaLogoModel:
         return None
 
     @staticmethod
-    def get_favicon(empresa_id):
+    def get_favicon(empresa_id, empresa_cli_id=None):
         """Obtiene el favicon de una empresa en formato binario"""
-        conn = Database.get_connection()
+        conn = Database.get_connection(empresa_cli_id)
         if not conn:
             return None
 
@@ -84,9 +84,9 @@ class EmpresaLogoModel:
         return None
 
     @staticmethod
-    def exists(empresa_id):
+    def exists(empresa_id, empresa_cli_id=None):
         """Verifica si existe configuración de logo para una empresa"""
-        conn = Database.get_connection()
+        conn = Database.get_connection(empresa_cli_id)
         if not conn:
             return False
 
@@ -105,9 +105,9 @@ class EmpresaLogoModel:
             conn.close()
 
     @staticmethod
-    def save_logo(empresa_id, logo_bytes):
+    def save_logo(empresa_id, logo_bytes, empresa_cli_id=None):
         """Guarda o actualiza el logo de una empresa"""
-        conn = Database.get_connection()
+        conn = Database.get_connection(empresa_cli_id)
         if not conn:
             return False
 
@@ -115,7 +115,7 @@ class EmpresaLogoModel:
             cursor = conn.cursor()
 
             # Verificar si existe
-            if EmpresaLogoModel.exists(empresa_id):
+            if EmpresaLogoModel.exists(empresa_id, empresa_cli_id):
                 cursor.execute("""
                     UPDATE empresa_logo
                     SET logo = ?, fecha_modificacion = GETDATE()
@@ -136,9 +136,9 @@ class EmpresaLogoModel:
             conn.close()
 
     @staticmethod
-    def save_favicon(empresa_id, favicon_bytes):
+    def save_favicon(empresa_id, favicon_bytes, empresa_cli_id=None):
         """Guarda o actualiza el favicon de una empresa"""
-        conn = Database.get_connection()
+        conn = Database.get_connection(empresa_cli_id)
         if not conn:
             return False
 
@@ -146,7 +146,7 @@ class EmpresaLogoModel:
             cursor = conn.cursor()
 
             # Verificar si existe
-            if EmpresaLogoModel.exists(empresa_id):
+            if EmpresaLogoModel.exists(empresa_id, empresa_cli_id):
                 cursor.execute("""
                     UPDATE empresa_logo
                     SET favicon = ?, fecha_modificacion = GETDATE()
@@ -167,9 +167,9 @@ class EmpresaLogoModel:
             conn.close()
 
     @staticmethod
-    def delete_logo(empresa_id):
+    def delete_logo(empresa_id, empresa_cli_id=None):
         """Elimina el logo de una empresa (pone NULL)"""
-        conn = Database.get_connection()
+        conn = Database.get_connection(empresa_cli_id)
         if not conn:
             return False
 
@@ -189,9 +189,9 @@ class EmpresaLogoModel:
             conn.close()
 
     @staticmethod
-    def delete_favicon(empresa_id):
+    def delete_favicon(empresa_id, empresa_cli_id=None):
         """Elimina el favicon de una empresa (pone NULL)"""
-        conn = Database.get_connection()
+        conn = Database.get_connection(empresa_cli_id)
         if not conn:
             return False
 
@@ -211,9 +211,9 @@ class EmpresaLogoModel:
             conn.close()
 
     @staticmethod
-    def get_invertir_logo(empresa_id):
+    def get_invertir_logo(empresa_id, empresa_cli_id=None):
         """Obtiene si el logo debe invertirse para una empresa"""
-        conn = Database.get_connection()
+        conn = Database.get_connection(empresa_cli_id)
         if not conn:
             return False
 
@@ -234,9 +234,9 @@ class EmpresaLogoModel:
             conn.close()
 
     @staticmethod
-    def set_invertir_logo(empresa_id, invertir):
+    def set_invertir_logo(empresa_id, invertir, empresa_cli_id=None):
         """Establece si el logo debe invertirse"""
-        conn = Database.get_connection()
+        conn = Database.get_connection(empresa_cli_id)
         if not conn:
             return False
 
@@ -244,7 +244,7 @@ class EmpresaLogoModel:
             cursor = conn.cursor()
 
             # Verificar si existe
-            if EmpresaLogoModel.exists(empresa_id):
+            if EmpresaLogoModel.exists(empresa_id, empresa_cli_id):
                 cursor.execute("""
                     UPDATE empresa_logo
                     SET invertir_logo = ?, fecha_modificacion = GETDATE()
@@ -298,9 +298,9 @@ class EmpresaLogoModel:
             conn.close()
 
     @staticmethod
-    def get_tema(empresa_id):
+    def get_tema(empresa_id, empresa_cli_id=None):
         """Obtiene el tema de colores de una empresa"""
-        conn = Database.get_connection()
+        conn = Database.get_connection(empresa_cli_id)
         if not conn:
             return 'rubi'
 
@@ -321,14 +321,14 @@ class EmpresaLogoModel:
             conn.close()
 
     @staticmethod
-    def set_tema(empresa_id, tema):
+    def set_tema(empresa_id, tema, empresa_cli_id=None):
         """Establece el tema de colores de una empresa"""
         # Validar que el tema sea válido
         temas_validos = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito']
         if tema not in temas_validos:
             return False
 
-        conn = Database.get_connection()
+        conn = Database.get_connection(empresa_cli_id)
         if not conn:
             return False
 
@@ -336,7 +336,7 @@ class EmpresaLogoModel:
             cursor = conn.cursor()
 
             # Verificar si existe
-            if EmpresaLogoModel.exists(empresa_id):
+            if EmpresaLogoModel.exists(empresa_id, empresa_cli_id):
                 cursor.execute("""
                     UPDATE empresa_logo
                     SET tema = ?, fecha_modificacion = GETDATE()

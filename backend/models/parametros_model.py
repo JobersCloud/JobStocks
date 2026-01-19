@@ -98,14 +98,14 @@ class ParametrosModel:
         return ParametrosModel.get_bool('PERMITIR_REGISTRO', empresa_id, empresa_cli_id or empresa_id)
 
     @staticmethod
-    def permitir_propuestas(empresa_id):
+    def permitir_propuestas(empresa_id, empresa_cli_id=None):
         """Verifica si las propuestas/solicitudes están permitidas para una empresa"""
-        return ParametrosModel.get_bool('PERMITIR_PROPUESTAS', empresa_id)
+        return ParametrosModel.get_bool('PERMITIR_PROPUESTAS', empresa_id, empresa_cli_id or empresa_id)
 
     @staticmethod
-    def grid_con_imagenes(empresa_id):
+    def grid_con_imagenes(empresa_id, empresa_cli_id=None):
         """Verifica si se deben mostrar imágenes en la tabla/tarjetas de stock"""
-        return ParametrosModel.get_bool('GRID_CON_IMAGENES', empresa_id)
+        return ParametrosModel.get_bool('GRID_CON_IMAGENES', empresa_id, empresa_cli_id or empresa_id)
 
     @staticmethod
     def create_if_not_exists(clave, valor, descripcion, empresa_id):

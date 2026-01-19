@@ -36,21 +36,29 @@ PAISES_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'paises.json
 with open(PAISES_FILE, 'r', encoding='utf-8') as f:
     PAISES = json.load(f)
 
-def get_empresa_id():
-    """Obtiene el empresa_id del request"""
-    empresa_id = request.args.get('empresa_id') or request.args.get('empresa')
-    if empresa_id:
-        return empresa_id
+def get_empresa_cli_id():
+    """Obtiene el empresa_cli_id del request (ID de conexión)"""
+    empresa_cli_id = request.args.get('empresa_id') or request.args.get('empresa')
+    if empresa_cli_id:
+        return empresa_cli_id
 
     # Buscar en el body si es JSON
     if request.is_json:
         data = request.get_json(silent=True)
         if data:
-            empresa_id = data.get('empresa_id') or data.get('empresa')
-            if empresa_id:
-                return empresa_id
+            empresa_cli_id = data.get('empresa_id') or data.get('empresa')
+            if empresa_cli_id:
+                return empresa_cli_id
 
     # Default
+    return '10049'
+
+def get_empresa_erp(empresa_cli_id):
+    """Obtiene el empresa_erp desde el empresa_cli_id"""
+    from models.empresa_cliente_model import EmpresaClienteModel
+    empresa = EmpresaClienteModel.get_by_id(empresa_cli_id)
+    if empresa:
+        return empresa.get('empresa_erp', '1')
     return '1'
 
 @register_bp.route('/registro-habilitado', methods=['GET'])
@@ -69,8 +77,9 @@ def registro_habilitado():
             habilitado:
               type: boolean
     """
-    empresa_id = get_empresa_id()
-    habilitado = ParametrosModel.permitir_registro(empresa_id)
+    empresa_cli_id = get_empresa_cli_id()
+    empresa_erp = get_empresa_erp(empresa_cli_id)
+    habilitado = ParametrosModel.permitir_registro(empresa_erp, empresa_cli_id)
     return jsonify({'habilitado': habilitado}), 200
 
 @register_bp.route('/paises', methods=['GET'])

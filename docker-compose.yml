@@ -45,7 +45,12 @@ services:
       - CORS_ORIGINS=${CORS_ORIGINS:-*}
       # ==================== RATE LIMITING ====================
       - REDIS_URL=redis://redis:6379
-      # ==================== BASE DE DATOS ====================
+      # ==================== BD CENTRAL (SQL Server 2022) ====================
+      - DB_CENTRAL_SERVER=${DB_CENTRAL_SERVER:-sqlserver,1433}
+      - DB_CENTRAL_NAME=${DB_CENTRAL_NAME:-jobers_control_usuarios}
+      - DB_CENTRAL_USER=${DB_CENTRAL_USER:-sa}
+      - DB_CENTRAL_PASSWORD=${DB_CENTRAL_PASSWORD:-DesaJob2012.}
+      # ==================== BASE DE DATOS (legacy) ====================
       - DB_SERVER=${DB_SERVER:-192.168.63.25\SQL2008,1433}
       - DB_NAME=${DB_NAME:-ApiRestStocks}
       - DB_USER=${DB_USER:-sa}
