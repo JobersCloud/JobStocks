@@ -721,6 +721,25 @@ cloudflared tunnel --url http://localhost:5000
   - Afecta headers, botones, badges y elementos de acento en todas las páginas
   - Gráficos de Chart.js en dashboard obtienen colores dinámicamente de CSS
 
+### 2026-01-19
+- **Toggle Modo Oscuro en Login**: Selector de tema en página de login
+  - Toggle con switch en esquina superior derecha (junto al selector de idioma)
+  - Tema oscuro por defecto (`localStorage.getItem('theme') || 'dark'`)
+  - Estilos dark mode completos para login (wrapper, sidebar, box, inputs, links)
+  - Funciones `loadTheme()`, `applyTheme()`, `toggleTheme()` en `login.js`
+  - Persistencia en localStorage compartida con la aplicación principal
+  - Nuevos estilos CSS: `.login-top-controls`, `.theme-toggle-login`
+- **Spinner de Envío en Carrito**: Indicador visual mientras se envía email
+  - Overlay oscuro con spinner giratorio durante el envío
+  - Función `mostrarEnviando(mostrar)` en `app.js`
+  - Traducción `shipping.sending` en ES/EN/FR
+  - Estilos CSS con soporte para modo oscuro
+- **Imágenes CID en Email y PDF**: Thumbnails de productos embebidos
+  - Imágenes en cuerpo del email HTML usando Content-ID (CID)
+  - Thumbnails en tabla del PDF generado
+  - `MIMEMultipart('mixed')` + `MIMEMultipart('related')` para estructura correcta
+  - Función `ImagenModel.get_thumbnails_batch()` para obtener imágenes
+
 ### 2026-01-12 - Release v1.1.0
 - **Release v1.1.0**: Mejoras de seguridad y rendimiento
   - Tag Git: `v1.1.0`
@@ -1259,4 +1278,4 @@ scp -r backend frontend docker-compose.yml ubuntu@51.68.44.136:/opt/ApiRestExter
 - **Nota**: Solo accesible desde red local (192.168.63.x)
 
 ---
-*Última actualización: 2026-01-12*
+*Última actualización: 2026-01-19*
