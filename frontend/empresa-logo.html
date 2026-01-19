@@ -199,18 +199,13 @@
             API_URL = `${protocol}//${hostname}${port ? ':' + port : ''}`;
         }
 
-        // connection (empresa_cli_id) para llamadas API de logo
-        // empresa_id (empresa_erp) para mostrar en pantalla
-        let connection = localStorage.getItem('connection');
-        let empresaIdDisplay = localStorage.getItem('empresa_id') || '1';
+        // empresa_id (empresa_erp) para llamadas API de logo y para mostrar
+        let empresaId = localStorage.getItem('empresa_id') || '1';
 
-        if (!connection) {
-            console.warn('No hay connection en localStorage');
+        if (!empresaId) {
+            console.warn('No hay empresa_id en localStorage');
             window.location.href = 'login.html';
         }
-
-        // Usar connection para las llamadas API
-        let empresaId = connection;
 
         // Cargar logo de empresa desde BD
         async function cargarLogoEmpresa() {
@@ -260,8 +255,7 @@
 
         // Cargar estado actual
         async function loadCurrentState() {
-            // Mostrar empresa_id (empresa_erp) en pantalla, no connection
-            document.getElementById('empresa-id-display').textContent = empresaIdDisplay;
+            document.getElementById('empresa-id-display').textContent = empresaId;
 
             try {
                 // Verificar si existe logo
