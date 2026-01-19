@@ -30,12 +30,15 @@ import traceback
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
+from email.mime.image import MIMEImage
 from email import encoders
 from email.utils import formatdate
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from models.email_config_model import EmailConfigModel
 from models.propuesta_model import PropuestaModel
+from models.imagen_model import ImagenModel
+import base64
 
 carrito_bp = Blueprint('carrito', __name__, url_prefix='/api/carrito')
 
@@ -333,7 +336,7 @@ def enviar_carrito():
 # ==================== FUNCIONES AUXILIARES ====================
 
 def generar_pdf_carrito(carrito, usuario, comentarios, referencia=""):
-    """Genera un PDF con los items del carrito"""
+    """Genera un PDF con los items del carrito incluyendo imágenes"""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
 
@@ -351,7 +354,7 @@ def generar_pdf_carrito(carrito, usuario, comentarios, referencia=""):
     )
 
     # Título
-    story.append(Paragraph("📋 Solicitud de Stock", title_style))
+    story.append(Paragraph("Solicitud de Stock", title_style))
     story.append(Spacer(1, 0.3*inch))
 
     # Información general
@@ -362,44 +365,63 @@ def generar_pdf_carrito(carrito, usuario, comentarios, referencia=""):
         story.append(Paragraph(f"<b>Referencia:</b> {referencia}", info_style))
     story.append(Paragraph(f"<b>Total de items:</b> {len(carrito)}", info_style))
     story.append(Spacer(1, 0.3*inch))
-    
-    # Tabla de productos
-    data = [['Código', 'Descripción', 'Formato', 'Calidad', 'Tono', 'Calibre', 'Stock', 'Solicitado']]
-    
+
+    # Obtener thumbnails de los productos
+    codigos = [item['codigo'] for item in carrito]
+    thumbnails = ImagenModel.get_thumbnails_batch(codigos)
+
+    # Tabla de productos con imágenes
+    data = [['Img', 'Código', 'Descripción', 'Formato', 'Cal.', 'Tono', 'Calib.', 'Stock', 'Solicitado']]
+
     for item in carrito:
+        codigo = item['codigo'].strip() if item['codigo'] else item['codigo']
+
+        # Crear imagen para la celda
+        img_cell = '-'
+        if codigo in thumbnails:
+            try:
+                img_data = base64.b64decode(thumbnails[codigo])
+                img_buffer = io.BytesIO(img_data)
+                img_cell = Image(img_buffer, width=0.4*inch, height=0.4*inch)
+            except Exception:
+                img_cell = '-'
+
         data.append([
+            img_cell,
             item['codigo'],
-            item['descripcion'][:30] + '...' if len(item['descripcion']) > 30 else item['descripcion'],
+            item['descripcion'][:25] + '...' if len(item['descripcion']) > 25 else item['descripcion'],
             item.get('formato', '-'),
             item.get('calidad', '-'),
             item.get('tono', '-'),
             item.get('calibre', '-'),
-            f"{item['existencias']:.2f} {item.get('unidad', '')}",
-            f"{item['cantidad_solicitada']:.2f} {item.get('unidad', '')}"
+            f"{item['existencias']:.2f}",
+            f"{item['cantidad_solicitada']:.2f}"
         ])
-    
-    table = Table(data, colWidths=[1.1*inch, 1.9*inch, 0.9*inch, 0.8*inch, 0.6*inch, 0.6*inch, 1*inch, 1*inch])
+
+    table = Table(data, colWidths=[0.5*inch, 0.9*inch, 1.6*inch, 0.7*inch, 0.5*inch, 0.5*inch, 0.5*inch, 0.8*inch, 0.8*inch])
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#667eea')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('TOPPADDING', (0, 1), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 4),
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ('FONTSIZE', (0, 1), (-1, -1), 9),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey])
+        ('FONTSIZE', (0, 1), (-1, -1), 7),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f5f5f5')])
     ]))
-    
+
     story.append(table)
     story.append(Spacer(1, 0.3*inch))
-    
+
     # Comentarios
     if comentarios:
         story.append(Paragraph("<b>Comentarios:</b>", styles['Heading3']))
         story.append(Paragraph(comentarios, styles['Normal']))
-    
+
     # Generar PDF
     doc.build(story)
     buffer.seek(0)
@@ -482,7 +504,7 @@ def generar_excel_carrito(carrito, usuario, comentarios="", referencia=""):
 
 
 def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_id="1", email_copia=None, referencia="", excel_buffer=None):
-    """Envía el PDF y Excel por email usando configuración de la BD"""
+    """Envía el PDF y Excel por email usando configuración de la BD con imágenes CID"""
 
     print("\n" + "=" * 60)
     print(f"📧 INICIANDO ENVÍO DE EMAIL (Empresa: {empresa_id})")
@@ -493,7 +515,7 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
     # Obtener configuración desde la base de datos
     print("1️⃣ Obteniendo configuración de email desde BD...")
     email_config = EmailConfigModel.get_active_config(empresa_id)
-    
+
     if not email_config:
         error_msg = "No hay configuración de email activa en la base de datos"
         print(f"❌ ERROR: {error_msg}")
@@ -501,15 +523,15 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
         print("   UPDATE email_config SET activo = 1 WHERE id = 1;")
         print("=" * 60 + "\n")
         raise Exception(error_msg)
-    
+
     print(f"✅ Configuración obtenida: {email_config['nombre_configuracion']}")
     print(f"   - Servidor SMTP: {email_config['smtp_server']}:{email_config['smtp_port']}")
     print(f"   - De: {email_config['email_from']}")
     print(f"   - Para: {email_config['email_to']}")
-    
-    # Crear mensaje
+
+    # Crear mensaje con soporte para imágenes embebidas (mixed para adjuntos)
     print("\n2️⃣ Creando mensaje de email...")
-    msg = MIMEMultipart()
+    msg = MIMEMultipart('mixed')
     msg['From'] = email_config['email_from']
     msg['To'] = email_config['email_to']
     if email_copia:
@@ -520,16 +542,33 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
     print(f"✅ Fecha: {msg['Date']}")
     if email_copia:
         print(f"✅ CC: {email_copia}")
-    
-    # Cuerpo del email con tabla HTML de productos
+
+    # Cuerpo del email con tabla HTML de productos e imágenes embebidas (CID)
     print("\n3️⃣ Construyendo cuerpo del email con tabla de productos...")
-    
-    # Construir filas de la tabla HTML
+
+    # Obtener thumbnails de todos los productos del carrito
+    codigos = [item['codigo'] for item in carrito]
+    print(f"   Obteniendo thumbnails para {len(codigos)} productos...")
+    thumbnails = ImagenModel.get_thumbnails_batch(codigos)
+    print(f"   ✅ Thumbnails obtenidos: {len(thumbnails)} de {len(codigos)}")
+
+    # Construir filas de la tabla HTML con referencias CID para imágenes
     filas_productos = ""
+    imagenes_adjuntar = {}  # {cid: imagen_base64}
     for item in carrito:
+        codigo = item['codigo'].strip() if item['codigo'] else item['codigo']
+        # Crear celda de imagen
+        if codigo in thumbnails:
+            cid = f"img_{codigo.replace(' ', '_').replace('/', '_')}"
+            imagen_html = f'<img src="cid:{cid}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" alt="{codigo}">'
+            imagenes_adjuntar[cid] = thumbnails[codigo]
+        else:
+            imagen_html = '<div style="width: 50px; height: 50px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 10px;">-</div>'
+
         filas_productos += f"""
         <tr>
-            <td style="padding: 12px; border: 1px solid #ddd;">{item['codigo']}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">{imagen_html}</td>
+            <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; color: #667eea;">{item['codigo']}</td>
             <td style="padding: 12px; border: 1px solid #ddd;">{item['descripcion']}</td>
             <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">{item.get('formato', '-')}</td>
             <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">{item.get('calidad', '-')}</td>
@@ -539,7 +578,7 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
             <td style="padding: 12px; border: 1px solid #ddd; text-align: right; font-weight: bold; color: #667eea;">{item['cantidad_solicitada']:,.2f} {item.get('unidad', '')}</td>
         </tr>
         """
-    
+
     # Sección de comentarios (solo si hay)
     comentarios_html = ""
     if comentarios:
@@ -549,23 +588,23 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
             <p style="white-space: pre-wrap; margin: 0;">{comentarios}</p>
         </div>
         """
-    
+
     # HTML completo del email
     body = f"""
     <html>
         <head>
             <style>
                 body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                           padding: 30px; text-align: center; color: white; border-radius: 10px 10px 0 0; }}
                 .header h1 {{ margin: 0; font-size: 28px; }}
                 .info-box {{ background-color: #f0f4ff; padding: 20px; margin: 20px 0; border-radius: 8px; }}
                 .info-box p {{ margin: 8px 0; }}
                 table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
-                th {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                th {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                      color: white; padding: 12px; text-align: left; }}
                 tr:nth-child(even) {{ background-color: #f9f9f9; }}
-                .footer {{ background-color: #fff9e6; padding: 15px; margin-top: 20px; 
+                .footer {{ background-color: #fff9e6; padding: 15px; margin-top: 20px;
                           border-left: 4px solid #ffc107; border-radius: 4px; }}
             </style>
         </head>
@@ -573,21 +612,22 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
             <div class="header">
                 <h1>📦 Solicitud de Stock</h1>
             </div>
-            
+
             <div class="info-box">
                 <p><strong>👤 Usuario:</strong> {usuario}</p>
                 <p><strong>📅 Fecha:</strong> {datetime.now().strftime('%d/%m/%Y %H:%M')}</p>
                 {'<p><strong>🏷️ Referencia:</strong> ' + referencia + '</p>' if referencia else ''}
                 <p><strong>📊 Total de productos:</strong> {len(carrito)}</p>
             </div>
-            
+
             <h2 style="color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
                 📋 Detalle de Productos Solicitados
             </h2>
-            
+
             <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
                 <thead>
                     <tr>
+                        <th style="background-color: #667eea; color: white; padding: 12px; text-align: center; border: 1px solid #ddd; width: 60px;">Img</th>
                         <th style="background-color: #667eea; color: white; padding: 12px; text-align: left; border: 1px solid #ddd;">Código</th>
                         <th style="background-color: #667eea; color: white; padding: 12px; text-align: left; border: 1px solid #ddd;">Descripción</th>
                         <th style="background-color: #667eea; color: white; padding: 12px; text-align: center; border: 1px solid #ddd;">Formato</th>
@@ -602,13 +642,13 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
                     {filas_productos}
                 </tbody>
             </table>
-            
+
             {comentarios_html}
-            
+
             <div class="footer">
                 <p style="margin: 0;"><strong>📎 Nota:</strong> Se adjunta PDF y Excel con el detalle completo de esta solicitud.</p>
             </div>
-            
+
             <p style="margin-top: 30px; color: #666;">
                 <em>Este correo fue generado automáticamente por el Sistema de Gestión de Stocks.</em><br>
                 <small>© {datetime.now().year} - Gestión de Inventarios</small>
@@ -616,9 +656,26 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
         </body>
     </html>
     """
-    
-    msg.attach(MIMEText(body, 'html'))
-    print("✅ Cuerpo del email con tabla HTML adjuntado")
+
+    # Crear parte related para HTML + imágenes embebidas
+    msg_related = MIMEMultipart('related')
+    msg_related.attach(MIMEText(body, 'html'))
+
+    # Adjuntar imágenes con CID
+    if imagenes_adjuntar:
+        print(f"   Adjuntando {len(imagenes_adjuntar)} imágenes con CID...")
+        for cid, img_base64 in imagenes_adjuntar.items():
+            try:
+                img_data = base64.b64decode(img_base64)
+                img_part = MIMEImage(img_data)
+                img_part.add_header('Content-ID', f'<{cid}>')
+                img_part.add_header('Content-Disposition', 'inline', filename=f'{cid}.jpg')
+                msg_related.attach(img_part)
+            except Exception as e:
+                print(f"   ⚠️ Error adjuntando imagen {cid}: {e}")
+
+    msg.attach(msg_related)
+    print("✅ Cuerpo del email con tabla HTML e imágenes adjuntado")
     
     # Adjuntar PDF
     print("\n4️⃣ Adjuntando PDF...")
