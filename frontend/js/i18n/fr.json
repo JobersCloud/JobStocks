@@ -194,7 +194,8 @@
     "confirmSend": "Envoyer la demande par email ?",
     "success": "✅ Demande envoyée avec succès par email",
     "error": "❌ Erreur : {error}",
-    "sendError": "❌ Erreur lors de l'envoi de la demande"
+    "sendError": "❌ Erreur lors de l'envoi de la demande",
+    "sending": "Envoi en cours..."
   },
   "errors": {
     "loadingStocks": "Erreur de chargement des stocks. Vérifiez que l'API fonctionne.",

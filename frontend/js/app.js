@@ -1945,6 +1945,9 @@ async function enviarSolicitud() {
 
     if (!confirm(t('shipping.confirmSend'))) return;
 
+    // Mostrar indicador de envio
+    mostrarEnviando(true);
+
     try {
         const response = await fetch(`${API_URL}/api/carrito/enviar`, {
             method: 'POST',
@@ -1954,6 +1957,9 @@ async function enviarSolicitud() {
             },
             body: JSON.stringify({ referencia, comentarios, empresa_id, enviar_copia: enviarCopia })
         });
+
+        // Ocultar indicador de envio
+        mostrarEnviando(false);
 
         if (response.ok) {
             alert(t('shipping.success'));
@@ -1965,8 +1971,34 @@ async function enviarSolicitud() {
             alert(t('shipping.error', { error: error.error }));
         }
     } catch (error) {
+        // Ocultar indicador de envio en caso de error
+        mostrarEnviando(false);
         console.error('Error al enviar solicitud:', error);
         alert(t('shipping.sendError'));
+    }
+}
+
+// Mostrar/ocultar indicador de envio
+function mostrarEnviando(mostrar) {
+    let overlay = document.getElementById('enviando-overlay');
+
+    if (mostrar) {
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'enviando-overlay';
+            overlay.innerHTML = `
+                <div class="enviando-content">
+                    <div class="enviando-spinner"></div>
+                    <p>${t('shipping.sending') || 'Enviando solicitud...'}</p>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+        overlay.style.display = 'flex';
+    } else {
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
     }
 }
 

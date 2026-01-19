@@ -194,7 +194,8 @@
     "confirmSend": "¿Enviar la solicitud por email?",
     "success": "✅ Solicitud enviada correctamente por email",
     "error": "❌ Error: {error}",
-    "sendError": "❌ Error al enviar la solicitud"
+    "sendError": "❌ Error al enviar la solicitud",
+    "sending": "Enviando solicitud..."
   },
   "errors": {
     "loadingStocks": "Error al cargar los stocks. Verifica que la API esté funcionando.",

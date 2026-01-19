@@ -194,7 +194,8 @@
     "confirmSend": "Send the request by email?",
     "success": "✅ Request sent successfully by email",
     "error": "❌ Error: {error}",
-    "sendError": "❌ Error sending request"
+    "sendError": "❌ Error sending request",
+    "sending": "Sending request..."
   },
   "errors": {
     "loadingStocks": "Error loading stocks. Please check if the API is running.",
