@@ -199,7 +199,12 @@
             API_URL = `${protocol}//${hostname}${port ? ':' + port : ''}`;
         }
 
-        let empresaId = localStorage.getItem('empresa_id') || '1';
+        // Usar connection (empresa_cli_id) para todos los endpoints de logo
+        let empresaId = localStorage.getItem('connection');
+        if (!empresaId) {
+            console.warn('No hay connection en localStorage');
+            window.location.href = 'login.html';
+        }
 
         // Cargar logo de empresa desde BD
         async function cargarLogoEmpresa() {

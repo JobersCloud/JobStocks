@@ -225,21 +225,22 @@
             localStorage.setItem('colorTheme', tema);
         }
 
-        async function cargarLogoEmpresa(empresaCliId) {
-            // empresaCliId se pasa como parámetro para evitar problemas de sincronización
-            const empresaId = empresaCliId || localStorage.getItem('empresa_id');
-            if (!empresaId) {
-                console.error('No hay empresa_id disponible');
+        async function cargarLogoEmpresa() {
+            // Usar connection (empresa_cli_id) para endpoints de logo
+            const connection = localStorage.getItem('connection');
+            if (!connection) {
+                console.warn('No hay connection en localStorage, usando valores por defecto');
+                applyColorTheme('rubi');
                 return;
             }
             const logoElements = document.querySelectorAll('.logo');
             try {
-                const configResponse = await fetch(`${API_URL}/api/empresa/${empresaId}/config`);
+                const configResponse = await fetch(`${API_URL}/api/empresa/${connection}/config`);
                 const config = await configResponse.json();
                 applyColorTheme(config.tema || 'rubi');
                 const invertirFilter = config.invertir_logo ? 'brightness(0) invert(1)' : 'none';
                 if (config.tiene_logo) {
-                    const logoUrl = `${API_URL}/api/empresa/${empresaId}/logo?t=${Date.now()}`;
+                    const logoUrl = `${API_URL}/api/empresa/${connection}/logo?t=${Date.now()}`;
                     logoElements.forEach(el => {
                         el.src = logoUrl;
                         el.style.filter = invertirFilter;
@@ -273,8 +274,7 @@
         // ==================== INICIALIZACIÓN ====================
         document.addEventListener('DOMContentLoaded', async function() {
             // Cargar logo de empresa (usa connection de localStorage)
-            const connection = localStorage.getItem('connection');
-            await cargarLogoEmpresa(connection);
+            await cargarLogoEmpresa();
 
             // Inicializar i18n
             await I18n.init();
