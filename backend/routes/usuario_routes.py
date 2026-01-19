@@ -58,52 +58,39 @@ usuario_bp = Blueprint('usuario', __name__, url_prefix='/api/usuarios')
 @administrador_required
 def listar_usuarios():
     """
-    Listar usuarios por empresa (solo administradores)
+    Listar usuarios por empresa (solo administradores).
+    Usa empresa_cli_id y empresa_erp de la sesión.
     ---
     tags:
       - Usuarios
     security:
       - cookieAuth: []
-    parameters:
-      - name: empresa_id
-        in: query
-        type: string
-        required: true
-        description: ID de la empresa
     responses:
       200:
         description: Lista de usuarios
-        schema:
-          type: object
-          properties:
-            success:
-              type: boolean
-            total:
-              type: integer
-            usuarios:
-              type: array
-      400:
-        description: Falta empresa_id
       401:
         description: No autenticado
       403:
         description: No autorizado (requiere rol administrador)
     """
-    empresa_id = request.args.get('empresa_id')
-    if not empresa_id:
-        return jsonify({
-            'success': False,
-            'error': 'Parámetro empresa_id es requerido'
-        }), 400
+    # Obtener empresa_erp de sesión para filtrar
+    empresa_erp = session.get('empresa_erp', '1')
+    empresa_cli_id = session.get('empresa_cli_id')
+
+    print(f"[DEBUG] listar_usuarios - empresa_cli_id: {empresa_cli_id}, empresa_erp: {empresa_erp}", flush=True)
 
     try:
-        usuarios = get_all_users_by_empresa(empresa_id)
+        usuarios = get_all_users_by_empresa(empresa_erp)
+        print(f"[DEBUG] listar_usuarios - Total usuarios: {len(usuarios)}")
         return jsonify({
             'success': True,
             'total': len(usuarios),
             'usuarios': usuarios
         }), 200
     except Exception as e:
+        import traceback
+        print(f"[ERROR] listar_usuarios - Error: {e}")
+        print(f"[ERROR] Traceback: {traceback.format_exc()}")
         return jsonify({
             'success': False,
             'error': str(e)
@@ -213,8 +200,12 @@ def crear_usuario():
     if enviar_email:
         data['debe_cambiar_password'] = True
 
+    # Preparar datos para crear usuario
+    empresa_cli_id = session.get('empresa_cli_id')
+    data['empresa_erp'] = data.get('empresa_id')  # Mapear empresa_id a empresa_erp
+
     try:
-        user_id = create_user_admin(data)
+        user_id = create_user_admin(data, empresa_cli_id)
 
         email_enviado = False
         email_error = None
@@ -453,7 +444,8 @@ def enviar_email_bienvenida(email, username, password, full_name, empresa_id):
 @administrador_required
 def obtener_usuario(user_id):
     """
-    Obtener un usuario por ID verificando empresa (solo administradores)
+    Obtener un usuario por ID (solo administradores).
+    Usa empresa de sesión.
     ---
     tags:
       - Usuarios
@@ -464,33 +456,17 @@ def obtener_usuario(user_id):
         in: path
         type: integer
         required: true
-        description: ID del usuario
-      - name: empresa_id
-        in: query
-        type: string
-        required: true
-        description: ID de la empresa
     responses:
       200:
         description: Datos del usuario
-      400:
-        description: Falta empresa_id
       404:
         description: Usuario no encontrado
-      401:
-        description: No autenticado
-      403:
-        description: No autorizado
     """
-    empresa_id = request.args.get('empresa_id')
-    if not empresa_id:
-        return jsonify({
-            'success': False,
-            'error': 'Parámetro empresa_id es requerido'
-        }), 400
+    empresa_cli_id = session.get('empresa_cli_id')
+    empresa_erp = session.get('empresa_erp', '1')
 
     try:
-        usuario = get_user_by_id_and_empresa(user_id, empresa_id)
+        usuario = get_user_by_id_and_empresa(user_id, empresa_cli_id, empresa_erp)
         if not usuario:
             return jsonify({
                 'success': False,
@@ -513,7 +489,8 @@ def obtener_usuario(user_id):
 @administrador_required
 def actualizar_usuario(user_id):
     """
-    Actualizar datos completos de un usuario (solo administradores)
+    Actualizar datos de un usuario (solo administradores).
+    Usa empresa de sesión.
     ---
     tags:
       - Usuarios
@@ -524,44 +501,13 @@ def actualizar_usuario(user_id):
         in: path
         type: integer
         required: true
-        description: ID del usuario
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          required:
-            - empresa_id
-          properties:
-            full_name:
-              type: string
-            email:
-              type: string
-            pais:
-              type: string
-            cliente_id:
-              type: string
-            active:
-              type: boolean
-            password:
-              type: string
-              description: Dejar vacío para mantener la contraseña actual
-            rol:
-              type: string
-              enum: [usuario, administrador, superusuario]
-            empresa_id:
-              type: string
     responses:
       200:
         description: Usuario actualizado
       400:
-        description: Datos inválidos o falta empresa_id
+        description: Datos inválidos
       404:
         description: Usuario no encontrado
-      401:
-        description: No autenticado
-      403:
-        description: No autorizado
     """
     data = request.json
 
@@ -571,12 +517,8 @@ def actualizar_usuario(user_id):
             'error': 'No se proporcionaron datos para actualizar'
         }), 400
 
-    empresa_id = data.get('empresa_id')
-    if not empresa_id:
-        return jsonify({
-            'success': False,
-            'error': 'Campo empresa_id es requerido'
-        }), 400
+    empresa_cli_id = session.get('empresa_cli_id')
+    empresa_erp = session.get('empresa_erp', '1')
 
     # Validar que solo superusuario puede cambiar rol a admin/superusuario
     if 'rol' in data and data['rol'] in ['administrador', 'superusuario']:
@@ -587,7 +529,7 @@ def actualizar_usuario(user_id):
             }), 403
 
     try:
-        actualizado = update_user_full(user_id, data, empresa_id)
+        actualizado = update_user_full(user_id, data, empresa_cli_id, empresa_erp)
         if not actualizado:
             return jsonify({
                 'success': False,
@@ -661,10 +603,10 @@ def cambiar_rol(user_id):
         }), 400
 
     try:
-        # Obtener empresa_id de la sesión o del request
-        empresa_id = request.args.get('empresa_id') or session.get('empresa_id', '1')
+        empresa_cli_id = session.get('empresa_cli_id')
+        empresa_erp = session.get('empresa_erp', '1')
 
-        actualizado = update_user_rol(user_id, data['rol'], empresa_id)
+        actualizado = update_user_rol(user_id, data['rol'], empresa_cli_id, empresa_erp)
         if not actualizado:
             return jsonify({
                 'success': False,
@@ -724,7 +666,8 @@ def desactivar_usuario(user_id):
         }), 400
 
     try:
-        desactivado = deactivate_user(user_id)
+        empresa_cli_id = session.get('empresa_cli_id')
+        desactivado = deactivate_user(user_id, empresa_cli_id)
         if not desactivado:
             return jsonify({
                 'success': False,
@@ -770,7 +713,8 @@ def activar_usuario(user_id):
         description: No autorizado
     """
     try:
-        activado = activate_user(user_id)
+        empresa_cli_id = session.get('empresa_cli_id')
+        activado = activate_user(user_id, empresa_cli_id)
         if not activado:
             return jsonify({
                 'success': False,
@@ -837,7 +781,8 @@ def cambiar_verificacion_email(user_id):
         }), 400
 
     try:
-        actualizado = set_email_verified(user_id, data['verificado'])
+        empresa_cli_id = session.get('empresa_cli_id')
+        actualizado = set_email_verified(user_id, data['verificado'], empresa_cli_id)
         if not actualizado:
             return jsonify({
                 'success': False,
@@ -903,7 +848,8 @@ def cambiar_password():
         }), 400
 
     try:
-        result = change_password(current_user.id, new_password)
+        empresa_cli_id = session.get('empresa_cli_id')
+        result = change_password(current_user.id, new_password, empresa_cli_id)
         if result:
             return jsonify({
                 'success': True,

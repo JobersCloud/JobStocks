@@ -80,13 +80,19 @@ function applyColorTheme(tema) {
 }
 
 // Cargar logo y favicon de la empresa desde la BD
+// Usa 'connection' (empresa_cli_id) porque el endpoint necesita conectar a la BD del cliente
 async function cargarLogoEmpresa() {
-    const empresaId = localStorage.getItem('empresa_id') || '1';
+    const connection = localStorage.getItem('connection');
+    if (!connection) {
+        console.warn('No hay connection en localStorage, usando valores por defecto');
+        applyColorTheme('rubi');
+        return;
+    }
     const logoElements = document.querySelectorAll('.logo');
 
     try {
         // Obtener configuración completa del logo (incluye invertir_logo y tema)
-        const configResponse = await fetch(`${API_URL}/api/empresa/${empresaId}/config`);
+        const configResponse = await fetch(`${API_URL}/api/empresa/${connection}/config`);
         const config = await configResponse.json();
 
         // Aplicar tema de color
@@ -97,9 +103,9 @@ async function cargarLogoEmpresa() {
 
         if (config.tiene_logo) {
             // Cargar logo desde la API con timestamp para evitar caché
-            const logoUrl = `${API_URL}/api/empresa/${empresaId}/logo?t=${Date.now()}`;
+            const logoUrl = `${API_URL}/api/empresa/${connection}/logo?t=${Date.now()}`;
             // Guardar URL base en localStorage para otras páginas (registro, verificación)
-            localStorage.setItem('logoUrl', `${API_URL}/api/empresa/${empresaId}/logo`);
+            localStorage.setItem('logoUrl', `${API_URL}/api/empresa/${connection}/logo`);
 
             logoElements.forEach(el => {
                 el.src = logoUrl;
@@ -109,7 +115,7 @@ async function cargarLogoEmpresa() {
 
             // Cargar favicon si existe y guardar en localStorage para otras páginas
             if (config.tiene_favicon) {
-                const faviconUrl = `${API_URL}/api/empresa/${empresaId}/favicon`;
+                const faviconUrl = `${API_URL}/api/empresa/${connection}/favicon`;
                 localStorage.setItem('faviconUrl', faviconUrl);
                 let faviconLink = document.querySelector("link[rel='icon']");
                 if (!faviconLink) {
@@ -122,7 +128,7 @@ async function cargarLogoEmpresa() {
                 localStorage.removeItem('faviconUrl');
             }
 
-            console.log(`Logo cargado desde BD para empresa ${empresaId}, invertir: ${config.invertir_logo}`);
+            console.log(`Logo cargado desde BD para connection ${connection}, invertir: ${config.invertir_logo}`);
         } else {
             // Usar logo por defecto con filtro de inversión (para headers)
             localStorage.removeItem('logoUrl');
@@ -131,7 +137,7 @@ async function cargarLogoEmpresa() {
                 el.style.filter = 'brightness(0) invert(1)';
                 el.style.visibility = 'visible';
             });
-            console.log(`No hay logo en BD para empresa ${empresaId}, usando default con inversión`);
+            console.log(`No hay logo en BD para connection ${connection}, usando default con inversión`);
         }
     } catch (error) {
         console.log('Error al cargar logo:', error);
@@ -173,7 +179,7 @@ function addEmpresaToParams(params) {
     return params;
 }
 
-// Mostrar error crítico cuando falta el parámetro empresa
+// Mostrar error crítico cuando falta el parámetro connection
 function showCriticalError() {
     document.body.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
@@ -181,10 +187,10 @@ function showCriticalError() {
                 <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
                 <h1 style="color: #333; margin-bottom: 1rem; font-size: 1.5rem;">Sesión Inválida</h1>
                 <p style="color: #666; margin-bottom: 1.5rem; line-height: 1.6;">
-                    No se ha detectado una empresa válida para esta sesión.
+                    No se ha detectado una conexión válida para esta sesión.
                 </p>
                 <p style="color: #999; font-size: 0.9rem; margin-bottom: 1.5rem;">
-                    Por favor, inicie sesión desde la URL correcta con el parámetro <strong>empresa</strong>.
+                    Por favor, inicie sesión desde la URL correcta con el parámetro <strong>connection</strong>.
                 </p>
                 <a href="/login" style="display: inline-block; background: #667eea; color: white; padding: 0.75rem 2rem; border-radius: 6px; text-decoration: none; font-weight: 500;">
                     Ir a Login
@@ -399,8 +405,8 @@ async function checkAuth() {
         // Si debe cambiar contraseña, redirigir al login
         if (user.debe_cambiar_password) {
             console.log('⚠️ Usuario debe cambiar contraseña, redirigiendo a login...');
-            const empresaId = localStorage.getItem('empresa_id') || '1';
-            window.location.replace(`/login?empresa=${empresaId}`);
+            const connection = localStorage.getItem('connection');
+            window.location.replace(`/login?connection=${connection}`);
             return false;
         }
 
@@ -478,6 +484,7 @@ document.addEventListener('click', function(event) {
 });
 
 // Navegar a diferentes secciones
+// NO se pasa empresa en la URL - el backend obtiene empresa_id de la sesión
 function navigateTo(section) {
     // Cerrar el menú
     const menuDropdown = document.getElementById('menu-dropdown');
@@ -485,35 +492,31 @@ function navigateTo(section) {
     if (menuDropdown) menuDropdown.classList.remove('show');
     if (menuBtn) menuBtn.classList.remove('active');
 
-    // Obtener empresa_id para incluir en la URL
-    const empresaId = localStorage.getItem('empresa_id');
-    const empresaParam = empresaId ? `?empresa=${empresaId}` : '';
-
-    // Navegar según la sección
+    // Navegar según la sección (sin parámetros - el backend usa la sesión)
     switch(section) {
         case 'mis-propuestas':
-            window.location.href = `mis-propuestas.html${empresaParam}`;
+            window.location.href = 'mis-propuestas.html';
             break;
         case 'todas-propuestas':
-            window.location.href = `todas-propuestas.html${empresaParam}`;
+            window.location.href = 'todas-propuestas.html';
             break;
         case 'todas-consultas':
-            window.location.href = `todas-consultas.html${empresaParam}`;
+            window.location.href = 'todas-consultas.html';
             break;
         case 'usuarios':
-            window.location.href = `usuarios.html${empresaParam}`;
+            window.location.href = 'usuarios.html';
             break;
         case 'email-config':
-            window.location.href = `email-config.html${empresaParam}`;
+            window.location.href = 'email-config.html';
             break;
         case 'parametros':
-            window.location.href = `parametros.html${empresaParam}`;
+            window.location.href = 'parametros.html';
             break;
         case 'dashboard':
-            window.location.href = `dashboard.html${empresaParam}`;
+            window.location.href = 'dashboard.html';
             break;
         case 'empresa-logo':
-            window.location.href = `empresa-logo.html${empresaParam}`;
+            window.location.href = 'empresa-logo.html';
             break;
         default:
             console.log('Sección no reconocida:', section);
@@ -1972,15 +1975,7 @@ window.onclick = function(event) {
 window.onload = async function() {
     console.log('🚀 Iniciando aplicación...');
 
-    // VALIDAR EMPRESA_ID OBLIGATORIO
-    const empresaId = getEmpresaId();
-    if (!empresaId) {
-        console.error('❌ ERROR CRÍTICO: No hay empresa_id en localStorage');
-        showCriticalError();
-        return; // Detener la inicialización
-    }
-
-    // Cargar logo y favicon de la empresa
+    // Cargar logo y favicon de la empresa (usa connection de localStorage si existe)
     await cargarLogoEmpresa();
 
     // Inicializar sistema de idiomas

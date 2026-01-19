@@ -225,8 +225,13 @@
             localStorage.setItem('colorTheme', tema);
         }
 
-        async function cargarLogoEmpresa() {
-            const empresaId = localStorage.getItem('empresa_id') || '1';
+        async function cargarLogoEmpresa(empresaCliId) {
+            // empresaCliId se pasa como parámetro para evitar problemas de sincronización
+            const empresaId = empresaCliId || localStorage.getItem('empresa_id');
+            if (!empresaId) {
+                console.error('No hay empresa_id disponible');
+                return;
+            }
             const logoElements = document.querySelectorAll('.logo');
             try {
                 const configResponse = await fetch(`${API_URL}/api/empresa/${empresaId}/config`);
@@ -267,23 +272,9 @@
 
         // ==================== INICIALIZACIÓN ====================
         document.addEventListener('DOMContentLoaded', async function() {
-            // Verificar empresa_id
-            const urlParams = new URLSearchParams(window.location.search);
-            let empresaId = urlParams.get('empresa');
-
-            if (empresaId) {
-                localStorage.setItem('empresa_id', empresaId);
-            } else {
-                empresaId = localStorage.getItem('empresa_id');
-            }
-
-            if (!empresaId) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // Cargar logo de empresa PRIMERO
-            await cargarLogoEmpresa();
+            // Cargar logo de empresa (usa connection de localStorage)
+            const connection = localStorage.getItem('connection');
+            await cargarLogoEmpresa(connection);
 
             // Inicializar i18n
             await I18n.init();
@@ -312,6 +303,7 @@
                 });
 
                 if (!response.ok) {
+                    // Redirigir a login - el connection ya está en localStorage
                     window.location.href = 'login.html';
                     return;
                 }
@@ -357,7 +349,7 @@
             const empresaId = localStorage.getItem('empresa_id');
 
             try {
-                const response = await fetch(`${API_URL}/api/usuarios?empresa_id=${empresaId}`, {
+                const response = await fetch(`${API_URL}/api/usuarios`, {
                     credentials: 'include'
                 });
 
@@ -712,7 +704,7 @@
             const empresaId = localStorage.getItem('empresa_id');
 
             try {
-                const response = await fetch(`${API_URL}/api/usuarios/${userId}?empresa_id=${empresaId}`, {
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}`, {
                     credentials: 'include'
                 });
 

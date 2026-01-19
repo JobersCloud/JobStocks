@@ -15,24 +15,27 @@ if (hostname === 'localhost' || hostname === '127.0.0.1') {
 
 let loginForm, btnLogin, alertContainer;
 
-// Capturar empresa_id de la URL (OBLIGATORIO)
-function getEmpresaFromURL() {
+// Capturar connection de la URL (OBLIGATORIO)
+// connection = ID para buscar en BD central (ej: 10049)
+// empresa_id = empresa_erp para filtros (ej: '1') - se obtiene después del login
+function getConnectionFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
-    const empresa = urlParams.get('empresa');
+    // Aceptar tanto 'connection' como 'empresa' para compatibilidad
+    const connection = urlParams.get('connection') || urlParams.get('empresa');
 
-    if (empresa) {
-        // Guardar en localStorage
-        localStorage.setItem('empresa_id', empresa);
-        console.log(`Empresa seleccionada: ${empresa}`);
-        return empresa;
+    if (connection) {
+        // Guardar connection en localStorage (ID para conexión BD)
+        localStorage.setItem('connection', connection);
+        console.log(`Connection seleccionada: ${connection}`);
+        return connection;
     } else {
         // Si no viene en URL, verificar si hay una guardada
-        const empresaGuardada = localStorage.getItem('empresa_id');
-        if (empresaGuardada) {
-            console.log(`Usando empresa guardada: ${empresaGuardada}`);
-            return empresaGuardada;
+        const connectionGuardada = localStorage.getItem('connection');
+        if (connectionGuardada) {
+            console.log(`Usando connection guardada: ${connectionGuardada}`);
+            return connectionGuardada;
         } else {
-            // ERROR: No hay empresa en URL ni en localStorage
+            // ERROR: No hay connection en URL ni en localStorage
             return null;
         }
     }
@@ -47,9 +50,10 @@ function applyColorTheme(tema) {
 }
 
 // Cargar tema de color desde la API
-async function cargarTemaColor(empresaId) {
+// Usa connection (empresa_cli_id) porque el endpoint necesita conectar a la BD del cliente
+async function cargarTemaColor(connection) {
     try {
-        const response = await fetch(`${API_URL}/api/empresa/${empresaId}/config`);
+        const response = await fetch(`${API_URL}/api/empresa/${connection}/config`);
         const config = await response.json();
         applyColorTheme(config.tema || 'rubi');
     } catch (error) {
@@ -58,7 +62,7 @@ async function cargarTemaColor(empresaId) {
     }
 }
 
-// Mostrar error crítico cuando falta el parámetro empresa
+// Mostrar error crítico cuando falta el parámetro connection
 function showCriticalError() {
     document.body.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
@@ -66,10 +70,10 @@ function showCriticalError() {
                 <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
                 <h1 style="color: #333; margin-bottom: 1rem; font-size: 1.5rem;">Parámetro Obligatorio Faltante</h1>
                 <p style="color: #666; margin-bottom: 1.5rem; line-height: 1.6;">
-                    Esta aplicación requiere el parámetro <strong>empresa</strong> en la URL para funcionar.
+                    Esta aplicación requiere el parámetro <strong>connection</strong> en la URL para funcionar.
                 </p>
                 <div style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-family: 'Courier New', monospace; color: #333;">
-                    ${window.location.origin}${window.location.pathname}<strong style="color: #e74c3c;">?empresa=1</strong>
+                    ${window.location.origin}${window.location.pathname}<strong style="color: #e74c3c;">?connection=10049</strong>
                 </div>
                 <p style="color: #999; font-size: 0.9rem;">
                     Por favor, contacte con el administrador del sistema para obtener la URL correcta.
@@ -110,23 +114,23 @@ async function verificarSesionActiva() {
 
 // Inicializar después de que i18n esté listo
 async function initLogin() {
-    // Capturar empresa de la URL (OBLIGATORIO) - hacer esto primero
-    const empresaId = getEmpresaFromURL();
+    // Capturar connection de la URL (OBLIGATORIO) - hacer esto primero
+    const connection = getConnectionFromURL();
 
-    if (!empresaId) {
-        // ERROR CRÍTICO: No hay parámetro empresa
-        console.error('ERROR: Parámetro empresa obligatorio no encontrado en URL ni en localStorage');
+    if (!connection) {
+        // ERROR CRÍTICO: No hay parámetro connection
+        console.error('ERROR: Parámetro connection obligatorio no encontrado en URL ni en localStorage');
         showCriticalError();
         return; // Detener la inicialización
     }
 
-    // Cargar tema de color
-    await cargarTemaColor(empresaId);
+    // Cargar tema de color (usa connection para conectar a BD del cliente)
+    await cargarTemaColor(connection);
 
     // Inicializar i18n (necesario para mensajes)
     await I18n.init();
 
-    console.log(`Iniciando con empresa_id: ${empresaId}`);
+    console.log(`Iniciando con connection: ${connection}`);
 
     loginForm = document.getElementById('login-form');
     btnLogin = document.getElementById('btn-login');
@@ -185,19 +189,26 @@ function setupLoginForm() {
         setLoading(true);
 
         try {
-            const empresaId = localStorage.getItem('empresa_id') || '1';
+            // connection = ID para conexión a BD (ej: 10049)
+            const connection = localStorage.getItem('connection');
             const response = await fetch(`${API_URL}/api/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 credentials: 'include',
-                body: JSON.stringify({ username, password, empresa_id: empresaId })
+                body: JSON.stringify({ username, password, empresa_cli_id: connection })
             });
 
             const data = await response.json();
 
             if (data.success) {
+                // ⭐ Guardar empresa_id (empresa_erp) devuelto por el servidor para filtros
+                if (data.user && data.user.empresa_id) {
+                    localStorage.setItem('empresa_id', data.user.empresa_id);
+                    console.log(`empresa_id guardado: ${data.user.empresa_id}`);
+                }
+
                 // Verificar si debe cambiar la contraseña
                 if (data.debe_cambiar_password) {
                     showPasswordChangeModal();
@@ -224,8 +235,9 @@ function setupLoginForm() {
 // Verificar si el registro está habilitado
 async function verificarRegistroHabilitado() {
     try {
-        const empresaId = localStorage.getItem('empresa_id') || '1';
-        const response = await fetch(`${API_URL}/api/registro-habilitado?empresa_id=${empresaId}`);
+        // Usar connection para la verificación (necesita conectar a BD del cliente)
+        const connection = localStorage.getItem('connection');
+        const response = await fetch(`${API_URL}/api/registro-habilitado?connection=${connection}`);
         const data = await response.json();
 
         if (data.habilitado) {
@@ -267,13 +279,14 @@ async function reenviarVerificacion() {
     resendAlert.innerHTML = '';
 
     try {
-        const empresaId = localStorage.getItem('empresa_id') || '1';
+        // Usar connection para reenvío (necesita conectar a BD del cliente)
+        const connection = localStorage.getItem('connection');
         const response = await fetch(`${API_URL}/api/resend-verification`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ email, empresa_id: empresaId })
+            body: JSON.stringify({ email, connection: connection })
         });
 
         const data = await response.json();

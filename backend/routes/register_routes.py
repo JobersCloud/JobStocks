@@ -38,7 +38,11 @@ with open(PAISES_FILE, 'r', encoding='utf-8') as f:
 
 def get_empresa_cli_id():
     """Obtiene el empresa_cli_id del request (ID de conexión)"""
-    empresa_cli_id = request.args.get('empresa_id') or request.args.get('empresa')
+    # Aceptar 'connection', 'empresa_cli_id', 'empresa_id' o 'empresa' para compatibilidad
+    empresa_cli_id = (request.args.get('connection') or
+                      request.args.get('empresa_cli_id') or
+                      request.args.get('empresa_id') or
+                      request.args.get('empresa'))
     if empresa_cli_id:
         return empresa_cli_id
 
@@ -46,7 +50,10 @@ def get_empresa_cli_id():
     if request.is_json:
         data = request.get_json(silent=True)
         if data:
-            empresa_cli_id = data.get('empresa_id') or data.get('empresa')
+            empresa_cli_id = (data.get('connection') or
+                             data.get('empresa_cli_id') or
+                             data.get('empresa_id') or
+                             data.get('empresa'))
             if empresa_cli_id:
                 return empresa_cli_id
 

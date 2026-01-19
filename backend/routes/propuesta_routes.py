@@ -16,7 +16,7 @@
 # ARCHIVO: routes/propuesta_routes.py
 # Endpoints para consulta y gestion de propuestas (ERP)
 # ============================================
-from flask import Blueprint, jsonify, request, Response
+from flask import Blueprint, jsonify, request, Response, session
 from flask_login import login_required, current_user
 from utils.auth import api_key_or_login_required, administrador_required
 from models.propuesta_model import PropuestaModel
@@ -32,37 +32,24 @@ propuesta_bp = Blueprint('propuesta', __name__, url_prefix='/api/propuestas')
 @login_required
 def get_mis_propuestas():
     """
-    Obtener las propuestas del usuario actual
+    Obtener las propuestas del usuario actual.
+    Usa empresa de sesión.
     ---
     tags:
       - Propuestas
     security:
       - cookieAuth: []
-    parameters:
-      - name: empresa
-        in: query
-        type: string
-        required: false
-        description: Filtrar por empresa
     responses:
       200:
         description: Lista de propuestas del usuario
-        schema:
-          type: object
-          properties:
-            success:
-              type: boolean
-            total:
-              type: integer
-            propuestas:
-              type: array
       401:
         description: No autenticado
     """
-    empresa_id = request.args.get('empresa')
+    # Usar empresa_erp de sesión para filtrar
+    empresa_erp = session.get('empresa_erp', '1')
 
     try:
-        propuestas = PropuestaModel.get_by_user(current_user.id, empresa_id=empresa_id)
+        propuestas = PropuestaModel.get_by_user(current_user.id, empresa_id=empresa_erp)
         return jsonify({
             'success': True,
             'total': len(propuestas),
@@ -80,18 +67,14 @@ def get_mis_propuestas():
 @administrador_required
 def get_todas_propuestas():
     """
-    Obtener todas las propuestas (solo administradores)
+    Obtener todas las propuestas (solo administradores).
+    Usa empresa de sesión.
     ---
     tags:
       - Propuestas
     security:
       - cookieAuth: []
     parameters:
-      - name: empresa
-        in: query
-        type: string
-        required: false
-        description: Filtrar por empresa
       - name: estado
         in: query
         type: string
@@ -101,25 +84,16 @@ def get_todas_propuestas():
     responses:
       200:
         description: Lista de todas las propuestas
-        schema:
-          type: object
-          properties:
-            success:
-              type: boolean
-            total:
-              type: integer
-            propuestas:
-              type: array
       401:
         description: No autenticado
       403:
         description: No autorizado (requiere rol administrador)
     """
-    empresa_id = request.args.get('empresa')
+    empresa_erp = session.get('empresa_erp', '1')
     estado = request.args.get('estado')
 
     try:
-        propuestas = PropuestaModel.get_all(empresa_id=empresa_id, estado=estado)
+        propuestas = PropuestaModel.get_all(empresa_id=empresa_erp, estado=estado)
         return jsonify({
             'success': True,
             'total': len(propuestas),
@@ -136,7 +110,8 @@ def get_todas_propuestas():
 @api_key_or_login_required
 def get_pendientes():
     """
-    Obtener propuestas pendientes de procesar
+    Obtener propuestas pendientes de procesar.
+    Usa empresa de sesión.
     ---
     tags:
       - Propuestas
@@ -150,57 +125,18 @@ def get_pendientes():
         type: boolean
         required: false
         default: false
-        description: Si es true, incluye las lineas de detalle de cada propuesta
-      - name: empresa
-        in: query
-        type: string
-        required: false
-        description: Filtrar por empresa
+        description: Si es true, incluye las lineas de detalle
     responses:
       200:
         description: Lista de propuestas pendientes
-        schema:
-          type: object
-          properties:
-            success:
-              type: boolean
-            total:
-              type: integer
-            propuestas:
-              type: array
-              items:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  user_id:
-                    type: integer
-                  empresa_id:
-                    type: string
-                  fecha:
-                    type: string
-                  comentarios:
-                    type: string
-                  estado:
-                    type: string
-                  total_items:
-                    type: integer
-                  username:
-                    type: string
-                  full_name:
-                    type: string
-                  email:
-                    type: string
-                  lineas:
-                    type: array
       401:
         description: No autenticado
     """
     incluir_lineas = request.args.get('incluir_lineas', 'false').lower() == 'true'
-    empresa_id = request.args.get('empresa')
+    empresa_erp = session.get('empresa_erp', '1')
 
     try:
-        propuestas = PropuestaModel.get_pendientes(incluir_lineas=incluir_lineas, empresa_id=empresa_id)
+        propuestas = PropuestaModel.get_pendientes(incluir_lineas=incluir_lineas, empresa_id=empresa_erp)
         return jsonify({
             'success': True,
             'total': len(propuestas),

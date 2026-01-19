@@ -179,11 +179,13 @@ def get_user_by_username(username, empresa_cli_id):
             conn.close()
 
 
-def get_all_users_by_empresa(empresa_cli_id, empresa_erp):
+def get_all_users_by_empresa(empresa_erp):
     """Obtener todos los usuarios de una empresa"""
+    print(f"[DEBUG] get_all_users_by_empresa - empresa_erp: {empresa_erp}")
     conn = None
     try:
-        conn = Database.get_connection(empresa_cli_id)
+        conn = Database.get_connection()  # Obtiene empresa_cli_id de sesión
+        print(f"[DEBUG] get_all_users_by_empresa - Conexión obtenida")
         cursor = conn.cursor()
 
         cursor.execute("""

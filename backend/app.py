@@ -131,21 +131,27 @@ def load_user(user_id):
     empresa_cli_id = session.get('empresa_cli_id')
     empresa_erp = session.get('empresa_erp')
 
+    print(f"[DEBUG] load_user - user_id: {user_id}, empresa_cli_id: {empresa_cli_id}, empresa_erp: {empresa_erp}", flush=True)
+
     if not empresa_cli_id:
+        print(f"[DEBUG] load_user - No empresa_cli_id en sesión, retornando None", flush=True)
         return None
 
     user_data = get_user_by_id(int(user_id), empresa_cli_id, empresa_erp)
     if user_data:
+        rol = user_data.get('rol', 'usuario')
+        print(f"[DEBUG] load_user - Usuario encontrado: {user_data.get('username')}, rol: {rol}", flush=True)
         return User(
             id=user_data['id'],
             username=user_data['username'],
             email=user_data.get('email'),
             full_name=user_data.get('full_name'),
-            rol=user_data.get('rol', 'usuario'),
+            rol=rol,
             empresa_id=user_data.get('empresa_erp', empresa_erp),  # empresa_erp para compatibilidad
             cliente_id=user_data.get('cliente_id'),
             debe_cambiar_password=user_data.get('debe_cambiar_password', False)
         )
+    print(f"[DEBUG] load_user - Usuario NO encontrado para id: {user_id}", flush=True)
     return None
 
 # Registrar blueprints

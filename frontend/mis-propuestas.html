@@ -143,8 +143,13 @@
             localStorage.setItem('colorTheme', tema);
         }
 
-        async function cargarLogoEmpresa() {
-            const empresaId = localStorage.getItem('empresa_id') || '1';
+        async function cargarLogoEmpresa(empresaCliId) {
+            // empresaCliId se pasa como parámetro para evitar problemas de sincronización
+            const empresaId = empresaCliId || localStorage.getItem('empresa_id');
+            if (!empresaId) {
+                console.error('No hay empresa_id disponible');
+                return;
+            }
             const logoElements = document.querySelectorAll('.logo');
             try {
                 const configResponse = await fetch(`${API_URL}/api/empresa/${empresaId}/config`);
@@ -196,8 +201,8 @@
                 return;
             }
 
-            // Cargar logo de empresa PRIMERO
-            await cargarLogoEmpresa();
+            // Cargar logo de empresa PRIMERO (pasando el empresaId directamente)
+            await cargarLogoEmpresa(empresaId);
 
             // Inicializar i18n
             await I18n.init();
@@ -241,7 +246,7 @@
 
             try {
                 const empresaId = localStorage.getItem('empresa_id');
-                const response = await fetch(`${API_URL}/api/propuestas/mis-propuestas?empresa=${empresaId}`, {
+                const response = await fetch(`${API_URL}/api/propuestas/mis-propuestas`, {
                     credentials: 'include'
                 });
 
@@ -439,7 +444,7 @@
 
             try {
                 const empresaId = localStorage.getItem('empresa_id');
-                const response = await fetch(`${API_URL}/api/propuestas/${proposalId}?empresa=${empresaId}`, {
+                const response = await fetch(`${API_URL}/api/propuestas/${proposalId}`, {
                     credentials: 'include'
                 });
 
