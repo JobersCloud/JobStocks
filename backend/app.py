@@ -448,7 +448,10 @@ def get_current_user():
         'full_name': current_user.full_name,
         'email': current_user.email,
         'rol': current_user.rol,
-        'debe_cambiar_password': getattr(current_user, 'debe_cambiar_password', False)
+        'debe_cambiar_password': getattr(current_user, 'debe_cambiar_password', False),
+        'empresa_id': session.get('empresa_id'),
+        'empresa_cli_id': session.get('empresa_cli_id'),
+        'empresa_nombre': session.get('empresa_nombre')
     })
 
 @app.route('/api/version')
