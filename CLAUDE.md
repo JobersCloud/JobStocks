@@ -1,5 +1,12 @@
 # Notas del Proyecto - Claude
 
+## Instrucciones para Claude
+- **IMPORTANTE**: En cada modificación de código, incrementar automáticamente la versión en `backend/app.py` (constante `APP_VERSION`)
+- Formato semántico: `vMAJOR.MINOR.PATCH`
+  - PATCH: correcciones de bugs, cambios menores de configuración
+  - MINOR: nuevas funcionalidades
+  - MAJOR: cambios incompatibles con versiones anteriores
+
 ## Información General
 - **Nombre**: ApiRestExternos
 - **Tipo**: Web SPA con backend REST API
@@ -155,6 +162,8 @@ ApiRestExternos/
 - **Motor**: SQL Server 2008+
 - **Servidor**: 192.168.63.25:1433
 - **Base de datos**: ApiRestStocks
+- **Conexión cifrada**: `Encrypt=yes; TrustServerCertificate=yes;`
+  - ⚠️ **IMPORTANTE**: En Linux (Docker) usar `yes`, NO `True` (Windows acepta ambos, Linux solo `yes`)
 
 ### Herramientas
 - **GitHub CLI**: v2.83.2
@@ -720,6 +729,15 @@ cloudflared tunnel --url http://localhost:5000
   - Reemplazados valores #FF4338 y #D32F2F por `var(--primary)` y `var(--primary-dark)`
   - Afecta headers, botones, badges y elementos de acento en todas las páginas
   - Gráficos de Chart.js en dashboard obtienen colores dinámicamente de CSS
+
+### 2026-01-20
+- **Conexión cifrada a SQL Server**: SSL/TLS habilitado en conexiones a BD
+  - `Encrypt=yes;` activa cifrado de conexión
+  - `TrustServerCertificate=yes;` acepta certificados autofirmados
+  - Aplicado en `database.py` (conexión dinámica) y `database_central.py` (conexión central)
+  - ⚠️ En Linux (Docker) usar `yes`, NO `True` (driver ODBC 18 en Linux no acepta `True`)
+  - Script de despliegue: `deploy/deploy-docker.sh`
+  - Versión: v1.1.3
 
 ### 2026-01-19
 - **Toggle Modo Oscuro en Login**: Selector de tema en página de login

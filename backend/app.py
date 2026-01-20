@@ -41,7 +41,7 @@ from models.user_session_model import UserSessionModel
 import os
 
 # Versión de la aplicación
-APP_VERSION = 'v1.1.0'
+APP_VERSION = 'v1.1.3'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 

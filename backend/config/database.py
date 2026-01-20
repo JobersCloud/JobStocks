@@ -89,7 +89,7 @@ class Database:
             f"UID={empresa['dblogin']};"
             f"PWD={empresa['dbpass']};"
             f"TrustServerCertificate=yes;"
-            f"Encrypt=no;"
+            f"Encrypt=yes;"
         )
 
         return pyodbc.connect(conn_str)

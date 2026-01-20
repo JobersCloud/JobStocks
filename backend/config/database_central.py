@@ -38,6 +38,6 @@ class DatabaseCentral:
             f"UID={DatabaseCentral.DB_CONFIG['username']};"
             f"PWD={DatabaseCentral.DB_CONFIG['password']};"
             f"TrustServerCertificate=yes;"
-            f"Encrypt=no;"
+            f"Encrypt=yes;"
         )
         return pyodbc.connect(conn_str)
