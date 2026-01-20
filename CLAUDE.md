@@ -749,7 +749,16 @@ cloudflared tunnel --url http://localhost:5000
   - Token generado en login con `secrets.token_hex(32)`
   - Guardado en `session['csrf_token']` (backend) y `localStorage` (frontend)
   - Frontend envía en header `X-CSRF-Token` via función `fetchWithCsrf()`
-  - Decorador `@csrf_required` aplicado a rutas: carrito, usuarios, email-config, api-keys, etc.
+  - Decorador `@csrf_required` en `utils/auth.py`
+  - **Rutas protegidas**:
+    - `carrito_routes.py`: add, remove, clear, enviar
+    - `usuario_routes.py`: crear, activar, desactivar, rol, cambiar-password
+    - `email_config_routes.py`: crear, actualizar, activar, test
+    - `api_key_routes.py`: crear, eliminar, desactivar
+    - `parametros_routes.py`: actualizar
+    - `consulta_routes.py`: crear, responder
+    - `empresa_logo_routes.py`: logo, favicon, tema, invertir-logo
+    - `propuesta_routes.py`: cambiar estado
   - No verifica CSRF cuando se usa API Key (integraciones externas como PowerBuilder)
   - Endpoint `GET /api/csrf-token` para obtener/refrescar token
   - Versión: v1.2.0
@@ -1311,4 +1320,4 @@ scp -r backend frontend docker-compose.yml ubuntu@51.68.44.136:/opt/ApiRestExter
 - **Nota**: Solo accesible desde red local (192.168.63.x)
 
 ---
-*Última actualización: 2026-01-19*
+*Última actualización: 2026-01-20*
