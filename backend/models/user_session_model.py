@@ -75,6 +75,31 @@ class UserSessionModel:
             conn.close()
 
     @staticmethod
+    def delete_all_except(current_token, empresa_id=None):
+        """Eliminar todas las sesiones excepto la actual"""
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+        try:
+            if empresa_id:
+                cursor.execute("""
+                    DELETE FROM user_sessions
+                    WHERE session_token != ? AND empresa_id = ?
+                """, (current_token, empresa_id))
+            else:
+                cursor.execute("""
+                    DELETE FROM user_sessions
+                    WHERE session_token != ?
+                """, (current_token,))
+            conn.commit()
+            return cursor.rowcount
+        except Exception as e:
+            print(f"Error deleting all sessions except current: {e}")
+            return 0
+        finally:
+            cursor.close()
+            conn.close()
+
+    @staticmethod
     def update_activity(session_token):
         """Actualizar ultima actividad de la sesion"""
         conn = Database.get_connection()

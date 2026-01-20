@@ -42,7 +42,7 @@ import os
 import secrets
 
 # Versión de la aplicación
-APP_VERSION = 'v1.2.0'
+APP_VERSION = 'v1.2.1'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 

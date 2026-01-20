@@ -952,6 +952,17 @@ button {
     box-shadow: var(--shadow);
 }
 
+.btn-danger-outline {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+}
+
+.btn-danger-outline:hover {
+    background: var(--danger);
+    color: white;
+}
+
 /* ==================== TABLA MODERNA ==================== */
 .table-container {
     overflow-x: auto;
@@ -2390,7 +2401,7 @@ tbody tr:hover {
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    padding: 5px 10px;
+    padding: 6px 12px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 20px;
     transition: background 0.3s;
@@ -2586,15 +2597,49 @@ tbody tr:hover {
     .login-top-controls {
         top: 10px;
         right: 10px;
-        gap: 10px;
+        gap: 8px;
     }
 
     .theme-toggle-login {
-        padding: 4px 8px;
+        padding: 5px 10px;
     }
 
     .theme-toggle-login .theme-icon {
         font-size: 1rem;
+    }
+
+    /* Switch más pequeño en móvil */
+    .theme-toggle-login .switch {
+        width: 36px;
+        height: 20px;
+    }
+
+    .theme-toggle-login .slider:before {
+        height: 14px;
+        width: 14px;
+        left: 3px;
+        bottom: 3px;
+    }
+
+    .theme-toggle-login input:checked + .slider:before {
+        transform: translateX(16px);
+    }
+}
+
+/* Breakpoint tablet para controles de login */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .login-top-controls {
+        top: 15px;
+        right: 15px;
+        gap: 12px;
+    }
+}
+
+/* Pantallas grandes */
+@media (min-width: 1440px) {
+    .login-top-controls {
+        top: 30px;
+        right: 40px;
     }
 }
 
@@ -6788,6 +6833,12 @@ tbody tr:hover {
 }
 
 /* ==================== SESIONES ACTIVAS ==================== */
+.sessions-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
 /* Desktop: mostrar tabla, ocultar tarjetas */
 .sessions-table-desktop {
     display: table;

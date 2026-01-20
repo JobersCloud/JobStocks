@@ -1,7 +1,7 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from flask_login import login_required
 from models.user_session_model import UserSessionModel
-from utils.auth import administrador_required
+from utils.auth import administrador_required, csrf_required
 
 user_session_bp = Blueprint('user_session', __name__)
 
@@ -55,6 +55,29 @@ def kill_user_sessions(user_id):
     return jsonify({
         'success': True,
         'message': f'{deleted} sesion(es) terminada(s)',
+        'deleted_count': deleted
+    })
+
+
+@user_session_bp.route('/api/sesiones/todas-excepto-actual', methods=['DELETE'])
+@login_required
+@administrador_required
+@csrf_required
+def kill_all_except_current():
+    """Eliminar todas las sesiones excepto la actual"""
+    current_token = session.get('session_token')
+    if not current_token:
+        return jsonify({
+            'success': False,
+            'message': 'No hay sesión actual'
+        }), 400
+
+    empresa_id = request.args.get('empresa_id')
+    deleted = UserSessionModel.delete_all_except(current_token, empresa_id)
+
+    return jsonify({
+        'success': True,
+        'message': f'{deleted} sesión(es) cerrada(s)',
         'deleted_count': deleted
     })
 

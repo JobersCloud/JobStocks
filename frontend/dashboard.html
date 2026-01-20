@@ -191,7 +191,10 @@
                 <div class="chart-card" style="grid-column: 1 / -1;">
                     <div class="chart-header">
                         <span class="chart-title">Sesiones Activas (<span id="sessions-count">0</span>)</span>
-                        <button class="period-btn" onclick="loadSessions()">Actualizar</button>
+                        <div class="sessions-actions">
+                            <button class="period-btn" onclick="loadSessions()">Actualizar</button>
+                            <button class="period-btn btn-danger-outline" onclick="killAllSessionsExceptCurrent()">Cerrar Todas</button>
+                        </div>
                     </div>
                     <div id="sessions-container">
                         <!-- Tabla para desktop -->
@@ -783,6 +786,38 @@
             } catch (error) {
                 console.error('Error killing session:', error);
                 alert('Error al terminar la sesion');
+            }
+        }
+
+        async function killAllSessionsExceptCurrent() {
+            if (!confirm('¿Cerrar todas las sesiones excepto la tuya?\n\nEsto desconectará a todos los usuarios actualmente conectados.')) {
+                return;
+            }
+
+            try {
+                const empresaId = localStorage.getItem('empresa_id');
+                const csrfToken = localStorage.getItem('csrf_token');
+
+                const response = await fetch(`${API_URL}/api/sesiones/todas-excepto-actual?empresa_id=${empresaId}`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRF-Token': csrfToken
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Error al cerrar sesiones');
+                }
+
+                const data = await response.json();
+                alert(`${data.deleted_count} sesión(es) cerrada(s)`);
+                await loadSessions();
+
+            } catch (error) {
+                console.error('Error killing all sessions:', error);
+                alert('Error al cerrar las sesiones: ' + error.message);
             }
         }
 

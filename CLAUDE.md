@@ -762,6 +762,19 @@ cloudflared tunnel --url http://localhost:5000
   - No verifica CSRF cuando se usa API Key (integraciones externas como PowerBuilder)
   - Endpoint `GET /api/csrf-token` para obtener/refrescar token
   - Versión: v1.2.0
+- **Botón "Cerrar Todas las Sesiones"**: En dashboard de administración
+  - Nuevo endpoint `DELETE /api/sesiones/todas-excepto-actual`
+  - Nuevo método `UserSessionModel.delete_all_except(current_token, empresa_id)`
+  - Botón "Cerrar Todas" junto a "Actualizar" en sección de sesiones activas
+  - Confirmación antes de ejecutar con mensaje de advertencia
+  - Protegido con `@csrf_required` y `@administrador_required`
+  - No elimina la sesión del usuario actual
+- **Fix: Toggle Modo Oscuro en Login**: Alineación responsive mejorada
+  - Aumentado padding base de 5px 10px a 6px 12px
+  - Switch más pequeño en móvil (36px × 20px)
+  - Nuevo breakpoint para tablets (769px-1024px)
+  - Nuevo breakpoint para pantallas grandes (≥1440px)
+  - Versión: v1.2.1
 
 ### 2026-01-19
 - **Toggle Modo Oscuro en Login**: Selector de tema en página de login
@@ -828,6 +841,7 @@ cloudflared tunnel --url http://localhost:5000
     - `GET /api/sesiones` - Listar sesiones activas
     - `DELETE /api/sesiones/<id>` - Matar sesión por ID
     - `DELETE /api/sesiones/usuario/<user_id>` - Matar todas las sesiones de un usuario
+    - `DELETE /api/sesiones/todas-excepto-actual` - Matar todas las sesiones excepto la actual
     - `GET /api/sesiones/count` - Contar sesiones activas
   - Panel en `dashboard.html` con tabla de sesiones
   - Vista responsiva: tabla en desktop, tarjetas en móvil
