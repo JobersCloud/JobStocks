@@ -17,6 +17,7 @@
 # ============================================
 from flask import Blueprint, jsonify, request, session
 from flask_login import login_required, current_user
+from utils.auth import csrf_required
 from models.email_config_model import EmailConfigModel
 
 email_config_bp = Blueprint('email_config', __name__, url_prefix='/api/email-config')
@@ -102,6 +103,7 @@ def get_active():
 
 @email_config_bp.route('/<int:id>', methods=['PUT'])
 @login_required
+@csrf_required
 def update_config(id):
     """
     Actualizar configuración de email
@@ -156,6 +158,7 @@ def update_config(id):
 
 @email_config_bp.route('', methods=['POST'])
 @login_required
+@csrf_required
 def create_config():
     """
     Crear nueva configuración de email
@@ -183,6 +186,7 @@ def create_config():
 
 @email_config_bp.route('/test', methods=['POST'])
 @login_required
+@csrf_required
 def test_config():
     """
     Probar conexión SMTP con los datos proporcionados
@@ -241,6 +245,7 @@ def test_config():
 
 @email_config_bp.route('/<int:id>/activate', methods=['POST'])
 @login_required
+@csrf_required
 def activate_config(id):
     """
     Activar una configuración específica

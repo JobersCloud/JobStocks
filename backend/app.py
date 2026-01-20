@@ -39,9 +39,10 @@ from models.user import User
 from models.user_session_model import UserSessionModel
 
 import os
+import secrets
 
 # Versión de la aplicación
-APP_VERSION = 'v1.1.3'
+APP_VERSION = 'v1.2.0'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -354,10 +355,15 @@ def login():
         # Verificar si debe cambiar la contraseña
         debe_cambiar = user_data.get('debe_cambiar_password', False)
 
+        # Generar CSRF token
+        csrf_token = secrets.token_hex(32)
+        session['csrf_token'] = csrf_token
+
         return jsonify({
             'success': True,
             'message': 'Login exitoso',
             'debe_cambiar_password': debe_cambiar,
+            'csrf_token': csrf_token,
             'user': {
                 'username': user.username,
                 'full_name': user.full_name,
@@ -404,9 +410,10 @@ def logout():
     except Exception as e:
         print(f"Warning: No se pudo eliminar sesion de BD: {e}")
 
-    # ⭐ Limpiar carrito al cerrar sesión
+    # ⭐ Limpiar carrito y CSRF token al cerrar sesión
     session.pop('carrito', None)
     session.pop('session_token', None)
+    session.pop('csrf_token', None)
     logout_user()
     return jsonify({'success': True, 'message': 'Logout exitoso'})
 
@@ -471,6 +478,33 @@ def get_version():
               example: v1.0.0
     """
     return jsonify({'version': APP_VERSION})
+
+@app.route('/api/csrf-token')
+@login_required
+def get_csrf_token():
+    """
+    Obtener CSRF token
+    ---
+    tags:
+      - Autenticación
+    security:
+      - cookieAuth: []
+    responses:
+      200:
+        description: CSRF token actual
+        schema:
+          type: object
+          properties:
+            csrf_token:
+              type: string
+              example: "abc123..."
+      401:
+        description: No autenticado
+    """
+    # Si no existe, generar uno nuevo
+    if 'csrf_token' not in session:
+        session['csrf_token'] = secrets.token_hex(32)
+    return jsonify({'csrf_token': session['csrf_token']})
 
 # ==================== ARCHIVOS ESTÁTICOS ====================
 

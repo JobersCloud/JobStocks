@@ -17,6 +17,7 @@
 # ============================================
 from flask import Blueprint, Response, request, send_from_directory, jsonify, session
 from flask_login import login_required, current_user
+from utils.auth import csrf_required
 from models.empresa_logo_model import EmpresaLogoModel
 from utils.auth import administrador_required
 import os
@@ -196,6 +197,7 @@ def get_invertir(empresa_id):
 
 @empresa_logo_bp.route('/<empresa_id>/invertir', methods=['POST'])
 @login_required
+@csrf_required
 @administrador_required
 def set_invertir(empresa_id):
     """
@@ -222,6 +224,7 @@ def set_invertir(empresa_id):
 
 @empresa_logo_bp.route('/<empresa_id>/logo', methods=['POST'])
 @login_required
+@csrf_required
 @administrador_required
 def upload_logo(empresa_id):
     """
@@ -276,6 +279,7 @@ def upload_logo(empresa_id):
 
 @empresa_logo_bp.route('/<empresa_id>/favicon', methods=['POST'])
 @login_required
+@csrf_required
 @administrador_required
 def upload_favicon(empresa_id):
     """
@@ -330,6 +334,7 @@ def upload_favicon(empresa_id):
 
 @empresa_logo_bp.route('/<empresa_id>/logo', methods=['DELETE'])
 @login_required
+@csrf_required
 @administrador_required
 def delete_logo(empresa_id):
     """
@@ -349,6 +354,7 @@ def delete_logo(empresa_id):
 
 @empresa_logo_bp.route('/<empresa_id>/favicon', methods=['DELETE'])
 @login_required
+@csrf_required
 @administrador_required
 def delete_favicon(empresa_id):
     """
@@ -391,6 +397,7 @@ def get_tema(empresa_id):
 
 @empresa_logo_bp.route('/<empresa_id>/tema', methods=['POST'])
 @login_required
+@csrf_required
 @administrador_required
 def set_tema(empresa_id):
     """

@@ -18,6 +18,7 @@
 # ============================================
 from flask import Blueprint, jsonify, request, session
 from flask_login import login_required, current_user
+from utils.auth import csrf_required
 from utils.auth import administrador_required, superusuario_required
 from database.users_db import (
     get_all_users_by_empresa, get_user_by_id,
@@ -99,6 +100,7 @@ def listar_usuarios():
 
 @usuario_bp.route('', methods=['POST'])
 @login_required
+@csrf_required
 @administrador_required
 def crear_usuario():
     """
@@ -486,6 +488,7 @@ def obtener_usuario(user_id):
 
 @usuario_bp.route('/<int:user_id>', methods=['PUT'])
 @login_required
+@csrf_required
 @administrador_required
 def actualizar_usuario(user_id):
     """
@@ -549,6 +552,7 @@ def actualizar_usuario(user_id):
 
 @usuario_bp.route('/<int:user_id>/rol', methods=['PUT'])
 @login_required
+@csrf_required
 @superusuario_required
 def cambiar_rol(user_id):
     """
@@ -631,6 +635,7 @@ def cambiar_rol(user_id):
 
 @usuario_bp.route('/<int:user_id>/desactivar', methods=['POST'])
 @login_required
+@csrf_required
 @administrador_required
 def desactivar_usuario(user_id):
     """
@@ -687,6 +692,7 @@ def desactivar_usuario(user_id):
 
 @usuario_bp.route('/<int:user_id>/activar', methods=['POST'])
 @login_required
+@csrf_required
 @administrador_required
 def activar_usuario(user_id):
     """
@@ -734,6 +740,7 @@ def activar_usuario(user_id):
 
 @usuario_bp.route('/<int:user_id>/verificacion-email', methods=['POST'])
 @login_required
+@csrf_required
 @administrador_required
 def cambiar_verificacion_email(user_id):
     """
@@ -803,6 +810,7 @@ def cambiar_verificacion_email(user_id):
 
 @usuario_bp.route('/cambiar-password', methods=['POST'])
 @login_required
+@csrf_required
 def cambiar_password():
     """
     Cambiar contraseña del usuario actual (obligatorio si debe_cambiar_password=True)

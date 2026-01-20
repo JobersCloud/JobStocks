@@ -17,6 +17,7 @@
 # ============================================
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
+from utils.auth import csrf_required
 from models.api_key_model import ApiKeyModel
 
 api_key_bp = Blueprint('api_keys', __name__, url_prefix='/api/api-keys')
@@ -60,6 +61,7 @@ def get_api_keys():
 
 @api_key_bp.route('', methods=['POST'])
 @login_required
+@csrf_required
 def create_api_key():
     """
     Crear nueva API key
@@ -118,6 +120,7 @@ def create_api_key():
 
 @api_key_bp.route('/<int:key_id>', methods=['DELETE'])
 @login_required
+@csrf_required
 def delete_api_key(key_id):
     """
     Eliminar API key
@@ -155,6 +158,7 @@ def delete_api_key(key_id):
 
 @api_key_bp.route('/<int:key_id>/deactivate', methods=['POST'])
 @login_required
+@csrf_required
 def deactivate_api_key(key_id):
     """
     Desactivar API key

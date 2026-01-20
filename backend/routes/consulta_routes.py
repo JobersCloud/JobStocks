@@ -18,6 +18,7 @@
 # ============================================
 from flask import Blueprint, jsonify, request, session
 from flask_login import login_required, current_user
+from utils.auth import csrf_required
 from utils.auth import administrador_required
 from models.consulta_model import ConsultaModel
 from models.email_config_model import EmailConfigModel
@@ -190,6 +191,7 @@ def obtener_consulta(consulta_id):
 
 @consulta_bp.route('/<int:consulta_id>/responder', methods=['POST'])
 @login_required
+@csrf_required
 @administrador_required
 def responder_consulta(consulta_id):
     """
@@ -267,6 +269,7 @@ def responder_consulta(consulta_id):
 
 @consulta_bp.route('/<int:consulta_id>/estado', methods=['PUT'])
 @login_required
+@csrf_required
 @administrador_required
 def cambiar_estado(consulta_id):
     """Cambiar estado de una consulta"""

@@ -17,6 +17,7 @@
 # ============================================
 from flask import Blueprint, request, jsonify, session
 from flask_login import login_required, current_user
+from utils.auth import csrf_required
 from models.parametros_model import ParametrosModel
 from utils.auth import administrador_required
 
@@ -209,6 +210,7 @@ def get_parametro(clave):
 
 @parametros_bp.route('/<clave>', methods=['PUT'])
 @login_required
+@csrf_required
 @administrador_required
 def update_parametro(clave):
     """

@@ -173,9 +173,10 @@ ApiRestExternos/
 ### Autenticación
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| POST | `/api/login` | Iniciar sesión |
+| POST | `/api/login` | Iniciar sesión (retorna csrf_token) |
 | POST | `/api/logout` | Cerrar sesión |
 | GET | `/api/current-user` | Usuario actual |
+| GET | `/api/csrf-token` | Obtener/refrescar CSRF token |
 
 ### Sistema (público)
 | Método | Ruta | Descripción |
@@ -571,6 +572,12 @@ Los archivos JSON están en `frontend/js/i18n/` organizados por namespaces:
 - Contraseñas email ocultas en API
 - Swagger UI accesible sin autenticación para documentación
 - **Rate limiting**: 5 intentos/minuto en login (Flask-Limiter)
+- **Protección CSRF**: Token en sesión para peticiones POST/PUT/DELETE
+  - Token generado en login, guardado en `session['csrf_token']`
+  - Frontend envía en header `X-CSRF-Token`
+  - Decorador `@csrf_required` en rutas mutantes
+  - No aplica a autenticación por API Key (integraciones externas)
+  - Endpoint `GET /api/csrf-token` para obtener/refrescar token
 
 ### Por mejorar
 - (Todas las mejoras de seguridad principales implementadas)
@@ -738,6 +745,14 @@ cloudflared tunnel --url http://localhost:5000
   - ⚠️ En Linux (Docker) usar `yes`, NO `True` (driver ODBC 18 en Linux no acepta `True`)
   - Script de despliegue: `deploy/deploy-docker.sh`
   - Versión: v1.1.3
+- **Protección CSRF**: Token en sesión para peticiones POST/PUT/DELETE
+  - Token generado en login con `secrets.token_hex(32)`
+  - Guardado en `session['csrf_token']` (backend) y `localStorage` (frontend)
+  - Frontend envía en header `X-CSRF-Token` via función `fetchWithCsrf()`
+  - Decorador `@csrf_required` aplicado a rutas: carrito, usuarios, email-config, api-keys, etc.
+  - No verifica CSRF cuando se usa API Key (integraciones externas como PowerBuilder)
+  - Endpoint `GET /api/csrf-token` para obtener/refrescar token
+  - Versión: v1.2.0
 
 ### 2026-01-19
 - **Toggle Modo Oscuro en Login**: Selector de tema en página de login

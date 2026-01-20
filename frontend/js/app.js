@@ -26,6 +26,38 @@ let currentUser = null;  // Usuario actual con rol
 let propuestasHabilitadas = true;  // Control de funcionalidad de propuestas
 let gridConImagenes = false;  // Control de imágenes en tabla/tarjetas (desactivado por defecto)
 let whatsappConfig = { habilitado: false, numero: null };  // Configuración de WhatsApp
+let csrfToken = null;  // Token CSRF para protección contra ataques
+
+// ==================== CSRF TOKEN ====================
+
+// Obtener CSRF token del servidor
+async function obtenerCsrfToken() {
+    try {
+        const response = await fetch(`${API_URL}/api/csrf-token`, { credentials: 'include' });
+        if (response.ok) {
+            const data = await response.json();
+            csrfToken = data.csrf_token;
+            localStorage.setItem('csrf_token', csrfToken);
+            console.log('🔐 CSRF token obtenido');
+        }
+    } catch (e) {
+        console.error('Error obteniendo CSRF token:', e);
+    }
+}
+
+// Fetch con CSRF token automático para métodos mutantes
+async function fetchWithCsrf(url, options = {}) {
+    // Añadir CSRF token a métodos que modifican datos
+    if (['POST', 'PUT', 'DELETE'].includes(options.method)) {
+        options.headers = {
+            ...options.headers,
+            'X-CSRF-Token': csrfToken
+        };
+    }
+    options.credentials = 'include';
+    return fetch(url, options);
+}
+
 
 // Paginación (solo cuando gridConImagenes está activo)
 let paginaActual = 1;
@@ -319,7 +351,7 @@ async function cargarThumbnailsBatch(codigos) {
     if (codigos.length === 0) return;
 
     try {
-        const response = await fetch(`${API_URL}/api/stocks/thumbnails`, {
+        const response = await fetchWithCsrf(`${API_URL}/api/stocks/thumbnails`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -545,7 +577,7 @@ function navigateTo(section) {
 async function logout() {
     if (confirm(t('auth.logoutConfirm'))) {
         try {
-            await fetch(`${API_URL}/api/logout`, {
+            await fetchWithCsrf(`${API_URL}/api/logout`, {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -1345,7 +1377,7 @@ async function enviarConsulta(event) {
 
     try {
         const empresaId = localStorage.getItem('empresa_id') || '1';
-        const response = await fetch(`${API_URL}/api/consultas?empresa_id=${empresaId}`, {
+        const response = await fetchWithCsrf(`${API_URL}/api/consultas?empresa_id=${empresaId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1739,7 +1771,7 @@ async function confirmarAgregarAlCarrito() {
 
     // Agregar al carrito
     try {
-        const response = await fetch(`${API_URL}/api/carrito/add`, {
+        const response = await fetchWithCsrf(`${API_URL}/api/carrito/add`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -1854,7 +1886,7 @@ async function eliminarDelCarrito(index) {
     if (!confirm(t('cart.confirmRemove'))) return;
 
     try {
-        const response = await fetch(`${API_URL}/api/carrito/remove/${index}`, {
+        const response = await fetchWithCsrf(`${API_URL}/api/carrito/remove/${index}`, {
             method: 'DELETE',
             credentials: 'include',
             headers: {
@@ -1887,7 +1919,7 @@ async function vaciarCarrito() {
     if (!confirm(t('cart.confirmClear'))) return;
 
     try {
-        const response = await fetch(`${API_URL}/api/carrito/clear`, {
+        const response = await fetchWithCsrf(`${API_URL}/api/carrito/clear`, {
             method: 'DELETE',
             credentials: 'include',
             headers: {
@@ -1949,7 +1981,7 @@ async function enviarSolicitud() {
     mostrarEnviando(true);
 
     try {
-        const response = await fetch(`${API_URL}/api/carrito/enviar`, {
+        const response = await fetchWithCsrf(`${API_URL}/api/carrito/enviar`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -2034,6 +2066,11 @@ window.onload = async function () {
     const isAuth = await checkAuth();
     if (isAuth) {
         console.log('✅ Autenticado, cargando datos...');
+
+        // Cargar CSRF token (primero de localStorage, luego del servidor)
+        csrfToken = localStorage.getItem('csrf_token');
+        await obtenerCsrfToken();
+
         await verificarPropuestasHabilitadas();
         await verificarGridConImagenes();
         await cargarConfigWhatsApp();

@@ -247,6 +247,12 @@ function setupLoginForm() {
                     console.log(`empresa_id guardado: ${data.user.empresa_id}`);
                 }
 
+                // ⭐ Guardar CSRF token para protección en peticiones POST/PUT/DELETE
+                if (data.csrf_token) {
+                    localStorage.setItem('csrf_token', data.csrf_token);
+                    console.log('🔐 CSRF token guardado');
+                }
+
                 // Verificar si debe cambiar la contraseña
                 if (data.debe_cambiar_password) {
                     showPasswordChangeModal();

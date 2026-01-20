@@ -17,6 +17,7 @@
 # ============================================
 from flask import Blueprint, jsonify, request, session
 from flask_login import login_required, current_user
+from utils.auth import csrf_required
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -90,6 +91,7 @@ def get_carrito():
 
 @carrito_bp.route('/add', methods=['POST'])
 @login_required
+@csrf_required
 def add_to_carrito():
     """
     Agregar item al carrito
@@ -184,6 +186,7 @@ def add_to_carrito():
 
 @carrito_bp.route('/remove/<int:index>', methods=['DELETE'])
 @login_required
+@csrf_required
 def remove_from_carrito(index):
     """
     Eliminar item del carrito por índice
@@ -226,6 +229,7 @@ def remove_from_carrito(index):
 
 @carrito_bp.route('/clear', methods=['DELETE'])
 @login_required
+@csrf_required
 def clear_carrito():
     """
     Vaciar el carrito
@@ -250,6 +254,7 @@ def clear_carrito():
 
 @carrito_bp.route('/enviar', methods=['POST'])
 @login_required
+@csrf_required
 def enviar_carrito():
     """
     Generar PDF y enviarlo por email

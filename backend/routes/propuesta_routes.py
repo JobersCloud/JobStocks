@@ -18,6 +18,7 @@
 # ============================================
 from flask import Blueprint, jsonify, request, Response, session
 from flask_login import login_required, current_user
+from utils.auth import csrf_required
 from utils.auth import api_key_or_login_required, administrador_required
 from models.propuesta_model import PropuestaModel
 from datetime import datetime
@@ -294,6 +295,7 @@ def get_lineas(propuesta_id):
 
 @propuesta_bp.route('/<int:propuesta_id>/estado', methods=['PUT'])
 @api_key_or_login_required
+@csrf_required
 def actualizar_estado(propuesta_id):
     """
     Actualizar el estado de una propuesta
