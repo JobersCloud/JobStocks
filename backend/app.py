@@ -511,7 +511,11 @@ def get_csrf_token():
 @app.route('/js/app.js')
 @login_required
 def serve_js():
-    return send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'app.js', mimetype='application/javascript')
+    response = send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'app.js', mimetype='application/javascript')
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 @app.route('/css/styles.css')
 def serve_css():
@@ -519,7 +523,11 @@ def serve_css():
 
 @app.route('/js/login.js')
 def serve_login_js():
-    return send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'login.js', mimetype='application/javascript')
+    response = send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'login.js', mimetype='application/javascript')
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 @app.route('/js/register.js')
 def serve_register_js():
