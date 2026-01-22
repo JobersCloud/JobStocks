@@ -395,7 +395,7 @@ def get_tema(empresa_id):
     return jsonify({"tema": tema})
 
 
-@empresa_logo_bp.route('/<empresa_id>/tema', methods=['POST'])
+@empresa_logo_bp.route('/<empresa_id>/tema', methods=['PUT'])
 @login_required
 @csrf_required
 @administrador_required

@@ -296,6 +296,7 @@ def enviar_carrito():
     empresa_id = data.get('empresa_id', '1')  # Multi-empresa support
     enviar_copia = data.get('enviar_copia', False)
     cliente_id = data.get('cliente_id', '')
+    firma_base64 = data.get('firma', None)  # Firma digital en base64
     usuario = current_user.full_name or current_user.username
     email_usuario = current_user.email if enviar_copia else None
 
@@ -309,14 +310,14 @@ def enviar_carrito():
         return jsonify({"error": f"Cliente no encontrado: {cliente_id}"}), 400
 
     try:
-        # Generar PDF (con datos del cliente)
-        pdf_buffer = generar_pdf_carrito(carrito, usuario, comentarios, referencia, cliente_info)
+        # Generar PDF (con datos del cliente y firma si existe)
+        pdf_buffer = generar_pdf_carrito(carrito, usuario, comentarios, referencia, cliente_info, firma_base64)
 
         # Generar Excel
         excel_buffer = generar_excel_carrito(carrito, usuario, comentarios, referencia)
 
-        # Enviar email (con CC al usuario si está marcado y datos del cliente)
-        enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios, empresa_id, email_usuario, referencia, excel_buffer, cliente_info)
+        # Enviar email (con CC al usuario si está marcado, datos del cliente y firma)
+        enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios, empresa_id, email_usuario, referencia, excel_buffer, cliente_info, firma_base64)
 
         # Guardar propuesta en BD (solo si el email se envio correctamente)
         propuesta_id = PropuestaModel.crear_propuesta(
@@ -352,8 +353,8 @@ def enviar_carrito():
 
 # ==================== FUNCIONES AUXILIARES ====================
 
-def generar_pdf_carrito(carrito, usuario, comentarios, referencia="", cliente_info=None):
-    """Genera un PDF con los items del carrito incluyendo imágenes"""
+def generar_pdf_carrito(carrito, usuario, comentarios, referencia="", cliente_info=None, firma_base64=None):
+    """Genera un PDF con los items del carrito incluyendo imágenes y firma"""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
 
@@ -442,6 +443,25 @@ def generar_pdf_carrito(carrito, usuario, comentarios, referencia="", cliente_in
         story.append(Paragraph("<b>Comentarios:</b>", styles['Heading3']))
         story.append(Paragraph(comentarios, styles['Normal']))
 
+    # Firma digital (si existe)
+    if firma_base64:
+        try:
+            # La firma viene como data:image/png;base64,xxxxx
+            if firma_base64.startswith('data:'):
+                firma_data = firma_base64.split(',')[1]
+            else:
+                firma_data = firma_base64
+
+            firma_bytes = base64.b64decode(firma_data)
+            firma_buffer = io.BytesIO(firma_bytes)
+            story.append(Spacer(1, 0.3*inch))
+            story.append(Paragraph("<b>Firma:</b>", styles['Heading3']))
+            story.append(Spacer(1, 0.1*inch))
+            firma_img = Image(firma_buffer, width=2.5*inch, height=0.9*inch)
+            story.append(firma_img)
+        except Exception as e:
+            print(f"⚠️ Error al procesar firma en PDF: {e}")
+
     # Generar PDF
     doc.build(story)
     buffer.seek(0)
@@ -523,8 +543,8 @@ def generar_excel_carrito(carrito, usuario, comentarios="", referencia=""):
     return buffer
 
 
-def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_id="1", email_copia=None, referencia="", excel_buffer=None, cliente_info=None):
-    """Envía el PDF y Excel por email usando configuración de la BD con imágenes CID"""
+def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_id="1", email_copia=None, referencia="", excel_buffer=None, cliente_info=None, firma_base64=None):
+    """Envía el PDF y Excel por email usando configuración de la BD con imágenes CID y firma"""
 
     print("\n" + "=" * 60)
     print(f"📧 INICIANDO ENVÍO DE EMAIL (Empresa: {empresa_id})")
@@ -609,6 +629,31 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
         </div>
         """
 
+    # Sección de firma (solo si hay)
+    firma_html = ""
+    firma_cid = None
+    if firma_base64:
+        try:
+            # Extraer datos base64 de la firma
+            if firma_base64.startswith('data:'):
+                firma_data = firma_base64.split(',')[1]
+            else:
+                firma_data = firma_base64
+
+            firma_cid = "firma_digital"
+            imagenes_adjuntar[firma_cid] = firma_data
+            firma_html = f"""
+            <div style="margin-top: 30px; padding: 15px; background-color: #f5f5f5; border: 1px solid #ddd; border-radius: 4px;">
+                <h3 style="margin-top: 0; color: #333;">✍️ Firma Digital:</h3>
+                <div style="background: white; padding: 10px; border: 1px dashed #ccc; border-radius: 4px; display: inline-block;">
+                    <img src="cid:{firma_cid}" style="max-width: 250px; height: auto;" alt="Firma digital">
+                </div>
+            </div>
+            """
+            print(f"   ✅ Firma digital incluida en el email")
+        except Exception as e:
+            print(f"   ⚠️ Error procesando firma para email: {e}")
+
     # HTML completo del email
     body = f"""
     <html>
@@ -666,6 +711,8 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
 
             {comentarios_html}
 
+            {firma_html}
+
             <div class="footer">
                 <p style="margin: 0;"><strong>📎 Nota:</strong> Se adjunta PDF y Excel con el detalle completo de esta solicitud.</p>
             </div>
@@ -690,7 +737,9 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
                 img_data = base64.b64decode(img_base64)
                 img_part = MIMEImage(img_data)
                 img_part.add_header('Content-ID', f'<{cid}>')
-                img_part.add_header('Content-Disposition', 'inline', filename=f'{cid}.jpg')
+                # La firma es PNG, el resto son JPG
+                extension = '.png' if cid == 'firma_digital' else '.jpg'
+                img_part.add_header('Content-Disposition', 'inline', filename=f'{cid}{extension}')
                 msg_related.attach(img_part)
             except Exception as e:
                 print(f"   ⚠️ Error adjuntando imagen {cid}: {e}")

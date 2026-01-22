@@ -100,6 +100,34 @@ def propuestas_habilitadas():
     habilitado = ParametrosModel.permitir_propuestas(empresa_id, connection)
     return jsonify({'habilitado': habilitado}), 200
 
+
+@parametros_bp.route('/firma-habilitada', methods=['GET'])
+def firma_habilitada():
+    """
+    Verificar si la firma de propuestas está habilitada
+    ---
+    tags:
+      - Parámetros
+    parameters:
+      - name: empresa_id
+        in: query
+        type: string
+        required: false
+    responses:
+      200:
+        description: Estado de la firma de propuestas
+        schema:
+          type: object
+          properties:
+            habilitado:
+              type: boolean
+    """
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+    habilitado = ParametrosModel.permitir_firma(empresa_id, connection)
+    return jsonify({'habilitado': habilitado}), 200
+
+
 @parametros_bp.route('/grid-con-imagenes', methods=['GET'])
 def grid_con_imagenes():
     """

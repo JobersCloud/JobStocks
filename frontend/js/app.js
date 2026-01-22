@@ -25,6 +25,7 @@ let carrito = [];
 let currentUser = null;  // Usuario actual con rol
 let propuestasHabilitadas = true;  // Control de funcionalidad de propuestas
 let gridConImagenes = false;  // Control de imágenes en tabla/tarjetas (desactivado por defecto)
+let firmaHabilitada = false;  // Control de funcionalidad de firma de propuestas
 let whatsappConfig = { habilitado: false, numero: null };  // Configuración de WhatsApp
 let csrfToken = null;  // Token CSRF para protección contra ataques
 
@@ -81,6 +82,184 @@ const columnasFiltrables = [
 
 // Para compatibilidad con panel lateral (filtros simples)
 let filtrosActivos = [];
+
+// ==================== COLUMNAS ARRASTRABLES ====================
+// Orden de columnas (persistido en localStorage)
+let ordenColumnas = ['codigo', 'descripcion', 'formato', 'color', 'calidad', 'tono', 'calibre', 'existencias'];
+let columnaArrastrada = null;
+
+// Cargar orden de columnas desde localStorage
+function cargarOrdenColumnas() {
+    const saved = localStorage.getItem('columnOrder');
+    if (saved) {
+        try {
+            ordenColumnas = JSON.parse(saved);
+        } catch (e) {
+            console.warn('Error al cargar orden de columnas:', e);
+        }
+    }
+}
+
+// Guardar orden de columnas en localStorage
+function guardarOrdenColumnas() {
+    localStorage.setItem('columnOrder', JSON.stringify(ordenColumnas));
+}
+
+// ==================== REDIMENSIONADO DE COLUMNAS ====================
+let anchoColumnas = {};  // {columna: anchoEnPixeles}
+let resizeState = null;  // Estado durante el resize
+
+// Cargar anchos de columnas desde localStorage
+function cargarAnchoColumnas() {
+    const saved = localStorage.getItem('columnWidths');
+    if (saved) {
+        try {
+            anchoColumnas = JSON.parse(saved);
+        } catch (e) {
+            console.warn('Error al cargar anchos de columnas:', e);
+        }
+    }
+}
+
+// Guardar anchos de columnas en localStorage
+function guardarAnchoColumnas() {
+    localStorage.setItem('columnWidths', JSON.stringify(anchoColumnas));
+}
+
+// Iniciar resize de columna
+function iniciarResize(e, columna) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const th = e.target.closest('th');
+    const startX = e.clientX;
+    const startWidth = th.offsetWidth;
+
+    resizeState = {
+        columna,
+        th,
+        startX,
+        startWidth
+    };
+
+    // Añadir listeners temporales
+    document.addEventListener('mousemove', duranteResize);
+    document.addEventListener('mouseup', finalizarResize);
+
+    // Añadir clase visual
+    th.classList.add('resizing');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+}
+
+function duranteResize(e) {
+    if (!resizeState) return;
+
+    const diff = e.clientX - resizeState.startX;
+    const newWidth = Math.max(60, resizeState.startWidth + diff);  // Mínimo 60px
+
+    resizeState.th.style.width = `${newWidth}px`;
+    resizeState.th.style.minWidth = `${newWidth}px`;
+}
+
+function finalizarResize(e) {
+    if (!resizeState) return;
+
+    // Guardar nuevo ancho
+    const finalWidth = resizeState.th.offsetWidth;
+    anchoColumnas[resizeState.columna] = finalWidth;
+    guardarAnchoColumnas();
+
+    // Limpiar estado
+    resizeState.th.classList.remove('resizing');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+
+    document.removeEventListener('mousemove', duranteResize);
+    document.removeEventListener('mouseup', finalizarResize);
+
+    resizeState = null;
+}
+
+// Exponer función de resize
+window.iniciarResize = iniciarResize;
+
+// Funciones de Drag & Drop para columnas
+function iniciarArrastre(e, columna) {
+    columnaArrastrada = columna;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', columna);
+    e.target.closest('th').classList.add('dragging');
+}
+
+function permitirSoltar(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+}
+
+function entrarArrastre(e) {
+    e.preventDefault();
+    const th = e.target.closest('th');
+    if (th && !th.classList.contains('dragging')) {
+        th.classList.add('drag-over');
+    }
+}
+
+function salirArrastre(e) {
+    const th = e.target.closest('th');
+    if (th) {
+        th.classList.remove('drag-over');
+    }
+}
+
+function soltarColumna(e, columnaDestino) {
+    e.preventDefault();
+
+    // Limpiar clases visuales
+    document.querySelectorAll('.sortable-th').forEach(th => {
+        th.classList.remove('dragging', 'drag-over');
+    });
+
+    if (!columnaArrastrada || columnaArrastrada === columnaDestino) {
+        columnaArrastrada = null;
+        return;
+    }
+
+    // Reordenar array
+    const indexOrigen = ordenColumnas.indexOf(columnaArrastrada);
+    const indexDestino = ordenColumnas.indexOf(columnaDestino);
+
+    if (indexOrigen === -1 || indexDestino === -1) {
+        columnaArrastrada = null;
+        return;
+    }
+
+    ordenColumnas.splice(indexOrigen, 1);
+    ordenColumnas.splice(indexDestino, 0, columnaArrastrada);
+
+    console.log(`📊 Columnas reordenadas: ${ordenColumnas.join(' → ')}`);
+
+    guardarOrdenColumnas();
+    columnaArrastrada = null;
+
+    // Regenerar tabla con nuevo orden
+    mostrarTabla(stocksData);
+}
+
+function finalizarArrastre(e) {
+    document.querySelectorAll('.sortable-th').forEach(th => {
+        th.classList.remove('dragging', 'drag-over');
+    });
+    columnaArrastrada = null;
+}
+
+// Exponer funciones a window para onclick
+window.iniciarArrastre = iniciarArrastre;
+window.permitirSoltar = permitirSoltar;
+window.entrarArrastre = entrarArrastre;
+window.salirArrastre = salirArrastre;
+window.soltarColumna = soltarColumna;
+window.finalizarArrastre = finalizarArrastre;
 
 // ==================== CSRF TOKEN ====================
 
@@ -324,6 +503,23 @@ async function verificarPropuestasHabilitadas() {
         // Por defecto, habilitar propuestas si hay error
         propuestasHabilitadas = true;
         return true;
+    }
+}
+
+// Verificar si la firma de propuestas está habilitada
+async function verificarFirmaHabilitada() {
+    try {
+        const empresaId = localStorage.getItem('empresa_id') || '1';
+        const response = await fetch(`${API_URL}/api/parametros/firma-habilitada?empresa_id=${empresaId}`);
+        const data = await response.json();
+        firmaHabilitada = data.habilitado;
+        console.log(`✍️ Firma habilitada: ${firmaHabilitada}`);
+        return firmaHabilitada;
+    } catch (error) {
+        console.error('Error al verificar firma:', error);
+        // Por defecto, deshabilitar firma si hay error
+        firmaHabilitada = false;
+        return false;
     }
 }
 
@@ -988,8 +1184,86 @@ function tieneFiltroColumna(columna) {
 // Icono SVG de filtro para usar en popups
 const iconoFiltroSVG = `<svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16"><path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z"/></svg>`;
 
+// Obtener valores únicos de una columna desde el backend (estilo filtro Excel)
+async function getValoresUnicos(columna) {
+    try {
+        const response = await fetch(`${API_URL}/api/stocks/valores-unicos/${columna}?limite=100`, {
+            credentials: 'include'
+        });
+        if (response.ok) {
+            const data = await response.json();
+            return data.valores || [];
+        }
+    } catch (error) {
+        console.error('Error obteniendo valores únicos:', error);
+    }
+    // Fallback: usar datos locales si falla el backend
+    const valores = allStocksData
+        .map(item => item[columna])
+        .filter(v => v !== null && v !== undefined && v !== '');
+    const unicos = [...new Set(valores)].sort((a, b) =>
+        String(a).localeCompare(String(b), 'es', { numeric: true })
+    );
+    return unicos.slice(0, 100);
+}
+
+// Filtrar lista de valores en el popup
+function filtrarValoresPopup(columna) {
+    const busqueda = document.getElementById(`filter-search-${columna}`)?.value.toLowerCase() || '';
+    const items = document.querySelectorAll(`#filter-values-list-${columna} .filter-value-item:not(.filter-value-select-all)`);
+    let visibles = 0;
+    items.forEach(item => {
+        const texto = item.dataset.valor?.toLowerCase() || '';
+        const visible = texto.includes(busqueda);
+        item.style.display = visible ? 'flex' : 'none';
+        if (visible) visibles++;
+    });
+    // Mostrar/ocultar "Seleccionar todo" según haya resultados
+    const selectAll = document.querySelector(`#filter-values-list-${columna} .filter-value-select-all`);
+    if (selectAll) selectAll.style.display = visibles > 0 ? 'flex' : 'none';
+}
+
+// Seleccionar/deseleccionar todos los valores
+function toggleSelectAllValores(columna, checked) {
+    const checkboxes = document.querySelectorAll(`#filter-values-list-${columna} input[type="checkbox"]`);
+    checkboxes.forEach(cb => {
+        if (cb.closest('.filter-value-item').style.display !== 'none') {
+            cb.checked = checked;
+        }
+    });
+}
+
+// Cambiar entre pestañas del popup de filtro
+function cambiarTabFiltro(columna, tab) {
+    const tabValores = document.getElementById(`filter-tab-valores-${columna}`);
+    const tabCondicion = document.getElementById(`filter-tab-condicion-${columna}`);
+    const contentValores = document.getElementById(`filter-content-valores-${columna}`);
+    const contentCondicion = document.getElementById(`filter-content-condicion-${columna}`);
+
+    if (tab === 'valores') {
+        tabValores.classList.add('active');
+        tabCondicion.classList.remove('active');
+        contentValores.style.display = 'block';
+        contentCondicion.style.display = 'none';
+        // Limpiar el input de condición al cambiar a valores
+        const inputCondicion = document.getElementById(`filter-value-${columna}`);
+        if (inputCondicion) inputCondicion.value = '';
+    } else {
+        tabCondicion.classList.add('active');
+        tabValores.classList.remove('active');
+        contentCondicion.style.display = 'block';
+        contentValores.style.display = 'none';
+        // Deseleccionar checkboxes al cambiar a condición
+        const checkboxes = document.querySelectorAll(`#filter-values-list-${columna} input[type="checkbox"]`);
+        checkboxes.forEach(cb => cb.checked = false);
+        // Enfocar el input
+        setTimeout(() => document.getElementById(`filter-value-${columna}`)?.focus(), 50);
+    }
+}
+window.cambiarTabFiltro = cambiarTabFiltro;
+
 // Mostrar popup de filtro para una columna
-function mostrarPopupFiltro(columna, elemento) {
+async function mostrarPopupFiltro(columna, elemento) {
     // Cerrar popup anterior si existe
     cerrarPopupFiltro();
 
@@ -1003,6 +1277,26 @@ function mostrarPopupFiltro(columna, elemento) {
 
     const operadores = getOperadoresPorTipo(columna);
     const filtroExistente = filtrosColumna.find(f => f.columna === columna);
+    const valoresSeleccionados = filtroExistente?.valores || [];
+    const tieneValoresSeleccionados = valoresSeleccionados.length > 0;
+    const tieneCondicion = filtroExistente?.valor && !tieneValoresSeleccionados;
+
+    // Determinar si estamos usando paginación del backend
+    const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
+
+    // Obtener valores únicos: si no hay paginación usar datos locales, si hay paginación usar backend
+    let valoresUnicos;
+    if (usarPaginacionBackend) {
+        valoresUnicos = await getValoresUnicos(columna);
+    } else {
+        // Sin paginación: usar datos locales (más rápido)
+        const valores = allStocksData
+            .map(item => item[columna])
+            .filter(v => v !== null && v !== undefined && v !== '');
+        valoresUnicos = [...new Set(valores)].sort((a, b) =>
+            String(a).localeCompare(String(b), 'es', { numeric: true })
+        ).slice(0, 100);
+    }
 
     // Crear el popup
     const popup = document.createElement('div');
@@ -1015,35 +1309,66 @@ function mostrarPopupFiltro(columna, elemento) {
             <span class="filter-popup-title">${col.label}</span>
             <button class="filter-popup-close" onclick="cerrarPopupFiltro()" title="Cerrar">×</button>
         </div>
+        <div class="filter-popup-tabs">
+            <button class="filter-tab ${!tieneCondicion ? 'active' : ''}" id="filter-tab-valores-${columna}"
+                    onclick="cambiarTabFiltro('${columna}', 'valores')">
+                <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/><path d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.235.235 0 0 1 .02-.022z"/></svg>
+                Valores
+            </button>
+            <button class="filter-tab ${tieneCondicion ? 'active' : ''}" id="filter-tab-condicion-${columna}"
+                    onclick="cambiarTabFiltro('${columna}', 'condicion')">
+                <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                Condición
+            </button>
+        </div>
         <div class="filter-popup-body">
-            <div class="filter-popup-section">
-                <label class="filter-popup-label">Condición</label>
-                <div class="filter-popup-operators">
-                    ${operadores.map((op, idx) => `
-                        <label class="filter-popup-operator">
-                            <input type="radio" name="op-${columna}" value="${op.key}"
-                                   ${(filtroExistente?.operador === op.key || (!filtroExistente && idx === 0)) ? 'checked' : ''}>
-                            <span class="filter-radio-custom"></span>
-                            <span class="filter-operator-text">${op.label}</span>
+            <!-- Contenido pestaña VALORES -->
+            <div class="filter-tab-content" id="filter-content-valores-${columna}" style="display: ${!tieneCondicion ? 'block' : 'none'};">
+                <div class="filter-search-box">
+                    <input type="text" class="filter-search-input" id="filter-search-${columna}"
+                           placeholder="Buscar..." oninput="filtrarValoresPopup('${columna}')">
+                </div>
+                ${valoresUnicos.length > 0 ? `
+                <div class="filter-popup-values" id="filter-values-list-${columna}">
+                    <label class="filter-value-item filter-value-select-all">
+                        <input type="checkbox" class="filter-value-checkbox"
+                               onchange="toggleSelectAllValores('${columna}', this.checked)">
+                        <span class="filter-value-text">(Seleccionar todo)</span>
+                    </label>
+                    ${valoresUnicos.map(v => `
+                        <label class="filter-value-item" data-valor="${String(v).toLowerCase()}">
+                            <input type="checkbox" class="filter-value-checkbox" value="${v}"
+                                   ${valoresSeleccionados.includes(String(v)) ? 'checked' : ''}>
+                            <span class="filter-value-text">${v}</span>
                         </label>
                     `).join('')}
                 </div>
+                ` : '<p class="filter-no-values">No hay valores disponibles</p>'}
             </div>
-            <div class="filter-popup-section">
-                <label class="filter-popup-label" for="filter-value-${columna}">Valor</label>
-                <input type="text" class="filter-popup-input" id="filter-value-${columna}"
+            <!-- Contenido pestaña CONDICIÓN -->
+            <div class="filter-tab-content" id="filter-content-condicion-${columna}" style="display: ${tieneCondicion ? 'block' : 'none'};">
+                <div class="filter-condition-operators">
+                    ${operadores.map((op, idx) => `
+                        <label class="filter-condition-option">
+                            <input type="radio" name="op-${columna}" value="${op.key}"
+                                   ${(filtroExistente?.operador === op.key || (!filtroExistente && idx === 0)) ? 'checked' : ''}>
+                            <span class="filter-radio-dot"></span>
+                            <span>${op.label}</span>
+                        </label>
+                    `).join('')}
+                </div>
+                <input type="text" class="filter-condition-input" id="filter-value-${columna}"
                        placeholder="Escribir valor..." value="${filtroExistente?.valor || ''}"
                        onkeypress="if(event.key==='Enter') aplicarFiltroColumna('${columna}')">
             </div>
         </div>
         <div class="filter-popup-footer">
-            <button class="btn-filter-clear" onclick="limpiarFiltroColumna('${columna}')">
-                <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
-                Limpiar
+            <button class="btn-filter-clear" onclick="limpiarFiltroColumna('${columna}')" title="Limpiar">
+                <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
             </button>
             <button class="btn-filter-apply" onclick="aplicarFiltroColumna('${columna}')">
-                <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
-                Aplicar filtro
+                <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+                Aplicar
             </button>
         </div>
     `;
@@ -1053,16 +1378,21 @@ function mostrarPopupFiltro(columna, elemento) {
 
     popup.style.position = 'fixed';
     popup.style.top = `${rect.bottom + 5}px`;
-    popup.style.left = `${Math.min(rect.left, window.innerWidth - 220)}px`;
+    popup.style.left = `${Math.min(rect.left, window.innerWidth - 280)}px`;
     popup.style.zIndex = '1000';
 
     document.body.appendChild(popup);
     popupFiltroAbierto = popup;
 
-    // Enfocar el input
-    setTimeout(() => {
-        document.getElementById(`filter-value-${columna}`)?.focus();
-    }, 100);
+    // Evitar que clics dentro del popup lo cierren
+    popup.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    // Evitar que scroll dentro del popup lo cierre
+    popup.addEventListener('scroll', (e) => {
+        e.stopPropagation();
+    }, true);
 }
 
 // Cerrar popup de filtro
@@ -1078,11 +1408,15 @@ async function aplicarFiltroColumna(columna) {
     const inputValor = document.getElementById(`filter-value-${columna}`);
     const radioSeleccionado = document.querySelector(`input[name="op-${columna}"]:checked`);
 
-    const valor = inputValor?.value.trim();
+    const valorInput = inputValor?.value.trim();
     const operador = radioSeleccionado?.value || 'contains';
 
-    if (!valor) {
-        // Si no hay valor, limpiar el filtro de esta columna
+    // Obtener valores seleccionados de los checkboxes (excepto "Seleccionar todo")
+    const checkboxes = document.querySelectorAll(`#filter-values-list-${columna} .filter-value-item:not(.filter-value-select-all) input[type="checkbox"]:checked`);
+    const valoresSeleccionados = Array.from(checkboxes).map(cb => cb.value);
+
+    // Si no hay valor ni checkboxes seleccionados, limpiar el filtro
+    if (!valorInput && valoresSeleccionados.length === 0) {
         limpiarFiltroColumna(columna);
         return;
     }
@@ -1091,9 +1425,15 @@ async function aplicarFiltroColumna(columna) {
     filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
 
     // Añadir nuevo filtro
-    filtrosColumna.push({ columna, operador, valor });
-
-    console.log(`🔍 Filtro columna: ${columna} ${operador} "${valor}"`);
+    if (valoresSeleccionados.length > 0) {
+        // Filtro por valores seleccionados (multi-selección)
+        filtrosColumna.push({ columna, operador: 'in', valores: valoresSeleccionados });
+        console.log(`🔍 Filtro columna: ${columna} IN [${valoresSeleccionados.join(', ')}]`);
+    } else {
+        // Filtro por valor de texto
+        filtrosColumna.push({ columna, operador, valor: valorInput });
+        console.log(`🔍 Filtro columna: ${columna} ${operador} "${valorInput}"`);
+    }
 
     // Cerrar popup
     cerrarPopupFiltro();
@@ -1210,19 +1550,37 @@ function renderizarChipsFiltrosColumna() {
 
     const chipsHTML = todosFiltros.map((filtro, idx) => {
         const labelColumna = columnasFiltrables.find(c => c.key === filtro.columna)?.label || filtro.columna;
-        const labelOperador = getLabelOperador(filtro.operador);
         const onclickFn = filtro.tipo === 'columna'
             ? `quitarFiltroColumna(${filtro.index})`
             : `quitarFiltro(${filtro.index})`;
 
-        return `
-            <span class="filter-chip">
-                <span class="filter-chip-column">${labelColumna}:</span>
-                <span class="filter-chip-operator">${labelOperador.toLowerCase()}</span>
-                <span class="filter-chip-value" title="${filtro.valor}">"${filtro.valor}"</span>
-                <span class="filter-chip-remove" onclick="${onclickFn}">✕</span>
-            </span>
-        `;
+        // Formatear valor según si es multi-selección o valor único
+        let valorMostrar;
+        if (filtro.operador === 'in' && filtro.valores) {
+            const count = filtro.valores.length;
+            valorMostrar = count <= 2
+                ? filtro.valores.join(', ')
+                : `${filtro.valores[0]}, ${filtro.valores[1]}... (+${count - 2})`;
+            const labelOperador = 'es uno de';
+            return `
+                <span class="filter-chip filter-chip-multi">
+                    <span class="filter-chip-column">${labelColumna}:</span>
+                    <span class="filter-chip-operator">${labelOperador}</span>
+                    <span class="filter-chip-value" title="${filtro.valores.join(', ')}">${valorMostrar}</span>
+                    <span class="filter-chip-remove" onclick="${onclickFn}">✕</span>
+                </span>
+            `;
+        } else {
+            const labelOperador = getLabelOperador(filtro.operador);
+            return `
+                <span class="filter-chip">
+                    <span class="filter-chip-column">${labelColumna}:</span>
+                    <span class="filter-chip-operator">${labelOperador.toLowerCase()}</span>
+                    <span class="filter-chip-value" title="${filtro.valor}">"${filtro.valor}"</span>
+                    <span class="filter-chip-remove" onclick="${onclickFn}">✕</span>
+                </span>
+            `;
+        }
     }).join('');
 
     container.innerHTML = chipsHTML + `
@@ -1251,7 +1609,15 @@ function aplicarFiltrosFrontend() {
     filtrosColumna.forEach(filtro => {
         datosFiltrados = datosFiltrados.filter(item => {
             const valorItem = (item[filtro.columna] || '').toString();
-            const valorBuscar = filtro.valor;
+
+            // Operador 'in' para multi-selección de valores
+            if (filtro.operador === 'in' && filtro.valores) {
+                return filtro.valores.some(v =>
+                    valorItem.toLowerCase() === v.toLowerCase()
+                );
+            }
+
+            const valorBuscar = filtro.valor || '';
 
             switch (filtro.operador) {
                 case 'eq':
@@ -1345,9 +1711,13 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Cerrar popup al hacer scroll
-window.addEventListener('scroll', () => {
+// Cerrar popup al hacer scroll (solo si es scroll fuera del popup)
+window.addEventListener('scroll', (e) => {
     if (popupFiltroAbierto) {
+        // No cerrar si el scroll es dentro del popup
+        if (popupFiltroAbierto.contains(e.target)) {
+            return;
+        }
         cerrarPopupFiltro();
     }
 }, true);  // Capture phase para detectar scroll en cualquier elemento
@@ -1532,7 +1902,19 @@ function mostrarTabla(stocks) {
         return columnasFiltrables.some(c => c.key === columna);
     };
 
-    // Función helper para generar header con ordenación e icono de filtro
+    // Mapeo de columnas a labels i18n
+    const columnLabels = {
+        'codigo': t('table.code'),
+        'descripcion': t('table.description'),
+        'formato': t('table.format'),
+        'color': t('table.color'),
+        'calidad': t('table.quality'),
+        'tono': t('table.tone'),
+        'calibre': t('table.caliber'),
+        'existencias': t('table.stock')
+    };
+
+    // Función helper para generar header con ordenación, filtro y drag & drop
     const getHeaderConOrden = (columna, label) => {
         const esColumnaActual = ordenActual.columna === columna;
         const tieneFiltro = tieneFiltroColumna(columna);
@@ -1540,6 +1922,7 @@ function mostrarTabla(stocks) {
 
         return `
             <div class="column-header-wrapper">
+                <span class="drag-handle" title="Arrastrar para reordenar">⋮⋮</span>
                 <div class="sortable-header ${esColumnaActual ? 'active' : ''}" onclick="ordenarPorColumna('${columna}')">
                     <span class="header-label">${label}</span>
                     <span class="sort-icon ${esColumnaActual ? 'active' : ''}">${getOrdenIcono(columna)}</span>
@@ -1554,6 +1937,43 @@ function mostrarTabla(stocks) {
         `;
     };
 
+    // Función para obtener valor de celda formateado
+    const getCellValue = (stock, columna) => {
+        if (columna === 'codigo') return `<strong>${stock.codigo}</strong>`;
+        if (columna === 'existencias') return getBadgeWithUnit(stock.existencias, stock.unidad);
+        return stock[columna] || '-';
+    };
+
+    // Generar headers dinámicamente según ordenColumnas
+    const headersHtml = ordenColumnas.map(col =>
+        `<th class="sortable-th" draggable="true"
+             data-columna="${col}"
+             style="${anchoColumnas[col] ? `width: ${anchoColumnas[col]}px; min-width: ${anchoColumnas[col]}px;` : ''}"
+             ondragstart="iniciarArrastre(event, '${col}')"
+             ondragover="permitirSoltar(event)"
+             ondragenter="entrarArrastre(event)"
+             ondragleave="salirArrastre(event)"
+             ondrop="soltarColumna(event, '${col}')"
+             ondragend="finalizarArrastre(event)">${getHeaderConOrden(col, columnLabels[col])}<div class="column-resize-handle" onmousedown="iniciarResize(event, '${col}')"></div></th>`
+    ).join('') + `<th>${t('table.action')}</th>`;
+
+    // Iconos SVG para botones de acción
+    const iconoVer = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+    const iconoCarrito = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>`;
+
+    // Generar filas dinámicamente según ordenColumnas
+    const rowsHtml = stocks.map(stock =>
+        `<tr>${ordenColumnas.map(col => `<td>${getCellValue(stock, col)}</td>`).join('')}
+            <td class="actions-cell">
+                <button class="btn-icon btn-icon-primary" onclick='verDetalle(${JSON.stringify(stock).replace(/'/g, "&apos;")})' title="${t('table.view')}">
+                    ${iconoVer}
+                </button>${propuestasHabilitadas ? `<button class="btn-icon btn-icon-secondary" onclick='agregarAlCarrito(${JSON.stringify(stock).replace(/'/g, "&apos;")})' title="${t('table.addToCart')}">
+                    ${iconoCarrito}
+                </button>` : ''}
+            </td>
+        </tr>`
+    ).join('');
+
     // Vista normal: chips de filtros + tabla en desktop, tarjetas en móvil
     const html = `
         <!-- Chips de filtros activos -->
@@ -1562,39 +1982,9 @@ function mostrarTabla(stocks) {
         <!-- Vista de tabla para desktop -->
         <table class="stock-table-advanced">
             <thead>
-                <tr class="header-row">
-                    <th class="sortable-th">${getHeaderConOrden('codigo', t('table.code'))}</th>
-                    <th class="sortable-th">${getHeaderConOrden('descripcion', t('table.description'))}</th>
-                    <th class="sortable-th">${getHeaderConOrden('formato', t('table.format'))}</th>
-                    <th class="sortable-th">${getHeaderConOrden('color', t('table.color'))}</th>
-                    <th class="sortable-th">${getHeaderConOrden('calidad', t('table.quality'))}</th>
-                    <th class="sortable-th">${getHeaderConOrden('tono', t('table.tone'))}</th>
-                    <th class="sortable-th">${getHeaderConOrden('calibre', t('table.caliber'))}</th>
-                    <th class="sortable-th">${getHeaderConOrden('existencias', t('table.stock'))}</th>
-                    <th>${t('table.action')}</th>
-                </tr>
+                <tr class="header-row">${headersHtml}</tr>
             </thead>
-            <tbody>
-                ${stocks.map(stock => `
-                    <tr>
-                        <td><strong>${stock.codigo}</strong></td>
-                        <td>${stock.descripcion}</td>
-                        <td>${stock.formato || '-'}</td>
-                        <td>${stock.color || '-'}</td>
-                        <td>${stock.calidad || '-'}</td>
-                        <td>${stock.tono || '-'}</td>
-                        <td>${stock.calibre || '-'}</td>
-                        <td>${getBadgeWithUnit(stock.existencias, stock.unidad)}</td>
-                        <td class="actions-cell">
-                            <button class="btn-primary btn-table" onclick='verDetalle(${JSON.stringify(stock).replace(/'/g, "&apos;")})'>
-                                ${t('table.view')}
-                            </button>${propuestasHabilitadas ? `<button class="btn-secondary btn-table" onclick='agregarAlCarrito(${JSON.stringify(stock).replace(/'/g, "&apos;")})'>
-                                ${t('table.addToCart')}
-                            </button>` : ''}
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
+            <tbody>${rowsHtml}</tbody>
         </table>
 
         <!-- Vista de tarjetas para móvil -->
@@ -1636,13 +2026,13 @@ function mostrarTabla(stocks) {
                         </div>
                     </div>
                     <div class="stock-card-footer">
-                        <button class="btn-primary" style="padding: 8px 16px; font-size: 0.9em; ${propuestasHabilitadas ? 'margin-right: 5px;' : ''}"
+                        <button class="btn-icon btn-icon-primary" title="${t('cards.viewDetail')}"
                                 onclick='verDetalle(${JSON.stringify(stock).replace(/'/g, "&apos;")})'>
-                            ${t('cards.viewDetail')}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         </button>
-                        ${propuestasHabilitadas ? `<button class="btn-secondary" style="padding: 8px 16px; font-size: 0.9em;"
+                        ${propuestasHabilitadas ? `<button class="btn-icon btn-icon-secondary" title="${t('cards.addToCart')}"
                                 onclick='agregarAlCarrito(${JSON.stringify(stock).replace(/'/g, "&apos;")})'>
-                            ${t('cards.addToCart')}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
                         </button>` : ''}
                     </div>
                 </div>
@@ -1793,33 +2183,31 @@ async function verDetalle(stock) {
         <div class="detail-contact-block" style="border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-top: 15px;">
             <div class="detail-label" style="margin-bottom: 12px;">${t('detail.contact')}:</div>
             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                <button class="btn-inquiry" style="padding: 10px 20px; font-size: 14px; background: #2196F3; color: white; border: none; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;"
+                <button class="btn-icon" style="width: 44px; height: 44px; background: #2196F3; color: white;" title="${t('inquiry.askQuestion')}"
                         onclick="window.abrirModalConsulta()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
-                    ${t('inquiry.askQuestion')}
                 </button>
                 ${whatsappConfig.habilitado ? `
-                <button class="btn-whatsapp" style="padding: 10px 20px; font-size: 14px; background: #25D366; color: white; border: none; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;"
+                <button class="btn-icon" style="width: 44px; height: 44px; background: #25D366; color: white;" title="${t('inquiry.whatsapp')}"
                         onclick="window.abrirWhatsApp()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                     </svg>
-                    ${t('inquiry.whatsapp')}
                 </button>
                 ` : ''}
             </div>
         </div>
         <div class="detail-actions" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px;">
             ${propuestasHabilitadas ? `
-            <button class="btn-secondary" style="padding: 12px 24px; font-size: 1em;"
+            <button class="btn-icon btn-icon-secondary" style="width: 44px; height: 44px;" title="${t('detail.addToCart')}"
                     onclick="agregarAlCarritoDesdeDetalle()">
-                ${t('detail.addToCart')}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
             </button>
             ` : ''}
-            <button class="btn-close-detail" onclick="cerrarModal()" style="padding: 12px 24px; font-size: 1em; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-                ${t('common.close')}
+            <button class="btn-icon" style="width: 44px; height: 44px; background: #6c757d; color: white;" title="${t('common.close')}" onclick="cerrarModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
         </div>
     `;
@@ -2302,8 +2690,12 @@ function mostrarModalCantidad(stock) {
                 </div>
 
                 <div class="quantity-modal-footer">
-                    <button class="quantity-btn-cancel" onclick="cerrarModalCantidad()">${t('common.cancel')}</button>
-                    <button class="quantity-btn-confirm" onclick="confirmarAgregarAlCarrito()">${t('cart.addToCart')}</button>
+                    <button class="quantity-btn-cancel" onclick="cerrarModalCantidad()" title="${t('common.cancel')}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                    <button class="quantity-btn-confirm" onclick="confirmarAgregarAlCarrito()" title="${t('cart.addToCart')}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -2648,6 +3040,25 @@ function mostrarFormularioEnvio() {
                     <span>${t('shipping.sendCopy')}</span>
                 </label>
             </div>
+            ${firmaHabilitada ? `
+            <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="firmar-propuesta" onchange="togglePanelFirma(this.checked)">
+                    <span>${t('shipping.signProposal') || 'Firmar la propuesta'}</span>
+                </label>
+            </div>
+            <div class="signature-panel" id="signature-panel" style="display: none;">
+                <label>${t('shipping.signatureLabel') || 'Panel de firma'}:</label>
+                <div class="signature-canvas-container">
+                    <canvas id="signature-canvas" width="400" height="150"></canvas>
+                </div>
+                <div class="signature-actions">
+                    <button type="button" class="btn-secondary btn-sm" onclick="limpiarFirma()">
+                        ${t('shipping.clearSignature') || 'Limpiar'}
+                    </button>
+                </div>
+            </div>
+            ` : ''}
             <div class="carrito-footer">
                 <button class="btn-secondary" onclick="verCarrito()">${t('shipping.back')}</button>
                 <button class="btn-primary" onclick="enviarSolicitud()">${t('shipping.send')}</button>
@@ -2666,10 +3077,18 @@ async function enviarSolicitud() {
     const enviarCopia = document.getElementById('enviar-copia').checked;
     const cliente_id = document.getElementById('cliente-id-envio').value;
     const empresa_id = getEmpresaId(); // Multi-empresa support
+    const firmarPropuesta = document.getElementById('firmar-propuesta')?.checked || false;
+    const firmaData = firmarPropuesta ? getSignatureData() : null;
 
     // Validar cliente obligatorio
     if (!cliente_id) {
         alert(t('shipping.clientRequired') || 'Debe seleccionar un cliente');
+        return;
+    }
+
+    // Validar firma si está marcado el checkbox
+    if (firmarPropuesta && !firmaData) {
+        alert(t('shipping.signatureRequired') || 'Debe firmar la propuesta antes de enviar');
         return;
     }
 
@@ -2685,7 +3104,14 @@ async function enviarSolicitud() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ referencia, comentarios, empresa_id, enviar_copia: enviarCopia, cliente_id })
+            body: JSON.stringify({
+                referencia,
+                comentarios,
+                empresa_id,
+                enviar_copia: enviarCopia,
+                cliente_id,
+                firma: firmaData
+            })
         });
 
         // Ocultar indicador de envio
@@ -2843,6 +3269,122 @@ function clearClientSelectionEnvio() {
 window.selectClientEnvio = selectClientEnvio;
 window.clearClientSelectionEnvio = clearClientSelectionEnvio;
 
+// ==================== PANEL DE FIRMA ====================
+
+let signatureCanvas = null;
+let signatureCtx = null;
+let isDrawing = false;
+let hasSignature = false;
+
+function togglePanelFirma(show) {
+    const panel = document.getElementById('signature-panel');
+    if (panel) {
+        panel.style.display = show ? 'block' : 'none';
+        if (show) {
+            initSignatureCanvas();
+        }
+    }
+}
+
+function initSignatureCanvas() {
+    signatureCanvas = document.getElementById('signature-canvas');
+    if (!signatureCanvas) return;
+
+    signatureCtx = signatureCanvas.getContext('2d');
+
+    // Ajustar tamaño del canvas al contenedor
+    const container = signatureCanvas.parentElement;
+    signatureCanvas.width = container.offsetWidth - 4; // -4 por bordes
+    signatureCanvas.height = 150;
+
+    // Fondo blanco
+    signatureCtx.fillStyle = '#ffffff';
+    signatureCtx.fillRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+
+    // Configuración del trazo
+    signatureCtx.strokeStyle = '#000000';
+    signatureCtx.lineWidth = 2;
+    signatureCtx.lineCap = 'round';
+    signatureCtx.lineJoin = 'round';
+
+    // Eventos de mouse
+    signatureCanvas.addEventListener('mousedown', startDrawing);
+    signatureCanvas.addEventListener('mousemove', draw);
+    signatureCanvas.addEventListener('mouseup', stopDrawing);
+    signatureCanvas.addEventListener('mouseout', stopDrawing);
+
+    // Eventos táctiles para móvil
+    signatureCanvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    signatureCanvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    signatureCanvas.addEventListener('touchend', stopDrawing);
+
+    hasSignature = false;
+}
+
+function startDrawing(e) {
+    isDrawing = true;
+    const pos = getCanvasPosition(e);
+    signatureCtx.beginPath();
+    signatureCtx.moveTo(pos.x, pos.y);
+}
+
+function draw(e) {
+    if (!isDrawing) return;
+    const pos = getCanvasPosition(e);
+    signatureCtx.lineTo(pos.x, pos.y);
+    signatureCtx.stroke();
+    hasSignature = true;
+}
+
+function stopDrawing() {
+    isDrawing = false;
+}
+
+function handleTouchStart(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent('mousedown', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+    });
+    signatureCanvas.dispatchEvent(mouseEvent);
+}
+
+function handleTouchMove(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent('mousemove', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+    });
+    signatureCanvas.dispatchEvent(mouseEvent);
+}
+
+function getCanvasPosition(e) {
+    const rect = signatureCanvas.getBoundingClientRect();
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    };
+}
+
+function limpiarFirma() {
+    if (!signatureCanvas || !signatureCtx) return;
+    signatureCtx.fillStyle = '#ffffff';
+    signatureCtx.fillRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+    hasSignature = false;
+}
+
+function getSignatureData() {
+    if (!signatureCanvas || !hasSignature) return null;
+    // Retornar como base64 PNG
+    return signatureCanvas.toDataURL('image/png');
+}
+
+// Exponer funciones de firma
+window.togglePanelFirma = togglePanelFirma;
+window.limpiarFirma = limpiarFirma;
+
 // Funciones de filtros y ordenación
 window.agregarFiltro = agregarFiltro;
 window.quitarFiltro = quitarFiltro;
@@ -2890,6 +3432,7 @@ window.onload = async function () {
         await obtenerCsrfToken();
 
         await verificarPropuestasHabilitadas();
+        await verificarFirmaHabilitada();
         await verificarGridConImagenes();
         await cargarConfigPaginacion();
         await cargarConfigWhatsApp();
@@ -2906,6 +3449,10 @@ window.onload = async function () {
 
 // Buscar al presionar Enter en los filtros
 document.addEventListener('DOMContentLoaded', function () {
+    // Cargar orden y anchos de columnas guardados
+    cargarOrdenColumnas();
+    cargarAnchoColumnas();
+
     const inputs = document.querySelectorAll('.filters input');
     inputs.forEach(input => {
         input.addEventListener('keypress', function (e) {

@@ -84,3 +84,24 @@ class StockController:
             return jsonify(resumen), 200
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+
+    @staticmethod
+    def get_valores_unicos(columna):
+        """Obtener valores únicos de una columna para filtros estilo Excel"""
+        try:
+            # Validar columna
+            if columna not in StockModel.VALID_FILTER_COLUMNS:
+                return jsonify({
+                    'error': f'Columna no válida. Columnas permitidas: {", ".join(StockModel.VALID_FILTER_COLUMNS)}'
+                }), 400
+
+            limite = request.args.get('limite', 100, type=int)
+            valores = StockModel.get_valores_unicos(columna, limite)
+
+            return jsonify({
+                'columna': columna,
+                'valores': valores,
+                'total': len(valores)
+            }), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500

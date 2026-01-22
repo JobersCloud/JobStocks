@@ -178,6 +178,50 @@ def search():
     """
     return StockController.search()
 
+
+@stock_bp.route('/api/stocks/valores-unicos/<string:columna>', methods=['GET'])
+@api_key_or_login_required
+def get_valores_unicos(columna):
+    """
+    Obtener valores únicos de una columna para filtros estilo Excel
+    ---
+    tags:
+      - Stocks
+    security:
+      - apiKeyAuth: []
+    parameters:
+      - name: columna
+        in: path
+        type: string
+        required: true
+        description: Nombre de la columna (codigo, descripcion, calidad, color, tono, calibre, formato, serie, existencias)
+      - name: limite
+        in: query
+        type: integer
+        description: Máximo de valores a devolver (default 100, max 500)
+        default: 100
+    responses:
+      200:
+        description: Lista de valores únicos
+        schema:
+          type: object
+          properties:
+            columna:
+              type: string
+            valores:
+              type: array
+              items:
+                type: string
+            total:
+              type: integer
+      400:
+        description: Columna no válida
+      401:
+        description: No autenticado
+    """
+    return StockController.get_valores_unicos(columna)
+
+
 @stock_bp.route('/api/stocks/resumen', methods=['GET'])
 @api_key_or_login_required
 def get_resumen():

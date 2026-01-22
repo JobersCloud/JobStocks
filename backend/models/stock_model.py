@@ -328,6 +328,40 @@ class StockModel:
         return stocks
 
     @staticmethod
+    def get_valores_unicos(columna, limite=100):
+        """
+        Obtiene los valores únicos de una columna para filtros estilo Excel.
+
+        Args:
+            columna: nombre de la columna (debe estar en VALID_FILTER_COLUMNS)
+            limite: máximo de valores a devolver (default 100)
+
+        Returns:
+            Lista de valores únicos ordenados
+        """
+        # Validar columna (seguridad contra SQL injection)
+        if columna not in StockModel.VALID_FILTER_COLUMNS:
+            return []
+
+        conn = Database.get_connection()
+        empresa_erp = Database.get_empresa_erp()
+        cursor = conn.cursor()
+
+        # Query para obtener valores únicos
+        query = f"""
+            SELECT DISTINCT TOP {min(limite, 500)} {columna}
+            FROM view_externos_stock
+            WHERE empresa = ? AND {columna} IS NOT NULL AND {columna} <> ''
+            ORDER BY {columna}
+        """
+        cursor.execute(query, (empresa_erp,))
+
+        valores = [row[0] for row in cursor.fetchall()]
+        conn.close()
+
+        return valores
+
+    @staticmethod
     def get_resumen():
         """Obtiene un resumen de estadísticas del stock"""
         conn = Database.get_connection()

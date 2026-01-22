@@ -224,6 +224,22 @@
 
         // empresa_id se obtiene del servidor (sesión) via /api/current-user
         let empresaId = null;
+        let csrfToken = null;
+
+        // Obtener CSRF token
+        async function obtenerCsrfToken() {
+            try {
+                csrfToken = localStorage.getItem('csrf_token');
+                const response = await fetch(`${API_URL}/api/csrf-token`, { credentials: 'include' });
+                if (response.ok) {
+                    const data = await response.json();
+                    csrfToken = data.csrf_token;
+                    localStorage.setItem('csrf_token', csrfToken);
+                }
+            } catch (e) {
+                console.error('Error obteniendo CSRF token:', e);
+            }
+        }
 
         // Obtener empresa_id de la sesión del servidor
         async function getEmpresaIdFromSession() {
@@ -360,7 +376,10 @@
                 try {
                     const response = await fetch(`${API_URL}/api/empresa/${empresaId}/logo`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': csrfToken
+                        },
                         credentials: 'include',
                         body: JSON.stringify({ logo: e.target.result })
                     });
@@ -395,7 +414,10 @@
                 try {
                     const response = await fetch(`${API_URL}/api/empresa/${empresaId}/favicon`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': csrfToken
+                        },
                         credentials: 'include',
                         body: JSON.stringify({ favicon: e.target.result })
                     });
@@ -422,6 +444,7 @@
             try {
                 const response = await fetch(`${API_URL}/api/empresa/${empresaId}/logo`, {
                     method: 'DELETE',
+                    headers: { 'X-CSRF-Token': csrfToken },
                     credentials: 'include'
                 });
 
@@ -443,6 +466,7 @@
             try {
                 const response = await fetch(`${API_URL}/api/empresa/${empresaId}/favicon`, {
                     method: 'DELETE',
+                    headers: { 'X-CSRF-Token': csrfToken },
                     credentials: 'include'
                 });
 
@@ -465,7 +489,10 @@
             try {
                 const response = await fetch(`${API_URL}/api/empresa/${empresaId}/invertir`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
                     credentials: 'include',
                     body: JSON.stringify({ invertir: invertir })
                 });
@@ -514,8 +541,11 @@
         async function selectTheme(tema) {
             try {
                 const response = await fetch(`${API_URL}/api/empresa/${empresaId}/tema`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
                     credentials: 'include',
                     body: JSON.stringify({ tema: tema })
                 });
@@ -553,6 +583,9 @@
             // Obtener empresa_id de la sesión PRIMERO
             empresaId = await getEmpresaIdFromSession();
             if (!empresaId) return;
+
+            // Obtener CSRF token
+            await obtenerCsrfToken();
 
             await loadThemeConfig();
             await cargarLogoEmpresa();
