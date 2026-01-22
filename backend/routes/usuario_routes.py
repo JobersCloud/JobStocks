@@ -20,6 +20,7 @@ from flask import Blueprint, jsonify, request, session
 from flask_login import login_required, current_user
 from utils.auth import csrf_required
 from utils.auth import administrador_required, superusuario_required
+from models.audit_model import AuditModel, AuditAction, AuditResult
 from database.users_db import (
     get_all_users_by_empresa, get_user_by_id,
     get_user_by_id_and_empresa, update_user, update_user_full,
@@ -50,6 +51,22 @@ def get_base_url():
     proto = request.headers.get('X-Forwarded-Proto', request.scheme)
     host = request.headers.get('X-Forwarded-Host', request.host)
     return f"{proto}://{host}"
+
+
+def get_client_ip():
+    """Obtener IP real del cliente, considerando proxies"""
+    headers_to_check = [
+        'X-Forwarded-For', 'X-Real-IP', 'CF-Connecting-IP',
+        'True-Client-IP', 'X-Client-IP'
+    ]
+    for header in headers_to_check:
+        ip = request.headers.get(header)
+        if ip:
+            if ',' in ip:
+                ip = ip.split(',')[0].strip()
+            return ip
+    return request.remote_addr
+
 
 usuario_bp = Blueprint('usuario', __name__, url_prefix='/api/usuarios')
 
@@ -208,6 +225,23 @@ def crear_usuario():
 
     try:
         user_id = create_user_admin(data, connection)
+
+        # Registrar audit log de usuario creado
+        try:
+            AuditModel.log(
+                accion=AuditAction.USER_CREATE,
+                user_id=current_user.id,
+                username=current_user.username,
+                empresa_id=session.get('empresa_id'),
+                recurso='user',
+                recurso_id=str(user_id),
+                ip_address=get_client_ip(),
+                user_agent=request.headers.get('User-Agent'),
+                detalles={'nuevo_usuario': data['username'], 'rol': data.get('rol', 'usuario')},
+                resultado=AuditResult.SUCCESS
+            )
+        except Exception as e:
+            print(f"Warning: No se pudo registrar audit log: {e}")
 
         email_enviado = False
         email_error = None
@@ -617,6 +651,23 @@ def cambiar_rol(user_id):
                 'error': 'Usuario no encontrado en esta empresa'
             }), 404
 
+        # Registrar audit log
+        try:
+            AuditModel.log(
+                accion=AuditAction.USER_ROLE_CHANGE,
+                user_id=current_user.id,
+                username=current_user.username,
+                empresa_id=empresa_id,
+                recurso='user',
+                recurso_id=str(user_id),
+                ip_address=get_client_ip(),
+                user_agent=request.headers.get('User-Agent'),
+                detalles={'nuevo_rol': data['rol']},
+                resultado=AuditResult.SUCCESS
+            )
+        except Exception as e:
+            print(f"Warning: No se pudo registrar audit log: {e}")
+
         return jsonify({
             'success': True,
             'message': f'Rol actualizado a "{data["rol"]}"'
@@ -679,6 +730,22 @@ def desactivar_usuario(user_id):
                 'error': 'Usuario no encontrado'
             }), 404
 
+        # Registrar audit log
+        try:
+            AuditModel.log(
+                accion=AuditAction.USER_DEACTIVATE,
+                user_id=current_user.id,
+                username=current_user.username,
+                empresa_id=session.get('empresa_id'),
+                recurso='user',
+                recurso_id=str(user_id),
+                ip_address=get_client_ip(),
+                user_agent=request.headers.get('User-Agent'),
+                resultado=AuditResult.SUCCESS
+            )
+        except Exception as e:
+            print(f"Warning: No se pudo registrar audit log: {e}")
+
         return jsonify({
             'success': True,
             'message': 'Usuario desactivado correctamente'
@@ -726,6 +793,22 @@ def activar_usuario(user_id):
                 'success': False,
                 'error': 'Usuario no encontrado'
             }), 404
+
+        # Registrar audit log
+        try:
+            AuditModel.log(
+                accion=AuditAction.USER_ACTIVATE,
+                user_id=current_user.id,
+                username=current_user.username,
+                empresa_id=session.get('empresa_id'),
+                recurso='user',
+                recurso_id=str(user_id),
+                ip_address=get_client_ip(),
+                user_agent=request.headers.get('User-Agent'),
+                resultado=AuditResult.SUCCESS
+            )
+        except Exception as e:
+            print(f"Warning: No se pudo registrar audit log: {e}")
 
         return jsonify({
             'success': True,
@@ -859,6 +942,22 @@ def cambiar_password():
         connection = session.get('connection')
         result = change_password(current_user.id, new_password, connection)
         if result:
+            # Registrar audit log
+            try:
+                AuditModel.log(
+                    accion=AuditAction.PASSWORD_CHANGE,
+                    user_id=current_user.id,
+                    username=current_user.username,
+                    empresa_id=session.get('empresa_id'),
+                    recurso='user',
+                    recurso_id=str(current_user.id),
+                    ip_address=get_client_ip(),
+                    user_agent=request.headers.get('User-Agent'),
+                    resultado=AuditResult.SUCCESS
+                )
+            except Exception as e:
+                print(f"Warning: No se pudo registrar audit log: {e}")
+
             return jsonify({
                 'success': True,
                 'message': 'Contraseña cambiada correctamente'

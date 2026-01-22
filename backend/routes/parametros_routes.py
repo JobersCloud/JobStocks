@@ -126,6 +126,48 @@ def grid_con_imagenes():
     habilitado = ParametrosModel.grid_con_imagenes(empresa_id, connection)
     return jsonify({'habilitado': habilitado}), 200
 
+
+@parametros_bp.route('/paginacion-config', methods=['GET'])
+def paginacion_config():
+    """
+    Obtener configuración de paginación para el grid sin imágenes
+    ---
+    tags:
+      - Parámetros
+    parameters:
+      - name: empresa_id
+        in: query
+        type: string
+        required: false
+    responses:
+      200:
+        description: Configuración de paginación
+        schema:
+          type: object
+          properties:
+            habilitado:
+              type: boolean
+              description: Si la paginación está habilitada
+            limite:
+              type: integer
+              description: Número de registros por página
+    """
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+
+    # Obtener parámetros de paginación
+    paginacion_habilitada = ParametrosModel.get('PAGINACION_GRID', empresa_id, connection)
+    paginacion_limite = ParametrosModel.get('PAGINACION_LIMITE', empresa_id, connection)
+
+    # Valores por defecto si no existen
+    habilitado = paginacion_habilitada == '1' if paginacion_habilitada else False
+    limite = int(paginacion_limite) if paginacion_limite else 50
+
+    return jsonify({
+        'habilitado': habilitado,
+        'limite': limite
+    }), 200
+
 # ============================================
 # ENDPOINTS PROTEGIDOS (requieren admin)
 # ============================================

@@ -34,15 +34,45 @@ from routes.estadisticas_routes import estadisticas_bp
 from routes.empresa_logo_routes import empresa_logo_bp
 from routes.user_session_routes import user_session_bp
 from routes.empresa_routes import empresa_bp
+from routes.audit_routes import audit_bp
 from database.users_db import verify_user, get_user_by_id
 from models.user import User
 from models.user_session_model import UserSessionModel
+from models.audit_model import AuditModel, AuditAction, AuditResult
 
 import os
 import secrets
 
+
+def get_client_ip():
+    """
+    Obtener IP real del cliente, considerando proxies.
+    Revisa varios headers en orden de prioridad.
+    """
+    # Headers comunes de proxies (en orden de prioridad)
+    headers_to_check = [
+        'X-Forwarded-For',      # Estándar de proxies
+        'X-Real-IP',            # Nginx
+        'CF-Connecting-IP',     # Cloudflare
+        'True-Client-IP',       # Akamai
+        'X-Client-IP',          # Otros proxies
+    ]
+
+    for header in headers_to_check:
+        ip = request.headers.get(header)
+        if ip:
+            # X-Forwarded-For puede tener múltiples IPs separadas por coma
+            # La primera es la IP original del cliente
+            if ',' in ip:
+                ip = ip.split(',')[0].strip()
+            return ip
+
+    # Si no hay headers de proxy, usar remote_addr
+    return request.remote_addr
+
+
 # Versión de la aplicación
-APP_VERSION = 'v1.2.1'
+APP_VERSION = 'v1.5.3'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -170,6 +200,7 @@ app.register_blueprint(consulta_bp)
 app.register_blueprint(estadisticas_bp)
 app.register_blueprint(user_session_bp)
 app.register_blueprint(empresa_bp)
+app.register_blueprint(audit_bp)
 
 # ==================== RUTAS DE AUTENTICACIÓN ====================
 
@@ -310,6 +341,12 @@ def login():
 
     empresa_id = empresa_info.get('empresa_erp')
 
+    # Limpiar sesiones expiradas de esta empresa
+    try:
+        UserSessionModel.cleanup_expired(connection)
+    except Exception as e:
+        print(f"Warning: No se pudieron limpiar sesiones expiradas: {e}")
+
     # Verificar usuario con conexión dinámica
     user_data = verify_user(username, password, connection, empresa_id)
 
@@ -341,12 +378,16 @@ def login():
         session['carrito'] = []
         session['user_id'] = user_data['id']
 
+        # Eliminar sesiones anteriores del usuario (solo 1 sesión activa por usuario)
+        try:
+            UserSessionModel.delete_by_user_id(user_data['id'], connection)
+        except Exception as e:
+            print(f"Warning: No se pudieron eliminar sesiones anteriores: {e}")
+
         # Crear sesion en BD para tracking
         try:
-            ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
-            if ip_address and ',' in ip_address:
-                ip_address = ip_address.split(',')[0].strip()
-            session_token = UserSessionModel.create(user_data['id'], empresa_id, ip_address)
+            ip_address = get_client_ip()
+            session_token = UserSessionModel.create(user_data['id'], empresa_id, ip_address, connection)
             if session_token:
                 session['session_token'] = session_token
         except Exception as e:
@@ -358,6 +399,23 @@ def login():
         # Generar CSRF token
         csrf_token = secrets.token_hex(32)
         session['csrf_token'] = csrf_token
+
+        # Registrar audit log de login exitoso
+        try:
+            AuditModel.log(
+                accion=AuditAction.LOGIN,
+                user_id=user_data['id'],
+                username=user.username,
+                empresa_id=empresa_id,
+                recurso='session',
+                recurso_id=session_token if session_token else None,
+                ip_address=ip_address,
+                user_agent=request.headers.get('User-Agent'),
+                detalles={'metodo': 'password'},
+                resultado=AuditResult.SUCCESS
+            )
+        except Exception as e:
+            print(f"Warning: No se pudo registrar audit log de login: {e}")
 
         return jsonify({
             'success': True,
@@ -374,6 +432,21 @@ def login():
                 'cliente_id': user.cliente_id
             }
         })
+
+    # Registrar audit log de login fallido
+    try:
+        AuditModel.log(
+            accion=AuditAction.LOGIN_FAILED,
+            username=username,
+            empresa_id=empresa_id,
+            recurso='session',
+            ip_address=get_client_ip(),
+            user_agent=request.headers.get('User-Agent'),
+            detalles={'motivo': 'credenciales_invalidas'},
+            resultado=AuditResult.FAILED
+        )
+    except Exception as e:
+        print(f"Warning: No se pudo registrar audit log de login fallido: {e}")
 
     return jsonify({'success': False, 'message': 'Credenciales inválidas'}), 401
 
@@ -402,6 +475,22 @@ def logout():
       401:
         description: No autenticado
     """
+    # Registrar audit log de logout antes de limpiar sesión
+    try:
+        AuditModel.log(
+            accion=AuditAction.LOGOUT,
+            user_id=current_user.id,
+            username=current_user.username,
+            empresa_id=session.get('empresa_id'),
+            recurso='session',
+            recurso_id=session.get('session_token'),
+            ip_address=get_client_ip(),
+            user_agent=request.headers.get('User-Agent'),
+            resultado=AuditResult.SUCCESS
+        )
+    except Exception as e:
+        print(f"Warning: No se pudo registrar audit log de logout: {e}")
+
     # Eliminar sesion de BD
     try:
         session_token = session.get('session_token')
@@ -457,7 +546,8 @@ def get_current_user():
         'debe_cambiar_password': getattr(current_user, 'debe_cambiar_password', False),
         'empresa_id': session.get('empresa_id'),
         'connection': session.get('connection'),
-        'empresa_nombre': session.get('empresa_nombre')
+        'empresa_nombre': session.get('empresa_nombre'),
+        'cliente_id': getattr(current_user, 'cliente_id', None)
     })
 
 @app.route('/api/version')

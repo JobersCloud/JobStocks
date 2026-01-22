@@ -21,7 +21,7 @@ from config.database import Database
 
 class PropuestaModel:
     @staticmethod
-    def crear_propuesta(user_id, carrito, comentarios='', empresa_id='1', referencia=''):
+    def crear_propuesta(user_id, carrito, comentarios='', empresa_id='1', referencia='', cliente_id=None):
         """
         Crea una propuesta con sus lineas de detalle.
 
@@ -31,6 +31,7 @@ class PropuestaModel:
             comentarios: Comentarios adicionales (opcional)
             empresa_id: ID de la empresa (multi-empresa)
             referencia: Referencia del cliente (opcional)
+            cliente_id: ID del cliente asociado a la propuesta
 
         Returns:
             int: ID de la propuesta creada
@@ -41,10 +42,10 @@ class PropuestaModel:
         try:
             # 1. Insertar cabecera de propuesta
             cursor.execute("""
-                INSERT INTO propuestas (user_id, empresa_id, comentarios, estado, total_items, referencia)
+                INSERT INTO propuestas (user_id, empresa_id, comentarios, estado, total_items, referencia, cliente_id)
                 OUTPUT INSERTED.id
-                VALUES (?, ?, ?, 'Enviada', ?, ?)
-            """, (user_id, empresa_id, comentarios, len(carrito), referencia or None))
+                VALUES (?, ?, ?, 'Enviada', ?, ?, ?)
+            """, (user_id, empresa_id, comentarios, len(carrito), referencia or None, cliente_id or None))
 
             propuesta_id = cursor.fetchone()[0]
 
@@ -98,7 +99,7 @@ class PropuestaModel:
         # Obtener cabecera
         cursor.execute("""
             SELECT p.id, p.user_id, p.empresa_id, p.fecha, p.comentarios, p.estado,
-                   p.total_items, p.fecha_modificacion, u.username, u.full_name, p.referencia
+                   p.total_items, p.fecha_modificacion, u.username, u.full_name, p.referencia, p.cliente_id
             FROM propuestas p
             INNER JOIN users u ON p.user_id = u.id
             WHERE p.id = ?
@@ -121,6 +122,7 @@ class PropuestaModel:
             'username': row[8],
             'full_name': row[9],
             'referencia': row[10],
+            'cliente_id': row[11],
             'lineas': []
         }
 
@@ -168,7 +170,7 @@ class PropuestaModel:
         cursor = conn.cursor()
 
         query = """
-            SELECT id, empresa_id, fecha, comentarios, estado, total_items, fecha_modificacion, referencia
+            SELECT id, empresa_id, fecha, comentarios, estado, total_items, fecha_modificacion, referencia, cliente_id
             FROM propuestas
             WHERE user_id = ?
         """
@@ -192,7 +194,8 @@ class PropuestaModel:
                 'estado': row[4],
                 'total_items': row[5],
                 'fecha_modificacion': row[6].isoformat() if row[6] else None,
-                'referencia': row[7]
+                'referencia': row[7],
+                'cliente_id': row[8]
             })
 
         conn.close()
@@ -215,7 +218,7 @@ class PropuestaModel:
 
         query = """
             SELECT p.id, p.user_id, p.empresa_id, p.fecha, p.comentarios, p.estado,
-                   p.total_items, p.fecha_modificacion, u.username, u.full_name, u.email, p.referencia
+                   p.total_items, p.fecha_modificacion, u.username, u.full_name, u.email, p.referencia, p.cliente_id
             FROM propuestas p
             INNER JOIN users u ON p.user_id = u.id
             WHERE 1=1
@@ -248,7 +251,8 @@ class PropuestaModel:
                 'username': row[8],
                 'full_name': row[9],
                 'email': row[10],
-                'referencia': row[11]
+                'referencia': row[11],
+                'cliente_id': row[12]
             })
 
         conn.close()
@@ -301,7 +305,7 @@ class PropuestaModel:
 
         query = """
             SELECT p.id, p.user_id, p.empresa_id, p.fecha, p.comentarios, p.estado,
-                   p.total_items, p.fecha_modificacion, u.username, u.full_name, u.email, p.referencia
+                   p.total_items, p.fecha_modificacion, u.username, u.full_name, u.email, p.referencia, p.cliente_id
             FROM propuestas p
             INNER JOIN users u ON p.user_id = u.id
             WHERE p.estado = 'Enviada'
@@ -330,7 +334,8 @@ class PropuestaModel:
                 'username': row[8],
                 'full_name': row[9],
                 'email': row[10],
-                'referencia': row[11]
+                'referencia': row[11],
+                'cliente_id': row[12]
             }
 
             if incluir_lineas:

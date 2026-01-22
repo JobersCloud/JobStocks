@@ -129,6 +129,25 @@
         }
 
         let params = [];
+        let csrfToken = null;
+
+        // ==================== CSRF TOKEN ====================
+        async function obtenerCsrfToken() {
+            try {
+                // Primero intentar obtener de localStorage
+                csrfToken = localStorage.getItem('csrf_token');
+
+                // Luego obtener del servidor (puede ser más reciente)
+                const response = await fetch(`${API_URL}/api/csrf-token`, { credentials: 'include' });
+                if (response.ok) {
+                    const data = await response.json();
+                    csrfToken = data.csrf_token;
+                    localStorage.setItem('csrf_token', csrfToken);
+                }
+            } catch (e) {
+                console.error('Error obteniendo CSRF token:', e);
+            }
+        }
 
         // ==================== INICIALIZACIÓN ====================
         document.addEventListener('DOMContentLoaded', async function() {
@@ -146,6 +165,9 @@
 
             // Verificar autenticación y permisos
             await checkAuth();
+
+            // Obtener CSRF token
+            await obtenerCsrfToken();
 
             // Cargar parámetros
             await loadParams();
@@ -260,7 +282,8 @@
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
                     },
                     body: JSON.stringify({ valor: newValue, empresa_id: empresaId })
                 });
@@ -305,7 +328,8 @@
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
                     },
                     body: JSON.stringify({ valor: newValue, empresa_id: empresaId })
                 });

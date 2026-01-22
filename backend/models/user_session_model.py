@@ -6,11 +6,11 @@ class UserSessionModel:
     """Modelo para gestionar sesiones de usuario activas"""
 
     @staticmethod
-    def create(user_id, empresa_id, ip_address=None):
+    def create(user_id, empresa_id, ip_address=None, connection_id=None):
         """Crear nueva sesion y devolver el token"""
         session_token = secrets.token_hex(32)  # 64 caracteres
 
-        conn = Database.get_connection()
+        conn = Database.get_connection(connection_id)
         cursor = conn.cursor()
         try:
             cursor.execute("""
@@ -59,9 +59,9 @@ class UserSessionModel:
             conn.close()
 
     @staticmethod
-    def delete_by_user_id(user_id):
+    def delete_by_user_id(user_id, connection_id=None):
         """Eliminar todas las sesiones de un usuario"""
-        conn = Database.get_connection()
+        conn = Database.get_connection(connection_id)
         cursor = conn.cursor()
         try:
             cursor.execute("DELETE FROM user_sessions WHERE user_id = ?", (user_id,))
@@ -202,9 +202,9 @@ class UserSessionModel:
             conn.close()
 
     @staticmethod
-    def cleanup_expired():
+    def cleanup_expired(connection_id=None):
         """Limpiar sesiones expiradas segun el rol del usuario"""
-        conn = Database.get_connection()
+        conn = Database.get_connection(connection_id)
         cursor = conn.cursor()
         try:
             cursor.execute("""

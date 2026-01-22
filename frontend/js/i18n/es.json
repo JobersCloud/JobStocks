@@ -183,6 +183,10 @@
   "shipping": {
     "title": "📧 Enviar Solicitud",
     "description": "La solicitud será enviada por email con el detalle de todos los productos.",
+    "clientLabel": "Cliente",
+    "clientPlaceholder": "Buscar cliente...",
+    "clientRequired": "Debe seleccionar un cliente",
+    "clientHelp": "Escribe al menos 3 caracteres para buscar",
     "referenceLabel": "Referencia (opcional)",
     "referencePlaceholder": "Tu referencia interna para esta solicitud...",
     "comments": "Comentarios adicionales (opcional):",

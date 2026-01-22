@@ -76,60 +76,101 @@ def get_all():
 @api_key_or_login_required
 def search():
     """
-    Buscar stocks con filtros
+    Buscar stocks con filtros, paginación y ordenación
     ---
     tags:
       - Stocks
     security:
       - apiKeyAuth: []
     parameters:
+      - name: codigo
+        in: query
+        type: string
+        description: Filtrar por código (búsqueda parcial)
+      - name: descripcion
+        in: query
+        type: string
+        description: Filtrar por descripción (búsqueda parcial)
       - name: formato
         in: query
         type: string
-        description: Filtrar por formato
+        description: Filtrar por formato (búsqueda parcial)
         example: "20x20"
       - name: serie
         in: query
         type: string
-        description: Filtrar por serie/modelo
+        description: Filtrar por serie/modelo (búsqueda parcial)
       - name: calidad
         in: query
         type: string
-        description: Filtrar por calidad
+        description: Filtrar por calidad (búsqueda parcial)
         example: "Primera"
       - name: color
         in: query
         type: string
-        description: Filtrar por color
+        description: Filtrar por color (búsqueda parcial)
+      - name: tono
+        in: query
+        type: string
+        description: Filtrar por tono (búsqueda parcial)
+      - name: calibre
+        in: query
+        type: string
+        description: Filtrar por calibre (búsqueda parcial)
       - name: existencias_min
         in: query
         type: number
         description: Existencias mínimas
         example: 100
+      - name: page
+        in: query
+        type: integer
+        description: Número de página (1-based). Si se omite, devuelve todos los resultados.
+        example: 1
+      - name: limit
+        in: query
+        type: integer
+        description: Registros por página (máx 500). Requerido si se usa page.
+        example: 50
+      - name: order_by
+        in: query
+        type: string
+        description: Columna para ordenar (codigo, descripcion, calidad, color, tono, calibre, formato, serie, existencias)
+        default: codigo
+      - name: order_dir
+        in: query
+        type: string
+        enum: [ASC, DESC]
+        description: Dirección de ordenación
+        default: ASC
     responses:
       200:
-        description: Lista de stocks filtrados
+        description: Lista de stocks filtrados. Con paginación incluye metadatos.
         schema:
-          type: array
-          items:
-            type: object
-            properties:
-              empresa:
-                type: string
-              codigo:
-                type: string
-              descripcion:
-                type: string
-              formato:
-                type: string
-              calidad:
-                type: string
-              color:
-                type: string
-              existencias:
-                type: number
-              unidad:
-                type: string
+          oneOf:
+            - type: array
+              description: Sin paginación - array de stocks
+              items:
+                type: object
+            - type: object
+              description: Con paginación - objeto con data y metadatos
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                total:
+                  type: integer
+                  description: Total de registros
+                page:
+                  type: integer
+                  description: Página actual
+                limit:
+                  type: integer
+                  description: Registros por página
+                pages:
+                  type: integer
+                  description: Total de páginas
       401:
         description: No autenticado
       500:

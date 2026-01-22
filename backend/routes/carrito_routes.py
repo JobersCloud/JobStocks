@@ -39,6 +39,7 @@ from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from models.email_config_model import EmailConfigModel
 from models.propuesta_model import PropuestaModel
 from models.imagen_model import ImagenModel
+from models.cliente_model import ClienteModel
 import base64
 
 carrito_bp = Blueprint('carrito', __name__, url_prefix='/api/carrito')
@@ -294,18 +295,28 @@ def enviar_carrito():
     comentarios = data.get('comentarios', '')
     empresa_id = data.get('empresa_id', '1')  # Multi-empresa support
     enviar_copia = data.get('enviar_copia', False)
+    cliente_id = data.get('cliente_id', '')
     usuario = current_user.full_name or current_user.username
     email_usuario = current_user.email if enviar_copia else None
 
+    # Validar cliente_id obligatorio
+    if not cliente_id:
+        return jsonify({"error": "Debe seleccionar un cliente"}), 400
+
+    # Obtener datos del cliente
+    cliente_info = ClienteModel.get_by_codigo(cliente_id, empresa_id)
+    if not cliente_info:
+        return jsonify({"error": f"Cliente no encontrado: {cliente_id}"}), 400
+
     try:
-        # Generar PDF
-        pdf_buffer = generar_pdf_carrito(carrito, usuario, comentarios, referencia)
+        # Generar PDF (con datos del cliente)
+        pdf_buffer = generar_pdf_carrito(carrito, usuario, comentarios, referencia, cliente_info)
 
         # Generar Excel
         excel_buffer = generar_excel_carrito(carrito, usuario, comentarios, referencia)
 
-        # Enviar email (con CC al usuario si está marcado)
-        enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios, empresa_id, email_usuario, referencia, excel_buffer)
+        # Enviar email (con CC al usuario si está marcado y datos del cliente)
+        enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios, empresa_id, email_usuario, referencia, excel_buffer, cliente_info)
 
         # Guardar propuesta en BD (solo si el email se envio correctamente)
         propuesta_id = PropuestaModel.crear_propuesta(
@@ -313,7 +324,8 @@ def enviar_carrito():
             carrito=carrito,
             comentarios=comentarios,
             empresa_id=empresa_id,
-            referencia=referencia
+            referencia=referencia,
+            cliente_id=cliente_id
         )
         print(f"8️⃣ Propuesta guardada en BD con ID: {propuesta_id}")
 
@@ -340,7 +352,7 @@ def enviar_carrito():
 
 # ==================== FUNCIONES AUXILIARES ====================
 
-def generar_pdf_carrito(carrito, usuario, comentarios, referencia=""):
+def generar_pdf_carrito(carrito, usuario, comentarios, referencia="", cliente_info=None):
     """Genera un PDF con los items del carrito incluyendo imágenes"""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
@@ -366,6 +378,9 @@ def generar_pdf_carrito(carrito, usuario, comentarios, referencia=""):
     info_style = styles['Normal']
     story.append(Paragraph(f"<b>Usuario:</b> {usuario}", info_style))
     story.append(Paragraph(f"<b>Fecha:</b> {datetime.now().strftime('%d/%m/%Y %H:%M')}", info_style))
+    if cliente_info:
+        cliente_texto = f"{cliente_info.get('codigo', '')} - {cliente_info.get('razon', '')}"
+        story.append(Paragraph(f"<b>Cliente:</b> {cliente_texto}", info_style))
     if referencia:
         story.append(Paragraph(f"<b>Referencia:</b> {referencia}", info_style))
     story.append(Paragraph(f"<b>Total de items:</b> {len(carrito)}", info_style))
@@ -508,7 +523,7 @@ def generar_excel_carrito(carrito, usuario, comentarios="", referencia=""):
     return buffer
 
 
-def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_id="1", email_copia=None, referencia="", excel_buffer=None):
+def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_id="1", email_copia=None, referencia="", excel_buffer=None, cliente_info=None):
     """Envía el PDF y Excel por email usando configuración de la BD con imágenes CID"""
 
     print("\n" + "=" * 60)
@@ -621,6 +636,7 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
             <div class="info-box">
                 <p><strong>👤 Usuario:</strong> {usuario}</p>
                 <p><strong>📅 Fecha:</strong> {datetime.now().strftime('%d/%m/%Y %H:%M')}</p>
+                {'<p><strong>🏢 Cliente:</strong> ' + cliente_info.get('codigo', '') + ' - ' + cliente_info.get('razon', '') + '</p>' if cliente_info else ''}
                 {'<p><strong>🏷️ Referencia:</strong> ' + referencia + '</p>' if referencia else ''}
                 <p><strong>📊 Total de productos:</strong> {len(carrito)}</p>
             </div>

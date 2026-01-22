@@ -45,7 +45,9 @@ ApiRestExternos/
 │   │   ├── consulta_model.py # Modelo consultas sobre productos
 │   │   ├── estadisticas_model.py # Modelo estadísticas dashboard
 │   │   ├── ficha_tecnica_model.py # Modelo fichas técnicas PDF
-│   │   └── empresa_logo_model.py # Modelo logos/favicons por empresa
+│   │   ├── empresa_logo_model.py # Modelo logos/favicons por empresa
+│   │   ├── user_session_model.py # Modelo sesiones activas
+│   │   └── audit_model.py    # Modelo auditoría de usuarios
 │   │
 │   ├── routes/
 │   │   ├── stock_routes.py   # Rutas consulta stocks + ficha técnica
@@ -58,7 +60,9 @@ ApiRestExternos/
 │   │   ├── parametros_routes.py # Rutas parámetros sistema
 │   │   ├── consulta_routes.py # Rutas consultas sobre productos
 │   │   ├── estadisticas_routes.py # Rutas estadísticas dashboard (admin)
-│   │   └── empresa_logo_routes.py # Rutas logos/favicons por empresa
+│   │   ├── empresa_logo_routes.py # Rutas logos/favicons por empresa
+│   │   ├── user_session_routes.py # Rutas sesiones activas (admin)
+│   │   └── audit_routes.py   # Rutas auditoría de usuarios (admin)
 │   │
 │   ├── utils/
 │   │   └── auth.py           # Decoradores autenticación
@@ -128,7 +132,9 @@ ApiRestExternos/
 │   ├── 16_alter_table_users_debe_cambiar_password.sql
 │   ├── 18_create_table_consultas.sql
 │   ├── 20_create_table_empresa_logo.sql
-│   └── 20_alter_table_empresa_logo_tema.sql
+│   ├── 20_alter_table_empresa_logo_tema.sql
+│   ├── 21_create_table_user_sessions.sql
+│   └── 24_create_table_audit_log.sql
 │
 ├── deploy/                   # Scripts despliegue Linux
 │   ├── INSTALL.sh            # Instalador automático (Debian/RedHat)
@@ -737,6 +743,31 @@ cloudflared tunnel --url http://localhost:5000
   - Afecta headers, botones, badges y elementos de acento en todas las páginas
   - Gráficos de Chart.js en dashboard obtienen colores dinámicamente de CSS
 
+### 2026-01-22
+- **Filtros por Columna Estilo WorkWithPlus**: Sistema de filtros avanzados en tabla
+  - Icono de filtro (embudo SVG) en cada cabecera de columna filtrable
+  - Popup profesional al hacer clic con:
+    - Header con gradiente y botón cerrar
+    - Radio buttons personalizados para operadores
+    - Input de valor con estilos modernos
+    - Botones Aplicar y Limpiar con iconos
+  - **Operadores de texto**: Contiene, Igual a, Empieza por, Termina en
+  - **Operadores numéricos**: Igual a, Mayor que, Mayor o igual, Menor que, Menor o igual, Diferente de
+  - Filtros acumulativos mostrados como chips debajo de la tabla
+  - Compatible con paginación backend (formato `columna__operador=valor`)
+  - Iconos SVG de ordenación profesionales (flechas arriba/abajo)
+  - Popup se cierra al: clic fuera, Escape, scroll
+  - Soporte completo modo oscuro
+  - **Backend**: `stock_model.py` con métodos `_parse_filter_key()` y `_build_filter_condition()`
+  - **Frontend**: Variables `filtrosColumna`, `operadoresTexto`, `operadoresNumero`
+  - Versión: v1.5.3
+- **Paginación Backend para Grid sin Imágenes**: Mejora de rendimiento
+  - Parámetros `PAGINACION_GRID` y `PAGINACION_LIMITE` en tabla `parametros`
+  - Script SQL: `26_insert_parametro_paginacion.sql`
+  - Endpoint `/api/parametros/paginacion-config` para obtener configuración
+  - Paginación con `ROW_NUMBER()` compatible SQL Server 2008
+  - Ordenación por columnas en backend
+
 ### 2026-01-20
 - **Conexión cifrada a SQL Server**: SSL/TLS habilitado en conexiones a BD
   - `Encrypt=yes;` activa cifrado de conexión
@@ -775,6 +806,43 @@ cloudflared tunnel --url http://localhost:5000
   - Nuevo breakpoint para tablets (769px-1024px)
   - Nuevo breakpoint para pantallas grandes (≥1440px)
   - Versión: v1.2.1
+- **Sistema de Auditoría de Usuarios**: Registro de acciones de usuarios
+  - Nueva tabla `audit_log` en BD Central (Script: `24_create_table_audit_log.sql`)
+  - Nuevo modelo `audit_model.py` con clases `AuditAction`, `AuditResult`, `AuditModel`
+  - Nuevas rutas `audit_routes.py`:
+    - `GET /api/audit-logs` - Listar logs con filtros (fecha, usuario, acción, resultado)
+    - `GET /api/audit-logs/summary` - Resumen por acción y resultado
+    - `GET /api/audit-logs/actions` - Lista de tipos de acción disponibles
+    - `DELETE /api/audit-logs/cleanup` - Limpiar logs antiguos (mínimo 30 días)
+  - **Acciones auditadas**:
+    - Autenticación: LOGIN, LOGIN_FAILED, LOGOUT, PASSWORD_CHANGE
+    - Sesiones: SESSION_KILL, SESSION_KILL_ALL
+    - Usuarios: USER_CREATE, USER_ACTIVATE, USER_DEACTIVATE, USER_ROLE_CHANGE
+    - API Keys: API_KEY_CREATE, API_KEY_DELETE
+    - Configuración: CONFIG_CHANGE, EMAIL_CONFIG_CHANGE
+    - Propuestas: PROPUESTA_SEND, PROPUESTA_STATUS_CHANGE
+    - Consultas: CONSULTA_SEND, CONSULTA_RESPOND
+  - **Frontend**: Nueva sección en dashboard.html
+    - Filtros avanzados: fecha desde/hasta, acción, resultado, usuario
+    - Tabla para desktop, tarjetas para móvil
+    - Paginación con límite de 20 registros por página
+    - Badges de colores por tipo de acción y resultado
+    - **Filtros inline en columnas**: Inputs de texto/select en cada columna del header
+    - **Ordenación por columnas**: Clic en título ordena ASC/DESC con iconos visuales
+    - Filtrado y ordenación en cliente para mejor rendimiento
+  - **Archivos modificados**:
+    - `app.py`: Logging de login/logout
+    - `usuario_routes.py`: Logging de gestión usuarios
+    - `user_session_routes.py`: Logging de sesiones
+    - `styles.css`: Estilos para filtros inline y ordenación
+  - Versión: v1.2.3
+- **Fix: Conexión BD en Auditoría**: Corregido para usar BD del cliente
+  - `audit_model.py` ahora usa `Database.get_connection()` (conexión cliente)
+  - Obtiene `connection_id` automáticamente de `session['connection']` si no se pasa
+  - Paginación con `ROW_NUMBER()` para compatibilidad con SQL Server 2008
+  - Commit antes de obtener IDENTITY (soporta tablas sin IDENTITY)
+  - La tabla `audit_log` debe estar en la misma BD que `user_sessions`
+  - Versión: v1.2.7
 
 ### 2026-01-19
 - **Toggle Modo Oscuro en Login**: Selector de tema en página de login

@@ -1,7 +1,23 @@
 from flask import Blueprint, jsonify, request, session
-from flask_login import login_required
+from flask_login import login_required, current_user
 from models.user_session_model import UserSessionModel
+from models.audit_model import AuditModel, AuditAction, AuditResult
 from utils.auth import administrador_required, csrf_required
+
+
+def get_client_ip():
+    """Obtener IP real del cliente, considerando proxies"""
+    headers_to_check = [
+        'X-Forwarded-For', 'X-Real-IP', 'CF-Connecting-IP',
+        'True-Client-IP', 'X-Client-IP'
+    ]
+    for header in headers_to_check:
+        ip = request.headers.get(header)
+        if ip:
+            if ',' in ip:
+                ip = ip.split(',')[0].strip()
+            return ip
+    return request.remote_addr
 
 user_session_bp = Blueprint('user_session', __name__)
 
@@ -34,6 +50,22 @@ def kill_session(session_id):
     deleted = UserSessionModel.delete_by_id(session_id)
 
     if deleted:
+        # Registrar audit log
+        try:
+            AuditModel.log(
+                accion=AuditAction.SESSION_KILL,
+                user_id=current_user.id,
+                username=current_user.username,
+                empresa_id=session.get('empresa_id'),
+                recurso='session',
+                recurso_id=str(session_id),
+                ip_address=get_client_ip(),
+                user_agent=request.headers.get('User-Agent'),
+                resultado=AuditResult.SUCCESS
+            )
+        except Exception as e:
+            print(f"Warning: No se pudo registrar audit log: {e}")
+
         return jsonify({
             'success': True,
             'message': 'Sesion terminada correctamente'
@@ -74,6 +106,22 @@ def kill_all_except_current():
 
     empresa_id = request.args.get('empresa_id')
     deleted = UserSessionModel.delete_all_except(current_token, empresa_id)
+
+    # Registrar audit log
+    try:
+        AuditModel.log(
+            accion=AuditAction.SESSION_KILL_ALL,
+            user_id=current_user.id,
+            username=current_user.username,
+            empresa_id=session.get('empresa_id'),
+            recurso='session',
+            ip_address=get_client_ip(),
+            user_agent=request.headers.get('User-Agent'),
+            detalles={'sesiones_eliminadas': deleted},
+            resultado=AuditResult.SUCCESS
+        )
+    except Exception as e:
+        print(f"Warning: No se pudo registrar audit log: {e}")
 
     return jsonify({
         'success': True,

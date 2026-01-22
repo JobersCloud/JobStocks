@@ -28,6 +28,60 @@ let gridConImagenes = false;  // Control de imágenes en tabla/tarjetas (desacti
 let whatsappConfig = { habilitado: false, numero: null };  // Configuración de WhatsApp
 let csrfToken = null;  // Token CSRF para protección contra ataques
 
+// ==================== PAGINACIÓN BACKEND ====================
+let paginacionBackend = {
+    habilitado: false,   // Si usar paginación backend (solo para grid sin imágenes)
+    limite: 50,          // Registros por página
+    total: 0,            // Total de registros
+    pages: 1             // Total de páginas
+};
+
+// ==================== ORDENACIÓN Y FILTROS DE COLUMNAS ====================
+let ordenActual = {
+    columna: 'codigo',   // Columna actual de ordenación
+    direccion: 'ASC'     // ASC o DESC
+};
+
+// Filtros acumulativos estilo WorkWithPlus (array de objetos {columna, operador, valor})
+let filtrosColumna = [];
+
+// Popup de filtro actualmente abierto
+let popupFiltroAbierto = null;
+
+// Operadores disponibles para columnas de texto
+const operadoresTexto = [
+    { key: 'contains', label: 'Contiene' },
+    { key: 'eq', label: 'Igual a' },
+    { key: 'starts', label: 'Empieza por' },
+    { key: 'ends', label: 'Termina en' }
+];
+
+// Operadores disponibles para columnas numéricas
+const operadoresNumero = [
+    { key: 'eq', label: 'Igual a' },
+    { key: 'gt', label: 'Mayor que' },
+    { key: 'gte', label: 'Mayor o igual' },
+    { key: 'lt', label: 'Menor que' },
+    { key: 'lte', label: 'Menor o igual' },
+    { key: 'neq', label: 'Diferente de' }
+];
+
+// Columnas disponibles para filtrar con su tipo
+const columnasFiltrables = [
+    { key: 'codigo', label: 'Código', tipo: 'texto' },
+    { key: 'descripcion', label: 'Descripción', tipo: 'texto' },
+    { key: 'formato', label: 'Formato', tipo: 'texto' },
+    { key: 'serie', label: 'Serie', tipo: 'texto' },
+    { key: 'color', label: 'Color', tipo: 'texto' },
+    { key: 'calidad', label: 'Calidad', tipo: 'texto' },
+    { key: 'tono', label: 'Tono', tipo: 'texto' },
+    { key: 'calibre', label: 'Calibre', tipo: 'texto' },
+    { key: 'existencias', label: 'Existencias', tipo: 'numero' }
+];
+
+// Para compatibilidad con panel lateral (filtros simples)
+let filtrosActivos = [];
+
 // ==================== CSRF TOKEN ====================
 
 // Obtener CSRF token del servidor
@@ -337,6 +391,25 @@ async function verificarGridConImagenes() {
         // Por defecto, desactivar imágenes si hay error
         gridConImagenes = false;
         return false;
+    }
+}
+
+// ==================== PAGINACIÓN BACKEND (GRID SIN IMÁGENES) ====================
+
+// Cargar configuración de paginación para el grid sin imágenes
+async function cargarConfigPaginacion() {
+    try {
+        const empresaId = localStorage.getItem('empresa_id') || '1';
+        const response = await fetch(`${API_URL}/api/parametros/paginacion-config?empresa_id=${empresaId}`);
+        const data = await response.json();
+        paginacionBackend.habilitado = data.habilitado;
+        paginacionBackend.limite = data.limite || 50;
+        console.log(`📄 Paginación backend: ${paginacionBackend.habilitado}, límite: ${paginacionBackend.limite}`);
+        return paginacionBackend;
+    } catch (error) {
+        console.error('Error al cargar config paginación:', error);
+        paginacionBackend.habilitado = false;
+        return paginacionBackend;
     }
 }
 
@@ -678,7 +751,28 @@ async function cargarTodos() {
         const params = new URLSearchParams();
         addEmpresaToParams(params);
 
-        const response = await fetch(`${API_URL}/api/stocks?${params}`, {
+        // Si no hay imágenes y paginación backend está habilitada, usar paginación del servidor
+        const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
+
+        if (usarPaginacionBackend) {
+            params.append('page', paginaActual);
+            params.append('limit', paginacionBackend.limite);
+            params.append('order_by', ordenActual.columna);
+            params.append('order_dir', ordenActual.direccion);
+
+            // Añadir filtros de columna (con operadores: columna__operador=valor)
+            filtrosColumna.forEach(filtro => {
+                params.append(`${filtro.columna}__${filtro.operador}`, filtro.valor);
+            });
+
+            // Añadir filtros del panel lateral (sin operador)
+            filtrosActivos.forEach(filtro => {
+                params.append(filtro.columna, filtro.valor);
+            });
+        }
+
+        const endpoint = usarPaginacionBackend ? '/api/stocks/search' : '/api/stocks';
+        const response = await fetch(`${API_URL}${endpoint}?${params}`, {
             credentials: 'include',
             headers: {
                 'Content-Type': 'application/json'
@@ -697,10 +791,22 @@ async function cargarTodos() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        allStocksData = await response.json();
-        totalItems = allStocksData.length;
-        paginaActual = 1;  // Resetear a primera página
-        console.log('✅ Stocks cargados:', totalItems, 'registros');
+        const data = await response.json();
+
+        if (usarPaginacionBackend) {
+            // Respuesta con metadatos de paginación
+            allStocksData = data.data;
+            totalItems = data.total;
+            paginacionBackend.total = data.total;
+            paginacionBackend.pages = data.pages;
+            console.log(`✅ Stocks cargados (paginación backend): ${allStocksData.length} de ${totalItems} registros, página ${paginaActual}/${paginacionBackend.pages}`);
+        } else {
+            // Respuesta sin paginación (array directo)
+            allStocksData = data;
+            totalItems = allStocksData.length;
+            console.log('✅ Stocks cargados:', totalItems, 'registros');
+        }
+
         mostrarDatos();
     } catch (error) {
         console.error('❌ Error al cargar stocks:', error);
@@ -708,17 +814,24 @@ async function cargarTodos() {
     }
 }
 
-// Mostrar datos con o sin paginación según gridConImagenes
+// Mostrar datos con o sin paginación según gridConImagenes y paginacionBackend
 function mostrarDatos() {
+    const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
+
     if (gridConImagenes) {
-        // Con imágenes: paginar
+        // Con imágenes: paginación frontend
         const inicio = (paginaActual - 1) * itemsPorPagina;
         const fin = inicio + itemsPorPagina;
         stocksData = allStocksData.slice(inicio, fin);
         mostrarTabla(stocksData);
         mostrarPaginacion();
+    } else if (usarPaginacionBackend) {
+        // Sin imágenes con paginación backend: datos ya vienen paginados
+        stocksData = allStocksData;
+        mostrarTabla(stocksData);
+        mostrarPaginacion();
     } else {
-        // Sin imágenes: mostrar todo
+        // Sin imágenes sin paginación: mostrar todo
         stocksData = allStocksData;
         mostrarTabla(stocksData);
         ocultarPaginacion();
@@ -726,18 +839,32 @@ function mostrarDatos() {
 }
 
 // Cambiar de página
-function irAPagina(pagina) {
-    const totalPaginas = Math.ceil(totalItems / itemsPorPagina);
-    if (pagina < 1 || pagina > totalPaginas) return;
-    paginaActual = pagina;
-    mostrarDatos();
+async function irAPagina(pagina) {
+    const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
+
+    if (usarPaginacionBackend) {
+        // Paginación backend: recargar del servidor
+        const totalPaginas = paginacionBackend.pages;
+        if (pagina < 1 || pagina > totalPaginas) return;
+        paginaActual = pagina;
+        await cargarTodos();  // Recarga con la nueva página
+    } else {
+        // Paginación frontend
+        const totalPaginas = Math.ceil(totalItems / itemsPorPagina);
+        if (pagina < 1 || pagina > totalPaginas) return;
+        paginaActual = pagina;
+        mostrarDatos();
+    }
     // Scroll al inicio del contenido
     document.getElementById('table-container').scrollIntoView({ behavior: 'smooth' });
 }
 
 // Mostrar controles de paginación
 function mostrarPaginacion() {
-    const totalPaginas = Math.ceil(totalItems / itemsPorPagina);
+    const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
+    const registrosPorPagina = usarPaginacionBackend ? paginacionBackend.limite : itemsPorPagina;
+    const totalPaginas = usarPaginacionBackend ? paginacionBackend.pages : Math.ceil(totalItems / itemsPorPagina);
+
     if (totalPaginas <= 1) {
         ocultarPaginacion();
         return;
@@ -766,9 +893,12 @@ function mostrarPaginacion() {
                                 onclick="irAPagina(${i})">${i}</button>`;
     }
 
+    const registroInicio = ((paginaActual - 1) * registrosPorPagina) + 1;
+    const registroFin = Math.min(paginaActual * registrosPorPagina, totalItems);
+
     container.innerHTML = `
         <div class="pagination-info">
-            ${t('common.showing') || 'Mostrando'} ${((paginaActual - 1) * itemsPorPagina) + 1}-${Math.min(paginaActual * itemsPorPagina, totalItems)}
+            ${t('common.showing') || 'Mostrando'} ${registroInicio}-${registroFin}
             ${t('common.of') || 'de'} ${totalItems}
         </div>
         <div class="pagination-buttons">
@@ -790,29 +920,492 @@ function ocultarPaginacion() {
     }
 }
 
-// Buscar con filtros
+// ==================== ORDENACIÓN POR COLUMNAS ====================
+
+// Cambiar ordenación al hacer clic en cabecera
+async function ordenarPorColumna(columna) {
+    // Si es la misma columna, cambiar dirección; si es otra, ordenar ASC
+    if (ordenActual.columna === columna) {
+        ordenActual.direccion = ordenActual.direccion === 'ASC' ? 'DESC' : 'ASC';
+    } else {
+        ordenActual.columna = columna;
+        ordenActual.direccion = 'ASC';
+    }
+
+    console.log(`📊 Ordenando por ${ordenActual.columna} ${ordenActual.direccion}`);
+
+    const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
+
+    if (usarPaginacionBackend) {
+        // Ordenación en backend: recargar datos
+        paginaActual = 1;  // Volver a primera página
+        await cargarTodos();
+    } else {
+        // Ordenación en frontend: ordenar array local
+        allStocksData.sort((a, b) => {
+            let valA = a[ordenActual.columna] || '';
+            let valB = b[ordenActual.columna] || '';
+
+            // Para existencias, ordenar numéricamente
+            if (ordenActual.columna === 'existencias') {
+                valA = parseFloat(valA) || 0;
+                valB = parseFloat(valB) || 0;
+            } else {
+                valA = valA.toString().toLowerCase();
+                valB = valB.toString().toLowerCase();
+            }
+
+            if (ordenActual.direccion === 'ASC') {
+                return valA > valB ? 1 : valA < valB ? -1 : 0;
+            } else {
+                return valA < valB ? 1 : valA > valB ? -1 : 0;
+            }
+        });
+        paginaActual = 1;
+        mostrarDatos();
+    }
+}
+
+// ==================== FILTROS ESTILO WORKWITHPLUS ====================
+
+// Obtener operadores según tipo de columna
+function getOperadoresPorTipo(columna) {
+    const col = columnasFiltrables.find(c => c.key === columna);
+    return col?.tipo === 'numero' ? operadoresNumero : operadoresTexto;
+}
+
+// Obtener label del operador
+function getLabelOperador(operadorKey) {
+    const op = [...operadoresTexto, ...operadoresNumero].find(o => o.key === operadorKey);
+    return op?.label || operadorKey;
+}
+
+// Verificar si una columna tiene filtro activo
+function tieneFiltroColumna(columna) {
+    return filtrosColumna.some(f => f.columna === columna);
+}
+
+// Icono SVG de filtro para usar en popups
+const iconoFiltroSVG = `<svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16"><path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z"/></svg>`;
+
+// Mostrar popup de filtro para una columna
+function mostrarPopupFiltro(columna, elemento) {
+    // Cerrar popup anterior si existe
+    cerrarPopupFiltro();
+
+    const col = columnasFiltrables.find(c => c.key === columna);
+    if (!col) {
+        console.error('Columna no encontrada:', columna);
+        return;
+    }
+
+    console.log('🔽 Abriendo popup filtro para:', columna);
+
+    const operadores = getOperadoresPorTipo(columna);
+    const filtroExistente = filtrosColumna.find(f => f.columna === columna);
+
+    // Crear el popup
+    const popup = document.createElement('div');
+    popup.className = 'filter-popup';
+    popup.id = `filter-popup-${columna}`;
+
+    popup.innerHTML = `
+        <div class="filter-popup-header">
+            <span class="filter-popup-icon">${iconoFiltroSVG}</span>
+            <span class="filter-popup-title">${col.label}</span>
+            <button class="filter-popup-close" onclick="cerrarPopupFiltro()" title="Cerrar">×</button>
+        </div>
+        <div class="filter-popup-body">
+            <div class="filter-popup-section">
+                <label class="filter-popup-label">Condición</label>
+                <div class="filter-popup-operators">
+                    ${operadores.map((op, idx) => `
+                        <label class="filter-popup-operator">
+                            <input type="radio" name="op-${columna}" value="${op.key}"
+                                   ${(filtroExistente?.operador === op.key || (!filtroExistente && idx === 0)) ? 'checked' : ''}>
+                            <span class="filter-radio-custom"></span>
+                            <span class="filter-operator-text">${op.label}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
+            <div class="filter-popup-section">
+                <label class="filter-popup-label" for="filter-value-${columna}">Valor</label>
+                <input type="text" class="filter-popup-input" id="filter-value-${columna}"
+                       placeholder="Escribir valor..." value="${filtroExistente?.valor || ''}"
+                       onkeypress="if(event.key==='Enter') aplicarFiltroColumna('${columna}')">
+            </div>
+        </div>
+        <div class="filter-popup-footer">
+            <button class="btn-filter-clear" onclick="limpiarFiltroColumna('${columna}')">
+                <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                Limpiar
+            </button>
+            <button class="btn-filter-apply" onclick="aplicarFiltroColumna('${columna}')">
+                <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+                Aplicar filtro
+            </button>
+        </div>
+    `;
+
+    // Posicionar el popup debajo del icono
+    const rect = elemento.getBoundingClientRect();
+
+    popup.style.position = 'fixed';
+    popup.style.top = `${rect.bottom + 5}px`;
+    popup.style.left = `${Math.min(rect.left, window.innerWidth - 220)}px`;
+    popup.style.zIndex = '1000';
+
+    document.body.appendChild(popup);
+    popupFiltroAbierto = popup;
+
+    // Enfocar el input
+    setTimeout(() => {
+        document.getElementById(`filter-value-${columna}`)?.focus();
+    }, 100);
+}
+
+// Cerrar popup de filtro
+function cerrarPopupFiltro() {
+    if (popupFiltroAbierto) {
+        popupFiltroAbierto.remove();
+        popupFiltroAbierto = null;
+    }
+}
+
+// Aplicar filtro de una columna
+async function aplicarFiltroColumna(columna) {
+    const inputValor = document.getElementById(`filter-value-${columna}`);
+    const radioSeleccionado = document.querySelector(`input[name="op-${columna}"]:checked`);
+
+    const valor = inputValor?.value.trim();
+    const operador = radioSeleccionado?.value || 'contains';
+
+    if (!valor) {
+        // Si no hay valor, limpiar el filtro de esta columna
+        limpiarFiltroColumna(columna);
+        return;
+    }
+
+    // Eliminar filtro anterior de esta columna si existe
+    filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
+
+    // Añadir nuevo filtro
+    filtrosColumna.push({ columna, operador, valor });
+
+    console.log(`🔍 Filtro columna: ${columna} ${operador} "${valor}"`);
+
+    // Cerrar popup
+    cerrarPopupFiltro();
+
+    // Actualizar UI
+    renderizarChipsFiltrosColumna();
+    actualizarIconosFiltro();
+
+    // Aplicar filtros
+    paginaActual = 1;
+    await aplicarFiltros();
+}
+
+// Limpiar filtro de una columna
+async function limpiarFiltroColumna(columna) {
+    filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
+
+    console.log(`🗑️ Filtro columna eliminado: ${columna}`);
+
+    // Cerrar popup
+    cerrarPopupFiltro();
+
+    // Actualizar UI
+    renderizarChipsFiltrosColumna();
+    actualizarIconosFiltro();
+
+    // Aplicar filtros
+    paginaActual = 1;
+    await aplicarFiltros();
+}
+
+// Quitar filtro de columna por índice (desde chips)
+async function quitarFiltroColumna(index) {
+    filtrosColumna.splice(index, 1);
+
+    console.log(`🗑️ Filtro columna eliminado`);
+
+    // Actualizar UI
+    renderizarChipsFiltrosColumna();
+    actualizarIconosFiltro();
+
+    // Aplicar filtros
+    paginaActual = 1;
+    await aplicarFiltros();
+}
+
+// Limpiar todos los filtros de columna
+async function limpiarTodosFiltrosColumna() {
+    filtrosColumna = [];
+    filtrosActivos = [];  // También limpiar filtros del panel lateral
+
+    // Limpiar inputs del panel lateral
+    const inputsLaterales = ['filter-formato', 'filter-serie', 'filter-calidad', 'filter-color', 'filter-existencias'];
+    inputsLaterales.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) input.value = '';
+    });
+
+    // Actualizar UI
+    renderizarChipsFiltrosColumna();
+    actualizarIconosFiltro();
+
+    // Resetear ordenación
+    ordenActual.columna = 'codigo';
+    ordenActual.direccion = 'ASC';
+
+    // Recargar datos
+    paginaActual = 1;
+    await cargarTodos();
+}
+
+// Actualizar iconos de filtro en headers (cambiar color si hay filtro activo)
+function actualizarIconosFiltro() {
+    columnasFiltrables.forEach(col => {
+        const icono = document.querySelector(`.column-filter-icon[data-columna="${col.key}"]`);
+        if (icono) {
+            if (tieneFiltroColumna(col.key)) {
+                icono.classList.add('active');
+            } else {
+                icono.classList.remove('active');
+            }
+        }
+    });
+}
+
+// Renderizar chips de filtros de columna
+function renderizarChipsFiltrosColumna() {
+    const container = document.getElementById('column-filters-chips');
+    if (!container) return;
+
+    // Combinar filtros de columna + filtros del panel lateral
+    const todosFiltros = [
+        ...filtrosColumna.map((f, idx) => ({
+            ...f,
+            tipo: 'columna',
+            index: idx
+        })),
+        ...filtrosActivos.map((f, idx) => ({
+            columna: f.columna,
+            operador: 'contains',
+            valor: f.valor,
+            tipo: 'lateral',
+            index: idx
+        }))
+    ];
+
+    if (todosFiltros.length === 0) {
+        container.innerHTML = '';
+        container.style.display = 'none';
+        return;
+    }
+
+    container.style.display = 'flex';
+
+    const chipsHTML = todosFiltros.map((filtro, idx) => {
+        const labelColumna = columnasFiltrables.find(c => c.key === filtro.columna)?.label || filtro.columna;
+        const labelOperador = getLabelOperador(filtro.operador);
+        const onclickFn = filtro.tipo === 'columna'
+            ? `quitarFiltroColumna(${filtro.index})`
+            : `quitarFiltro(${filtro.index})`;
+
+        return `
+            <span class="filter-chip">
+                <span class="filter-chip-column">${labelColumna}:</span>
+                <span class="filter-chip-operator">${labelOperador.toLowerCase()}</span>
+                <span class="filter-chip-value" title="${filtro.valor}">"${filtro.valor}"</span>
+                <span class="filter-chip-remove" onclick="${onclickFn}">✕</span>
+            </span>
+        `;
+    }).join('');
+
+    container.innerHTML = chipsHTML + `
+        <button class="btn-clear-filters" onclick="limpiarTodosFiltrosColumna()">Limpiar todo</button>
+    `;
+}
+
+// Aplicar filtros (backend o frontend según configuración)
+async function aplicarFiltros() {
+    const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
+
+    if (usarPaginacionBackend) {
+        // Filtros en backend: recargar datos
+        await cargarTodos();
+    } else {
+        // Filtros en frontend: aplicar a datos locales
+        aplicarFiltrosFrontend();
+    }
+}
+
+// Aplicar filtros en frontend (cuando no hay paginación backend)
+function aplicarFiltrosFrontend() {
+    let datosFiltrados = [...allStocksData];
+
+    // Aplicar filtros de columna (con operadores)
+    filtrosColumna.forEach(filtro => {
+        datosFiltrados = datosFiltrados.filter(item => {
+            const valorItem = (item[filtro.columna] || '').toString();
+            const valorBuscar = filtro.valor;
+
+            switch (filtro.operador) {
+                case 'eq':
+                    return valorItem.toLowerCase() === valorBuscar.toLowerCase();
+                case 'neq':
+                    return valorItem.toLowerCase() !== valorBuscar.toLowerCase();
+                case 'contains':
+                    return valorItem.toLowerCase().includes(valorBuscar.toLowerCase());
+                case 'starts':
+                    return valorItem.toLowerCase().startsWith(valorBuscar.toLowerCase());
+                case 'ends':
+                    return valorItem.toLowerCase().endsWith(valorBuscar.toLowerCase());
+                case 'gt':
+                    return parseFloat(valorItem) > parseFloat(valorBuscar);
+                case 'gte':
+                    return parseFloat(valorItem) >= parseFloat(valorBuscar);
+                case 'lt':
+                    return parseFloat(valorItem) < parseFloat(valorBuscar);
+                case 'lte':
+                    return parseFloat(valorItem) <= parseFloat(valorBuscar);
+                default:
+                    return valorItem.toLowerCase().includes(valorBuscar.toLowerCase());
+            }
+        });
+    });
+
+    // Aplicar filtros del panel lateral (siempre usa "contiene")
+    filtrosActivos.forEach(filtro => {
+        const valorBuscar = filtro.valor.toLowerCase();
+        datosFiltrados = datosFiltrados.filter(item => {
+            const valorItem = (item[filtro.columna] || '').toString().toLowerCase();
+            return valorItem.includes(valorBuscar);
+        });
+    });
+
+    stocksData = datosFiltrados;
+    totalItems = datosFiltrados.length;
+    mostrarTabla(stocksData);
+
+    if (gridConImagenes) {
+        mostrarPaginacion();
+    } else {
+        ocultarPaginacion();
+    }
+}
+
+// Generar HTML del contenedor de chips de filtros (sin barra de añadir)
+function generarContenedorChips() {
+    return `
+        <div class="column-filters-chips" id="column-filters-chips" style="display: none;"></div>
+    `;
+}
+
+// Mantener compatibilidad: Añadir un filtro desde panel lateral
+async function agregarFiltro() {
+    // Esta función se usa desde el panel lateral
+    // Los filtros se añaden desde buscarStocks()
+}
+
+// Quitar un filtro del panel lateral por índice
+async function quitarFiltro(index) {
+    filtrosActivos.splice(index, 1);
+
+    console.log(`🗑️ Filtro lateral eliminado`);
+
+    // Actualizar UI de chips
+    renderizarChipsFiltrosColumna();
+
+    // Aplicar filtros
+    paginaActual = 1;
+    await aplicarFiltros();
+}
+
+// Mantener compatibilidad
+function renderizarChipsFiltros() {
+    renderizarChipsFiltrosColumna();
+}
+
+// Cerrar popup al hacer clic fuera
+document.addEventListener('click', (e) => {
+    if (popupFiltroAbierto && !popupFiltroAbierto.contains(e.target) &&
+        !e.target.classList.contains('column-filter-icon')) {
+        cerrarPopupFiltro();
+    }
+});
+
+// Cerrar popup con Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && popupFiltroAbierto) {
+        cerrarPopupFiltro();
+    }
+});
+
+// Cerrar popup al hacer scroll
+window.addEventListener('scroll', () => {
+    if (popupFiltroAbierto) {
+        cerrarPopupFiltro();
+    }
+}, true);  // Capture phase para detectar scroll en cualquier elemento
+
+// Buscar con filtros (panel lateral) - Convierte filtros laterales a filtros activos
 async function buscarStocks() {
-    const filtros = {
-        formato: document.getElementById('filter-formato').value,
-        serie: document.getElementById('filter-serie').value,
-        calidad: document.getElementById('filter-calidad').value,
-        color: document.getElementById('filter-color').value,
-        existencias_min: document.getElementById('filter-existencias').value
+    // Obtener filtros del panel lateral
+    const filtrosLaterales = {
+        formato: document.getElementById('filter-formato').value.trim(),
+        serie: document.getElementById('filter-serie').value.trim(),
+        calidad: document.getElementById('filter-calidad').value.trim(),
+        color: document.getElementById('filter-color').value.trim(),
+        existencias_min: document.getElementById('filter-existencias').value.trim()
     };
+
+    // Convertir filtros laterales a filtros activos (sin duplicar)
+    Object.keys(filtrosLaterales).forEach(key => {
+        const valor = filtrosLaterales[key];
+        if (valor) {
+            // Verificar si ya existe este filtro
+            const existe = filtrosActivos.some(f => f.columna === key && f.valor === valor);
+            if (!existe) {
+                filtrosActivos.push({ columna: key, valor: valor });
+            }
+        }
+    });
+
+    // Actualizar chips
+    renderizarChipsFiltrosColumna();
 
     // Construir query string
     const params = new URLSearchParams();
-    addEmpresaToParams(params); // Agregar empresa_id
-    Object.keys(filtros).forEach(key => {
-        if (filtros[key]) params.append(key, filtros[key]);
+    addEmpresaToParams(params);
+
+    // Añadir filtros de columna (con operadores: columna__operador=valor)
+    filtrosColumna.forEach(filtro => {
+        params.append(`${filtro.columna}__${filtro.operador}`, filtro.valor);
     });
+
+    // Añadir filtros del panel lateral (sin operador, backend usa LIKE por defecto)
+    filtrosActivos.forEach(filtro => {
+        params.append(filtro.columna, filtro.valor);
+    });
+
+    // Si paginación backend está activa, añadir parámetros de paginación y ordenación
+    const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
+
+    if (usarPaginacionBackend) {
+        paginaActual = 1;  // Resetear a primera página
+        params.append('page', paginaActual);
+        params.append('limit', paginacionBackend.limite);
+        params.append('order_by', ordenActual.columna);
+        params.append('order_dir', ordenActual.direccion);
+    }
 
     mostrarCargando();
     try {
-        const url = params.toString()
-            ? `${API_URL}/api/stocks/search?${params}`
-            : `${API_URL}/api/stocks`;
-
+        const url = `${API_URL}/api/stocks/search?${params}`;
         console.log('🔍 Buscando con URL:', url);
 
         const response = await fetch(url, {
@@ -827,10 +1420,23 @@ async function buscarStocks() {
             return;
         }
 
-        allStocksData = await response.json();
-        totalItems = allStocksData.length;
-        paginaActual = 1;  // Resetear a primera página
-        console.log('✅ Búsqueda completada:', totalItems, 'resultados');
+        const data = await response.json();
+
+        if (usarPaginacionBackend) {
+            // Respuesta con metadatos de paginación
+            allStocksData = data.data;
+            totalItems = data.total;
+            paginacionBackend.total = data.total;
+            paginacionBackend.pages = data.pages;
+            console.log(`✅ Búsqueda completada (paginación backend): ${allStocksData.length} de ${totalItems} resultados`);
+        } else {
+            // Respuesta sin paginación
+            allStocksData = data;
+            totalItems = allStocksData.length;
+            paginaActual = 1;
+            console.log('✅ Búsqueda completada:', totalItems, 'resultados');
+        }
+
         mostrarDatos();
     } catch (error) {
         console.error('❌ Error al buscar stocks:', error);
@@ -838,13 +1444,26 @@ async function buscarStocks() {
     }
 }
 
-// Limpiar filtros
+// Limpiar filtros (panel lateral + barra de filtros)
 function limpiarFiltros() {
+    // Limpiar filtros laterales (inputs)
     document.getElementById('filter-formato').value = '';
     document.getElementById('filter-serie').value = '';
     document.getElementById('filter-calidad').value = '';
     document.getElementById('filter-color').value = '';
     document.getElementById('filter-existencias').value = '';
+
+    // Limpiar filtros activos (panel lateral y columnas)
+    filtrosActivos = [];
+    filtrosColumna = [];
+    renderizarChipsFiltrosColumna();
+    actualizarIconosFiltro();
+
+    // Resetear ordenación
+    ordenActual.columna = 'codigo';
+    ordenActual.direccion = 'ASC';
+
+    paginaActual = 1;
     cargarTodos();
 }
 
@@ -892,20 +1511,66 @@ function mostrarTabla(stocks) {
         return;
     }
 
-    // Vista normal: tabla en desktop, tarjetas en móvil
+    // Icono SVG de ordenación
+    const iconoOrdenASC = `<svg class="sort-arrow" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0L5 0Z"/></svg>`;
+    const iconoOrdenDESC = `<svg class="sort-arrow" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0H10L5 6Z"/></svg>`;
+    const iconoOrdenNeutro = `<svg class="sort-arrow neutral" viewBox="0 0 10 14" fill="currentColor"><path d="M5 0L10 5H0L5 0Z M5 14L0 9H10L5 14Z"/></svg>`;
+
+    // Icono SVG de filtro (embudo)
+    const iconoFiltro = `<svg class="filter-icon-svg" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z"/></svg>`;
+
+    // Función helper para generar icono de ordenación
+    const getOrdenIcono = (columna) => {
+        if (ordenActual.columna === columna) {
+            return ordenActual.direccion === 'ASC' ? iconoOrdenASC : iconoOrdenDESC;
+        }
+        return iconoOrdenNeutro;
+    };
+
+    // Verificar si la columna es filtrable
+    const esColumnaFiltrable = (columna) => {
+        return columnasFiltrables.some(c => c.key === columna);
+    };
+
+    // Función helper para generar header con ordenación e icono de filtro
+    const getHeaderConOrden = (columna, label) => {
+        const esColumnaActual = ordenActual.columna === columna;
+        const tieneFiltro = tieneFiltroColumna(columna);
+        const puedeFiltrarse = esColumnaFiltrable(columna);
+
+        return `
+            <div class="column-header-wrapper">
+                <div class="sortable-header ${esColumnaActual ? 'active' : ''}" onclick="ordenarPorColumna('${columna}')">
+                    <span class="header-label">${label}</span>
+                    <span class="sort-icon ${esColumnaActual ? 'active' : ''}">${getOrdenIcono(columna)}</span>
+                </div>
+                ${puedeFiltrarse ? `
+                    <button class="column-filter-btn ${tieneFiltro ? 'active' : ''}"
+                          data-columna="${columna}"
+                          onclick="event.stopPropagation(); mostrarPopupFiltro('${columna}', this)"
+                          title="Filtrar por ${label}">${iconoFiltro}</button>
+                ` : ''}
+            </div>
+        `;
+    };
+
+    // Vista normal: chips de filtros + tabla en desktop, tarjetas en móvil
     const html = `
+        <!-- Chips de filtros activos -->
+        ${generarContenedorChips()}
+
         <!-- Vista de tabla para desktop -->
-        <table>
+        <table class="stock-table-advanced">
             <thead>
-                <tr>
-                    <th>${t('table.code')}</th>
-                    <th>${t('table.description')}</th>
-                    <th>${t('table.format')}</th>
-                    <th>${t('table.color')}</th>
-                    <th>${t('table.quality')}</th>
-                    <th>${t('table.tone')}</th>
-                    <th>${t('table.caliber')}</th>
-                    <th>${t('table.stock')}</th>
+                <tr class="header-row">
+                    <th class="sortable-th">${getHeaderConOrden('codigo', t('table.code'))}</th>
+                    <th class="sortable-th">${getHeaderConOrden('descripcion', t('table.description'))}</th>
+                    <th class="sortable-th">${getHeaderConOrden('formato', t('table.format'))}</th>
+                    <th class="sortable-th">${getHeaderConOrden('color', t('table.color'))}</th>
+                    <th class="sortable-th">${getHeaderConOrden('calidad', t('table.quality'))}</th>
+                    <th class="sortable-th">${getHeaderConOrden('tono', t('table.tone'))}</th>
+                    <th class="sortable-th">${getHeaderConOrden('calibre', t('table.caliber'))}</th>
+                    <th class="sortable-th">${getHeaderConOrden('existencias', t('table.stock'))}</th>
                     <th>${t('table.action')}</th>
                 </tr>
             </thead>
@@ -920,13 +1585,10 @@ function mostrarTabla(stocks) {
                         <td>${stock.tono || '-'}</td>
                         <td>${stock.calibre || '-'}</td>
                         <td>${getBadgeWithUnit(stock.existencias, stock.unidad)}</td>
-                        <td>
-                            <button class="btn-primary" style="padding: 8px 16px; font-size: 0.9em; ${propuestasHabilitadas ? 'margin-right: 5px;' : ''}"
-                                    onclick='verDetalle(${JSON.stringify(stock).replace(/'/g, "&apos;")})'>
+                        <td class="actions-cell">
+                            <button class="btn-primary btn-table" onclick='verDetalle(${JSON.stringify(stock).replace(/'/g, "&apos;")})'>
                                 ${t('table.view')}
-                            </button>
-                            ${propuestasHabilitadas ? `<button class="btn-secondary" style="padding: 8px 16px; font-size: 0.9em;"
-                                    onclick='agregarAlCarrito(${JSON.stringify(stock).replace(/'/g, "&apos;")})'>
+                            </button>${propuestasHabilitadas ? `<button class="btn-secondary btn-table" onclick='agregarAlCarrito(${JSON.stringify(stock).replace(/'/g, "&apos;")})'>
                                 ${t('table.addToCart')}
                             </button>` : ''}
                         </td>
@@ -989,6 +1651,9 @@ function mostrarTabla(stocks) {
     `;
 
     container.innerHTML = html;
+
+    // Re-renderizar los chips de filtros activos
+    renderizarChipsFiltros();
 }
 
 
@@ -1942,10 +2607,33 @@ async function vaciarCarrito() {
 function mostrarFormularioEnvio() {
     const content = document.getElementById('carrito-content');
 
+    // Pre-llenar cliente si el usuario tiene uno asignado
+    const clientePreseleccionado = currentUser?.cliente_id || '';
+    const clienteNombrePreseleccionado = currentUser?.cliente_razon || '';
+
     content.innerHTML = `
         <div class="envio-form">
             <h3>${t('shipping.title')}</h3>
             <p>${t('shipping.description')}</p>
+            <div class="form-group">
+                <label>${t('shipping.clientLabel') || 'Cliente'}: <span class="required">*</span></label>
+                <div class="client-search-container">
+                    <div class="client-search-input-wrapper" id="client-search-wrapper-envio" style="${clientePreseleccionado ? 'display:none' : ''}">
+                        <input type="text" id="client-search-envio" placeholder="${t('shipping.clientPlaceholder') || 'Buscar cliente...'}" autocomplete="off">
+                        <span class="client-search-icon">🔍</span>
+                    </div>
+                    <div class="client-suggestions" id="client-suggestions-envio"></div>
+                    <div class="client-selected" id="client-selected-envio" style="${clientePreseleccionado ? '' : 'display:none'}">
+                        <div class="client-selected-info">
+                            <span class="client-selected-code" id="selected-client-code-envio">${clientePreseleccionado}</span>
+                            <span class="client-selected-name" id="selected-client-name-envio">${clienteNombrePreseleccionado}</span>
+                        </div>
+                        <button type="button" class="client-clear-btn" onclick="clearClientSelectionEnvio()" title="${t('common.clear') || 'Limpiar'}">×</button>
+                    </div>
+                </div>
+                <input type="hidden" id="cliente-id-envio" value="${clientePreseleccionado}">
+                <p class="form-help">${t('shipping.clientHelp') || 'Escribe al menos 3 caracteres para buscar'}</p>
+            </div>
             <div class="form-group">
                 <label>${t('shipping.referenceLabel')}:</label>
                 <input type="text" id="referencia-envio" maxlength="100" placeholder="${t('shipping.referencePlaceholder')}">
@@ -1966,6 +2654,9 @@ function mostrarFormularioEnvio() {
             </div>
         </div>
     `;
+
+    // Inicializar autocomplete del cliente
+    initClientAutocompleteEnvio();
 }
 
 // Enviar solicitud
@@ -1973,7 +2664,14 @@ async function enviarSolicitud() {
     const referencia = document.getElementById('referencia-envio').value;
     const comentarios = document.getElementById('comentarios-envio').value;
     const enviarCopia = document.getElementById('enviar-copia').checked;
+    const cliente_id = document.getElementById('cliente-id-envio').value;
     const empresa_id = getEmpresaId(); // Multi-empresa support
+
+    // Validar cliente obligatorio
+    if (!cliente_id) {
+        alert(t('shipping.clientRequired') || 'Debe seleccionar un cliente');
+        return;
+    }
 
     if (!confirm(t('shipping.confirmSend'))) return;
 
@@ -1987,7 +2685,7 @@ async function enviarSolicitud() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ referencia, comentarios, empresa_id, enviar_copia: enviarCopia })
+            body: JSON.stringify({ referencia, comentarios, empresa_id, enviar_copia: enviarCopia, cliente_id })
         });
 
         // Ocultar indicador de envio
@@ -2039,6 +2737,126 @@ function cerrarCarrito() {
     document.getElementById('carrito-modal').style.display = 'none';
 }
 
+// ==================== AUTOCOMPLETE CLIENTE ENVIO ====================
+
+let clientSearchTimeoutEnvio = null;
+
+function initClientAutocompleteEnvio() {
+    const searchInput = document.getElementById('client-search-envio');
+    if (!searchInput) return;
+
+    searchInput.addEventListener('input', function () {
+        const query = this.value.trim();
+
+        // Cancelar búsqueda anterior
+        if (clientSearchTimeoutEnvio) {
+            clearTimeout(clientSearchTimeoutEnvio);
+        }
+
+        // Mínimo 3 caracteres
+        if (query.length < 3) {
+            const suggestions = document.getElementById('client-suggestions-envio');
+            suggestions.innerHTML = '';
+            suggestions.classList.remove('show');
+            return;
+        }
+
+        // Debounce de 300ms
+        clientSearchTimeoutEnvio = setTimeout(() => {
+            searchClientsEnvio(query);
+        }, 300);
+    });
+
+    // Cerrar sugerencias al hacer clic fuera
+    document.addEventListener('click', function (e) {
+        const container = document.querySelector('.client-search-container');
+        if (container && !container.contains(e.target)) {
+            const suggestions = document.getElementById('client-suggestions-envio');
+            if (suggestions) suggestions.classList.remove('show');
+        }
+    });
+}
+
+async function searchClientsEnvio(query) {
+    const suggestionsContainer = document.getElementById('client-suggestions-envio');
+    const empresaId = getEmpresaId();
+
+    // Mostrar loading
+    suggestionsContainer.innerHTML = `<div class="client-suggestions-loading">${t('common.searching') || 'Buscando...'}</div>`;
+    suggestionsContainer.classList.add('show');
+
+    try {
+        const response = await fetch(`${API_URL}/api/clientes/search?empresa=${empresaId}&razon=${encodeURIComponent(query)}`, {
+            credentials: 'include'
+        });
+
+        if (!response.ok) throw new Error('Error al buscar clientes');
+
+        const clientes = await response.json();
+
+        if (clientes.length === 0) {
+            suggestionsContainer.innerHTML = `<div class="client-suggestions-empty">${t('common.noResults') || 'No se encontraron resultados'}</div>`;
+        } else {
+            suggestionsContainer.innerHTML = clientes.map(c => `
+                <div class="client-suggestion" onclick="selectClientEnvio('${c.codigo}', '${c.razon.replace(/'/g, "\\'")}')">
+                    <span class="client-suggestion-code">${c.codigo}</span>
+                    <span class="client-suggestion-name">${c.razon}</span>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error buscando clientes:', error);
+        suggestionsContainer.innerHTML = `<div class="client-suggestions-empty">${t('errors.searchError') || 'Error al buscar'}</div>`;
+    }
+}
+
+function selectClientEnvio(codigo, razon) {
+    // Guardar en input hidden
+    document.getElementById('cliente-id-envio').value = codigo;
+
+    // Mostrar tarjeta de cliente seleccionado
+    document.getElementById('selected-client-code-envio').textContent = codigo;
+    document.getElementById('selected-client-name-envio').textContent = razon;
+    document.getElementById('client-selected-envio').classList.add('show');
+    document.getElementById('client-selected-envio').style.display = 'flex';
+
+    // Ocultar input de búsqueda y sugerencias
+    document.getElementById('client-search-wrapper-envio').style.display = 'none';
+    document.getElementById('client-suggestions-envio').classList.remove('show');
+    document.getElementById('client-search-envio').value = '';
+}
+
+function clearClientSelectionEnvio() {
+    // Limpiar input hidden
+    document.getElementById('cliente-id-envio').value = '';
+
+    // Ocultar tarjeta de selección
+    document.getElementById('client-selected-envio').classList.remove('show');
+    document.getElementById('client-selected-envio').style.display = 'none';
+
+    // Mostrar input de búsqueda
+    document.getElementById('client-search-wrapper-envio').style.display = 'flex';
+    document.getElementById('client-search-envio').focus();
+}
+
+// Exponer funciones para onclick en HTML dinámico
+window.selectClientEnvio = selectClientEnvio;
+window.clearClientSelectionEnvio = clearClientSelectionEnvio;
+
+// Funciones de filtros y ordenación
+window.agregarFiltro = agregarFiltro;
+window.quitarFiltro = quitarFiltro;
+window.limpiarTodosFiltros = limpiarTodosFiltrosColumna;  // Alias para compatibilidad
+window.ordenarPorColumna = ordenarPorColumna;
+
+// Funciones de filtros por columna estilo WorkWithPlus
+window.mostrarPopupFiltro = mostrarPopupFiltro;
+window.cerrarPopupFiltro = cerrarPopupFiltro;
+window.aplicarFiltroColumna = aplicarFiltroColumna;
+window.limpiarFiltroColumna = limpiarFiltroColumna;
+window.quitarFiltroColumna = quitarFiltroColumna;
+window.limpiarTodosFiltrosColumna = limpiarTodosFiltrosColumna;
+
 // ==================== EVENT LISTENERS ====================
 
 // Cerrar modal al hacer clic fuera
@@ -2073,6 +2891,7 @@ window.onload = async function () {
 
         await verificarPropuestasHabilitadas();
         await verificarGridConImagenes();
+        await cargarConfigPaginacion();
         await cargarConfigWhatsApp();
         await cargarOpcionesFiltros();
         await cargarTodos();

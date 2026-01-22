@@ -222,6 +222,139 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Quinta fila: Auditoria de usuarios -->
+            <div class="charts-row">
+                <div class="chart-card" style="grid-column: 1 / -1;">
+                    <div class="chart-header">
+                        <span class="chart-title">Auditoría de Usuarios</span>
+                        <div class="audit-actions">
+                            <button class="period-btn" onclick="loadAuditLogs()">Actualizar</button>
+                        </div>
+                    </div>
+
+                    <!-- Filtros avanzados -->
+                    <div class="audit-filters">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label>Desde</label>
+                                <input type="date" id="audit-fecha-desde">
+                            </div>
+                            <div class="filter-group">
+                                <label>Hasta</label>
+                                <input type="date" id="audit-fecha-hasta">
+                            </div>
+                            <div class="filter-group">
+                                <label>Acción</label>
+                                <select id="audit-accion">
+                                    <option value="">Todas</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Resultado</label>
+                                <select id="audit-resultado">
+                                    <option value="">Todos</option>
+                                    <option value="SUCCESS">Éxito</option>
+                                    <option value="FAILED">Fallido</option>
+                                    <option value="BLOCKED">Bloqueado</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Usuario</label>
+                                <input type="text" id="audit-usuario" placeholder="Buscar...">
+                            </div>
+                            <div class="filter-buttons">
+                                <button class="period-btn" onclick="applyAuditFilters()">Filtrar</button>
+                                <button class="period-btn btn-secondary" onclick="clearAuditFilters()">Limpiar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="audit-container">
+                        <!-- Tabla para desktop -->
+                        <table class="products-table audit-table-desktop" id="audit-table">
+                            <thead>
+                                <tr class="audit-header-row">
+                                    <th class="sortable" data-sort="fecha" onclick="sortAuditColumn('fecha')">
+                                        <div class="th-content">
+                                            <span>Fecha</span>
+                                            <span class="sort-icon" id="sort-fecha">↕</span>
+                                        </div>
+                                    </th>
+                                    <th class="sortable" data-sort="username" onclick="sortAuditColumn('username')">
+                                        <div class="th-content">
+                                            <span>Usuario</span>
+                                            <span class="sort-icon" id="sort-username">↕</span>
+                                        </div>
+                                    </th>
+                                    <th class="sortable" data-sort="accion" onclick="sortAuditColumn('accion')">
+                                        <div class="th-content">
+                                            <span>Acción</span>
+                                            <span class="sort-icon" id="sort-accion">↕</span>
+                                        </div>
+                                    </th>
+                                    <th class="sortable" data-sort="recurso" onclick="sortAuditColumn('recurso')">
+                                        <div class="th-content">
+                                            <span>Recurso</span>
+                                            <span class="sort-icon" id="sort-recurso">↕</span>
+                                        </div>
+                                    </th>
+                                    <th class="sortable" data-sort="ip_address" onclick="sortAuditColumn('ip_address')">
+                                        <div class="th-content">
+                                            <span>IP</span>
+                                            <span class="sort-icon" id="sort-ip_address">↕</span>
+                                        </div>
+                                    </th>
+                                    <th class="sortable" data-sort="resultado" onclick="sortAuditColumn('resultado')">
+                                        <div class="th-content">
+                                            <span>Resultado</span>
+                                            <span class="sort-icon" id="sort-resultado">↕</span>
+                                        </div>
+                                    </th>
+                                </tr>
+                                <tr class="audit-filter-row">
+                                    <td>
+                                        <input type="date" id="filter-fecha" class="column-filter" onchange="applyColumnFilters()">
+                                    </td>
+                                    <td>
+                                        <input type="text" id="filter-username" class="column-filter" placeholder="Usuario..." onkeyup="debounceFilter()">
+                                    </td>
+                                    <td>
+                                        <select id="filter-accion" class="column-filter" onchange="applyColumnFilters()">
+                                            <option value="">Todas</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" id="filter-recurso" class="column-filter" placeholder="Recurso..." onkeyup="debounceFilter()">
+                                    </td>
+                                    <td>
+                                        <input type="text" id="filter-ip" class="column-filter" placeholder="IP..." onkeyup="debounceFilter()">
+                                    </td>
+                                    <td>
+                                        <select id="filter-resultado" class="column-filter" onchange="applyColumnFilters()">
+                                            <option value="">Todos</option>
+                                            <option value="SUCCESS">Éxito</option>
+                                            <option value="FAILED">Fallido</option>
+                                            <option value="BLOCKED">Bloqueado</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-body">
+                            </tbody>
+                        </table>
+                        <!-- Tarjetas para movil -->
+                        <div class="audit-cards-mobile" id="audit-cards">
+                        </div>
+                        <!-- Paginacion -->
+                        <div class="audit-pagination" id="audit-pagination">
+                        </div>
+                        <div id="audit-empty" style="display: none; text-align: center; padding: 20px; color: var(--text-secondary);">
+                            No hay registros de auditoría
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -832,6 +965,360 @@
                 minute: '2-digit'
             });
         }
+
+        // ==================== AUDITORIA ====================
+        let auditCurrentPage = 0;
+        const auditPageSize = 20;
+        let auditTotalLogs = 0;
+        let auditSortColumn = 'fecha';
+        let auditSortDirection = 'desc';
+        let auditFilterTimeout = null;
+        let auditAllLogs = []; // Cache de logs para ordenación local
+
+        async function loadAuditActions() {
+            try {
+                const response = await fetch(`${API_URL}/api/audit-logs/actions`, {
+                    credentials: 'include'
+                });
+                if (!response.ok) return;
+
+                const data = await response.json();
+
+                // Poblar ambos selectores (filtro panel y filtro inline)
+                const selects = [
+                    document.getElementById('audit-accion'),
+                    document.getElementById('filter-accion')
+                ];
+
+                selects.forEach(select => {
+                    if (!select) return;
+                    // Mantener la opción "Todas"
+                    select.innerHTML = '<option value="">Todas</option>';
+
+                    // Añadir las acciones disponibles
+                    data.actions.forEach(action => {
+                        const option = document.createElement('option');
+                        option.value = action;
+                        option.textContent = formatActionName(action);
+                        select.appendChild(option);
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading audit actions:', error);
+            }
+        }
+
+        async function loadAuditLogs(page = 0) {
+            try {
+                console.log('loadAuditLogs: Iniciando carga...');
+                auditCurrentPage = page;
+                const offset = page * auditPageSize;
+
+                // Construir query params
+                const params = new URLSearchParams();
+                params.append('limit', 200); // Cargar más para permitir filtrado local
+                params.append('offset', 0);
+
+                // Obtener filtros del panel superior (filtros principales)
+                const fechaDesde = document.getElementById('audit-fecha-desde')?.value;
+                const fechaHasta = document.getElementById('audit-fecha-hasta')?.value;
+                const accionPanel = document.getElementById('audit-accion')?.value;
+                const resultadoPanel = document.getElementById('audit-resultado')?.value;
+                const usuarioPanel = document.getElementById('audit-usuario')?.value;
+
+                if (fechaDesde) params.append('fecha_desde', fechaDesde);
+                if (fechaHasta) params.append('fecha_hasta', fechaHasta);
+                if (accionPanel) params.append('accion', accionPanel);
+                if (resultadoPanel) params.append('resultado', resultadoPanel);
+                if (usuarioPanel) params.append('username', usuarioPanel);
+
+                console.log('loadAuditLogs: URL:', `${API_URL}/api/audit-logs?${params.toString()}`);
+
+                const response = await fetch(`${API_URL}/api/audit-logs?${params.toString()}`, {
+                    credentials: 'include'
+                });
+
+                console.log('loadAuditLogs: Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('loadAuditLogs: Error response:', errorText);
+                    throw new Error('Error al cargar logs de auditoría');
+                }
+
+                const data = await response.json();
+                console.log('loadAuditLogs: Data recibida:', data);
+                auditAllLogs = data.logs || [];
+                auditTotalLogs = data.total || 0;
+
+                console.log('loadAuditLogs: Logs count:', auditAllLogs.length, 'Total:', auditTotalLogs);
+
+                // Aplicar filtros inline y ordenación local
+                const filteredLogs = applyLocalFiltersAndSort(auditAllLogs);
+
+                // Paginar localmente
+                const paginatedLogs = filteredLogs.slice(offset, offset + auditPageSize);
+                auditTotalLogs = filteredLogs.length;
+
+                renderAuditLogs(paginatedLogs);
+                renderAuditPagination();
+
+            } catch (error) {
+                console.error('loadAuditLogs: Error:', error);
+                // Mostrar mensaje de error al usuario
+                const emptyMsg = document.getElementById('audit-empty');
+                if (emptyMsg) {
+                    emptyMsg.textContent = 'Error al cargar los registros de auditoría';
+                    emptyMsg.style.display = 'block';
+                }
+            }
+        }
+
+        function applyLocalFiltersAndSort(logs) {
+            let filtered = [...logs];
+
+            // Obtener filtros inline de columnas
+            const filterFecha = document.getElementById('filter-fecha')?.value;
+            const filterUsername = document.getElementById('filter-username')?.value?.toLowerCase();
+            const filterAccion = document.getElementById('filter-accion')?.value;
+            const filterRecurso = document.getElementById('filter-recurso')?.value?.toLowerCase();
+            const filterIp = document.getElementById('filter-ip')?.value?.toLowerCase();
+            const filterResultado = document.getElementById('filter-resultado')?.value;
+
+            // Aplicar filtros inline
+            if (filterFecha) {
+                filtered = filtered.filter(log => log.fecha && log.fecha.startsWith(filterFecha));
+            }
+            if (filterUsername) {
+                filtered = filtered.filter(log => log.username?.toLowerCase().includes(filterUsername));
+            }
+            if (filterAccion) {
+                filtered = filtered.filter(log => log.accion === filterAccion);
+            }
+            if (filterRecurso) {
+                filtered = filtered.filter(log =>
+                    log.recurso?.toLowerCase().includes(filterRecurso) ||
+                    log.recurso_id?.toLowerCase().includes(filterRecurso)
+                );
+            }
+            if (filterIp) {
+                filtered = filtered.filter(log => log.ip_address?.toLowerCase().includes(filterIp));
+            }
+            if (filterResultado) {
+                filtered = filtered.filter(log => log.resultado === filterResultado);
+            }
+
+            // Aplicar ordenación
+            filtered.sort((a, b) => {
+                let valA = a[auditSortColumn];
+                let valB = b[auditSortColumn];
+
+                // Manejar valores nulos
+                if (valA === null || valA === undefined) valA = '';
+                if (valB === null || valB === undefined) valB = '';
+
+                // Comparar
+                let comparison = 0;
+                if (typeof valA === 'string') {
+                    comparison = valA.localeCompare(valB);
+                } else {
+                    comparison = valA < valB ? -1 : valA > valB ? 1 : 0;
+                }
+
+                return auditSortDirection === 'asc' ? comparison : -comparison;
+            });
+
+            return filtered;
+        }
+
+        function sortAuditColumn(column) {
+            // Si es la misma columna, cambiar dirección
+            if (auditSortColumn === column) {
+                auditSortDirection = auditSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                auditSortColumn = column;
+                auditSortDirection = 'asc';
+            }
+
+            // Actualizar iconos de ordenación
+            updateSortIcons();
+
+            // Aplicar filtros y ordenación sin recargar de servidor
+            const filteredLogs = applyLocalFiltersAndSort(auditAllLogs);
+            const offset = auditCurrentPage * auditPageSize;
+            const paginatedLogs = filteredLogs.slice(offset, offset + auditPageSize);
+            auditTotalLogs = filteredLogs.length;
+
+            renderAuditLogs(paginatedLogs);
+            renderAuditPagination();
+        }
+
+        function updateSortIcons() {
+            // Reset all icons
+            const columns = ['fecha', 'username', 'accion', 'recurso', 'ip_address', 'resultado'];
+            columns.forEach(col => {
+                const icon = document.getElementById(`sort-${col}`);
+                if (icon) {
+                    if (col === auditSortColumn) {
+                        icon.textContent = auditSortDirection === 'asc' ? '↑' : '↓';
+                        icon.classList.add('active');
+                    } else {
+                        icon.textContent = '↕';
+                        icon.classList.remove('active');
+                    }
+                }
+            });
+        }
+
+        function debounceFilter() {
+            if (auditFilterTimeout) clearTimeout(auditFilterTimeout);
+            auditFilterTimeout = setTimeout(() => {
+                applyColumnFilters();
+            }, 300);
+        }
+
+        function applyColumnFilters() {
+            auditCurrentPage = 0;
+            const filteredLogs = applyLocalFiltersAndSort(auditAllLogs);
+            const paginatedLogs = filteredLogs.slice(0, auditPageSize);
+            auditTotalLogs = filteredLogs.length;
+
+            renderAuditLogs(paginatedLogs);
+            renderAuditPagination();
+        }
+
+        function renderAuditLogs(logs) {
+            const tbody = document.getElementById('audit-body');
+            const cardsContainer = document.getElementById('audit-cards');
+            const emptyMsg = document.getElementById('audit-empty');
+
+            if (logs.length === 0) {
+                tbody.innerHTML = '';
+                cardsContainer.innerHTML = '';
+                emptyMsg.style.display = 'block';
+                return;
+            }
+
+            emptyMsg.style.display = 'none';
+
+            // Renderizar tabla (desktop)
+            tbody.innerHTML = logs.map(log => `
+                <tr>
+                    <td>${formatDateTime(log.fecha)}</td>
+                    <td><strong>${log.username || '-'}</strong></td>
+                    <td><span class="action-badge action-${getActionCategory(log.accion)}">${formatActionName(log.accion)}</span></td>
+                    <td>${log.recurso ? `${log.recurso}${log.recurso_id ? ` #${log.recurso_id}` : ''}` : '-'}</td>
+                    <td>${log.ip_address || '-'}</td>
+                    <td><span class="result-badge result-${log.resultado.toLowerCase()}">${formatResultName(log.resultado)}</span></td>
+                </tr>
+            `).join('');
+
+            // Renderizar tarjetas (movil)
+            cardsContainer.innerHTML = logs.map(log => `
+                <div class="audit-card">
+                    <div class="audit-card-header">
+                        <span class="action-badge action-${getActionCategory(log.accion)}">${formatActionName(log.accion)}</span>
+                        <span class="result-badge result-${log.resultado.toLowerCase()}">${formatResultName(log.resultado)}</span>
+                    </div>
+                    <div class="audit-card-body">
+                        <div class="audit-detail"><strong>Usuario:</strong> ${log.username || '-'}</div>
+                        <div class="audit-detail"><strong>Fecha:</strong> ${formatDateTime(log.fecha)}</div>
+                        <div class="audit-detail"><strong>Recurso:</strong> ${log.recurso ? `${log.recurso}${log.recurso_id ? ` #${log.recurso_id}` : ''}` : '-'}</div>
+                        <div class="audit-detail"><strong>IP:</strong> ${log.ip_address || '-'}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderAuditPagination() {
+            const container = document.getElementById('audit-pagination');
+            const totalPages = Math.ceil(auditTotalLogs / auditPageSize);
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+
+            // Boton anterior
+            html += `<button class="pagination-btn" ${auditCurrentPage === 0 ? 'disabled' : ''} onclick="loadAuditLogs(${auditCurrentPage - 1})">← Anterior</button>`;
+
+            // Indicador de pagina
+            html += `<span class="pagination-info">Página ${auditCurrentPage + 1} de ${totalPages}</span>`;
+
+            // Boton siguiente
+            html += `<button class="pagination-btn" ${auditCurrentPage >= totalPages - 1 ? 'disabled' : ''} onclick="loadAuditLogs(${auditCurrentPage + 1})">Siguiente →</button>`;
+
+            container.innerHTML = html;
+        }
+
+        function applyAuditFilters() {
+            loadAuditLogs(0);
+        }
+
+        function clearAuditFilters() {
+            document.getElementById('audit-fecha-desde').value = '';
+            document.getElementById('audit-fecha-hasta').value = '';
+            document.getElementById('audit-accion').value = '';
+            document.getElementById('audit-resultado').value = '';
+            document.getElementById('audit-usuario').value = '';
+            loadAuditLogs(0);
+        }
+
+        function formatActionName(action) {
+            const actionNames = {
+                'LOGIN': 'Inicio sesión',
+                'LOGIN_FAILED': 'Login fallido',
+                'LOGOUT': 'Cerrar sesión',
+                'PASSWORD_CHANGE': 'Cambio contraseña',
+                'SESSION_KILL': 'Sesión cerrada',
+                'SESSION_KILL_ALL': 'Cerrar todas sesiones',
+                'USER_CREATE': 'Usuario creado',
+                'USER_ACTIVATE': 'Usuario activado',
+                'USER_DEACTIVATE': 'Usuario desactivado',
+                'USER_ROLE_CHANGE': 'Cambio de rol',
+                'API_KEY_CREATE': 'API Key creada',
+                'API_KEY_DELETE': 'API Key eliminada',
+                'CONFIG_CHANGE': 'Config. modificada',
+                'EMAIL_CONFIG_CHANGE': 'Config. email',
+                'PROPUESTA_SEND': 'Propuesta enviada',
+                'PROPUESTA_STATUS_CHANGE': 'Estado propuesta',
+                'CONSULTA_SEND': 'Consulta enviada',
+                'CONSULTA_RESPOND': 'Consulta respondida'
+            };
+            return actionNames[action] || action;
+        }
+
+        function formatResultName(result) {
+            const resultNames = {
+                'SUCCESS': 'Éxito',
+                'FAILED': 'Fallido',
+                'BLOCKED': 'Bloqueado'
+            };
+            return resultNames[result] || result;
+        }
+
+        function getActionCategory(action) {
+            if (action.startsWith('LOGIN') || action === 'LOGOUT' || action === 'PASSWORD_CHANGE') return 'auth';
+            if (action.startsWith('SESSION')) return 'session';
+            if (action.startsWith('USER')) return 'user';
+            if (action.startsWith('API_KEY')) return 'apikey';
+            if (action.startsWith('CONFIG') || action.startsWith('EMAIL')) return 'config';
+            if (action.startsWith('PROPUESTA')) return 'propuesta';
+            if (action.startsWith('CONSULTA')) return 'consulta';
+            return 'other';
+        }
+
+        // Cargar acciones disponibles y logs al iniciar
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Las otras funciones ya se ejecutan...
+            // Añadir carga de auditoria despues de un pequeño delay
+            setTimeout(async () => {
+                await loadAuditActions();
+                await loadAuditLogs();
+            }, 500);
+        });
     </script>
 </body>
 </html>

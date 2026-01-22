@@ -183,6 +183,10 @@
   "shipping": {
     "title": "📧 Send Request",
     "description": "The request will be sent by email with all product details.",
+    "clientLabel": "Customer",
+    "clientPlaceholder": "Search customer...",
+    "clientRequired": "You must select a customer",
+    "clientHelp": "Type at least 3 characters to search",
     "referenceLabel": "Reference (optional)",
     "referencePlaceholder": "Your internal reference for this request...",
     "comments": "Additional comments (optional):",

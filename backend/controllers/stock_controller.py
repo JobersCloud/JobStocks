@@ -43,10 +43,11 @@ class StockController:
 
     @staticmethod
     def search():
-        """Buscar stocks con filtros"""
+        """Buscar stocks con filtros, paginación y ordenación"""
         try:
-            # Obtener parámetros de query string
+            # Obtener parámetros de filtros
             filtros = {
+                'codigo': request.args.get('codigo'),
                 'descripcion': request.args.get('descripcion'),
                 'calidad': request.args.get('calidad'),
                 'color': request.args.get('color'),
@@ -60,8 +61,18 @@ class StockController:
             # Eliminar filtros vacíos
             filtros = {k: v for k, v in filtros.items() if v is not None}
 
-            stocks = StockModel.search(filtros)
-            return jsonify(stocks), 200
+            # Parámetros de paginación (opcionales)
+            page = request.args.get('page', type=int)
+            limit = request.args.get('limit', type=int)
+
+            # Parámetros de ordenación
+            order_by = request.args.get('order_by', 'codigo')
+            order_dir = request.args.get('order_dir', 'ASC')
+
+            # Llamar al modelo con paginación si se proporciona
+            result = StockModel.search(filtros, page=page, limit=limit,
+                                       order_by=order_by, order_dir=order_dir)
+            return jsonify(result), 200
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
