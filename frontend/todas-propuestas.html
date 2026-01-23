@@ -89,17 +89,77 @@
                     <h3 data-i18n="proposals.noProposals">No hay propuestas</h3>
                 </div>
 
+                <!-- Chips de filtros activos -->
+                <div class="column-filters-chips" id="column-filters-chips"></div>
+
                 <!-- Table view (desktop) -->
                 <div class="proposals-table-wrapper" id="proposals-table-wrapper" style="display: none;">
-                    <table class="proposals-table">
+                    <table class="proposals-table" id="proposals-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th data-i18n="proposals.user">Usuario</th>
-                                <th data-i18n="proposals.date">Fecha</th>
-                                <th data-i18n="proposals.items">Artículos</th>
-                                <th data-i18n="proposals.status">Estado</th>
-                                <th data-i18n="proposals.reference">Referencia</th>
+                                <th data-column="id">
+                                    <div class="column-header-wrapper">
+                                        <span class="sortable-header" onclick="ordenarPor('id')">
+                                            ID
+                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                        </span>
+                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('id', this)" title="Filtrar">
+                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                        </button>
+                                    </div>
+                                </th>
+                                <th data-column="usuario" data-i18n="proposals.user">
+                                    <div class="column-header-wrapper">
+                                        <span class="sortable-header" onclick="ordenarPor('usuario')">
+                                            Usuario
+                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                        </span>
+                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('usuario', this)" title="Filtrar">
+                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                        </button>
+                                    </div>
+                                </th>
+                                <th data-column="fecha" data-i18n="proposals.date">
+                                    <div class="column-header-wrapper">
+                                        <span class="sortable-header" onclick="ordenarPor('fecha')">
+                                            Fecha
+                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                        </span>
+                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('fecha', this)" title="Filtrar">
+                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                        </button>
+                                    </div>
+                                </th>
+                                <th data-column="total_items" data-i18n="proposals.items">
+                                    <div class="column-header-wrapper">
+                                        <span class="sortable-header" onclick="ordenarPor('total_items')">
+                                            Artículos
+                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                        </span>
+                                    </div>
+                                </th>
+                                <th data-column="estado" data-i18n="proposals.status">
+                                    <div class="column-header-wrapper">
+                                        <span class="sortable-header" onclick="ordenarPor('estado')">
+                                            Estado
+                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                        </span>
+                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('estado', this)" title="Filtrar">
+                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                        </button>
+                                    </div>
+                                </th>
+                                <th data-column="referencia" data-i18n="proposals.reference">
+                                    <div class="column-header-wrapper">
+                                        <span class="sortable-header" onclick="ordenarPor('referencia')">
+                                            Referencia
+                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                        </span>
+                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('referencia', this)" title="Filtrar">
+                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                        </button>
+                                    </div>
+                                </th>
                                 <th data-i18n="users.actions">Acciones</th>
                             </tr>
                         </thead>
@@ -185,6 +245,30 @@
         let allProposals = [];
         let filteredProposals = [];
         let csrfToken = null;
+
+        // ==================== ORDENACIÓN Y FILTROS DE COLUMNAS ====================
+        let ordenActual = { columna: 'fecha', direccion: 'DESC' };
+        let filtrosColumna = [];
+        let popupFiltroAbierto = null;
+
+        // Operadores disponibles
+        const operadoresTexto = [
+            { key: 'contains', label: 'Contiene' },
+            { key: 'not_contains', label: 'No contiene', negativo: true },
+            { key: 'eq', label: 'Igual a' },
+            { key: 'neq', label: 'No igual a', negativo: true },
+            { key: 'starts', label: 'Empieza por' },
+            { key: 'ends', label: 'Termina en' }
+        ];
+
+        // Columnas disponibles para filtrar
+        const columnasFiltrables = [
+            { key: 'id', label: 'ID', tipo: 'numero' },
+            { key: 'usuario', label: 'Usuario', tipo: 'texto' },
+            { key: 'fecha', label: 'Fecha', tipo: 'fecha' },
+            { key: 'estado', label: 'Estado', tipo: 'texto' },
+            { key: 'referencia', label: 'Referencia', tipo: 'texto' }
+        ];
 
         // ==================== CSRF TOKEN ====================
         async function obtenerCsrfToken() {
@@ -759,6 +843,262 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeProposalModal();
+                cerrarPopupFiltro();
+            }
+        });
+
+        // ==================== ORDENACIÓN POR COLUMNAS ====================
+        function ordenarPor(columna) {
+            if (ordenActual.columna === columna) {
+                ordenActual.direccion = ordenActual.direccion === 'ASC' ? 'DESC' : 'ASC';
+            } else {
+                ordenActual.columna = columna;
+                ordenActual.direccion = 'ASC';
+            }
+            actualizarIconosOrdenacion();
+            aplicarFiltrosYOrdenacion();
+        }
+
+        function actualizarIconosOrdenacion() {
+            document.querySelectorAll('.proposals-table th .sort-icon').forEach(icon => {
+                icon.classList.remove('active', 'asc', 'desc');
+            });
+            const thActivo = document.querySelector(`.proposals-table th[data-column="${ordenActual.columna}"] .sort-icon`);
+            if (thActivo) {
+                thActivo.classList.add('active', ordenActual.direccion.toLowerCase());
+            }
+        }
+
+        // ==================== FILTROS POR COLUMNA ====================
+        function abrirPopupFiltro(columna, elemento) {
+            cerrarPopupFiltro();
+
+            const colConfig = columnasFiltrables.find(c => c.key === columna);
+            if (!colConfig) return;
+
+            const filtroExistente = filtrosColumna.find(f => f.columna === columna);
+            const valoresUnicos = obtenerValoresUnicos(columna);
+
+            const popup = document.createElement('div');
+            popup.className = 'filter-popup';
+            popup.innerHTML = `
+                <div class="filter-popup-header">
+                    <span class="filter-popup-title">${colConfig.label}</span>
+                    <button class="filter-popup-close" onclick="cerrarPopupFiltro()">×</button>
+                </div>
+                <div class="filter-popup-content">
+                    <div class="filter-condition-operators">
+                        ${operadoresTexto.map((op, idx) => `
+                            <label class="filter-condition-option ${op.negativo ? 'negativo' : ''}">
+                                <input type="radio" name="op-${columna}" value="${op.key}"
+                                       ${(filtroExistente?.operador === op.key || (!filtroExistente && idx === 0)) ? 'checked' : ''}>
+                                <span class="filter-radio-dot"></span>
+                                ${op.label}
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div class="filter-inputs-container">
+                        <input type="text" class="filter-condition-input" id="filter-value-${columna}"
+                               placeholder="Valor..." value="${filtroExistente?.valor || ''}"
+                               onkeypress="if(event.key==='Enter') aplicarFiltroColumna('${columna}')">
+                    </div>
+                    ${valoresUnicos.length > 0 && valoresUnicos.length <= 20 ? `
+                    <div class="filter-values-list" id="filter-values-list-${columna}">
+                        ${valoresUnicos.map(v => `
+                            <label class="filter-value-item">
+                                <input type="checkbox" value="${v}" ${filtroExistente?.valores?.includes(v) ? 'checked' : ''}>
+                                <span>${v || '(vacío)'}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                </div>
+                <div class="filter-popup-footer">
+                    <button class="btn-filter-clear" onclick="limpiarFiltroColumna('${columna}')" title="Limpiar">
+                        <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                    </button>
+                    <button class="btn-filter-apply" onclick="aplicarFiltroColumna('${columna}')">
+                        <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+                        Aplicar
+                    </button>
+                </div>
+            `;
+
+            const rect = elemento.getBoundingClientRect();
+            popup.style.position = 'fixed';
+            popup.style.top = `${rect.bottom + 5}px`;
+            popup.style.left = `${Math.min(rect.left, window.innerWidth - 280)}px`;
+            popup.style.zIndex = '1000';
+
+            document.body.appendChild(popup);
+            popupFiltroAbierto = popup;
+
+            popup.addEventListener('click', (e) => e.stopPropagation());
+        }
+
+        function cerrarPopupFiltro() {
+            if (popupFiltroAbierto) {
+                popupFiltroAbierto.remove();
+                popupFiltroAbierto = null;
+            }
+        }
+
+        function obtenerValoresUnicos(columna) {
+            const valores = new Set();
+            allProposals.forEach(p => {
+                let valor = p[columna];
+                if (columna === 'usuario') valor = p.username;
+                if (valor !== undefined && valor !== null) valores.add(String(valor));
+            });
+            return Array.from(valores).sort();
+        }
+
+        function aplicarFiltroColumna(columna) {
+            const inputValor = document.getElementById(`filter-value-${columna}`);
+            const radioSeleccionado = document.querySelector(`input[name="op-${columna}"]:checked`);
+            const checkboxes = document.querySelectorAll(`#filter-values-list-${columna} input[type="checkbox"]:checked`);
+
+            const valorInput = inputValor?.value.trim();
+            const operador = radioSeleccionado?.value || 'contains';
+            const valoresSeleccionados = Array.from(checkboxes).map(cb => cb.value);
+
+            filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
+
+            if (valoresSeleccionados.length > 0) {
+                filtrosColumna.push({ columna, operador: 'in', valores: valoresSeleccionados });
+            } else if (valorInput) {
+                filtrosColumna.push({ columna, operador, valor: valorInput });
+            }
+
+            cerrarPopupFiltro();
+            renderizarChipsFiltros();
+            actualizarIconosFiltro();
+            aplicarFiltrosYOrdenacion();
+        }
+
+        function limpiarFiltroColumna(columna) {
+            filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
+            cerrarPopupFiltro();
+            renderizarChipsFiltros();
+            actualizarIconosFiltro();
+            aplicarFiltrosYOrdenacion();
+        }
+
+        function limpiarTodosFiltrosColumna() {
+            filtrosColumna = [];
+            renderizarChipsFiltros();
+            actualizarIconosFiltro();
+            aplicarFiltrosYOrdenacion();
+        }
+
+        function renderizarChipsFiltros() {
+            const container = document.getElementById('column-filters-chips');
+            if (!container) return;
+
+            if (filtrosColumna.length === 0) {
+                container.innerHTML = '';
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'flex';
+            container.innerHTML = filtrosColumna.map((filtro, idx) => {
+                const labelColumna = columnasFiltrables.find(c => c.key === filtro.columna)?.label || filtro.columna;
+                const esNegativo = filtro.operador?.startsWith('not_') || filtro.operador === 'neq';
+                const chipClass = esNegativo ? 'filter-chip filter-chip-negative' : 'filter-chip';
+
+                if (filtro.operador === 'in' && filtro.valores) {
+                    const valorMostrar = filtro.valores.length <= 2
+                        ? filtro.valores.join(', ')
+                        : `${filtro.valores[0]}... (+${filtro.valores.length - 1})`;
+                    return `<span class="filter-chip filter-chip-multi">
+                        <span class="filter-chip-column">${labelColumna}:</span>
+                        <span class="filter-chip-value">${valorMostrar}</span>
+                        <span class="filter-chip-remove" onclick="quitarFiltroColumna(${idx})">✕</span>
+                    </span>`;
+                } else {
+                    const opLabel = operadoresTexto.find(o => o.key === filtro.operador)?.label || filtro.operador;
+                    return `<span class="${chipClass}">
+                        <span class="filter-chip-column">${labelColumna}:</span>
+                        <span class="filter-chip-operator">${opLabel.toLowerCase()}</span>
+                        <span class="filter-chip-value">"${filtro.valor}"</span>
+                        <span class="filter-chip-remove" onclick="quitarFiltroColumna(${idx})">✕</span>
+                    </span>`;
+                }
+            }).join('') + `<button class="btn-clear-filters" onclick="limpiarTodosFiltrosColumna()">Limpiar todo</button>`;
+        }
+
+        function quitarFiltroColumna(index) {
+            filtrosColumna.splice(index, 1);
+            renderizarChipsFiltros();
+            actualizarIconosFiltro();
+            aplicarFiltrosYOrdenacion();
+        }
+
+        function actualizarIconosFiltro() {
+            columnasFiltrables.forEach(col => {
+                const btn = document.querySelector(`.proposals-table th[data-column="${col.key}"] .column-filter-btn`);
+                if (btn) {
+                    const tieneFiltro = filtrosColumna.some(f => f.columna === col.key);
+                    btn.classList.toggle('active', tieneFiltro);
+                }
+            });
+        }
+
+        function aplicarFiltrosYOrdenacion() {
+            let datos = [...allProposals];
+
+            // Aplicar filtros de columna
+            filtrosColumna.forEach(filtro => {
+                datos = datos.filter(item => {
+                    let valorItem = item[filtro.columna];
+                    if (filtro.columna === 'usuario') valorItem = item.username;
+                    valorItem = String(valorItem || '').toLowerCase();
+
+                    if (filtro.operador === 'in') {
+                        return filtro.valores.some(v => valorItem === v.toLowerCase());
+                    }
+
+                    const valorBuscar = (filtro.valor || '').toLowerCase();
+                    switch (filtro.operador) {
+                        case 'eq': return valorItem === valorBuscar;
+                        case 'neq': return valorItem !== valorBuscar;
+                        case 'contains': return valorItem.includes(valorBuscar);
+                        case 'not_contains': return !valorItem.includes(valorBuscar);
+                        case 'starts': return valorItem.startsWith(valorBuscar);
+                        case 'ends': return valorItem.endsWith(valorBuscar);
+                        default: return valorItem.includes(valorBuscar);
+                    }
+                });
+            });
+
+            // Aplicar ordenación
+            datos.sort((a, b) => {
+                let valA = a[ordenActual.columna];
+                let valB = b[ordenActual.columna];
+                if (ordenActual.columna === 'usuario') {
+                    valA = a.username;
+                    valB = b.username;
+                }
+
+                if (ordenActual.columna === 'fecha') {
+                    valA = new Date(valA);
+                    valB = new Date(valB);
+                }
+
+                if (valA < valB) return ordenActual.direccion === 'ASC' ? -1 : 1;
+                if (valA > valB) return ordenActual.direccion === 'ASC' ? 1 : -1;
+                return 0;
+            });
+
+            filteredProposals = datos;
+            renderProposals(filteredProposals);
+        }
+
+        // Cerrar popup al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (popupFiltroAbierto && !popupFiltroAbierto.contains(e.target) && !e.target.classList.contains('column-filter-btn')) {
+                cerrarPopupFiltro();
             }
         });
     </script>

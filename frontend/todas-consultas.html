@@ -90,16 +90,69 @@
                     <h3 data-i18n="inquiries.noInquiries">No hay consultas</h3>
                 </div>
 
+                <!-- Chips de filtros activos -->
+                <div class="column-filters-chips" id="column-filters-chips"></div>
+
                 <!-- Table view (desktop) -->
                 <div class="inquiries-table-wrapper" id="inquiries-table-wrapper" style="display: none;">
-                    <table class="inquiries-table">
+                    <table class="inquiries-table" id="inquiries-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th data-i18n="inquiries.product">Producto</th>
-                                <th data-i18n="inquiries.client">Cliente</th>
-                                <th data-i18n="proposals.date">Fecha</th>
-                                <th data-i18n="proposals.status">Estado</th>
+                                <th data-column="id">
+                                    <div class="column-header-wrapper">
+                                        <span class="sortable-header" onclick="ordenarPor('id')">
+                                            ID
+                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                        </span>
+                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('id', this)" title="Filtrar">
+                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                        </button>
+                                    </div>
+                                </th>
+                                <th data-column="codigo" data-i18n="inquiries.product">
+                                    <div class="column-header-wrapper">
+                                        <span class="sortable-header" onclick="ordenarPor('codigo')">
+                                            Producto
+                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                        </span>
+                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('codigo', this)" title="Filtrar">
+                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                        </button>
+                                    </div>
+                                </th>
+                                <th data-column="nombre" data-i18n="inquiries.client">
+                                    <div class="column-header-wrapper">
+                                        <span class="sortable-header" onclick="ordenarPor('nombre')">
+                                            Cliente
+                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                        </span>
+                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('nombre', this)" title="Filtrar">
+                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                        </button>
+                                    </div>
+                                </th>
+                                <th data-column="fecha" data-i18n="proposals.date">
+                                    <div class="column-header-wrapper">
+                                        <span class="sortable-header" onclick="ordenarPor('fecha')">
+                                            Fecha
+                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                        </span>
+                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('fecha', this)" title="Filtrar">
+                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                        </button>
+                                    </div>
+                                </th>
+                                <th data-column="estado" data-i18n="proposals.status">
+                                    <div class="column-header-wrapper">
+                                        <span class="sortable-header" onclick="ordenarPor('estado')">
+                                            Estado
+                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                        </span>
+                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('estado', this)" title="Filtrar">
+                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                        </button>
+                                    </div>
+                                </th>
                                 <th data-i18n="users.actions">Acciones</th>
                             </tr>
                         </thead>
@@ -184,6 +237,303 @@
 
         let allInquiries = [];
         let filteredInquiries = [];
+
+        // ==================== ORDENACIÓN Y FILTROS DE COLUMNAS ====================
+        let ordenActual = { columna: 'fecha', direccion: 'DESC' };
+        let filtrosColumna = [];
+        let popupFiltroAbierto = null;
+
+        const operadoresTexto = [
+            { key: 'contains', label: 'Contiene' },
+            { key: 'not_contains', label: 'No contiene', negativo: true },
+            { key: 'eq', label: 'Igual a' },
+            { key: 'neq', label: 'No igual a', negativo: true },
+            { key: 'starts', label: 'Empieza por' },
+            { key: 'ends', label: 'Termina en' }
+        ];
+
+        const columnasFiltrables = [
+            { key: 'id', label: 'ID', tipo: 'numero' },
+            { key: 'codigo', label: 'Producto', tipo: 'texto' },
+            { key: 'nombre', label: 'Cliente', tipo: 'texto' },
+            { key: 'fecha', label: 'Fecha', tipo: 'fecha' },
+            { key: 'estado', label: 'Estado', tipo: 'texto' }
+        ];
+
+        // ==================== FUNCIONES DE ORDENACIÓN ====================
+        function ordenarPor(columna) {
+            if (ordenActual.columna === columna) {
+                ordenActual.direccion = ordenActual.direccion === 'ASC' ? 'DESC' : 'ASC';
+            } else {
+                ordenActual.columna = columna;
+                ordenActual.direccion = 'ASC';
+            }
+            actualizarIconosOrdenacion();
+            aplicarFiltrosYOrdenacion();
+        }
+
+        function actualizarIconosOrdenacion() {
+            document.querySelectorAll('.inquiries-table th').forEach(th => {
+                th.classList.remove('sorted-asc', 'sorted-desc');
+            });
+            const thActual = document.querySelector(`.inquiries-table th[data-column="${ordenActual.columna}"]`);
+            if (thActual) {
+                thActual.classList.add(ordenActual.direccion === 'ASC' ? 'sorted-asc' : 'sorted-desc');
+            }
+        }
+
+        // ==================== FUNCIONES DE FILTROS DE COLUMNA ====================
+        function abrirPopupFiltro(columna, botonElement) {
+            cerrarPopupFiltro();
+
+            const columnaConfig = columnasFiltrables.find(c => c.key === columna);
+            if (!columnaConfig) return;
+
+            const filtroExistente = filtrosColumna.find(f => f.columna === columna);
+            const valorActual = filtroExistente ? filtroExistente.valor : '';
+            const operadorActual = filtroExistente ? filtroExistente.operador : 'contains';
+
+            const popup = document.createElement('div');
+            popup.className = 'filter-popup';
+            popup.id = 'filter-popup-activo';
+
+            let opcionesHtml = operadoresTexto.map(op => `
+                <label class="filter-condition-option ${op.negativo ? 'negativo' : ''}">
+                    <input type="radio" name="filter-operador" value="${op.key}" ${operadorActual === op.key ? 'checked' : ''}>
+                    <span>${op.label}</span>
+                </label>
+            `).join('');
+
+            popup.innerHTML = `
+                <div class="filter-popup-header">
+                    <span>Filtrar: ${columnaConfig.label}</span>
+                    <button class="filter-popup-close" onclick="cerrarPopupFiltro()">&times;</button>
+                </div>
+                <div class="filter-popup-body">
+                    <div class="filter-conditions">
+                        ${opcionesHtml}
+                    </div>
+                    <input type="text" class="filter-popup-input" id="filter-valor-input"
+                           placeholder="Escribir valor..." value="${valorActual}">
+                </div>
+                <div class="filter-popup-footer">
+                    <button class="filter-popup-btn filter-popup-btn-apply" onclick="aplicarFiltroColumna('${columna}')">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13.5 2.5l-7 7-3-3"/>
+                        </svg>
+                        Aplicar
+                    </button>
+                    <button class="filter-popup-btn filter-popup-btn-clear" onclick="limpiarFiltroColumna('${columna}')">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M2 2l12 12M14 2L2 14"/>
+                        </svg>
+                        Limpiar
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(popup);
+
+            const rect = botonElement.getBoundingClientRect();
+            popup.style.position = 'fixed';
+            popup.style.top = `${rect.bottom + 5}px`;
+            popup.style.left = `${rect.left}px`;
+            popup.style.zIndex = '9999';
+
+            // Ajustar si se sale de la pantalla
+            const popupRect = popup.getBoundingClientRect();
+            if (popupRect.right > window.innerWidth) {
+                popup.style.left = `${window.innerWidth - popupRect.width - 10}px`;
+            }
+
+            popupFiltroAbierto = popup;
+
+            // Cerrar al hacer clic fuera
+            setTimeout(() => {
+                document.addEventListener('click', cerrarPopupFiltroClickFuera);
+            }, 100);
+
+            // Focus en el input
+            document.getElementById('filter-valor-input').focus();
+        }
+
+        function cerrarPopupFiltro() {
+            const popup = document.getElementById('filter-popup-activo');
+            if (popup) {
+                popup.remove();
+            }
+            popupFiltroAbierto = null;
+            document.removeEventListener('click', cerrarPopupFiltroClickFuera);
+        }
+
+        function cerrarPopupFiltroClickFuera(e) {
+            const popup = document.getElementById('filter-popup-activo');
+            if (popup && !popup.contains(e.target) && !e.target.closest('.column-filter-btn')) {
+                cerrarPopupFiltro();
+            }
+        }
+
+        function aplicarFiltroColumna(columna) {
+            const valor = document.getElementById('filter-valor-input').value.trim();
+            const operadorRadio = document.querySelector('input[name="filter-operador"]:checked');
+            const operador = operadorRadio ? operadorRadio.value : 'contains';
+
+            // Remover filtro existente para esta columna
+            filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
+
+            if (valor) {
+                const columnaConfig = columnasFiltrables.find(c => c.key === columna);
+                filtrosColumna.push({
+                    columna: columna,
+                    operador: operador,
+                    valor: valor,
+                    label: columnaConfig ? columnaConfig.label : columna
+                });
+            }
+
+            cerrarPopupFiltro();
+            renderizarChipsFiltros();
+            aplicarFiltrosYOrdenacion();
+
+            // Marcar botón de filtro como activo
+            actualizarBotonesFiltro();
+        }
+
+        function limpiarFiltroColumna(columna) {
+            filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
+            cerrarPopupFiltro();
+            renderizarChipsFiltros();
+            aplicarFiltrosYOrdenacion();
+            actualizarBotonesFiltro();
+        }
+
+        function actualizarBotonesFiltro() {
+            document.querySelectorAll('.inquiries-table th').forEach(th => {
+                const columna = th.getAttribute('data-column');
+                const btn = th.querySelector('.column-filter-btn');
+                if (btn && columna) {
+                    const tieneFiltro = filtrosColumna.some(f => f.columna === columna);
+                    btn.classList.toggle('active', tieneFiltro);
+                }
+            });
+        }
+
+        function renderizarChipsFiltros() {
+            const container = document.getElementById('column-filters-chips');
+            if (!container) return;
+
+            if (filtrosColumna.length === 0) {
+                container.innerHTML = '';
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'flex';
+            container.innerHTML = filtrosColumna.map(filtro => {
+                const opLabel = operadoresTexto.find(o => o.key === filtro.operador)?.label || filtro.operador;
+                return `
+                    <div class="filter-chip">
+                        <span class="filter-chip-label">${filtro.label}:</span>
+                        <span class="filter-chip-operator">${opLabel}</span>
+                        <span class="filter-chip-value">"${filtro.valor}"</span>
+                        <button class="filter-chip-remove" onclick="limpiarFiltroColumna('${filtro.columna}')">&times;</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== APLICAR FILTROS Y ORDENACIÓN ====================
+        function aplicarFiltrosYOrdenacion() {
+            // Aplicar filtros de columna sobre filteredInquiries (que ya tiene los filtros básicos)
+            let resultado = [...filteredInquiries];
+
+            // Aplicar filtros de columna
+            filtrosColumna.forEach(filtro => {
+                resultado = resultado.filter(item => {
+                    let valorItem = '';
+
+                    // Mapear columnas a campos del objeto
+                    switch(filtro.columna) {
+                        case 'id':
+                            valorItem = String(item.id || '');
+                            break;
+                        case 'codigo':
+                            valorItem = String(item.codigo_producto || '');
+                            break;
+                        case 'nombre':
+                            valorItem = String(item.nombre_cliente || '');
+                            break;
+                        case 'fecha':
+                            valorItem = formatDate(item.fecha_creacion) || '';
+                            break;
+                        case 'estado':
+                            valorItem = String(item.estado || '');
+                            break;
+                        default:
+                            valorItem = String(item[filtro.columna] || '');
+                    }
+
+                    const valorFiltro = filtro.valor.toLowerCase();
+                    valorItem = valorItem.toLowerCase();
+
+                    switch(filtro.operador) {
+                        case 'contains':
+                            return valorItem.includes(valorFiltro);
+                        case 'not_contains':
+                            return !valorItem.includes(valorFiltro);
+                        case 'eq':
+                            return valorItem === valorFiltro;
+                        case 'neq':
+                            return valorItem !== valorFiltro;
+                        case 'starts':
+                            return valorItem.startsWith(valorFiltro);
+                        case 'ends':
+                            return valorItem.endsWith(valorFiltro);
+                        default:
+                            return true;
+                    }
+                });
+            });
+
+            // Aplicar ordenación
+            resultado.sort((a, b) => {
+                let valorA, valorB;
+
+                switch(ordenActual.columna) {
+                    case 'id':
+                        valorA = a.id || 0;
+                        valorB = b.id || 0;
+                        break;
+                    case 'codigo':
+                        valorA = (a.codigo_producto || '').toLowerCase();
+                        valorB = (b.codigo_producto || '').toLowerCase();
+                        break;
+                    case 'nombre':
+                        valorA = (a.nombre_cliente || '').toLowerCase();
+                        valorB = (b.nombre_cliente || '').toLowerCase();
+                        break;
+                    case 'fecha':
+                        valorA = new Date(a.fecha_creacion || 0);
+                        valorB = new Date(b.fecha_creacion || 0);
+                        break;
+                    case 'estado':
+                        valorA = (a.estado || '').toLowerCase();
+                        valorB = (b.estado || '').toLowerCase();
+                        break;
+                    default:
+                        valorA = a[ordenActual.columna] || '';
+                        valorB = b[ordenActual.columna] || '';
+                }
+
+                let comparacion = 0;
+                if (valorA < valorB) comparacion = -1;
+                if (valorA > valorB) comparacion = 1;
+
+                return ordenActual.direccion === 'DESC' ? -comparacion : comparacion;
+            });
+
+            renderInquiriesConDatos(resultado);
+        }
 
         // ==================== INICIALIZACION ====================
         document.addEventListener('DOMContentLoaded', async function() {
@@ -342,12 +692,20 @@
 
         // ==================== RENDERIZAR ====================
         function renderInquiries() {
+            // Llamar a aplicarFiltrosYOrdenacion que renderizará los datos
+            actualizarIconosOrdenacion();
+            renderizarChipsFiltros();
+            actualizarBotonesFiltro();
+            aplicarFiltrosYOrdenacion();
+        }
+
+        function renderInquiriesConDatos(datos) {
             const tableBody = document.getElementById('inquiries-table-body');
             const cardsEl = document.getElementById('inquiries-cards');
             const emptyEl = document.getElementById('inquiries-empty');
             const tableWrapper = document.getElementById('inquiries-table-wrapper');
 
-            if (filteredInquiries.length === 0) {
+            if (datos.length === 0) {
                 emptyEl.style.display = 'block';
                 tableWrapper.style.display = 'none';
                 cardsEl.innerHTML = '';
@@ -358,7 +716,7 @@
             tableWrapper.style.display = 'block';
 
             // Renderizar tabla
-            tableBody.innerHTML = filteredInquiries.map(inquiry => `
+            tableBody.innerHTML = datos.map(inquiry => `
                 <tr>
                     <td><strong>#${inquiry.id}</strong></td>
                     <td>
@@ -394,7 +752,7 @@
             `).join('');
 
             // Renderizar cards (movil)
-            cardsEl.innerHTML = filteredInquiries.map(inquiry => `
+            cardsEl.innerHTML = datos.map(inquiry => `
                 <div class="inquiry-card">
                     <div class="inquiry-card-header">
                         <span class="inquiry-card-product">${inquiry.codigo_producto}</span>
@@ -659,8 +1017,14 @@
         // Cerrar modal con Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
+                cerrarPopupFiltro();
                 closeInquiryModal();
             }
+        });
+
+        // Cerrar popup de filtro al hacer scroll
+        document.querySelector('.inquiries-table-wrapper')?.addEventListener('scroll', function() {
+            cerrarPopupFiltro();
         });
     </script>
 </body>
