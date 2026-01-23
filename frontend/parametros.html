@@ -131,6 +131,34 @@
         let params = [];
         let csrfToken = null;
 
+        // ==================== DEFINICIÓN DE SECCIONES ====================
+        const PARAM_SECTIONS = {
+            design: {
+                title: 'Diseño',
+                titleKey: 'params.sectionDesign',
+                icon: '🎨',
+                description: 'Configuración visual de la aplicación',
+                descKey: 'params.sectionDesignDesc',
+                params: ['GRID_CON_IMAGENES', 'PAGINACION_GRID', 'PAGINACION_LIMITE']
+            },
+            features: {
+                title: 'Funcionalidades',
+                titleKey: 'params.sectionFeatures',
+                icon: '⚙️',
+                description: 'Control de características del sistema',
+                descKey: 'params.sectionFeaturesDesc',
+                params: ['WHATSAPP_NUMERO', 'PERMITIR_REGISTRO', 'PERMITIR_PROPUESTAS', 'PERMITIR_FIRMA']
+            },
+            other: {
+                title: 'Otros',
+                titleKey: 'params.sectionOther',
+                icon: '📋',
+                description: 'Parámetros adicionales del sistema',
+                descKey: 'params.sectionOtherDesc',
+                params: [] // Se rellenará con los que no estén en otras secciones
+            }
+        };
+
         // ==================== CSRF TOKEN ====================
         async function obtenerCsrfToken() {
             try {
@@ -225,7 +253,7 @@
                     listEl.style.display = 'none';
                 } else {
                     emptyEl.style.display = 'none';
-                    listEl.style.display = 'grid';
+                    listEl.style.display = 'flex';
                     renderParams();
                 }
             } catch (error) {
@@ -238,38 +266,83 @@
         function renderParams() {
             const listEl = document.getElementById('params-list');
 
-            listEl.innerHTML = params.map(param => {
-                const isBoolean = param.valor === '0' || param.valor === '1';
-                const isTrue = param.valor === '1';
+            // Identificar parámetros que no están en ninguna sección definida
+            const allDefinedParams = [];
+            for (const section of Object.values(PARAM_SECTIONS)) {
+                if (section.params) {
+                    allDefinedParams.push(...section.params);
+                }
+            }
 
-                return `
-                    <div class="param-card" data-key="${param.clave}">
-                        <div class="param-info">
-                            <span class="param-key">${param.clave}</span>
-                            <p class="param-description">${param.descripcion || 'Sin descripción'}</p>
-                            <span class="param-meta">
-                                Última modificación: ${formatDate(param.fecha_modificacion)}
-                            </span>
+            // Añadir parámetros no definidos a la sección "other"
+            PARAM_SECTIONS.other.params = params
+                .map(p => p.clave)
+                .filter(clave => !allDefinedParams.includes(clave));
+
+            let html = '';
+
+            for (const [sectionKey, section] of Object.entries(PARAM_SECTIONS)) {
+                const sectionParams = params.filter(p => section.params.includes(p.clave));
+
+                // Omitir sección si no tiene parámetros
+                if (sectionParams.length === 0) continue;
+
+                html += `
+                    <div class="param-section">
+                        <div class="param-section-header">
+                            <span class="param-section-icon">${section.icon}</span>
+                            <div class="param-section-info">
+                                <h3 data-i18n="${section.titleKey}">${section.title}</h3>
+                                <p data-i18n="${section.descKey}">${section.description}</p>
+                            </div>
                         </div>
-                        <div class="param-value-section">
-                            ${isBoolean ? `
-                                <label class="switch">
-                                    <input type="checkbox" ${isTrue ? 'checked' : ''} onchange="toggleParam('${param.clave}', this.checked)">
-                                    <span class="slider"></span>
-                                </label>
-                                <span class="param-value-display ${isTrue ? 'value-true' : 'value-false'}">
-                                    ${isTrue ? 'Activo' : 'Inactivo'}
-                                </span>
-                            ` : `
-                                <input type="text" class="param-input" id="input-${param.clave}" value="${param.valor}" />
-                                <button class="btn-save-param" onclick="saveTextParam('${param.clave}')">
-                                    Guardar
-                                </button>
-                            `}
+                        <div class="param-section-grid">
+                            ${sectionParams.map(param => renderParamCard(param)).join('')}
                         </div>
                     </div>
                 `;
-            }).join('');
+            }
+
+            listEl.innerHTML = html;
+
+            // Re-aplicar traducciones a los nuevos elementos
+            if (window.I18n) {
+                I18n.translatePage();
+            }
+        }
+
+        // ==================== RENDERIZAR TARJETA DE PARÁMETRO ====================
+        function renderParamCard(param) {
+            const isBoolean = param.valor === '0' || param.valor === '1';
+            const isTrue = param.valor === '1';
+
+            return `
+                <div class="param-card" data-key="${param.clave}">
+                    <div class="param-info">
+                        <span class="param-key">${param.clave}</span>
+                        <p class="param-description">${param.descripcion || 'Sin descripción'}</p>
+                        <span class="param-meta">
+                            <span data-i18n="params.lastModified">Última modificación</span>: ${formatDate(param.fecha_modificacion)}
+                        </span>
+                    </div>
+                    <div class="param-value-section">
+                        ${isBoolean ? `
+                            <label class="switch">
+                                <input type="checkbox" ${isTrue ? 'checked' : ''} onchange="toggleParam('${param.clave}', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="param-value-display ${isTrue ? 'value-true' : 'value-false'}">
+                                ${isTrue ? 'Activo' : 'Inactivo'}
+                            </span>
+                        ` : `
+                            <input type="text" class="param-input" id="input-${param.clave}" value="${param.valor}" />
+                            <button class="btn-save-param" onclick="saveTextParam('${param.clave}')" data-i18n="common.save">
+                                Guardar
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `;
         }
 
         // ==================== TOGGLE PARÁMETRO BOOLEANO ====================

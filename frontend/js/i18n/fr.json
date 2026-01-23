@@ -2,6 +2,7 @@
   "common": {
     "loading": "Chargement des données...",
     "loadingData": "Chargement des données...",
+    "loadingStocks": "Chargement des stocks...",
     "error": "Erreur",
     "success": "Succès",
     "cancel": "Annuler",
@@ -433,5 +434,16 @@
     "changeStatus": "Changer le Statut",
     "noPhone": "Non fourni",
     "noProduct": "Demande générale"
+  },
+  "params": {
+    "sectionDesign": "Design",
+    "sectionDesignDesc": "Configuration visuelle de l'application",
+    "sectionFeatures": "Fonctionnalités",
+    "sectionFeaturesDesc": "Contrôle des fonctionnalités du système",
+    "sectionOther": "Autres",
+    "sectionOtherDesc": "Paramètres système supplémentaires",
+    "lastModified": "Dernière modification",
+    "active": "Actif",
+    "inactive": "Inactif"
   }
 }

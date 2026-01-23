@@ -51,21 +51,30 @@ let popupFiltroAbierto = null;
 
 // Operadores disponibles para columnas de texto
 const operadoresTexto = [
-    { key: 'contains', label: 'Contiene' },
-    { key: 'eq', label: 'Igual a' },
-    { key: 'starts', label: 'Empieza por' },
-    { key: 'ends', label: 'Termina en' }
+    { key: 'contains', label: 'Contiene', negativo: false },
+    { key: 'not_contains', label: 'No contiene', negativo: true },
+    { key: 'eq', label: 'Igual a', negativo: false },
+    { key: 'neq', label: 'No igual a', negativo: true },
+    { key: 'starts', label: 'Empieza por', negativo: false },
+    { key: 'not_starts', label: 'No empieza por', negativo: true },
+    { key: 'ends', label: 'Termina en', negativo: false },
+    { key: 'not_ends', label: 'No termina en', negativo: true }
 ];
 
 // Operadores disponibles para columnas numéricas
 const operadoresNumero = [
-    { key: 'eq', label: 'Igual a' },
-    { key: 'gt', label: 'Mayor que' },
-    { key: 'gte', label: 'Mayor o igual' },
-    { key: 'lt', label: 'Menor que' },
-    { key: 'lte', label: 'Menor o igual' },
-    { key: 'neq', label: 'Diferente de' }
+    { key: 'eq', label: 'Igual a', negativo: false },
+    { key: 'neq', label: 'Diferente de', negativo: true },
+    { key: 'gt', label: 'Mayor que', negativo: false },
+    { key: 'gte', label: 'Mayor o igual', negativo: false },
+    { key: 'lt', label: 'Menor que', negativo: false },
+    { key: 'lte', label: 'Menor o igual', negativo: false },
+    { key: 'between', label: 'Entre', negativo: false, rango: true },
+    { key: 'not_between', label: 'No entre', negativo: true, rango: true }
 ];
+
+// Filtros guardados (se cargan de localStorage)
+let filtrosGuardados = JSON.parse(localStorage.getItem('filtrosGuardados') || '[]');
 
 // Columnas disponibles para filtrar con su tipo
 const columnasFiltrables = [
@@ -958,7 +967,18 @@ async function cargarTodos() {
 
             // Añadir filtros de columna (con operadores: columna__operador=valor)
             filtrosColumna.forEach(filtro => {
-                params.append(`${filtro.columna}__${filtro.operador}`, filtro.valor);
+                // Para filtros de rango, enviar valor como "desde,hasta"
+                if (filtro.operador === 'between' || filtro.operador === 'not_between') {
+                    const valorRango = `${filtro.valorDesde || ''},${filtro.valorHasta || ''}`;
+                    params.append(`${filtro.columna}__${filtro.operador}`, valorRango);
+                } else if (filtro.operador === 'in' && filtro.valores) {
+                    // Para multi-selección, enviar cada valor
+                    filtro.valores.forEach(v => {
+                        params.append(`${filtro.columna}__eq`, v);
+                    });
+                } else {
+                    params.append(`${filtro.columna}__${filtro.operador}`, filtro.valor);
+                }
             });
 
             // Añadir filtros del panel lateral (sin operador)
@@ -1004,8 +1024,10 @@ async function cargarTodos() {
         }
 
         mostrarDatos();
+        mostrarCargando(false);
     } catch (error) {
         console.error('❌ Error al cargar stocks:', error);
+        mostrarCargando(false);
         mostrarError(t('errors.loadingStocks'));
     }
 }
@@ -1349,23 +1371,55 @@ async function mostrarPopupFiltro(columna, elemento) {
             <div class="filter-tab-content" id="filter-content-condicion-${columna}" style="display: ${tieneCondicion ? 'block' : 'none'};">
                 <div class="filter-condition-operators">
                     ${operadores.map((op, idx) => `
-                        <label class="filter-condition-option">
+                        <label class="filter-condition-option ${op.negativo ? 'negativo' : ''} ${op.rango ? 'rango' : ''}">
                             <input type="radio" name="op-${columna}" value="${op.key}"
-                                   ${(filtroExistente?.operador === op.key || (!filtroExistente && idx === 0)) ? 'checked' : ''}>
+                                   ${(filtroExistente?.operador === op.key || (!filtroExistente && idx === 0)) ? 'checked' : ''}
+                                   onchange="toggleRangoInputs('${columna}', '${op.key}')">
                             <span class="filter-radio-dot"></span>
                             <span>${op.label}</span>
                         </label>
                     `).join('')}
                 </div>
-                <input type="text" class="filter-condition-input" id="filter-value-${columna}"
-                       placeholder="Escribir valor..." value="${filtroExistente?.valor || ''}"
-                       onkeypress="if(event.key==='Enter') aplicarFiltroColumna('${columna}')">
+                <div class="filter-inputs-container">
+                    <input type="text" class="filter-condition-input" id="filter-value-${columna}"
+                           placeholder="Escribir valor..." value="${filtroExistente?.valor || ''}"
+                           onkeypress="if(event.key==='Enter') aplicarFiltroColumna('${columna}')">
+                    <div class="filter-range-inputs" id="filter-range-${columna}" style="display: none;">
+                        <input type="number" class="filter-condition-input filter-range-from" id="filter-from-${columna}"
+                               placeholder="Desde" value="${filtroExistente?.valorDesde || ''}">
+                        <span class="filter-range-separator">y</span>
+                        <input type="number" class="filter-condition-input filter-range-to" id="filter-to-${columna}"
+                               placeholder="Hasta" value="${filtroExistente?.valorHasta || ''}"
+                               onkeypress="if(event.key==='Enter') aplicarFiltroColumna('${columna}')">
+                    </div>
+                </div>
             </div>
+            <!-- Filtros guardados -->
+            <div class="filter-saved-section" id="filter-saved-${columna}">
+                ${filtrosGuardados.length > 0 ? `
+                <div class="filter-saved-header">
+                    <span class="filter-saved-title">Filtros guardados</span>
+                </div>
+                <div class="filter-saved-list">
+                    ${filtrosGuardados.map((fg, idx) => `
+                        <div class="filter-saved-item" onclick="cargarFiltroGuardado(${idx})">
+                            <span class="filter-saved-name">${fg.nombre}</span>
+                            <span class="filter-saved-count">${fg.filtros.length} filtros</span>
+                            <button class="filter-saved-delete" onclick="event.stopPropagation(); eliminarFiltroGuardado(${idx})" title="Eliminar">×</button>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
         </div>
         <div class="filter-popup-footer">
             <button class="btn-filter-clear" onclick="limpiarFiltroColumna('${columna}')" title="Limpiar">
                 <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
             </button>
+            ${filtrosColumna.length > 0 ? `
+            <button class="btn-filter-save" onclick="guardarFiltrosActuales()" title="Guardar filtros actuales">
+                <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/></svg>
+            </button>
+            ` : ''}
             <button class="btn-filter-apply" onclick="aplicarFiltroColumna('${columna}')">
                 <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
                 Aplicar
@@ -1407,32 +1461,54 @@ function cerrarPopupFiltro() {
 async function aplicarFiltroColumna(columna) {
     const inputValor = document.getElementById(`filter-value-${columna}`);
     const radioSeleccionado = document.querySelector(`input[name="op-${columna}"]:checked`);
+    const inputFrom = document.getElementById(`filter-from-${columna}`);
+    const inputTo = document.getElementById(`filter-to-${columna}`);
 
     const valorInput = inputValor?.value.trim();
     const operador = radioSeleccionado?.value || 'contains';
+    const esRango = operador === 'between' || operador === 'not_between';
 
     // Obtener valores seleccionados de los checkboxes (excepto "Seleccionar todo")
     const checkboxes = document.querySelectorAll(`#filter-values-list-${columna} .filter-value-item:not(.filter-value-select-all) input[type="checkbox"]:checked`);
     const valoresSeleccionados = Array.from(checkboxes).map(cb => cb.value);
 
-    // Si no hay valor ni checkboxes seleccionados, limpiar el filtro
-    if (!valorInput && valoresSeleccionados.length === 0) {
-        limpiarFiltroColumna(columna);
-        return;
-    }
+    // Si es rango, validar que haya valores desde/hasta
+    if (esRango) {
+        const valorDesde = inputFrom?.value.trim();
+        const valorHasta = inputTo?.value.trim();
 
-    // Eliminar filtro anterior de esta columna si existe
-    filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
+        if (!valorDesde && !valorHasta) {
+            limpiarFiltroColumna(columna);
+            return;
+        }
 
-    // Añadir nuevo filtro
-    if (valoresSeleccionados.length > 0) {
+        // Eliminar filtro anterior
+        filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
+
+        // Añadir filtro de rango
+        filtrosColumna.push({
+            columna,
+            operador,
+            valorDesde: valorDesde || null,
+            valorHasta: valorHasta || null
+        });
+        console.log(`🔍 Filtro columna: ${columna} ${operador} [${valorDesde} - ${valorHasta}]`);
+    } else if (valoresSeleccionados.length > 0) {
+        // Eliminar filtro anterior
+        filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
         // Filtro por valores seleccionados (multi-selección)
         filtrosColumna.push({ columna, operador: 'in', valores: valoresSeleccionados });
         console.log(`🔍 Filtro columna: ${columna} IN [${valoresSeleccionados.join(', ')}]`);
-    } else {
+    } else if (valorInput) {
+        // Eliminar filtro anterior
+        filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
         // Filtro por valor de texto
         filtrosColumna.push({ columna, operador, valor: valorInput });
         console.log(`🔍 Filtro columna: ${columna} ${operador} "${valorInput}"`);
+    } else {
+        // Si no hay valor ni checkboxes seleccionados, limpiar el filtro
+        limpiarFiltroColumna(columna);
+        return;
     }
 
     // Cerrar popup
@@ -1446,6 +1522,73 @@ async function aplicarFiltroColumna(columna) {
     paginaActual = 1;
     await aplicarFiltros();
 }
+
+// Toggle inputs de rango (mostrar/ocultar)
+function toggleRangoInputs(columna, operador) {
+    const rangeContainer = document.getElementById(`filter-range-${columna}`);
+    const valueInput = document.getElementById(`filter-value-${columna}`);
+    const esRango = operador === 'between' || operador === 'not_between';
+
+    if (rangeContainer && valueInput) {
+        rangeContainer.style.display = esRango ? 'flex' : 'none';
+        valueInput.style.display = esRango ? 'none' : 'block';
+    }
+}
+window.toggleRangoInputs = toggleRangoInputs;
+
+// Guardar filtros actuales
+function guardarFiltrosActuales() {
+    if (filtrosColumna.length === 0) {
+        alert('No hay filtros para guardar');
+        return;
+    }
+
+    const nombre = prompt('Nombre para guardar los filtros:');
+    if (!nombre || !nombre.trim()) return;
+
+    const nuevoFiltro = {
+        nombre: nombre.trim(),
+        filtros: [...filtrosColumna],
+        fecha: new Date().toISOString()
+    };
+
+    filtrosGuardados.push(nuevoFiltro);
+    localStorage.setItem('filtrosGuardados', JSON.stringify(filtrosGuardados));
+
+    cerrarPopupFiltro();
+    alert(`Filtros guardados como "${nombre}"`);
+}
+window.guardarFiltrosActuales = guardarFiltrosActuales;
+
+// Cargar filtro guardado
+async function cargarFiltroGuardado(index) {
+    const filtroGuardado = filtrosGuardados[index];
+    if (!filtroGuardado) return;
+
+    filtrosColumna = [...filtroGuardado.filtros];
+
+    cerrarPopupFiltro();
+    renderizarChipsFiltrosColumna();
+    actualizarIconosFiltro();
+
+    paginaActual = 1;
+    await aplicarFiltros();
+
+    console.log(`📂 Filtros cargados: ${filtroGuardado.nombre}`);
+}
+window.cargarFiltroGuardado = cargarFiltroGuardado;
+
+// Eliminar filtro guardado
+function eliminarFiltroGuardado(index) {
+    if (!confirm('¿Eliminar este filtro guardado?')) return;
+
+    filtrosGuardados.splice(index, 1);
+    localStorage.setItem('filtrosGuardados', JSON.stringify(filtrosGuardados));
+
+    cerrarPopupFiltro();
+    console.log('🗑️ Filtro guardado eliminado');
+}
+window.eliminarFiltroGuardado = eliminarFiltroGuardado;
 
 // Limpiar filtro de una columna
 async function limpiarFiltroColumna(columna) {
@@ -1554,26 +1697,43 @@ function renderizarChipsFiltrosColumna() {
             ? `quitarFiltroColumna(${filtro.index})`
             : `quitarFiltro(${filtro.index})`;
 
-        // Formatear valor según si es multi-selección o valor único
-        let valorMostrar;
+        // Determinar si es operador negativo
+        const esNegativo = filtro.operador?.startsWith('not_') || filtro.operador === 'neq';
+        const chipClass = esNegativo ? 'filter-chip filter-chip-negative' : 'filter-chip';
+
+        // Formatear valor según tipo de filtro
         if (filtro.operador === 'in' && filtro.valores) {
+            // Multi-selección
             const count = filtro.valores.length;
-            valorMostrar = count <= 2
+            const valorMostrar = count <= 2
                 ? filtro.valores.join(', ')
                 : `${filtro.valores[0]}, ${filtro.valores[1]}... (+${count - 2})`;
-            const labelOperador = 'es uno de';
             return `
                 <span class="filter-chip filter-chip-multi">
                     <span class="filter-chip-column">${labelColumna}:</span>
-                    <span class="filter-chip-operator">${labelOperador}</span>
+                    <span class="filter-chip-operator">es uno de</span>
                     <span class="filter-chip-value" title="${filtro.valores.join(', ')}">${valorMostrar}</span>
                     <span class="filter-chip-remove" onclick="${onclickFn}">✕</span>
                 </span>
             `;
+        } else if (filtro.operador === 'between' || filtro.operador === 'not_between') {
+            // Rango
+            const desde = filtro.valorDesde || '∞';
+            const hasta = filtro.valorHasta || '∞';
+            const labelOperador = filtro.operador === 'between' ? 'entre' : 'no entre';
+            return `
+                <span class="${chipClass}">
+                    <span class="filter-chip-column">${labelColumna}:</span>
+                    <span class="filter-chip-operator">${labelOperador}</span>
+                    <span class="filter-chip-value">${desde} y ${hasta}</span>
+                    <span class="filter-chip-remove" onclick="${onclickFn}">✕</span>
+                </span>
+            `;
         } else {
+            // Filtro normal (texto/número)
             const labelOperador = getLabelOperador(filtro.operador);
             return `
-                <span class="filter-chip">
+                <span class="${chipClass}">
                     <span class="filter-chip-column">${labelColumna}:</span>
                     <span class="filter-chip-operator">${labelOperador.toLowerCase()}</span>
                     <span class="filter-chip-value" title="${filtro.valor}">"${filtro.valor}"</span>
@@ -1609,37 +1769,59 @@ function aplicarFiltrosFrontend() {
     filtrosColumna.forEach(filtro => {
         datosFiltrados = datosFiltrados.filter(item => {
             const valorItem = (item[filtro.columna] || '').toString();
+            const valorItemLower = valorItem.toLowerCase();
+            const valorNumerico = parseFloat(valorItem);
 
             // Operador 'in' para multi-selección de valores
             if (filtro.operador === 'in' && filtro.valores) {
                 return filtro.valores.some(v =>
-                    valorItem.toLowerCase() === v.toLowerCase()
+                    valorItemLower === v.toLowerCase()
                 );
             }
 
-            const valorBuscar = filtro.valor || '';
+            // Operadores de rango (between)
+            if (filtro.operador === 'between' || filtro.operador === 'not_between') {
+                const desde = filtro.valorDesde ? parseFloat(filtro.valorDesde) : -Infinity;
+                const hasta = filtro.valorHasta ? parseFloat(filtro.valorHasta) : Infinity;
+                const dentroRango = valorNumerico >= desde && valorNumerico <= hasta;
+                return filtro.operador === 'between' ? dentroRango : !dentroRango;
+            }
+
+            const valorBuscar = (filtro.valor || '').toLowerCase();
 
             switch (filtro.operador) {
+                // Operadores de texto positivos
                 case 'eq':
-                    return valorItem.toLowerCase() === valorBuscar.toLowerCase();
-                case 'neq':
-                    return valorItem.toLowerCase() !== valorBuscar.toLowerCase();
+                    return valorItemLower === valorBuscar;
                 case 'contains':
-                    return valorItem.toLowerCase().includes(valorBuscar.toLowerCase());
+                    return valorItemLower.includes(valorBuscar);
                 case 'starts':
-                    return valorItem.toLowerCase().startsWith(valorBuscar.toLowerCase());
+                    return valorItemLower.startsWith(valorBuscar);
                 case 'ends':
-                    return valorItem.toLowerCase().endsWith(valorBuscar.toLowerCase());
+                    return valorItemLower.endsWith(valorBuscar);
+
+                // Operadores de texto negativos
+                case 'neq':
+                    return valorItemLower !== valorBuscar;
+                case 'not_contains':
+                    return !valorItemLower.includes(valorBuscar);
+                case 'not_starts':
+                    return !valorItemLower.startsWith(valorBuscar);
+                case 'not_ends':
+                    return !valorItemLower.endsWith(valorBuscar);
+
+                // Operadores numéricos
                 case 'gt':
-                    return parseFloat(valorItem) > parseFloat(valorBuscar);
+                    return valorNumerico > parseFloat(filtro.valor);
                 case 'gte':
-                    return parseFloat(valorItem) >= parseFloat(valorBuscar);
+                    return valorNumerico >= parseFloat(filtro.valor);
                 case 'lt':
-                    return parseFloat(valorItem) < parseFloat(valorBuscar);
+                    return valorNumerico < parseFloat(filtro.valor);
                 case 'lte':
-                    return parseFloat(valorItem) <= parseFloat(valorBuscar);
+                    return valorNumerico <= parseFloat(filtro.valor);
+
                 default:
-                    return valorItem.toLowerCase().includes(valorBuscar.toLowerCase());
+                    return valorItemLower.includes(valorBuscar);
             }
         });
     });
@@ -1754,7 +1936,18 @@ async function buscarStocks() {
 
     // Añadir filtros de columna (con operadores: columna__operador=valor)
     filtrosColumna.forEach(filtro => {
-        params.append(`${filtro.columna}__${filtro.operador}`, filtro.valor);
+        // Para filtros de rango, enviar valor como "desde,hasta"
+        if (filtro.operador === 'between' || filtro.operador === 'not_between') {
+            const valorRango = `${filtro.valorDesde || ''},${filtro.valorHasta || ''}`;
+            params.append(`${filtro.columna}__${filtro.operador}`, valorRango);
+        } else if (filtro.operador === 'in' && filtro.valores) {
+            // Para multi-selección, enviar cada valor
+            filtro.valores.forEach(v => {
+                params.append(`${filtro.columna}__eq`, v);
+            });
+        } else {
+            params.append(`${filtro.columna}__${filtro.operador}`, filtro.valor);
+        }
     });
 
     // Añadir filtros del panel lateral (sin operador, backend usa LIKE por defecto)
@@ -1808,8 +2001,10 @@ async function buscarStocks() {
         }
 
         mostrarDatos();
+        mostrarCargando(false);
     } catch (error) {
         console.error('❌ Error al buscar stocks:', error);
+        mostrarCargando(false);
         mostrarError(t('errors.searchingStocks'));
     }
 }
@@ -2524,13 +2719,27 @@ function formatNumber(num) {
     }).format(num);
 }
 
-function mostrarCargando() {
-    document.getElementById('table-container').innerHTML = `
-        <div class="loading">
-            <div class="spinner"></div>
-            <p>${t('common.loadingData')}</p>
-        </div>
-    `;
+function mostrarCargando(mostrar = true) {
+    let overlay = document.getElementById('cargando-overlay');
+
+    if (mostrar) {
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'cargando-overlay';
+            overlay.innerHTML = `
+                <div class="cargando-content">
+                    <div class="cargando-spinner"></div>
+                    <p>${t('common.loadingStocks') || 'Cargando stocks...'}</p>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+        overlay.style.display = 'flex';
+    } else {
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+    }
 }
 
 function mostrarError(mensaje) {

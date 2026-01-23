@@ -148,15 +148,20 @@ class StockModel:
 
     # Operadores válidos y su traducción SQL
     VALID_OPERATORS = {
-        'eq': '=',           # Igual a
-        'neq': '<>',         # Diferente de
-        'contains': 'LIKE',  # Contiene
-        'starts': 'LIKE',    # Empieza por
-        'ends': 'LIKE',      # Termina en
-        'gt': '>',           # Mayor que
-        'gte': '>=',         # Mayor o igual
-        'lt': '<',           # Menor que
-        'lte': '<='          # Menor o igual
+        'eq': '=',               # Igual a
+        'neq': '<>',             # Diferente de
+        'contains': 'LIKE',      # Contiene
+        'not_contains': 'NOT LIKE',  # No contiene
+        'starts': 'LIKE',        # Empieza por
+        'not_starts': 'NOT LIKE',    # No empieza por
+        'ends': 'LIKE',          # Termina en
+        'not_ends': 'NOT LIKE',      # No termina en
+        'gt': '>',               # Mayor que
+        'gte': '>=',             # Mayor o igual
+        'lt': '<',               # Menor que
+        'lte': '<=',             # Menor o igual
+        'between': 'BETWEEN',    # Entre (rango)
+        'not_between': 'NOT BETWEEN'  # No entre (rango)
     }
 
     @staticmethod
@@ -177,16 +182,42 @@ class StockModel:
     def _build_filter_condition(columna, operador, valor):
         """
         Construye la condición SQL y el parámetro para un filtro.
-        Retorna tupla (condición_sql, valor_parametro).
+        Retorna tupla (condición_sql, valor_parametro) o (condición_sql, [param1, param2]) para rangos.
         """
         sql_op = StockModel.VALID_OPERATORS.get(operador, '=')
 
+        # Operadores de texto con LIKE
         if operador == 'contains':
             return (f"{columna} LIKE ?", f"%{valor}%")
+        elif operador == 'not_contains':
+            return (f"{columna} NOT LIKE ?", f"%{valor}%")
         elif operador == 'starts':
             return (f"{columna} LIKE ?", f"{valor}%")
+        elif operador == 'not_starts':
+            return (f"{columna} NOT LIKE ?", f"{valor}%")
         elif operador == 'ends':
             return (f"{columna} LIKE ?", f"%{valor}")
+        elif operador == 'not_ends':
+            return (f"{columna} NOT LIKE ?", f"%{valor}")
+        # Operadores de rango (valor viene como "desde,hasta")
+        elif operador in ('between', 'not_between'):
+            partes = valor.split(',') if ',' in valor else [valor, valor]
+            desde = partes[0] if partes[0] else None
+            hasta = partes[1] if len(partes) > 1 and partes[1] else None
+
+            if desde and hasta:
+                if operador == 'between':
+                    return (f"{columna} BETWEEN ? AND ?", [desde, hasta])
+                else:
+                    return (f"({columna} < ? OR {columna} > ?)", [desde, hasta])
+            elif desde:
+                op = '>=' if operador == 'between' else '<'
+                return (f"{columna} {op} ?", desde)
+            elif hasta:
+                op = '<=' if operador == 'between' else '>'
+                return (f"{columna} {op} ?", hasta)
+            else:
+                return (None, None)  # Sin valores, no aplicar filtro
         else:
             # Operadores de comparación directa (eq, neq, gt, gte, lt, lte)
             return (f"{columna} {sql_op} ?", valor)
@@ -232,8 +263,13 @@ class StockModel:
             if parsed:
                 columna, operador = parsed
                 condition, param = StockModel._build_filter_condition(columna, operador, valor)
-                where_conditions.append(condition)
-                params.append(param)
+                if condition:  # Solo añadir si hay condición válida
+                    where_conditions.append(condition)
+                    # param puede ser un valor simple o una lista (para BETWEEN)
+                    if isinstance(param, list):
+                        params.extend(param)
+                    else:
+                        params.append(param)
             # Compatibilidad con filtros simples (sin operador)
             elif key in StockModel.VALID_FILTER_COLUMNS:
                 # Por defecto usa LIKE %valor% para texto

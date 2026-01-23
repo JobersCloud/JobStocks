@@ -184,6 +184,25 @@
 
         let proposals = [];
         let allProposals = [];  // Todas las propuestas sin filtrar
+        let csrfToken = null;
+
+        // ==================== CSRF TOKEN ====================
+        async function obtenerCsrfToken() {
+            try {
+                // Primero intentar obtener de localStorage
+                csrfToken = localStorage.getItem('csrf_token');
+
+                // Luego obtener del servidor (puede ser más reciente)
+                const response = await fetch(`${API_URL}/api/csrf-token`, { credentials: 'include' });
+                if (response.ok) {
+                    const data = await response.json();
+                    csrfToken = data.csrf_token;
+                    localStorage.setItem('csrf_token', csrfToken);
+                }
+            } catch (e) {
+                console.error('Error obteniendo CSRF token:', e);
+            }
+        }
 
         // ==================== INICIALIZACIÓN ====================
         document.addEventListener('DOMContentLoaded', async function() {
@@ -201,6 +220,9 @@
 
             // Verificar autenticación
             await checkAuth();
+
+            // Obtener CSRF token
+            await obtenerCsrfToken();
 
             // Cargar propuestas
             await loadProposals();
@@ -442,6 +464,7 @@
                 const proposal = data.propuesta;
                 const lines = proposal.lineas || [];
 
+                // Renderizar primero sin imágenes, luego cargarlas
                 content.innerHTML = `
                     <div class="proposal-info">
                         <div class="proposal-info-item">
@@ -477,69 +500,141 @@
 
                     <h3 class="proposal-lines-title">${t('proposals.items')}</h3>
 
-                    <!-- Tabla para desktop -->
-                    <table class="proposal-lines-table">
-                        <thead>
-                            <tr>
-                                <th>${t('table.code')}</th>
-                                <th>${t('table.description')}</th>
-                                <th>${t('table.format')}</th>
-                                <th>${t('table.quality')}</th>
-                                <th>${t('table.tone')}</th>
-                                <th>${t('table.caliber')}</th>
-                                <th>${t('cart.requested')}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${lines.map(line => `
-                                <tr>
-                                    <td><strong>${line.codigo}</strong></td>
-                                    <td>${line.descripcion}</td>
-                                    <td>${line.formato}</td>
-                                    <td>${line.calidad}</td>
-                                    <td>${line.tono || '-'}</td>
-                                    <td>${line.calibre || '-'}</td>
-                                    <td><strong>${line.cantidad_solicitada} ${line.unidad}</strong></td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-
-                    <!-- Tarjetas para móvil -->
-                    <div class="proposal-lines-cards">
-                        ${lines.map(line => `
-                            <div class="line-card">
-                                <div class="line-card-header">
-                                    <span class="line-card-code">${line.codigo}</span>
-                                    <span class="line-card-qty">${line.cantidad_solicitada} ${line.unidad}</span>
+                    <!-- Lista de productos con imágenes -->
+                    <div class="proposal-lines-list">
+                        ${lines.map((line, index) => `
+                            <div class="proposal-line-item">
+                                <div class="proposal-line-image" data-img-index="${index}">
+                                    <div class="no-image loading-img">⏳</div>
                                 </div>
-                                <div class="line-card-desc">${line.descripcion}</div>
-                                <div class="line-card-details">
-                                    <div class="line-card-detail">
-                                        <label>${t('table.format')}</label>
-                                        <span>${line.formato}</span>
+                                <div class="proposal-line-info">
+                                    <div class="proposal-line-header">
+                                        <span class="proposal-line-code">${line.codigo}</span>
+                                        <span class="proposal-line-qty">${line.cantidad_solicitada} ${line.unidad}</span>
                                     </div>
-                                    <div class="line-card-detail">
-                                        <label>${t('table.quality')}</label>
-                                        <span>${line.calidad}</span>
+                                    <div class="proposal-line-desc">${line.descripcion}</div>
+                                    <div class="proposal-line-details">
+                                        <span class="detail-tag">${line.formato}</span>
+                                        <span class="detail-tag">${line.calidad}</span>
+                                        ${line.color ? `<span class="detail-tag">${line.color}</span>` : ''}
+                                        ${line.tono ? `<span class="detail-tag">T:${line.tono}</span>` : ''}
+                                        ${line.calibre ? `<span class="detail-tag">C:${line.calibre}</span>` : ''}
                                     </div>
-                                    <div class="line-card-detail">
-                                        <label>${t('table.tone')}</label>
-                                        <span>${line.tono || '-'}</span>
-                                    </div>
-                                    <div class="line-card-detail">
-                                        <label>${t('table.caliber')}</label>
-                                        <span>${line.calibre || '-'}</span>
+                                    <div class="proposal-line-packing">
+                                        ${line.pallet ? `<span class="packing-tag">📦 Pallet: ${line.pallet}</span>` : ''}
+                                        ${line.caja ? `<span class="packing-tag">🗃️ Caja: ${line.caja}</span>` : ''}
                                     </div>
                                 </div>
                             </div>
                         `).join('')}
                     </div>
                 `;
+
+                // Cargar imágenes de cada producto
+                lines.forEach((line, index) => {
+                    cargarImagenProducto(line.codigo, index);
+                });
             } catch (error) {
                 console.error('Error loading proposal details:', error);
                 content.innerHTML = `<p style="color: #dc3545; text-align: center;">Error al cargar los detalles</p>`;
             }
+        }
+
+        // ==================== CARGAR IMAGEN DE PRODUCTO ====================
+        async function cargarImagenProducto(codigo, index) {
+            const container = document.querySelector(`[data-img-index="${index}"]`);
+            if (!container) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/stocks/${encodeURIComponent(codigo)}/imagenes`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const imagenes = await response.json();
+                    if (imagenes.length > 0 && imagenes[0].imagen) {
+                        // Imagen clickable con galería si hay múltiples
+                        const imgBase64 = imagenes[0].imagen;
+                        const totalImgs = imagenes.length;
+                        container.innerHTML = `
+                            <img src="data:image/jpeg;base64,${imgBase64}"
+                                 alt="${codigo}"
+                                 style="width:100%;height:100%;object-fit:cover;border-radius:8px;cursor:pointer;"
+                                 onclick="ampliarImagen('${imgBase64}')">
+                            ${totalImgs > 1 ? `<span class="img-count">+${totalImgs - 1}</span>` : ''}
+                        `;
+                        // Guardar todas las imágenes para la galería
+                        container.dataset.imagenes = JSON.stringify(imagenes.map(i => i.imagen));
+                        container.dataset.codigo = codigo;
+                        container.onclick = () => abrirGaleria(container.dataset.imagenes, codigo);
+                    } else {
+                        container.innerHTML = `<div class="no-image">📦</div>`;
+                    }
+                } else {
+                    container.innerHTML = `<div class="no-image">📦</div>`;
+                }
+            } catch (e) {
+                console.log('Error cargando imagen:', codigo, e);
+                container.innerHTML = `<div class="no-image">📦</div>`;
+            }
+        }
+
+        // ==================== GALERÍA DE IMÁGENES ====================
+        function abrirGaleria(imagenesJson, codigo) {
+            const imagenes = JSON.parse(imagenesJson);
+            if (!imagenes || imagenes.length === 0) return;
+
+            // Crear modal de galería
+            let modal = document.getElementById('galeria-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'galeria-modal';
+                modal.className = 'galeria-modal';
+                modal.innerHTML = `
+                    <div class="galeria-content">
+                        <button class="galeria-close" onclick="cerrarGaleria()">×</button>
+                        <div class="galeria-main">
+                            <img id="galeria-img-principal" src="" alt="Imagen">
+                        </div>
+                        <div class="galeria-thumbs" id="galeria-thumbs"></div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+
+                // Cerrar al hacer clic fuera
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) cerrarGaleria();
+                });
+            }
+
+            // Llenar galería
+            const imgPrincipal = document.getElementById('galeria-img-principal');
+            const thumbsContainer = document.getElementById('galeria-thumbs');
+
+            imgPrincipal.src = `data:image/jpeg;base64,${imagenes[0]}`;
+
+            thumbsContainer.innerHTML = imagenes.map((img, i) => `
+                <div class="galeria-thumb ${i === 0 ? 'active' : ''}" onclick="seleccionarImagen('${img}', this)">
+                    <img src="data:image/jpeg;base64,${img}" alt="Thumb ${i + 1}">
+                </div>
+            `).join('');
+
+            modal.style.display = 'flex';
+        }
+
+        function seleccionarImagen(imgBase64, thumbEl) {
+            document.getElementById('galeria-img-principal').src = `data:image/jpeg;base64,${imgBase64}`;
+            document.querySelectorAll('.galeria-thumb').forEach(t => t.classList.remove('active'));
+            thumbEl.classList.add('active');
+        }
+
+        function cerrarGaleria() {
+            const modal = document.getElementById('galeria-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function ampliarImagen(imgBase64) {
+            abrirGaleria(JSON.stringify([imgBase64]), '');
         }
 
         // ==================== CERRAR MODAL ====================

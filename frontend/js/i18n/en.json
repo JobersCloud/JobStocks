@@ -2,6 +2,7 @@
   "common": {
     "loading": "Loading data...",
     "loadingData": "Loading data...",
+    "loadingStocks": "Loading stocks...",
     "error": "Error",
     "success": "Success",
     "cancel": "Cancel",
@@ -433,5 +434,16 @@
     "changeStatus": "Change Status",
     "noPhone": "Not provided",
     "noProduct": "General inquiry"
+  },
+  "params": {
+    "sectionDesign": "Design",
+    "sectionDesignDesc": "Visual configuration of the application",
+    "sectionFeatures": "Features",
+    "sectionFeaturesDesc": "System features control",
+    "sectionOther": "Other",
+    "sectionOtherDesc": "Additional system parameters",
+    "lastModified": "Last modified",
+    "active": "Active",
+    "inactive": "Inactive"
   }
 }
