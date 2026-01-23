@@ -5638,11 +5638,11 @@ tbody tr:hover {
 }
 
 .users-content {
-    padding: 30px;
+    padding: 15px 20px;
 }
 
 .users-table-wrapper {
-    max-height: calc(100vh - 320px);
+    max-height: calc(100vh - 200px);
     overflow-y: auto;
     overflow-x: auto;
     border-radius: var(--radius);
@@ -6480,12 +6480,12 @@ body:has(.users-container) {
 }
 
 .proposals-content {
-    padding: 30px;
+    padding: 15px 20px;
 }
 
 /* ==================== TABLA DE PROPUESTAS CON GRID AVANZADA ==================== */
 .proposals-table-wrapper {
-    max-height: calc(100vh - 350px);
+    max-height: calc(100vh - 250px);
     overflow-y: auto;
     overflow-x: auto;
     border-radius: var(--radius);
@@ -7479,11 +7479,11 @@ body:has(.proposals-container) {
 }
 
 .inquiries-content {
-    padding: 30px;
+    padding: 15px 20px;
 }
 
 .inquiries-table-wrapper {
-    max-height: calc(100vh - 350px);
+    max-height: calc(100vh - 250px);
     overflow-y: auto;
     overflow-x: auto;
     border-radius: var(--radius);
