@@ -743,6 +743,26 @@ cloudflared tunnel --url http://localhost:5000
   - Afecta headers, botones, badges y elementos de acento en todas las páginas
   - Gráficos de Chart.js en dashboard obtienen colores dinámicamente de CSS
 
+### 2026-01-23
+- **Grid Avanzada en Páginas de Administración**: Sistema de filtros y ordenación en tablas admin
+  - Filtros por columna en `todas-propuestas.html`, `mis-propuestas.html`, `todas-consultas.html`
+  - Cabeceras sticky que permanecen visibles al hacer scroll
+  - Iconos de ordenación ASC/DESC por columna clicables
+  - Popup de filtro con operadores (contiene, no contiene, igual, empieza por, termina en)
+  - Chips de filtros activos con opción de eliminar individualmente
+  - Cierre de popup con: clic fuera, tecla Escape, scroll de tabla
+  - Soporte completo para modo oscuro en todos los componentes
+  - Versión: v1.7.23
+- **Operadores Negativos en Backend**: Soporte para filtros de exclusión
+  - Nuevos operadores: `not_contains`, `not_starts`, `not_ends`
+  - Operadores de rango: `between`, `not_between`
+  - `stock_model.py`: VALID_OPERATORS actualizado con NOT LIKE y BETWEEN
+  - Estilos diferenciados para opciones negativas en popup de filtro
+- **Modo Oscuro Mejorado**: Correcciones de estilos dark mode
+  - Modal detalle de propuestas con estilos dark mode completos
+  - Botón agregar al carrito (icono SVG) visible en modo oscuro móvil
+  - Opciones negativas de filtro con colores suaves (no rojo intenso)
+
 ### 2026-01-22
 - **Filtros por Columna Estilo WorkWithPlus**: Sistema de filtros avanzados en tabla
   - Icono de filtro (embudo SVG) en cada cabecera de columna filtrable
