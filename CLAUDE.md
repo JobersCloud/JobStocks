@@ -443,7 +443,7 @@ Campos: codigo, logo, favicon, tema, invertir_logo, fecha_creacion, fecha_modifi
     - Parámetros del sistema
 11. **Internacionalización (i18n)**: Soporte multi-idioma
    - Idiomas soportados: Español (es), Inglés (en), Francés (fr)
-   - Selector de idioma en header
+   - Selector de idioma en menú de usuario (sección Apariencia)
    - Cambio de idioma sin recargar página
    - Preferencia guardada en localStorage
    - Detección automática del idioma del navegador
@@ -753,11 +753,44 @@ cloudflared tunnel --url http://localhost:5000
   - Cierre de popup con: clic fuera, tecla Escape, scroll de tabla
   - Soporte completo para modo oscuro en todos los componentes
   - Versión: v1.7.23
+- **Grid Avanzada en Usuarios**: Aplicada misma funcionalidad a `usuarios.html`
+  - Filtros por columna con popup profesional
+  - Ordenación ASC/DESC clicando en cabeceras
+  - Chips de filtros activos debajo de la tabla
+  - Estilos unificados con resto de páginas admin
+  - Versión: v1.7.24
+- **Unificación de Headers de Tablas**: Gradiente consistente en todas las tablas admin
+  - `.users-table th`, `.proposals-table th`, `.inquiries-table th` con mismo gradiente
+  - `background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)`
+  - Texto blanco y sticky positioning
+- **Selector de Idioma Movido al Menú**: Reestructuración del menú de usuario
+  - Eliminado selector de idioma del header en páginas admin
+  - Añadido dentro de sección "Apariencia" junto con modo oscuro
+  - Nueva traducción `menu.language` en ES/EN/FR
+  - Clase `.lang-selector-menu` para estilos específicos
 - **Operadores Negativos en Backend**: Soporte para filtros de exclusión
   - Nuevos operadores: `not_contains`, `not_starts`, `not_ends`
   - Operadores de rango: `between`, `not_between`
   - `stock_model.py`: VALID_OPERATORS actualizado con NOT LIKE y BETWEEN
   - Estilos diferenciados para opciones negativas en popup de filtro
+- **Operadores Negativos Añadidos en Frontend**: Completado en todas las páginas
+  - Operadores `not_starts` y `not_ends` añadidos a usuarios, propuestas, consultas
+  - Versión: v1.7.25
+- **Fix: Chips de Filtros Más Visibles**: Mejora de visibilidad
+  - Contenedor con fondo gradiente, borde y sombra interior
+  - Chips con borde y sombra para destacar sobre fondo
+  - `.column-filters-chips` con estilos profesionales
+- **Fix: Scroll Doble Eliminado**: Evitar scroll del browser + scroll de tabla
+  - `body:has(.users-container) { overflow: hidden; height: 100vh; }`
+  - `body:has(.proposals-container) { overflow: hidden; height: 100vh; }`
+  - `body:has(.inquiries-container) { overflow: hidden; height: 100vh; }`
+- **Fix: Columnas No Solapan Filas**: Mejora de responsive
+  - `min-width: 800px` a `900px` en tablas para evitar superposición
+  - `white-space: nowrap` en celdas de tabla
+- **Área de Tablas Ampliada**: Reducido espacio vacío
+  - Padding reducido de 30px a 15px 20px en contenedores
+  - `max-height: calc(100vh - 200px)` a `calc(100vh - 250px)` para más espacio
+  - Versión: v1.7.26
 - **Modo Oscuro Mejorado**: Correcciones de estilos dark mode
   - Modal detalle de propuestas con estilos dark mode completos
   - Botón agregar al carrito (icono SVG) visible en modo oscuro móvil
@@ -1422,4 +1455,4 @@ scp -r backend frontend docker-compose.yml ubuntu@51.68.44.136:/opt/ApiRestExter
 - **Nota**: Solo accesible desde red local (192.168.63.x)
 
 ---
-*Última actualización: 2026-01-20*
+*Última actualización: 2026-01-23*
