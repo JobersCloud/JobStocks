@@ -37,14 +37,6 @@
                 </div>
             </div>
             <div class="header-actions">
-                <div class="lang-selector-wrapper">
-                    <select id="lang-selector" class="lang-selector lang-selector-header"
-                        onchange="I18n.setLanguage(this.value)">
-                        <option value="es">ES</option>
-                        <option value="en">EN</option>
-                        <option value="fr">FR</option>
-                    </select>
-                </div>
                 <!-- Menú de usuario -->
                 <div class="menu-container">
                     <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
@@ -110,6 +102,15 @@
                                     <input type="checkbox" id="theme-switch" onchange="toggleTheme()">
                                     <span class="slider"></span>
                                 </label>
+                            </div>
+                            <div class="menu-item">
+                                <span class="menu-item-icon">🌐</span>
+                                <span data-i18n="menu.language">Idioma</span>
+                                <select id="lang-selector" class="lang-selector-menu" onchange="I18n.setLanguage(this.value)">
+                                    <option value="es">Español</option>
+                                    <option value="en">English</option>
+                                    <option value="fr">Français</option>
+                                </select>
                             </div>
                         </div>
                         <!-- Cerrar sesión -->

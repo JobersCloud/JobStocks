@@ -470,15 +470,10 @@
 }
 
 [data-theme="dark"] .proposals-table th,
-[data-theme="dark"] .inquiries-table th {
+[data-theme="dark"] .inquiries-table th,
+[data-theme="dark"] .users-table th {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
-}
-
-[data-theme="dark"] .users-table th {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    border-color: var(--border);
 }
 
 [data-theme="dark"] .proposals-table td,
@@ -489,12 +484,14 @@
 }
 
 [data-theme="dark"] .proposals-table tbody tr,
-[data-theme="dark"] .inquiries-table tbody tr {
+[data-theme="dark"] .inquiries-table tbody tr,
+[data-theme="dark"] .users-table tbody tr {
     background-color: var(--bg-primary);
 }
 
 [data-theme="dark"] .proposals-table tbody tr:nth-child(odd),
-[data-theme="dark"] .inquiries-table tbody tr:nth-child(odd) {
+[data-theme="dark"] .inquiries-table tbody tr:nth-child(odd),
+[data-theme="dark"] .users-table tbody tr:nth-child(odd) {
     background-color: var(--bg-secondary);
 }
 
@@ -4055,6 +4052,34 @@ tbody tr:hover {
     color: white;
 }
 
+/* Selector de idioma dentro del menú */
+.lang-selector-menu {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 13px;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+.lang-selector-menu:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+[data-theme="dark"] .lang-selector-menu {
+    background: var(--bg-tertiary);
+    border-color: var(--border);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .lang-selector-menu option {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
 /* Estilos para headers de páginas de administración */
 .page-header {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
@@ -5605,25 +5630,98 @@ tbody tr:hover {
     padding: 30px;
 }
 
+.users-table-wrapper {
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+/* Evitar scroll doble en páginas de usuarios */
+body:has(.users-container) {
+    overflow: hidden;
+    height: 100vh;
+}
+
 .users-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 900px;
 }
 
 .users-table th,
 .users-table td {
-    padding: 15px;
+    padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid #eee;
+    white-space: nowrap;
 }
 
 .users-table th {
-    background: #f8f9fa;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
     font-weight: 600;
-    color: #333;
-    font-size: 13px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.users-table th .column-header-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.users-table th .sortable-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.users-table th .sortable-header:hover {
+    opacity: 0.8;
+}
+
+.users-table th .sort-icon {
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.users-table th.sorted-asc .sort-icon,
+.users-table th.sorted-desc .sort-icon {
+    opacity: 1;
+}
+
+.users-table th .column-filter-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.users-table th .column-filter-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.users-table th .column-filter-btn.active {
+    background: white;
+}
+
+.users-table th .column-filter-btn.active svg {
+    stroke: var(--primary);
 }
 
 .users-table tbody tr {
@@ -6376,16 +6474,23 @@ tbody tr:hover {
 
 /* ==================== TABLA DE PROPUESTAS CON GRID AVANZADA ==================== */
 .proposals-table-wrapper {
-    max-height: calc(100vh - 280px);
+    max-height: calc(100vh - 350px);
     overflow-y: auto;
     overflow-x: auto;
     border-radius: var(--radius);
     border: 1px solid var(--border);
 }
 
+/* Evitar scroll doble en páginas de propuestas */
+body:has(.proposals-container) {
+    overflow: hidden;
+    height: 100vh;
+}
+
 .proposals-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 800px;
 }
 
 .proposals-table th,
@@ -6393,6 +6498,7 @@ tbody tr:hover {
     padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid #eee;
+    white-space: nowrap;
 }
 
 .proposals-table th {
@@ -7366,16 +7472,23 @@ tbody tr:hover {
 }
 
 .inquiries-table-wrapper {
-    max-height: calc(100vh - 280px);
+    max-height: calc(100vh - 350px);
     overflow-y: auto;
     overflow-x: auto;
     border-radius: var(--radius);
     border: 1px solid var(--border);
 }
 
+/* Evitar scroll doble en páginas de consultas */
+body:has(.inquiries-container) {
+    overflow: hidden;
+    height: 100vh;
+}
+
 .inquiries-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 800px;
 }
 
 .inquiries-table th,
@@ -7383,6 +7496,7 @@ tbody tr:hover {
     padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid #eee;
+    white-space: nowrap;
 }
 
 .inquiries-table th {

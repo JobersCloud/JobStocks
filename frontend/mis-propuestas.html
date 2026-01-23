@@ -34,13 +34,6 @@
                 <h1 data-i18n="proposals.title">Mis Propuestas</h1>
             </div>
             <div class="header-actions">
-                <div class="lang-selector-wrapper">
-                    <select id="lang-selector" class="lang-selector lang-selector-header" onchange="I18n.setLanguage(this.value)">
-                        <option value="es">ES</option>
-                        <option value="en">EN</option>
-                        <option value="fr">FR</option>
-                    </select>
-                </div>
                 <button class="back-btn" onclick="goBack()">
                     <span data-i18n="proposals.backToStocks">Volver a Stocks</span>
                 </button>
@@ -287,12 +280,6 @@
 
             // Inicializar i18n
             await I18n.init();
-
-            // Actualizar selector de idioma
-            const langSelector = document.getElementById('lang-selector');
-            if (langSelector) {
-                langSelector.value = I18n.currentLang;
-            }
 
             // Verificar autenticación
             await checkAuth();
