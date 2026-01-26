@@ -5901,6 +5901,46 @@ tbody tr:hover {
     margin-bottom: 10px;
 }
 
+/* Sin resultados por filtro - Estilos unificados para todas las páginas */
+.users-no-results,
+.proposals-no-results,
+.inquiries-no-results {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: var(--radius);
+    margin: 20px 0;
+}
+
+.users-no-results h3,
+.proposals-no-results h3,
+.inquiries-no-results h3 {
+    color: #555;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.users-no-results p,
+.proposals-no-results p,
+.inquiries-no-results p {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+[data-theme="dark"] .users-no-results,
+[data-theme="dark"] .proposals-no-results,
+[data-theme="dark"] .inquiries-no-results {
+    background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+    color: #aaa;
+}
+
+[data-theme="dark"] .users-no-results h3,
+[data-theme="dark"] .proposals-no-results h3,
+[data-theme="dark"] .inquiries-no-results h3 {
+    color: #ddd;
+}
+
 /* Loading usuarios */
 .users-loading {
     text-align: center;

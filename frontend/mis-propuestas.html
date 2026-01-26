@@ -76,14 +76,21 @@
                     <p data-i18n="proposals.loading">Cargando propuestas...</p>
                 </div>
 
+                <!-- Chips de filtros activos (ANTES del empty state) -->
+                <div class="column-filters-chips" id="column-filters-chips"></div>
+
                 <!-- Empty state -->
                 <div class="proposals-empty" id="proposals-empty" style="display: none;">
                     <div class="proposals-empty-icon">📋</div>
                     <h3 data-i18n="proposals.noProposals">No hay propuestas</h3>
                 </div>
 
-                <!-- Chips de filtros activos -->
-                <div class="column-filters-chips" id="column-filters-chips"></div>
+                <!-- No results from filter -->
+                <div class="proposals-no-results" id="proposals-no-results" style="display: none;">
+                    <div class="proposals-empty-icon">🔍</div>
+                    <h3>No se encontraron resultados</h3>
+                    <p>Prueba con otros criterios de búsqueda</p>
+                </div>
 
                 <!-- Table view (desktop) -->
                 <div class="proposals-table-wrapper" id="proposals-table-wrapper" style="display: none;">
@@ -348,12 +355,29 @@
         }
 
         // ==================== RENDERIZAR PROPUESTAS ====================
-        function renderProposals() {
+        function renderProposals(datos = null) {
             const tableBody = document.getElementById('proposals-table-body');
             const cardsEl = document.getElementById('proposals-cards');
+            const noResultsEl = document.getElementById('proposals-no-results');
+            const tableWrapper = document.getElementById('proposals-table-wrapper');
+
+            // Si no se pasan datos, usar filteredProposals o proposals
+            const dataToRender = datos || filteredProposals || proposals;
+
+            // Mostrar/ocultar mensaje de sin resultados por filtro
+            if (dataToRender.length === 0 && filtrosColumna.length > 0) {
+                if (noResultsEl) noResultsEl.style.display = 'block';
+                tableWrapper.style.display = 'none';
+                if (cardsEl.parentElement) cardsEl.parentElement.style.display = 'none';
+                return;
+            } else {
+                if (noResultsEl) noResultsEl.style.display = 'none';
+                tableWrapper.style.display = 'block';
+                if (cardsEl.parentElement) cardsEl.parentElement.style.display = 'block';
+            }
 
             // Renderizar tabla
-            tableBody.innerHTML = proposals.map(proposal => `
+            tableBody.innerHTML = dataToRender.map(proposal => `
                 <tr>
                     <td><strong>#${proposal.id}</strong></td>
                     <td>${formatDate(proposal.fecha)}</td>
@@ -375,7 +399,7 @@
             `).join('');
 
             // Renderizar cards (móvil)
-            cardsEl.innerHTML = proposals.map(proposal => `
+            cardsEl.innerHTML = dataToRender.map(proposal => `
                 <div class="proposal-card">
                     <div class="proposal-card-header">
                         <span class="proposal-card-id">#${proposal.id}</span>

@@ -76,14 +76,21 @@
                     <p data-i18n="proposals.loading">Cargando propuestas...</p>
                 </div>
 
+                <!-- Chips de filtros activos (ANTES del empty state) -->
+                <div class="column-filters-chips" id="column-filters-chips"></div>
+
                 <!-- Empty state -->
                 <div class="proposals-empty" id="proposals-empty" style="display: none;">
                     <div class="proposals-empty-icon">📋</div>
                     <h3 data-i18n="proposals.noProposals">No hay propuestas</h3>
                 </div>
 
-                <!-- Chips de filtros activos -->
-                <div class="column-filters-chips" id="column-filters-chips"></div>
+                <!-- No results from filter -->
+                <div class="proposals-no-results" id="proposals-no-results" style="display: none;">
+                    <div class="proposals-empty-icon">🔍</div>
+                    <h3>No se encontraron resultados</h3>
+                    <p>Prueba con otros criterios de búsqueda</p>
+                </div>
 
                 <!-- Table view (desktop) -->
                 <div class="proposals-table-wrapper" id="proposals-table-wrapper" style="display: none;">
@@ -419,16 +426,27 @@
             const tableBody = document.getElementById('proposals-table-body');
             const cardsEl = document.getElementById('proposals-cards');
             const emptyEl = document.getElementById('proposals-empty');
+            const noResultsEl = document.getElementById('proposals-no-results');
             const tableWrapper = document.getElementById('proposals-table-wrapper');
 
             if (filteredProposals.length === 0) {
-                emptyEl.style.display = 'block';
+                // Distinguir entre "sin datos" y "sin resultados por filtro"
+                if (filtrosColumna.length > 0) {
+                    // Hay filtros pero no resultados
+                    if (noResultsEl) noResultsEl.style.display = 'block';
+                    emptyEl.style.display = 'none';
+                } else {
+                    // No hay datos en absoluto
+                    emptyEl.style.display = 'block';
+                    if (noResultsEl) noResultsEl.style.display = 'none';
+                }
                 tableWrapper.style.display = 'none';
                 cardsEl.innerHTML = '';
                 return;
             }
 
             emptyEl.style.display = 'none';
+            if (noResultsEl) noResultsEl.style.display = 'none';
             tableWrapper.style.display = 'block';
 
             // Renderizar tabla

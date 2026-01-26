@@ -57,7 +57,10 @@
                     <p data-i18n="users.loading">Cargando usuarios...</p>
                 </div>
 
-                <!-- Empty state -->
+                <!-- Chips de filtros activos (ANTES del empty state para siempre verlos) -->
+                <div class="column-filters-chips" id="column-filters-chips"></div>
+
+                <!-- Empty state (no hay usuarios en BD) -->
                 <div class="users-empty" id="users-empty" style="display: none;">
                     <div class="users-empty-icon">👥</div>
                     <h3 data-i18n="users.noUsers">No hay usuarios</h3>
@@ -67,8 +70,12 @@
                     </button>
                 </div>
 
-                <!-- Chips de filtros activos -->
-                <div class="column-filters-chips" id="column-filters-chips"></div>
+                <!-- No results from filter -->
+                <div class="users-no-results" id="users-no-results" style="display: none;">
+                    <div class="users-empty-icon">🔍</div>
+                    <h3>No se encontraron resultados</h3>
+                    <p>Prueba con otros criterios de búsqueda</p>
+                </div>
 
                 <!-- Table view (desktop) -->
                 <div class="users-table-wrapper" id="users-table-wrapper" style="display: none;">
@@ -710,6 +717,20 @@
         function renderUsersConDatos(datos) {
             const tableBody = document.getElementById('users-table-body');
             const cardsEl = document.getElementById('users-cards');
+            const noResultsEl = document.getElementById('users-no-results');
+            const tableWrapper = document.getElementById('users-table-wrapper');
+
+            // Mostrar/ocultar mensaje de sin resultados por filtro
+            if (datos.length === 0 && filtrosColumna.length > 0) {
+                noResultsEl.style.display = 'block';
+                tableWrapper.style.display = 'none';
+                cardsEl.parentElement.style.display = 'none';
+                return;
+            } else {
+                noResultsEl.style.display = 'none';
+                tableWrapper.style.display = 'block';
+                cardsEl.parentElement.style.display = 'block';
+            }
 
             // Renderizar tabla
             tableBody.innerHTML = datos.map(user => `
