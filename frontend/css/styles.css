@@ -3092,36 +3092,37 @@ tbody tr:hover {
 /* ==================== PAGINACIÓN ==================== */
 .pagination-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 12px;
-    padding: 20px;
-    background: var(--bg-primary);
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: var(--bg-secondary);
     border-top: 1px solid var(--border-light);
 }
 
 .pagination-info {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
 }
 
 .pagination-buttons {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     flex-wrap: wrap;
     justify-content: center;
 }
 
 .pagination-btn {
-    min-width: 40px;
-    height: 40px;
-    padding: 0 12px;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
     border: 1px solid var(--border-light);
     background: var(--bg-primary);
     color: var(--text-primary);
     border-radius: var(--radius-sm);
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 500;
     transition: all 0.2s ease;
 }

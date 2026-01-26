@@ -1093,7 +1093,8 @@ function mostrarPaginacion() {
         container = document.createElement('div');
         container.id = 'pagination-container';
         container.className = 'pagination-container';
-        document.getElementById('table-container').after(container);
+        // Insertar DENTRO del table-container, no después (para evitar problemas con flex layout)
+        document.getElementById('table-container').appendChild(container);
     }
 
     // Generar botones de página
