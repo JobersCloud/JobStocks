@@ -1073,7 +1073,9 @@
                         case 'contains': return valorItem.includes(valorBuscar);
                         case 'not_contains': return !valorItem.includes(valorBuscar);
                         case 'starts': return valorItem.startsWith(valorBuscar);
+                        case 'not_starts': return !valorItem.startsWith(valorBuscar);
                         case 'ends': return valorItem.endsWith(valorBuscar);
+                        case 'not_ends': return !valorItem.endsWith(valorBuscar);
                         default: return valorItem.includes(valorBuscar);
                     }
                 });

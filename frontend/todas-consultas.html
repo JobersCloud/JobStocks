@@ -489,8 +489,12 @@
                             return valorItem !== valorFiltro;
                         case 'starts':
                             return valorItem.startsWith(valorFiltro);
+                        case 'not_starts':
+                            return !valorItem.startsWith(valorFiltro);
                         case 'ends':
                             return valorItem.endsWith(valorFiltro);
+                        case 'not_ends':
+                            return !valorItem.endsWith(valorFiltro);
                         default:
                             return true;
                     }
