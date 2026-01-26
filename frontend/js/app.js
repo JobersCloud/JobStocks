@@ -1479,6 +1479,7 @@ async function aplicarFiltroColumna(columna) {
         const valorHasta = inputTo?.value.trim();
 
         if (!valorDesde && !valorHasta) {
+            cerrarPopupFiltro();
             limpiarFiltroColumna(columna);
             return;
         }
@@ -1508,6 +1509,7 @@ async function aplicarFiltroColumna(columna) {
         console.log(`🔍 Filtro columna: ${columna} ${operador} "${valorInput}"`);
     } else {
         // Si no hay valor ni checkboxes seleccionados, limpiar el filtro
+        cerrarPopupFiltro();
         limpiarFiltroColumna(columna);
         return;
     }
@@ -1882,7 +1884,7 @@ function renderizarChipsFiltros() {
 // Cerrar popup al hacer clic fuera
 document.addEventListener('click', (e) => {
     if (popupFiltroAbierto && !popupFiltroAbierto.contains(e.target) &&
-        !e.target.classList.contains('column-filter-icon')) {
+        !e.target.classList.contains('column-filter-btn')) {
         cerrarPopupFiltro();
     }
 });
