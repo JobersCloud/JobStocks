@@ -795,6 +795,22 @@ cloudflared tunnel --url http://localhost:5000
   - Modal detalle de propuestas con estilos dark mode completos
   - Botón agregar al carrito (icono SVG) visible en modo oscuro móvil
   - Opciones negativas de filtro con colores suaves (no rojo intenso)
+- **Fix: Scroll Móvil en Páginas Admin**: Corregido scroll bloqueado en móvil
+  - `overflow: hidden` solo aplica en desktop (min-width: 769px)
+  - En móvil el body permite scroll normal para ver tarjetas
+  - Versión: v1.7.27
+- **Fix: Chips de Filtros Visibles Sin Resultados**: Siempre visibles para poder quitar filtros
+  - Chips movidos ANTES del empty state en HTML
+  - Nuevo mensaje "No se encontraron resultados" cuando filtros producen 0 resultados
+  - Distinción entre "sin datos" y "sin resultados por filtro"
+  - Estilos CSS `.users-no-results`, `.proposals-no-results`, `.inquiries-no-results`
+  - Soporte modo oscuro para mensajes de sin resultados
+  - Versión: v1.7.28
+- **Fix: Operadores not_starts/not_ends en Switch de Filtros**: Corregido bug crítico
+  - Los operadores estaban en `operadoresTexto` pero faltaban en el `switch` de filtrado
+  - Ahora "No empieza por" y "No termina en" funcionan correctamente
+  - Aplicado a: usuarios, mis-propuestas, todas-propuestas, todas-consultas
+  - Versión: v1.7.29
 
 ### 2026-01-22
 - **Filtros por Columna Estilo WorkWithPlus**: Sistema de filtros avanzados en tabla
