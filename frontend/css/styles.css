@@ -5649,10 +5649,12 @@ tbody tr:hover {
     border: 1px solid var(--border);
 }
 
-/* Evitar scroll doble en páginas de usuarios */
-body:has(.users-container) {
-    overflow: hidden;
-    height: 100vh;
+/* Evitar scroll doble en páginas de usuarios (solo desktop) */
+@media (min-width: 769px) {
+    body:has(.users-container) {
+        overflow: hidden;
+        height: 100vh;
+    }
 }
 
 .users-table {
@@ -6492,10 +6494,12 @@ body:has(.users-container) {
     border: 1px solid var(--border);
 }
 
-/* Evitar scroll doble en páginas de propuestas */
-body:has(.proposals-container) {
-    overflow: hidden;
-    height: 100vh;
+/* Evitar scroll doble en páginas de propuestas (solo desktop) */
+@media (min-width: 769px) {
+    body:has(.proposals-container) {
+        overflow: hidden;
+        height: 100vh;
+    }
 }
 
 .proposals-table {
@@ -7490,10 +7494,12 @@ body:has(.proposals-container) {
     border: 1px solid var(--border);
 }
 
-/* Evitar scroll doble en páginas de consultas */
-body:has(.inquiries-container) {
-    overflow: hidden;
-    height: 100vh;
+/* Evitar scroll doble en páginas de consultas (solo desktop) */
+@media (min-width: 769px) {
+    body:has(.inquiries-container) {
+        overflow: hidden;
+        height: 100vh;
+    }
 }
 
 .inquiries-table {
