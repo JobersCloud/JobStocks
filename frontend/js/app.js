@@ -1652,7 +1652,7 @@ async function limpiarTodosFiltrosColumna() {
 // Actualizar iconos de filtro en headers (cambiar color si hay filtro activo)
 function actualizarIconosFiltro() {
     columnasFiltrables.forEach(col => {
-        const icono = document.querySelector(`.column-filter-icon[data-columna="${col.key}"]`);
+        const icono = document.querySelector(`.column-filter-btn[data-columna="${col.key}"]`);
         if (icono) {
             if (tieneFiltroColumna(col.key)) {
                 icono.classList.add('active');

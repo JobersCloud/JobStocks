@@ -45,7 +45,7 @@ class StockController:
     def search():
         """Buscar stocks con filtros, paginación y ordenación"""
         try:
-            # Obtener parámetros de filtros
+            # Obtener parámetros de filtros simples (compatibilidad)
             filtros = {
                 'codigo': request.args.get('codigo'),
                 'descripcion': request.args.get('descripcion'),
@@ -60,6 +60,14 @@ class StockController:
 
             # Eliminar filtros vacíos
             filtros = {k: v for k, v in filtros.items() if v is not None}
+
+            # Capturar filtros con operadores (formato: columna__operador=valor)
+            # Excluir parámetros de paginación/ordenación
+            params_excluidos = {'page', 'limit', 'order_by', 'order_dir', 'empresa'}
+            for key in request.args:
+                if '__' in key and key not in params_excluidos:
+                    # Es un filtro con operador (ej: codigo__contains=ABC)
+                    filtros[key] = request.args.get(key)
 
             # Parámetros de paginación (opcionales)
             page = request.args.get('page', type=int)
