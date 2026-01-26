@@ -811,6 +811,17 @@ cloudflared tunnel --url http://localhost:5000
   - Ahora "No empieza por" y "No termina en" funcionan correctamente
   - Aplicado a: usuarios, mis-propuestas, todas-propuestas, todas-consultas
   - Versión: v1.7.29
+- **Fix: Icono Filtro Junto al Título**: Alineación correcta en headers de tabla
+  - Quitar `justify-content: space-between` en `.column-header-wrapper`
+  - Título, icono ordenación y filtro quedan juntos (no separados)
+  - Aplicado a: users-table, proposals-table, inquiries-table
+  - Versión: v1.7.30
+- **Fix: Paginación Abajo y Compacta**: Corregido posicionamiento en split-screen
+  - Paginación insertada DENTRO del `table-container` (antes era `.after()`)
+  - Evita que aparezca a la derecha en layout flex
+  - Paginación más pequeña: botones 32px, padding 10px, fuente 0.8rem
+  - Layout horizontal (row) en una línea
+  - Versión: v1.7.31
 
 ### 2026-01-22
 - **Filtros por Columna Estilo WorkWithPlus**: Sistema de filtros avanzados en tabla
