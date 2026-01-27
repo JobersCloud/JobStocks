@@ -599,23 +599,17 @@ async function verificarGridConImagenes() {
     }
 }
 
-// ==================== PAGINACIÓN BACKEND (GRID SIN IMÁGENES) ====================
+// ==================== PAGINACIÓN (SIEMPRE FRONTEND) ====================
 
-// Cargar configuración de paginación para el grid sin imágenes
+// Cargar configuración de paginación
+// NOTA: Paginación siempre en frontend para filtros instantáneos
 async function cargarConfigPaginacion() {
-    try {
-        const empresaId = localStorage.getItem('empresa_id') || '1';
-        const response = await fetch(`${API_URL}/api/parametros/paginacion-config?empresa_id=${empresaId}`);
-        const data = await response.json();
-        paginacionBackend.habilitado = data.habilitado;
-        paginacionBackend.limite = data.limite || 50;
-        console.log(`📄 Paginación backend: ${paginacionBackend.habilitado}, límite: ${paginacionBackend.limite}`);
-        return paginacionBackend;
-    } catch (error) {
-        console.error('Error al cargar config paginación:', error);
-        paginacionBackend.habilitado = false;
-        return paginacionBackend;
-    }
+    // Siempre usar paginación frontend (cargar todos los datos, paginar en JS)
+    // Esto permite filtros instantáneos sin llamadas al backend
+    paginacionBackend.habilitado = false;
+    paginacionBackend.limite = 50;  // Para mostrar registros por página
+    console.log('📄 Paginación: frontend (filtros instantáneos)');
+    return paginacionBackend;
 }
 
 // ==================== CARGA DE THUMBNAILS ====================
@@ -948,7 +942,7 @@ async function cargarOpcionesFiltros() {
     }
 }
 
-// Cargar todos los stocks
+// Cargar todos los stocks (siempre carga todo, paginación en frontend)
 async function cargarTodos() {
     mostrarCargando();
     try {
@@ -956,39 +950,7 @@ async function cargarTodos() {
         const params = new URLSearchParams();
         addEmpresaToParams(params);
 
-        // Si no hay imágenes y paginación backend está habilitada, usar paginación del servidor
-        const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
-
-        if (usarPaginacionBackend) {
-            params.append('page', paginaActual);
-            params.append('limit', paginacionBackend.limite);
-            params.append('order_by', ordenActual.columna);
-            params.append('order_dir', ordenActual.direccion);
-
-            // Añadir filtros de columna (con operadores: columna__operador=valor)
-            filtrosColumna.forEach(filtro => {
-                // Para filtros de rango, enviar valor como "desde,hasta"
-                if (filtro.operador === 'between' || filtro.operador === 'not_between') {
-                    const valorRango = `${filtro.valorDesde || ''},${filtro.valorHasta || ''}`;
-                    params.append(`${filtro.columna}__${filtro.operador}`, valorRango);
-                } else if (filtro.operador === 'in' && filtro.valores) {
-                    // Para multi-selección, enviar cada valor
-                    filtro.valores.forEach(v => {
-                        params.append(`${filtro.columna}__eq`, v);
-                    });
-                } else {
-                    params.append(`${filtro.columna}__${filtro.operador}`, filtro.valor);
-                }
-            });
-
-            // Añadir filtros del panel lateral (sin operador)
-            filtrosActivos.forEach(filtro => {
-                params.append(filtro.columna, filtro.valor);
-            });
-        }
-
-        const endpoint = usarPaginacionBackend ? '/api/stocks/search' : '/api/stocks';
-        const response = await fetch(`${API_URL}${endpoint}?${params}`, {
+        const response = await fetch(`${API_URL}/api/stocks?${params}`, {
             credentials: 'include',
             headers: {
                 'Content-Type': 'application/json'
@@ -1008,20 +970,9 @@ async function cargarTodos() {
         }
 
         const data = await response.json();
-
-        if (usarPaginacionBackend) {
-            // Respuesta con metadatos de paginación
-            allStocksData = data.data;
-            totalItems = data.total;
-            paginacionBackend.total = data.total;
-            paginacionBackend.pages = data.pages;
-            console.log(`✅ Stocks cargados (paginación backend): ${allStocksData.length} de ${totalItems} registros, página ${paginaActual}/${paginacionBackend.pages}`);
-        } else {
-            // Respuesta sin paginación (array directo)
-            allStocksData = data;
-            totalItems = allStocksData.length;
-            console.log('✅ Stocks cargados:', totalItems, 'registros');
-        }
+        allStocksData = data;
+        totalItems = allStocksData.length;
+        console.log('✅ Stocks cargados:', totalItems, 'registros');
 
         mostrarDatos();
         mostrarCargando(false);
@@ -1032,56 +983,30 @@ async function cargarTodos() {
     }
 }
 
-// Mostrar datos con o sin paginación según gridConImagenes y paginacionBackend
+// Mostrar datos con paginación frontend
 function mostrarDatos() {
-    const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
-
-    if (gridConImagenes) {
-        // Con imágenes: paginación frontend
-        const inicio = (paginaActual - 1) * itemsPorPagina;
-        const fin = inicio + itemsPorPagina;
-        stocksData = allStocksData.slice(inicio, fin);
-        mostrarTabla(stocksData);
-        mostrarPaginacion();
-    } else if (usarPaginacionBackend) {
-        // Sin imágenes con paginación backend: datos ya vienen paginados
-        stocksData = allStocksData;
-        mostrarTabla(stocksData);
-        mostrarPaginacion();
-    } else {
-        // Sin imágenes sin paginación: mostrar todo
-        stocksData = allStocksData;
-        mostrarTabla(stocksData);
-        ocultarPaginacion();
-    }
+    // Siempre usar paginación frontend
+    const inicio = (paginaActual - 1) * itemsPorPagina;
+    const fin = inicio + itemsPorPagina;
+    stocksData = allStocksData.slice(inicio, fin);
+    mostrarTabla(stocksData);
+    mostrarPaginacion();
 }
 
-// Cambiar de página
+// Cambiar de página (siempre frontend)
 async function irAPagina(pagina) {
-    const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
-
-    if (usarPaginacionBackend) {
-        // Paginación backend: recargar del servidor
-        const totalPaginas = paginacionBackend.pages;
-        if (pagina < 1 || pagina > totalPaginas) return;
-        paginaActual = pagina;
-        await cargarTodos();  // Recarga con la nueva página
-    } else {
-        // Paginación frontend
-        const totalPaginas = Math.ceil(totalItems / itemsPorPagina);
-        if (pagina < 1 || pagina > totalPaginas) return;
-        paginaActual = pagina;
-        mostrarDatos();
-    }
+    const totalPaginas = Math.ceil(totalItems / itemsPorPagina);
+    if (pagina < 1 || pagina > totalPaginas) return;
+    paginaActual = pagina;
+    mostrarDatos();
     // Scroll al inicio del contenido
     document.getElementById('table-container').scrollIntoView({ behavior: 'smooth' });
 }
 
-// Mostrar controles de paginación
+// Mostrar controles de paginación (siempre frontend)
 function mostrarPaginacion() {
-    const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
-    const registrosPorPagina = usarPaginacionBackend ? paginacionBackend.limite : itemsPorPagina;
-    const totalPaginas = usarPaginacionBackend ? paginacionBackend.pages : Math.ceil(totalItems / itemsPorPagina);
+    const registrosPorPagina = itemsPorPagina;
+    const totalPaginas = Math.ceil(totalItems / itemsPorPagina);
 
     if (totalPaginas <= 1) {
         ocultarPaginacion();
@@ -1141,8 +1066,8 @@ function ocultarPaginacion() {
 
 // ==================== ORDENACIÓN POR COLUMNAS ====================
 
-// Cambiar ordenación al hacer clic en cabecera
-async function ordenarPorColumna(columna) {
+// Cambiar ordenación al hacer clic en cabecera (siempre frontend)
+function ordenarPorColumna(columna) {
     // Si es la misma columna, cambiar dirección; si es otra, ordenar ASC
     if (ordenActual.columna === columna) {
         ordenActual.direccion = ordenActual.direccion === 'ASC' ? 'DESC' : 'ASC';
@@ -1153,36 +1078,28 @@ async function ordenarPorColumna(columna) {
 
     console.log(`📊 Ordenando por ${ordenActual.columna} ${ordenActual.direccion}`);
 
-    const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
+    // Ordenación en frontend: ordenar array local
+    allStocksData.sort((a, b) => {
+        let valA = a[ordenActual.columna] || '';
+        let valB = b[ordenActual.columna] || '';
 
-    if (usarPaginacionBackend) {
-        // Ordenación en backend: recargar datos
-        paginaActual = 1;  // Volver a primera página
-        await cargarTodos();
-    } else {
-        // Ordenación en frontend: ordenar array local
-        allStocksData.sort((a, b) => {
-            let valA = a[ordenActual.columna] || '';
-            let valB = b[ordenActual.columna] || '';
+        // Para existencias, ordenar numéricamente
+        if (ordenActual.columna === 'existencias') {
+            valA = parseFloat(valA) || 0;
+            valB = parseFloat(valB) || 0;
+        } else {
+            valA = valA.toString().toLowerCase();
+            valB = valB.toString().toLowerCase();
+        }
 
-            // Para existencias, ordenar numéricamente
-            if (ordenActual.columna === 'existencias') {
-                valA = parseFloat(valA) || 0;
-                valB = parseFloat(valB) || 0;
-            } else {
-                valA = valA.toString().toLowerCase();
-                valB = valB.toString().toLowerCase();
-            }
-
-            if (ordenActual.direccion === 'ASC') {
-                return valA > valB ? 1 : valA < valB ? -1 : 0;
-            } else {
-                return valA < valB ? 1 : valA > valB ? -1 : 0;
-            }
-        });
-        paginaActual = 1;
-        mostrarDatos();
-    }
+        if (ordenActual.direccion === 'ASC') {
+            return valA > valB ? 1 : valA < valB ? -1 : 0;
+        } else {
+            return valA < valB ? 1 : valA > valB ? -1 : 0;
+        }
+    });
+    paginaActual = 1;
+    mostrarDatos();
 }
 
 // ==================== FILTROS ESTILO WORKWITHPLUS ====================
@@ -1304,22 +1221,13 @@ async function mostrarPopupFiltro(columna, elemento) {
     const tieneValoresSeleccionados = valoresSeleccionados.length > 0;
     const tieneCondicion = filtroExistente?.valor && !tieneValoresSeleccionados;
 
-    // Determinar si estamos usando paginación del backend
-    const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
-
-    // Obtener valores únicos: si no hay paginación usar datos locales, si hay paginación usar backend
-    let valoresUnicos;
-    if (usarPaginacionBackend) {
-        valoresUnicos = await getValoresUnicos(columna);
-    } else {
-        // Sin paginación: usar datos locales (más rápido)
-        const valores = allStocksData
-            .map(item => item[columna])
-            .filter(v => v !== null && v !== undefined && v !== '');
-        valoresUnicos = [...new Set(valores)].sort((a, b) =>
-            String(a).localeCompare(String(b), 'es', { numeric: true })
-        ).slice(0, 100);
-    }
+    // Obtener valores únicos de los datos cargados (siempre local, instantáneo)
+    const valores = allStocksData
+        .map(item => item[columna])
+        .filter(v => v !== null && v !== undefined && v !== '');
+    const valoresUnicos = [...new Set(valores)].sort((a, b) =>
+        String(a).localeCompare(String(b), 'es', { numeric: true })
+    ).slice(0, 100);
 
     // Crear el popup
     const popup = document.createElement('div');
@@ -1744,17 +1652,9 @@ function renderizarChipsFiltrosColumna() {
     `;
 }
 
-// Aplicar filtros (backend o frontend según configuración)
+// Aplicar filtros (siempre en frontend - datos ya cargados)
 async function aplicarFiltros() {
-    const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
-
-    if (usarPaginacionBackend) {
-        // Filtros en backend: recargar datos
-        await cargarTodos();
-    } else {
-        // Filtros en frontend: aplicar a datos locales
-        aplicarFiltrosFrontend();
-    }
+    aplicarFiltrosFrontend();
 }
 
 // Aplicar filtros en frontend (cuando no hay paginación backend)
@@ -1900,8 +1800,8 @@ window.addEventListener('scroll', (e) => {
     }
 }, true);  // Capture phase para detectar scroll en cualquier elemento
 
-// Buscar con filtros (panel lateral) - Convierte filtros laterales a filtros activos
-async function buscarStocks() {
+// Buscar con filtros (panel lateral) - Aplica filtros en frontend
+function buscarStocks() {
     // Obtener filtros del panel lateral
     const filtrosLaterales = {
         formato: document.getElementById('filter-formato').value.trim(),
@@ -1923,86 +1823,9 @@ async function buscarStocks() {
         }
     });
 
-    // Actualizar chips
-    renderizarChipsFiltrosColumna();
-
-    // Construir query string
-    const params = new URLSearchParams();
-    addEmpresaToParams(params);
-
-    // Añadir filtros de columna (con operadores: columna__operador=valor)
-    filtrosColumna.forEach(filtro => {
-        // Para filtros de rango, enviar valor como "desde,hasta"
-        if (filtro.operador === 'between' || filtro.operador === 'not_between') {
-            const valorRango = `${filtro.valorDesde || ''},${filtro.valorHasta || ''}`;
-            params.append(`${filtro.columna}__${filtro.operador}`, valorRango);
-        } else if (filtro.operador === 'in' && filtro.valores) {
-            // Para multi-selección, enviar cada valor
-            filtro.valores.forEach(v => {
-                params.append(`${filtro.columna}__eq`, v);
-            });
-        } else {
-            params.append(`${filtro.columna}__${filtro.operador}`, filtro.valor);
-        }
-    });
-
-    // Añadir filtros del panel lateral (sin operador, backend usa LIKE por defecto)
-    filtrosActivos.forEach(filtro => {
-        params.append(filtro.columna, filtro.valor);
-    });
-
-    // Si paginación backend está activa, añadir parámetros de paginación y ordenación
-    const usarPaginacionBackend = !gridConImagenes && paginacionBackend.habilitado;
-
-    if (usarPaginacionBackend) {
-        paginaActual = 1;  // Resetear a primera página
-        params.append('page', paginaActual);
-        params.append('limit', paginacionBackend.limite);
-        params.append('order_by', ordenActual.columna);
-        params.append('order_dir', ordenActual.direccion);
-    }
-
-    mostrarCargando();
-    try {
-        const url = `${API_URL}/api/stocks/search?${params}`;
-        console.log('🔍 Buscando con URL:', url);
-
-        const response = await fetch(url, {
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.status === 401) {
-            window.location.href = '/login';
-            return;
-        }
-
-        const data = await response.json();
-
-        if (usarPaginacionBackend) {
-            // Respuesta con metadatos de paginación
-            allStocksData = data.data;
-            totalItems = data.total;
-            paginacionBackend.total = data.total;
-            paginacionBackend.pages = data.pages;
-            console.log(`✅ Búsqueda completada (paginación backend): ${allStocksData.length} de ${totalItems} resultados`);
-        } else {
-            // Respuesta sin paginación
-            allStocksData = data;
-            totalItems = allStocksData.length;
-            paginaActual = 1;
-            console.log('✅ Búsqueda completada:', totalItems, 'resultados');
-        }
-
-        mostrarDatos();
-        mostrarCargando(false);
-    } catch (error) {
-        console.error('❌ Error al buscar stocks:', error);
-        mostrarCargando(false);
-        mostrarError(t('errors.searchingStocks'));
-    }
+    // Aplicar filtros en frontend (instantáneo, sin llamada al backend)
+    paginaActual = 1;
+    aplicarFiltrosFrontend();
 }
 
 // Limpiar filtros (panel lateral + barra de filtros)
