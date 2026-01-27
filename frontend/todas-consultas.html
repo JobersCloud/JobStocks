@@ -78,7 +78,7 @@
                 </div>
 
                 <!-- Chips de filtros activos (ANTES del empty state) -->
-                <div class="column-filters-chips" id="column-filters-chips"></div>
+                <div class="column-filters-chips" id="column-filters-chips" style="display: none;"></div>
 
                 <!-- Empty state -->
                 <div class="inquiries-empty" id="inquiries-empty" style="display: none;">
@@ -161,13 +161,14 @@
                             </tbody>
                         </table>
                     </div>
-                    <!-- Footer con total de registros -->
-                    <div class="grid-footer" id="grid-footer"></div>
                 </div>
 
                 <!-- Cards view (mobile) -->
                 <div class="inquiries-cards" id="inquiries-cards">
                 </div>
+
+                <!-- Footer con total de registros (visible en ambas vistas) -->
+                <div class="grid-footer" id="grid-footer"></div>
             </div>
         </div>
     </div>
@@ -241,6 +242,22 @@
 
         let allInquiries = [];
         let filteredInquiries = [];
+        let csrfToken = null;
+
+        // ==================== CSRF TOKEN ====================
+        async function obtenerCsrfToken() {
+            try {
+                csrfToken = localStorage.getItem('csrf_token');
+                const response = await fetch(`${API_URL}/api/csrf-token`, { credentials: 'include' });
+                if (response.ok) {
+                    const data = await response.json();
+                    csrfToken = data.csrf_token;
+                    localStorage.setItem('csrf_token', csrfToken);
+                }
+            } catch (e) {
+                console.error('Error obteniendo CSRF token:', e);
+            }
+        }
 
         // ==================== ORDENACIÓN Y FILTROS DE COLUMNAS ====================
         let ordenActual = { columna: 'fecha', direccion: 'DESC' };
@@ -555,6 +572,9 @@
 
             // Verificar autenticacion y permisos de admin
             await checkAuth();
+
+            // Obtener CSRF token
+            await obtenerCsrfToken();
 
             // Cargar consultas
             await loadInquiries();
@@ -935,7 +955,8 @@
                     method: 'POST',
                     credentials: 'include',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
                     },
                     body: JSON.stringify({
                         respuesta: responseText,
@@ -969,7 +990,8 @@
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
                     },
                     body: JSON.stringify({ estado: newStatus })
                 });

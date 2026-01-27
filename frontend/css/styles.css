@@ -3189,7 +3189,9 @@ tbody tr:hover {
 .stock-table-wrapper {
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - 280px);
+    flex: 1;
+    min-height: 0;
+    max-height: calc(100vh - 140px);
     border-radius: var(--radius, 10px);
     border: 1px solid var(--border, #e0e0e0);
 }
@@ -3200,8 +3202,10 @@ tbody tr:hover {
     align-items: center;
     justify-content: space-between;
     padding: 12px 16px;
+    margin-top: 10px;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-top: 1px solid #e0e0e0;
+    border: 1px solid var(--border, #e0e0e0);
+    border-radius: var(--radius, 10px);
     font-size: 13px;
     color: var(--text-secondary, #666);
     font-weight: 500;
@@ -3231,7 +3235,7 @@ tbody tr:hover {
 
 [data-theme="dark"] .grid-footer {
     background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-    border-color: var(--border-color, #3d3d3d);
+    border: 1px solid var(--border-color, #3d3d3d);
     color: var(--text-secondary);
 }
 
@@ -5699,7 +5703,6 @@ tbody tr:hover {
     background: white;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
 }
 
 .users-content {
@@ -5707,19 +5710,14 @@ tbody tr:hover {
 }
 
 .users-table-wrapper {
-    display: flex;
-    flex-direction: column;
-    max-height: calc(100vh - 200px);
     border-radius: var(--radius);
     border: 1px solid var(--border);
 }
 
-/* Evitar scroll doble en páginas de usuarios (solo desktop) */
-@media (min-width: 769px) {
-    body:has(.users-container) {
-        overflow: hidden;
-        height: 100vh;
-    }
+.users-table-wrapper .table-scroll-container {
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+    overflow-x: auto;
 }
 
 .users-table {
@@ -6549,7 +6547,6 @@ tbody tr:hover {
     background: white;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
 }
 
 .proposals-header {
@@ -6591,19 +6588,14 @@ tbody tr:hover {
 
 /* ==================== TABLA DE PROPUESTAS CON GRID AVANZADA ==================== */
 .proposals-table-wrapper {
-    display: flex;
-    flex-direction: column;
-    max-height: calc(100vh - 250px);
     border-radius: var(--radius);
     border: 1px solid var(--border);
 }
 
-/* Evitar scroll doble en páginas de propuestas (solo desktop) */
-@media (min-width: 769px) {
-    body:has(.proposals-container) {
-        overflow: hidden;
-        height: 100vh;
-    }
+.proposals-table-wrapper .table-scroll-container {
+    max-height: calc(100vh - 380px);
+    overflow-y: auto;
+    overflow-x: auto;
 }
 
 .proposals-table {
@@ -7582,7 +7574,6 @@ tbody tr:hover {
     background: white;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
 }
 
 .inquiries-content {
@@ -7590,19 +7581,14 @@ tbody tr:hover {
 }
 
 .inquiries-table-wrapper {
-    display: flex;
-    flex-direction: column;
-    max-height: calc(100vh - 250px);
     border-radius: var(--radius);
     border: 1px solid var(--border);
 }
 
-/* Evitar scroll doble en páginas de consultas (solo desktop) */
-@media (min-width: 769px) {
-    body:has(.inquiries-container) {
-        overflow: hidden;
-        height: 100vh;
-    }
+.inquiries-table-wrapper .table-scroll-container {
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+    overflow-x: auto;
 }
 
 .inquiries-table {

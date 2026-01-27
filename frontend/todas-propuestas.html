@@ -77,7 +77,7 @@
                 </div>
 
                 <!-- Chips de filtros activos (ANTES del empty state) -->
-                <div class="column-filters-chips" id="column-filters-chips"></div>
+                <div class="column-filters-chips" id="column-filters-chips" style="display: none;"></div>
 
                 <!-- Empty state -->
                 <div class="proposals-empty" id="proposals-empty" style="display: none;">
@@ -137,6 +137,9 @@
                                             Artículos
                                             <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
                                         </span>
+                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('total_items', this)" title="Filtrar">
+                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                        </button>
                                     </div>
                                 </th>
                                 <th data-column="estado" data-i18n="proposals.status">
@@ -168,13 +171,14 @@
                             </tbody>
                         </table>
                     </div>
-                    <!-- Footer con total de registros -->
-                    <div class="grid-footer" id="grid-footer"></div>
                 </div>
 
                 <!-- Cards view (mobile) -->
                 <div class="proposals-cards" id="proposals-cards">
                 </div>
+
+                <!-- Footer con total de registros (visible en ambas vistas) -->
+                <div class="grid-footer" id="grid-footer"></div>
             </div>
         </div>
     </div>
@@ -272,6 +276,7 @@
             { key: 'id', label: 'ID', tipo: 'numero' },
             { key: 'usuario', label: 'Usuario', tipo: 'texto' },
             { key: 'fecha', label: 'Fecha', tipo: 'fecha' },
+            { key: 'total_items', label: 'Artículos', tipo: 'numero' },
             { key: 'estado', label: 'Estado', tipo: 'texto' },
             { key: 'referencia', label: 'Referencia', tipo: 'texto' }
         ];
@@ -592,7 +597,8 @@
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
                     },
                     body: JSON.stringify({ estado: newStatus })
                 });

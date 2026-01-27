@@ -58,7 +58,7 @@
                 </div>
 
                 <!-- Chips de filtros activos (ANTES del empty state para siempre verlos) -->
-                <div class="column-filters-chips" id="column-filters-chips"></div>
+                <div class="column-filters-chips" id="column-filters-chips" style="display: none;"></div>
 
                 <!-- Empty state (no hay usuarios en BD) -->
                 <div class="users-empty" id="users-empty" style="display: none;">
@@ -156,13 +156,14 @@
                             </tbody>
                         </table>
                     </div>
-                    <!-- Footer con total de registros -->
-                    <div class="grid-footer" id="grid-footer"></div>
                 </div>
 
                 <!-- Cards view (mobile) -->
                 <div class="users-cards" id="users-cards">
                 </div>
+
+                <!-- Footer con total de registros (visible en ambas vistas) -->
+                <div class="grid-footer" id="grid-footer"></div>
             </div>
         </div>
     </div>
@@ -794,7 +795,7 @@
             // Actualizar footer con total de registros
             const footerEl = document.getElementById('grid-footer');
             if (footerEl) {
-                const totalOriginal = allUsers.length;
+                const totalOriginal = users.length;
                 const totalFiltrado = datos.length;
                 const hayFiltros = filtrosColumna.length > 0;
 

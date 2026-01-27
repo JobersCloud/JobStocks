@@ -2040,7 +2040,6 @@ function mostrarTabla(stocks) {
                     <tbody>${rowsHtml}</tbody>
                 </table>
             </div>
-            <div class="grid-footer" id="stock-grid-footer"></div>
         </div>
 
         <!-- Vista de tarjetas para móvil -->
@@ -2094,6 +2093,9 @@ function mostrarTabla(stocks) {
                 </div>
             `).join('')}
         </div>
+
+        <!-- Footer con total de registros (visible en ambas vistas) -->
+        <div class="grid-footer" id="stock-grid-footer"></div>
     `;
 
     container.innerHTML = html;
