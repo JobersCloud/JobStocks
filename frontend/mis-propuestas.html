@@ -94,8 +94,9 @@
 
                 <!-- Table view (desktop) -->
                 <div class="proposals-table-wrapper" id="proposals-table-wrapper" style="display: none;">
-                    <table class="proposals-table" id="proposals-table">
-                        <thead>
+                    <div class="table-scroll-container">
+                        <table class="proposals-table" id="proposals-table">
+                            <thead>
                             <tr>
                                 <th data-column="id">
                                     <div class="column-header-wrapper">
@@ -157,9 +158,10 @@
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="proposals-table-body">
-                        </tbody>
-                    </table>
+                            <tbody id="proposals-table-body">
+                            </tbody>
+                        </table>
+                    </div>
                     <!-- Footer con total de registros -->
                     <div class="grid-footer" id="grid-footer"></div>
                 </div>

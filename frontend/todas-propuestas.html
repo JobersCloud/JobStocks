@@ -94,10 +94,11 @@
 
                 <!-- Table view (desktop) -->
                 <div class="proposals-table-wrapper" id="proposals-table-wrapper" style="display: none;">
-                    <table class="proposals-table" id="proposals-table">
-                        <thead>
-                            <tr>
-                                <th data-column="id">
+                    <div class="table-scroll-container">
+                        <table class="proposals-table" id="proposals-table">
+                            <thead>
+                                <tr>
+                                    <th data-column="id">
                                     <div class="column-header-wrapper">
                                         <span class="sortable-header" onclick="ordenarPor('id')">
                                             ID
@@ -162,10 +163,11 @@
                                 </th>
                                 <th data-i18n="users.actions">Acciones</th>
                             </tr>
-                        </thead>
-                        <tbody id="proposals-table-body">
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody id="proposals-table-body">
+                            </tbody>
+                        </table>
+                    </div>
                     <!-- Footer con total de registros -->
                     <div class="grid-footer" id="grid-footer"></div>
                 </div>

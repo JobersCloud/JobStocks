@@ -79,10 +79,11 @@
 
                 <!-- Table view (desktop) -->
                 <div class="users-table-wrapper" id="users-table-wrapper" style="display: none;">
-                    <table class="users-table">
-                        <thead>
-                            <tr>
-                                <th data-column="username">
+                    <div class="table-scroll-container">
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th data-column="username">
                                     <div class="column-header-wrapper">
                                         <span class="sortable-header" onclick="ordenarPor('username')">
                                             Usuario
@@ -150,10 +151,11 @@
                                 </th>
                                 <th data-i18n="users.actions">Acciones</th>
                             </tr>
-                        </thead>
-                        <tbody id="users-table-body">
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody id="users-table-body">
+                            </tbody>
+                        </table>
+                    </div>
                     <!-- Footer con total de registros -->
                     <div class="grid-footer" id="grid-footer"></div>
                 </div>

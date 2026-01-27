@@ -1047,14 +1047,13 @@ function mostrarPaginacion() {
     }
 
 
-    let container = document.getElementById('pagination-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'pagination-container';
-        container.className = 'pagination-container';
-        // Insertar DENTRO del table-container, no después (para evitar problemas con flex layout)
-        document.getElementById('table-container').appendChild(container);
-    }
+    // Ocultar el contenedor de paginación antiguo si existe
+    const oldContainer = document.getElementById('pagination-container');
+    if (oldContainer) oldContainer.style.display = 'none';
+
+    // Usar el footer integrado de la tabla
+    const footer = document.getElementById('stock-grid-footer');
+    if (!footer) return;
 
     // Generar botones de página
     let paginasHTML = '';
@@ -1074,7 +1073,7 @@ function mostrarPaginacion() {
     const registroInicio = ((paginaActual - 1) * registrosPorPagina) + 1;
     const registroFin = Math.min(paginaActual * registrosPorPagina, totalItems);
 
-    container.innerHTML = `
+    footer.innerHTML = `
         <div class="pagination-info">
             ${t('common.showing') || 'Mostrando'} ${registroInicio}-${registroFin}
             ${t('common.of') || 'de'} ${totalItems} ${t('dataGrid.records') || 'registros'}
@@ -1087,26 +1086,19 @@ function mostrarPaginacion() {
             <button class="pagination-btn" onclick="irAPagina(${totalPaginas})" ${paginaActual === totalPaginas ? 'disabled' : ''}>»»</button>
         </div>
     `;
-    container.style.display = 'flex';
 }
 
 // Ocultar paginación pero mostrar total de registros
 function ocultarPaginacion() {
-    let container = document.getElementById('pagination-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'pagination-container';
-        container.className = 'pagination-container';
-        document.getElementById('table-container').appendChild(container);
+    // Ocultar el contenedor de paginación antiguo si existe
+    const oldContainer = document.getElementById('pagination-container');
+    if (oldContainer) oldContainer.style.display = 'none';
+
+    // Actualizar el footer integrado de la tabla
+    const footer = document.getElementById('stock-grid-footer');
+    if (footer) {
+        footer.innerHTML = `${totalItems} ${t('dataGrid.records') || 'registros'}`;
     }
-    // Mostrar solo el total de registros sin botones de paginación
-    container.innerHTML = `
-        <div class="pagination-info">
-            ${totalItems} ${t('dataGrid.records') || 'registros'}
-        </div>
-        <div class="pagination-buttons"></div>
-    `;
-    container.style.display = 'flex';
 }
 
 // ==================== ORDENACIÓN POR COLUMNAS ====================
@@ -2039,12 +2031,17 @@ function mostrarTabla(stocks) {
         ${generarContenedorChips()}
 
         <!-- Vista de tabla para desktop -->
-        <table class="stock-table-advanced">
-            <thead>
-                <tr class="header-row">${headersHtml}</tr>
-            </thead>
-            <tbody>${rowsHtml}</tbody>
-        </table>
+        <div class="stock-table-wrapper">
+            <div class="table-scroll-container">
+                <table class="stock-table-advanced">
+                    <thead>
+                        <tr class="header-row">${headersHtml}</tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+            </div>
+            <div class="grid-footer" id="stock-grid-footer"></div>
+        </div>
 
         <!-- Vista de tarjetas para móvil -->
         <div class="cards-container">
