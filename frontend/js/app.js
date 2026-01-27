@@ -1456,6 +1456,8 @@ function cerrarPopupFiltro() {
         popupFiltroAbierto.remove();
         popupFiltroAbierto = null;
     }
+    // Backup: eliminar CUALQUIER popup de filtro que pueda haber quedado huérfano
+    document.querySelectorAll('.filter-popup').forEach(p => p.remove());
 }
 
 // Aplicar filtro de una columna
