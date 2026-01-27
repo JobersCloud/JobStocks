@@ -96,7 +96,10 @@
     "allModels": "All models",
     "allQualities": "All qualities",
     "allColors": "All colors",
-    "placeholder": "E.g.: 100"
+    "placeholder": "E.g.: 100",
+    "searchTitle": "Search products",
+    "searchMessage": "Use the filters and press \"Search\" or \"View All\" to display the data.",
+    "waitingSearch": "Waiting for search..."
   },
   "table": {
     "image": "Image",

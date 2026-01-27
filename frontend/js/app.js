@@ -886,34 +886,38 @@ async function logout() {
 
 // ==================== FUNCIONES DE STOCKS ====================
 
-// Cargar opciones de los filtros desplegables
+// Cargar opciones de los filtros desplegables (usando endpoint valores-unicos)
 async function cargarOpcionesFiltros() {
     try {
-        console.log('📊 Cargando opciones de filtros...');
+        console.log('📊 Cargando opciones de filtros (valores únicos)...');
         const params = new URLSearchParams();
         addEmpresaToParams(params);
+        params.append('limite', '500');
 
-        const response = await fetch(`${API_URL}/api/stocks?${params}`, {
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+        // Cargar los 4 filtros en paralelo (mucho más rápido que cargar todos los registros)
+        const [formatosRes, seriesRes, calidadesRes, coloresRes] = await Promise.all([
+            fetch(`${API_URL}/api/stocks/valores-unicos/formato?${params}`, { credentials: 'include' }),
+            fetch(`${API_URL}/api/stocks/valores-unicos/serie?${params}`, { credentials: 'include' }),
+            fetch(`${API_URL}/api/stocks/valores-unicos/calidad?${params}`, { credentials: 'include' }),
+            fetch(`${API_URL}/api/stocks/valores-unicos/color?${params}`, { credentials: 'include' })
+        ]);
 
-        console.log('Filtros response status:', response.status);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        // Verificar respuestas
+        if (!formatosRes.ok || !seriesRes.ok || !calidadesRes.ok || !coloresRes.ok) {
+            throw new Error('Error al cargar valores únicos');
         }
 
-        const stocks = await response.json();
-        console.log('✅ Stocks cargados:', stocks.length, 'registros');
+        const [formatosData, seriesData, calidadesData, coloresData] = await Promise.all([
+            formatosRes.json(),
+            seriesRes.json(),
+            calidadesRes.json(),
+            coloresRes.json()
+        ]);
 
-        // Extraer valores únicos
-        const formatos = [...new Set(stocks.map(s => s.formato).filter(Boolean))].sort();
-        const series = [...new Set(stocks.map(s => s.serie).filter(Boolean))].sort();
-        const calidades = [...new Set(stocks.map(s => s.calidad).filter(Boolean))].sort();
-        const colores = [...new Set(stocks.map(s => s.color).filter(Boolean))].sort();
+        const formatos = formatosData.valores || [];
+        const series = seriesData.valores || [];
+        const calidades = calidadesData.valores || [];
+        const colores = coloresData.valores || [];
 
         console.log('Formatos únicos:', formatos.length);
         console.log('Series únicas:', series.length);
@@ -956,20 +960,74 @@ async function cargarOpcionesFiltros() {
             selectColor.appendChild(option);
         });
 
-        console.log('✅ Filtros cargados correctamente');
+        console.log('✅ Filtros cargados correctamente (sin cargar datos del grid)');
     } catch (error) {
         console.error('❌ Error al cargar opciones de filtros:', error);
-        if (error.message.includes('401')) {
+        if (error.message && error.message.includes('401')) {
             window.location.href = '/login';
         }
     }
 }
 
+// Mostrar estado inicial del grid (esperando búsqueda)
+// Mostrar carga minimalista en el grid (sin modal)
+function mostrarCargandoInline() {
+    const container = document.getElementById('table-container');
+    if (container) {
+        container.innerHTML = `
+            <div class="inline-loading">
+                <div class="inline-loading-spinner"></div>
+                <p>${t('common.loading') || 'Cargando...'}</p>
+            </div>
+        `;
+    }
+    // Ocultar paginación
+    const paginationEl = document.querySelector('.stock-grid-pagination');
+    if (paginationEl) paginationEl.style.display = 'none';
+    // Footer
+    const footerEl = document.getElementById('stock-grid-footer');
+    if (footerEl) footerEl.textContent = '';
+}
+
+function mostrarEstadoInicial() {
+    mostrarCargando(false);
+    const container = document.getElementById('table-container');
+    if (container) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <h3>${t('filters.searchTitle') || 'Buscar productos'}</h3>
+                <p>${t('filters.searchMessage') || 'Usa los filtros y presiona "Buscar" o "Ver todos" para mostrar los datos.'}</p>
+            </div>
+        `;
+    }
+    // Ocultar paginación
+    const paginationEl = document.querySelector('.stock-grid-pagination');
+    if (paginationEl) paginationEl.style.display = 'none';
+    // Footer
+    const footerEl = document.getElementById('stock-grid-footer');
+    if (footerEl) footerEl.textContent = t('filters.waitingSearch') || 'Esperando búsqueda...';
+}
+
 // Cargar todos los stocks (siempre carga todo, paginación en frontend)
 async function cargarTodos() {
-    // El spinner ya se muestra al inicio de la carga (en init)
     try {
+        mostrarCargandoInline();
         console.log('📦 Cargando todos los stocks...');
+
+        // Limpiar filtros del panel lateral
+        document.getElementById('filter-formato').value = '';
+        document.getElementById('filter-serie').value = '';
+        document.getElementById('filter-calidad').value = '';
+        document.getElementById('filter-color').value = '';
+        document.getElementById('filter-existencias').value = '';
+
+        // Limpiar filtros de columna del grid
+        filtrosColumna = [];
+        filtrosActivos = [];
+        renderizarChipsFiltrosColumna();
+        actualizarIconosFiltro();
+
         const params = new URLSearchParams();
         addEmpresaToParams(params);
 
@@ -997,6 +1055,7 @@ async function cargarTodos() {
         totalItems = allStocksData.length;
         console.log('✅ Stocks cargados:', totalItems, 'registros');
 
+        paginaActual = 1;
         mostrarDatos();
         mostrarCargando(false);
     } catch (error) {
@@ -1258,8 +1317,55 @@ async function mostrarPopupFiltro(columna, elemento) {
     const tieneValoresSeleccionados = valoresSeleccionados.length > 0;
     const tieneCondicion = filtroExistente?.valor && !tieneValoresSeleccionados;
 
-    // Obtener valores únicos de los datos cargados (siempre local, instantáneo)
-    const valores = allStocksData
+    // Obtener valores únicos de los datos FILTRADOS (excluyente)
+    // Aplicar todos los filtros de columna EXCEPTO el de la columna actual
+    let datosFiltrados = [...allStocksData];
+
+    filtrosColumna.forEach(filtro => {
+        if (filtro.columna !== columna) {  // No aplicar el filtro de esta columna
+            datosFiltrados = datosFiltrados.filter(item => {
+                const valorItem = item[filtro.columna];
+
+                // Si tiene valores seleccionados (checkboxes)
+                if (filtro.valores && filtro.valores.length > 0) {
+                    return filtro.valores.includes(String(valorItem));
+                }
+
+                // Si tiene condición (operador + valor)
+                const valorFiltro = filtro.valor || '';
+                switch (filtro.operador) {
+                    case 'contains':
+                        return String(valorItem || '').toLowerCase().includes(valorFiltro.toLowerCase());
+                    case 'not_contains':
+                        return !String(valorItem || '').toLowerCase().includes(valorFiltro.toLowerCase());
+                    case 'eq':
+                        return String(valorItem || '').toLowerCase() === valorFiltro.toLowerCase();
+                    case 'neq':
+                        return String(valorItem || '').toLowerCase() !== valorFiltro.toLowerCase();
+                    case 'starts':
+                        return String(valorItem || '').toLowerCase().startsWith(valorFiltro.toLowerCase());
+                    case 'not_starts':
+                        return !String(valorItem || '').toLowerCase().startsWith(valorFiltro.toLowerCase());
+                    case 'ends':
+                        return String(valorItem || '').toLowerCase().endsWith(valorFiltro.toLowerCase());
+                    case 'not_ends':
+                        return !String(valorItem || '').toLowerCase().endsWith(valorFiltro.toLowerCase());
+                    case 'gt':
+                        return parseFloat(valorItem || 0) > parseFloat(valorFiltro);
+                    case 'gte':
+                        return parseFloat(valorItem || 0) >= parseFloat(valorFiltro);
+                    case 'lt':
+                        return parseFloat(valorItem || 0) < parseFloat(valorFiltro);
+                    case 'lte':
+                        return parseFloat(valorItem || 0) <= parseFloat(valorFiltro);
+                    default:
+                        return true;
+                }
+            });
+        }
+    });
+
+    const valores = datosFiltrados
         .map(item => item[columna])
         .filter(v => v !== null && v !== undefined && v !== '');
     const valoresUnicos = [...new Set(valores)].sort((a, b) =>
@@ -1837,32 +1943,85 @@ window.addEventListener('scroll', (e) => {
     }
 }, true);  // Capture phase para detectar scroll en cualquier elemento
 
-// Buscar con filtros (panel lateral) - Aplica filtros en frontend
-function buscarStocks() {
-    // Obtener filtros del panel lateral
-    const filtrosLaterales = {
-        formato: document.getElementById('filter-formato').value.trim(),
-        serie: document.getElementById('filter-serie').value.trim(),
-        calidad: document.getElementById('filter-calidad').value.trim(),
-        color: document.getElementById('filter-color').value.trim(),
-        existencias_min: document.getElementById('filter-existencias').value.trim()
-    };
+// Buscar con filtros (panel lateral) - Llama al backend con filtros
+async function buscarStocks() {
+    try {
+        // Obtener filtros del panel lateral
+        const formato = document.getElementById('filter-formato').value.trim();
+        const serie = document.getElementById('filter-serie').value.trim();
+        const calidad = document.getElementById('filter-calidad').value.trim();
+        const color = document.getElementById('filter-color').value.trim();
+        const existencias_min = document.getElementById('filter-existencias').value.trim();
 
-    // Convertir filtros laterales a filtros activos (sin duplicar)
-    Object.keys(filtrosLaterales).forEach(key => {
-        const valor = filtrosLaterales[key];
-        if (valor) {
-            // Verificar si ya existe este filtro
-            const existe = filtrosActivos.some(f => f.columna === key && f.valor === valor);
-            if (!existe) {
-                filtrosActivos.push({ columna: key, valor: valor });
-            }
+        // Verificar si hay algún filtro
+        const hayFiltros = formato || serie || calidad || color || existencias_min;
+
+        // Si no hay filtros, cargar todos los datos
+        if (!hayFiltros) {
+            console.log('🔍 Sin filtros, cargando todos...');
+            await cargarTodos();
+            return;
         }
-    });
 
-    // Aplicar filtros en frontend (instantáneo, sin llamada al backend)
-    paginaActual = 1;
-    aplicarFiltrosFrontend();
+        mostrarCargandoInline();
+
+        // Construir parámetros para el backend
+        const params = new URLSearchParams();
+        addEmpresaToParams(params);
+
+        if (formato) params.append('formato', formato);
+        if (serie) params.append('serie', serie);
+        if (calidad) params.append('calidad', calidad);
+        if (color) params.append('color', color);
+        if (existencias_min) params.append('existencias_min', existencias_min);
+
+        console.log('🔍 Buscando con filtros:', params.toString());
+
+        const response = await fetch(`${API_URL}/api/stocks/search?${params}`, {
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Guardar datos (puede ser array directo o paginado)
+        if (Array.isArray(data)) {
+            allStocksData = data;
+            totalItems = data.length;
+        } else {
+            allStocksData = data.data || [];
+            totalItems = data.total || allStocksData.length;
+        }
+
+        console.log('✅ Búsqueda completada:', totalItems, 'registros');
+
+        // Limpiar filtros de columna del grid (nueva búsqueda)
+        filtrosColumna = [];
+        filtrosActivos = [];
+        renderizarChipsFiltrosColumna();
+        actualizarIconosFiltro();
+
+        // Mostrar datos
+        paginaActual = 1;
+        stocksData = allStocksData;
+        mostrarTabla(stocksData);
+        mostrarDatos();
+
+        mostrarCargando(false);
+    } catch (error) {
+        console.error('❌ Error en búsqueda:', error);
+        mostrarCargando(false);
+        allStocksData = [];
+        stocksData = [];
+        totalItems = 0;
+        mostrarTabla([]);
+    }
 }
 
 // Limpiar filtros (panel lateral + barra de filtros)
@@ -1884,8 +2043,12 @@ function limpiarFiltros() {
     ordenActual.columna = 'codigo';
     ordenActual.direccion = 'ASC';
 
+    // Limpiar datos en memoria y mostrar estado inicial
+    allStocksData = [];
+    stocksData = [];
+    totalItems = 0;
     paginaActual = 1;
-    cargarTodos();
+    mostrarEstadoInicial();
 }
 
 function mostrarTabla(stocks) {
@@ -3499,8 +3662,8 @@ window.onload = async function () {
     if (isAuth) {
         console.log('✅ Autenticado, cargando datos...');
 
-        // Mostrar spinner desde el inicio de la carga
-        mostrarCargando();
+        // Mostrar carga minimalista en el grid (no modal)
+        mostrarCargandoInline();
 
         // Cargar CSRF token (primero de localStorage, luego del servidor)
         csrfToken = localStorage.getItem('csrf_token');
@@ -3512,7 +3675,8 @@ window.onload = async function () {
         await cargarConfigPaginacion();
         await cargarConfigWhatsApp();
         await cargarOpcionesFiltros();
-        await cargarTodos();
+        // NO cargar datos automáticamente - mostrar estado inicial
+        mostrarEstadoInicial();
         // Solo cargar carrito si las propuestas están habilitadas
         if (propuestasHabilitadas) {
             await cargarCarrito();
