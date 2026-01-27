@@ -35,6 +35,12 @@ export class DataGrid extends HTMLElement {
     // ==================== LIFECYCLE ====================
 
     connectedCallback() {
+        // Aplicar altura máxima si está definida
+        const maxHeight = this.getAttribute('data-max-height');
+        if (maxHeight) {
+            this.style.setProperty('--dg-max-height', maxHeight);
+        }
+
         this._render();
         window.addEventListener('resize', this._boundHandleResize);
     }
