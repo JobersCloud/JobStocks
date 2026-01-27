@@ -1460,71 +1460,53 @@ function cerrarPopupFiltro() {
 
 // Aplicar filtro de una columna
 async function aplicarFiltroColumna(columna) {
+    // Capturar TODOS los valores ANTES de cerrar el popup (los elementos están dentro del popup)
     const inputValor = document.getElementById(`filter-value-${columna}`);
     const radioSeleccionado = document.querySelector(`input[name="op-${columna}"]:checked`);
     const inputFrom = document.getElementById(`filter-from-${columna}`);
     const inputTo = document.getElementById(`filter-to-${columna}`);
 
-    const valorInput = inputValor?.value.trim();
+    const valorInput = inputValor?.value.trim() || '';
     const operador = radioSeleccionado?.value || 'contains';
     const esRango = operador === 'between' || operador === 'not_between';
+    const valorDesde = inputFrom?.value.trim() || '';
+    const valorHasta = inputTo?.value.trim() || '';
 
     // Obtener valores seleccionados de los checkboxes (excepto "Seleccionar todo")
     const todosCheckboxes = document.querySelectorAll(`#filter-values-list-${columna} .filter-value-item:not(.filter-value-select-all) input[type="checkbox"]`);
     const checkboxesMarcados = document.querySelectorAll(`#filter-values-list-${columna} .filter-value-item:not(.filter-value-select-all) input[type="checkbox"]:checked`);
     const valoresSeleccionados = Array.from(checkboxesMarcados).map(cb => cb.value);
-
-    // Si TODOS los checkboxes están marcados, es equivalente a "sin filtro" - limpiar
     const todosSeleccionados = todosCheckboxes.length > 0 && todosCheckboxes.length === checkboxesMarcados.length;
 
-    // Si es rango, validar que haya valores desde/hasta
-    if (esRango) {
-        const valorDesde = inputFrom?.value.trim();
-        const valorHasta = inputTo?.value.trim();
+    // ⭐ CERRAR POPUP INMEDIATAMENTE (ya capturamos todos los valores)
+    cerrarPopupFiltro();
 
+    // Procesar el filtro según el tipo
+    if (esRango) {
         if (!valorDesde && !valorHasta) {
-            cerrarPopupFiltro();
-            limpiarFiltroColumna(columna);
+            await limpiarFiltroColumna(columna);
             return;
         }
-
-        // Eliminar filtro anterior
         filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
-
-        // Añadir filtro de rango
-        filtrosColumna.push({
-            columna,
-            operador,
-            valorDesde: valorDesde || null,
-            valorHasta: valorHasta || null
-        });
+        filtrosColumna.push({ columna, operador, valorDesde: valorDesde || null, valorHasta: valorHasta || null });
         console.log(`🔍 Filtro columna: ${columna} ${operador} [${valorDesde} - ${valorHasta}]`);
-    } else if (valoresSeleccionados.length > 0 && !todosSeleccionados) {
-        // Eliminar filtro anterior
-        filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
-        // Filtro por valores seleccionados (multi-selección)
-        filtrosColumna.push({ columna, operador: 'in', valores: valoresSeleccionados });
-        console.log(`🔍 Filtro columna: ${columna} IN [${valoresSeleccionados.join(', ')}]`);
     } else if (todosSeleccionados) {
         // Si TODOS están seleccionados, quitar el filtro (equivale a "mostrar todo")
-        cerrarPopupFiltro();
         await limpiarFiltroColumna(columna);
         return;
-    } else if (valorInput) {
-        // Eliminar filtro anterior
+    } else if (valoresSeleccionados.length > 0) {
         filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
-        // Filtro por valor de texto
+        filtrosColumna.push({ columna, operador: 'in', valores: valoresSeleccionados });
+        console.log(`🔍 Filtro columna: ${columna} IN [${valoresSeleccionados.join(', ')}]`);
+    } else if (valorInput) {
+        filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
         filtrosColumna.push({ columna, operador, valor: valorInput });
         console.log(`🔍 Filtro columna: ${columna} ${operador} "${valorInput}"`);
     } else {
         // Si no hay valor ni checkboxes seleccionados, limpiar el filtro
-        cerrarPopupFiltro();
-        limpiarFiltroColumna(columna);
+        await limpiarFiltroColumna(columna);
         return;
     }
-
-    // Cerrar popup
-    cerrarPopupFiltro();
 
     // Actualizar UI
     renderizarChipsFiltrosColumna();
