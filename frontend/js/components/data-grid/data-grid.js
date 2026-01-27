@@ -259,7 +259,7 @@ export class DataGrid extends HTMLElement {
                         isMobile ? this._renderCards() : this._renderTable()
                     ) : ''}
                 </div>
-                ${this._pagination.enabled && this._paginationInfo ? this._renderPagination() : ''}
+                ${this._renderFooter()}
             </div>
         `;
 
@@ -548,11 +548,45 @@ export class DataGrid extends HTMLElement {
         `;
     }
 
-    _renderPagination() {
-        if (!this._paginationInfo) return '';
+    _renderFooter() {
+        // No mostrar footer si está cargando o no hay datos
+        if (this._loading || this._data.length === 0) return '';
 
         const t = window.t || ((key) => key);
-        const { currentPage, totalPages, totalItems, startIndex, endIndex } = this._paginationInfo;
+        const totalFiltered = this._filteredData.length;
+        const totalOriginal = this._data.length;
+        const hasFilters = this._filters.length > 0;
+
+        // Información de registros
+        let recordsInfo = '';
+        if (this._pagination.enabled && this._paginationInfo) {
+            const { startIndex, endIndex, totalItems } = this._paginationInfo;
+            recordsInfo = `${t('dataGrid.showing')} ${startIndex + 1}-${endIndex} ${t('dataGrid.of')} ${totalItems} ${t('dataGrid.records')}`;
+        } else {
+            if (hasFilters && totalFiltered !== totalOriginal) {
+                recordsInfo = `${totalFiltered} ${t('dataGrid.records')} (${t('dataGrid.filteredFrom')} ${totalOriginal})`;
+            } else {
+                recordsInfo = `${totalFiltered} ${t('dataGrid.records')}`;
+            }
+        }
+
+        // Controles de paginación
+        const paginationControls = this._pagination.enabled && this._paginationInfo
+            ? this._renderPaginationControls()
+            : '';
+
+        return `
+            <div class="dg-footer">
+                <div class="dg-footer-info">${recordsInfo}</div>
+                ${paginationControls}
+            </div>
+        `;
+    }
+
+    _renderPaginationControls() {
+        if (!this._paginationInfo) return '';
+
+        const { currentPage, totalPages } = this._paginationInfo;
 
         // Generar botones de página
         let pageButtons = '';
@@ -583,19 +617,14 @@ export class DataGrid extends HTMLElement {
         }
 
         return `
-            <div class="dg-pagination">
-                <div class="dg-pagination-info">
-                    ${t('dataGrid.showing')} ${startIndex + 1}-${endIndex} ${t('dataGrid.of')} ${totalItems}
-                </div>
-                <div class="dg-pagination-controls">
-                    <button class="dg-page-btn dg-page-prev" data-page="${currentPage - 1}" ${currentPage <= 1 ? 'disabled' : ''}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-                    </button>
-                    ${pageButtons}
-                    <button class="dg-page-btn dg-page-next" data-page="${currentPage + 1}" ${currentPage >= totalPages ? 'disabled' : ''}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                    </button>
-                </div>
+            <div class="dg-footer-pagination">
+                <button class="dg-page-btn dg-page-prev" data-page="${currentPage - 1}" ${currentPage <= 1 ? 'disabled' : ''}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                ${pageButtons}
+                <button class="dg-page-btn dg-page-next" data-page="${currentPage + 1}" ${currentPage >= totalPages ? 'disabled' : ''}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
             </div>
         `;
     }

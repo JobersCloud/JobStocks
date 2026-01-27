@@ -480,6 +480,8 @@
     "opAfter": "After",
     "opOnOrAfter": "On or after",
     "opBefore": "Before",
-    "opOnOrBefore": "On or before"
+    "opOnOrBefore": "On or before",
+    "records": "records",
+    "filteredFrom": "filtered from"
   }
 }

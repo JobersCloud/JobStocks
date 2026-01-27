@@ -480,6 +480,8 @@
     "opAfter": "Posterior a",
     "opOnOrAfter": "Desde",
     "opBefore": "Anterior a",
-    "opOnOrBefore": "Hasta"
+    "opOnOrBefore": "Hasta",
+    "records": "registros",
+    "filteredFrom": "filtrados de"
   }
 }
