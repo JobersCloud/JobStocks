@@ -160,6 +160,8 @@
                         <tbody id="proposals-table-body">
                         </tbody>
                     </table>
+                    <!-- Footer con total de registros -->
+                    <div class="grid-footer" id="grid-footer"></div>
                 </div>
 
                 <!-- Cards view (mobile) -->
@@ -429,6 +431,20 @@
                     </div>
                 </div>
             `).join('');
+
+            // Actualizar footer con total de registros
+            const footerEl = document.getElementById('grid-footer');
+            if (footerEl) {
+                const totalOriginal = allProposals.length;
+                const totalFiltrado = dataToRender.length;
+                const hayFiltros = filtrosColumna.length > 0;
+
+                if (hayFiltros && totalFiltrado !== totalOriginal) {
+                    footerEl.innerHTML = `${totalFiltrado} ${t('dataGrid.records') || 'registros'} (${t('dataGrid.filteredFrom') || 'filtrados de'} ${totalOriginal})`;
+                } else {
+                    footerEl.innerHTML = `${totalFiltrado} ${t('dataGrid.records') || 'registros'}`;
+                }
+            }
         }
 
         // ==================== FILTROS ====================

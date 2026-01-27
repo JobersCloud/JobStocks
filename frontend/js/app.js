@@ -1040,10 +1040,12 @@ function mostrarPaginacion() {
     const registrosPorPagina = itemsPorPagina;
     const totalPaginas = Math.ceil(totalItems / itemsPorPagina);
 
+    // Si solo hay 1 página, mostrar footer sin botones de paginación
     if (totalPaginas <= 1) {
         ocultarPaginacion();
         return;
     }
+
 
     let container = document.getElementById('pagination-container');
     if (!container) {
@@ -1075,7 +1077,7 @@ function mostrarPaginacion() {
     container.innerHTML = `
         <div class="pagination-info">
             ${t('common.showing') || 'Mostrando'} ${registroInicio}-${registroFin}
-            ${t('common.of') || 'de'} ${totalItems}
+            ${t('common.of') || 'de'} ${totalItems} ${t('dataGrid.records') || 'registros'}
         </div>
         <div class="pagination-buttons">
             <button class="pagination-btn" onclick="irAPagina(1)" ${paginaActual === 1 ? 'disabled' : ''}>««</button>
@@ -1088,12 +1090,23 @@ function mostrarPaginacion() {
     container.style.display = 'flex';
 }
 
-// Ocultar paginación
+// Ocultar paginación pero mostrar total de registros
 function ocultarPaginacion() {
-    const container = document.getElementById('pagination-container');
-    if (container) {
-        container.style.display = 'none';
+    let container = document.getElementById('pagination-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'pagination-container';
+        container.className = 'pagination-container';
+        document.getElementById('table-container').appendChild(container);
     }
+    // Mostrar solo el total de registros sin botones de paginación
+    container.innerHTML = `
+        <div class="pagination-info">
+            ${totalItems} ${t('dataGrid.records') || 'registros'}
+        </div>
+        <div class="pagination-buttons"></div>
+    `;
+    container.style.display = 'flex';
 }
 
 // ==================== ORDENACIÓN POR COLUMNAS ====================

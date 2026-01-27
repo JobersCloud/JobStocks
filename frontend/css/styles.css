@@ -3171,6 +3171,27 @@ tbody tr:hover {
     }
 }
 
+/* ==================== GRID FOOTER (total de registros) ==================== */
+.grid-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    font-size: 13px;
+    color: var(--text-secondary, #666);
+    font-weight: 500;
+}
+
+[data-theme="dark"] .grid-footer {
+    background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+    border-color: var(--border-color, #3d3d3d);
+    color: var(--text-secondary);
+}
+
 /* ==================== CARRITO FLOTANTE ==================== */
 .carrito-btn {
     position: fixed;
