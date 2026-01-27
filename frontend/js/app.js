@@ -967,7 +967,7 @@ async function cargarOpcionesFiltros() {
 
 // Cargar todos los stocks (siempre carga todo, paginación en frontend)
 async function cargarTodos() {
-    mostrarCargando();
+    // El spinner ya se muestra al inicio de la carga (en init)
     try {
         console.log('📦 Cargando todos los stocks...');
         const params = new URLSearchParams();
@@ -3486,6 +3486,9 @@ window.onload = async function () {
     const isAuth = await checkAuth();
     if (isAuth) {
         console.log('✅ Autenticado, cargando datos...');
+
+        // Mostrar spinner desde el inicio de la carga
+        mostrarCargando();
 
         // Cargar CSRF token (primero de localStorage, luego del servidor)
         csrfToken = localStorage.getItem('csrf_token');
