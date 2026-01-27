@@ -1470,8 +1470,12 @@ async function aplicarFiltroColumna(columna) {
     const esRango = operador === 'between' || operador === 'not_between';
 
     // Obtener valores seleccionados de los checkboxes (excepto "Seleccionar todo")
-    const checkboxes = document.querySelectorAll(`#filter-values-list-${columna} .filter-value-item:not(.filter-value-select-all) input[type="checkbox"]:checked`);
-    const valoresSeleccionados = Array.from(checkboxes).map(cb => cb.value);
+    const todosCheckboxes = document.querySelectorAll(`#filter-values-list-${columna} .filter-value-item:not(.filter-value-select-all) input[type="checkbox"]`);
+    const checkboxesMarcados = document.querySelectorAll(`#filter-values-list-${columna} .filter-value-item:not(.filter-value-select-all) input[type="checkbox"]:checked`);
+    const valoresSeleccionados = Array.from(checkboxesMarcados).map(cb => cb.value);
+
+    // Si TODOS los checkboxes están marcados, es equivalente a "sin filtro" - limpiar
+    const todosSeleccionados = todosCheckboxes.length > 0 && todosCheckboxes.length === checkboxesMarcados.length;
 
     // Si es rango, validar que haya valores desde/hasta
     if (esRango) {
@@ -1495,12 +1499,17 @@ async function aplicarFiltroColumna(columna) {
             valorHasta: valorHasta || null
         });
         console.log(`🔍 Filtro columna: ${columna} ${operador} [${valorDesde} - ${valorHasta}]`);
-    } else if (valoresSeleccionados.length > 0) {
+    } else if (valoresSeleccionados.length > 0 && !todosSeleccionados) {
         // Eliminar filtro anterior
         filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
         // Filtro por valores seleccionados (multi-selección)
         filtrosColumna.push({ columna, operador: 'in', valores: valoresSeleccionados });
         console.log(`🔍 Filtro columna: ${columna} IN [${valoresSeleccionados.join(', ')}]`);
+    } else if (todosSeleccionados) {
+        // Si TODOS están seleccionados, quitar el filtro (equivale a "mostrar todo")
+        cerrarPopupFiltro();
+        await limpiarFiltroColumna(columna);
+        return;
     } else if (valorInput) {
         // Eliminar filtro anterior
         filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
