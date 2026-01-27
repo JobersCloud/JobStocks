@@ -599,16 +599,39 @@ async function verificarGridConImagenes() {
     }
 }
 
-// ==================== PAGINACIÓN (SIEMPRE FRONTEND) ====================
+// ==================== PAGINACIÓN (FRONTEND CUANDO HABILITADO) ====================
 
-// Cargar configuración de paginación
-// NOTA: Paginación siempre en frontend para filtros instantáneos
+// Cargar configuración de paginación desde parámetros del sistema
+// Si está habilitado, usa paginación frontend (cargar todos, paginar en JS)
+// Si está deshabilitado, muestra todos los datos sin paginar
 async function cargarConfigPaginacion() {
-    // Siempre usar paginación frontend (cargar todos los datos, paginar en JS)
-    // Esto permite filtros instantáneos sin llamadas al backend
-    paginacionBackend.habilitado = false;
-    paginacionBackend.limite = 50;  // Para mostrar registros por página
-    console.log('📄 Paginación: frontend (filtros instantáneos)');
+    try {
+        const params = new URLSearchParams();
+        addEmpresaToParams(params);
+
+        const response = await fetch(`${API_URL}/api/parametros/paginacion-config?${params}`, {
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            const config = await response.json();
+            paginacionBackend.habilitado = config.habilitado || false;
+            paginacionBackend.limite = config.limite || 50;
+
+            if (paginacionBackend.habilitado) {
+                itemsPorPagina = paginacionBackend.limite;
+                console.log(`📄 Paginación frontend habilitada: ${itemsPorPagina} items/página`);
+            } else {
+                console.log('📄 Paginación deshabilitada: mostrando todos los datos');
+            }
+        } else {
+            paginacionBackend.habilitado = false;
+            console.log('📄 Paginación deshabilitada (sin configuración)');
+        }
+    } catch (error) {
+        console.log('Error cargando config paginación:', error);
+        paginacionBackend.habilitado = false;
+    }
     return paginacionBackend;
 }
 
@@ -983,18 +1006,27 @@ async function cargarTodos() {
     }
 }
 
-// Mostrar datos con paginación frontend
+// Mostrar datos con paginación frontend (si está habilitada)
 function mostrarDatos() {
-    // Siempre usar paginación frontend
-    const inicio = (paginaActual - 1) * itemsPorPagina;
-    const fin = inicio + itemsPorPagina;
-    stocksData = allStocksData.slice(inicio, fin);
-    mostrarTabla(stocksData);
-    mostrarPaginacion();
+    if (paginacionBackend.habilitado) {
+        // Paginación habilitada: mostrar solo página actual
+        const inicio = (paginaActual - 1) * itemsPorPagina;
+        const fin = inicio + itemsPorPagina;
+        stocksData = allStocksData.slice(inicio, fin);
+        mostrarTabla(stocksData);
+        mostrarPaginacion();
+    } else {
+        // Paginación deshabilitada: mostrar todos los datos
+        stocksData = allStocksData;
+        mostrarTabla(stocksData);
+        ocultarPaginacion();
+    }
 }
 
-// Cambiar de página (siempre frontend)
+// Cambiar de página (solo si paginación habilitada)
 async function irAPagina(pagina) {
+    if (!paginacionBackend.habilitado) return;
+
     const totalPaginas = Math.ceil(totalItems / itemsPorPagina);
     if (pagina < 1 || pagina > totalPaginas) return;
     paginaActual = pagina;
