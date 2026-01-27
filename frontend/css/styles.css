@@ -10325,3 +10325,646 @@ tbody tr:hover {
     border-color: var(--bg-tertiary);
     border-top-color: var(--primary);
 }
+
+/* ==================== DATA GRID WEB COMPONENT ==================== */
+
+/* Container */
+.dg-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+.dg-content {
+    min-height: 200px;
+    position: relative;
+}
+
+/* Loading */
+.dg-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--text-secondary, #666);
+}
+
+.dg-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary, #FF4338);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+/* Empty state */
+.dg-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-secondary, #666);
+}
+
+.dg-empty-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.dg-empty h3 {
+    margin: 0 0 10px;
+    color: var(--text-primary, #333);
+}
+
+.dg-empty p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Filter chips */
+.dg-filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.dg-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, var(--primary, #FF4338) 0%, var(--primary-dark, #D32F2F) 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+.dg-filter-chip strong {
+    font-weight: 600;
+}
+
+.dg-chip-operator {
+    opacity: 0.8;
+    font-size: 12px;
+}
+
+.dg-chip-remove {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    line-height: 1;
+    margin-left: 4px;
+    transition: background 0.2s;
+}
+
+.dg-chip-remove:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.dg-clear-all-filters {
+    background: transparent;
+    border: 1px solid var(--primary, #FF4338);
+    color: var(--primary, #FF4338);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dg-clear-all-filters:hover {
+    background: var(--primary, #FF4338);
+    color: white;
+}
+
+/* Table */
+.dg-table-wrapper {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+}
+
+.dg-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.dg-table thead {
+    background: linear-gradient(135deg, var(--primary, #FF4338) 0%, var(--primary-dark, #D32F2F) 100%);
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.dg-th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dg-th-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dg-th-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dg-th-label.clickable {
+    cursor: pointer;
+}
+
+.dg-th-label.clickable:hover {
+    opacity: 0.8;
+}
+
+.dg-sort-icon {
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.dg-sort-icon.active {
+    opacity: 1;
+}
+
+.dg-filter-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 26px;
+    height: 26px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.dg-filter-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.dg-filter-btn.active {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.dg-filter-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.dg-td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    color: var(--text-primary, #333);
+}
+
+.dg-table tbody tr:hover {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.dg-table tbody tr:last-child .dg-td {
+    border-bottom: none;
+}
+
+.dg-actions-cell {
+    white-space: nowrap;
+}
+
+.dg-action-btn {
+    background: linear-gradient(135deg, var(--primary, #FF4338) 0%, var(--primary-dark, #D32F2F) 100%);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 6px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dg-action-btn:last-child {
+    margin-right: 0;
+}
+
+.dg-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 67, 56, 0.3);
+}
+
+.dg-action-label {
+    white-space: nowrap;
+}
+
+/* Cards (mobile) */
+.dg-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.dg-card {
+    background: white;
+    border: 2px solid #f0f0f0;
+    border-radius: 12px;
+    padding: 15px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.dg-card:hover {
+    border-color: var(--primary, #FF4338);
+    box-shadow: 0 4px 12px rgba(255, 67, 56, 0.15);
+}
+
+.dg-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.dg-card-title {
+    font-weight: 600;
+    color: var(--primary, #FF4338);
+    font-size: 15px;
+}
+
+.dg-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dg-card-field {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+}
+
+.dg-card-label {
+    color: var(--text-secondary, #666);
+}
+
+.dg-card-value {
+    color: var(--text-primary, #333);
+    font-weight: 500;
+    text-align: right;
+}
+
+.dg-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.dg-card-actions .dg-action-btn {
+    flex: 1;
+    justify-content: center;
+    margin-right: 0;
+}
+
+/* Pagination */
+.dg-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.dg-pagination-info {
+    font-size: 13px;
+    color: var(--text-secondary, #666);
+}
+
+.dg-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dg-page-btn {
+    background: white;
+    border: 1px solid #e0e0e0;
+    color: var(--text-primary, #333);
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.dg-page-btn:hover:not([disabled]) {
+    border-color: var(--primary, #FF4338);
+    color: var(--primary, #FF4338);
+}
+
+.dg-page-btn.active {
+    background: var(--primary, #FF4338);
+    border-color: var(--primary, #FF4338);
+    color: white;
+}
+
+.dg-page-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.dg-page-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.dg-page-ellipsis {
+    padding: 0 8px;
+    color: var(--text-secondary, #666);
+}
+
+/* Filter Popup */
+.dg-filter-popup {
+    position: fixed;
+    z-index: 10000;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    min-width: 280px;
+    max-width: 350px;
+    overflow: hidden;
+}
+
+.dg-filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, var(--primary, #FF4338) 0%, var(--primary-dark, #D32F2F) 100%);
+    color: white;
+}
+
+.dg-filter-title {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.dg-filter-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.dg-filter-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.dg-filter-body {
+    padding: 20px;
+}
+
+.dg-filter-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.dg-filter-operator-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.dg-filter-operator-label:hover {
+    border-color: var(--primary, #FF4338);
+}
+
+.dg-filter-operator-label.active {
+    background: linear-gradient(135deg, var(--primary, #FF4338) 0%, var(--primary-dark, #D32F2F) 100%);
+    border-color: var(--primary, #FF4338);
+    color: white;
+}
+
+.dg-filter-operator {
+    display: none;
+}
+
+.dg-filter-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dg-filter-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.dg-filter-input:focus {
+    outline: none;
+    border-color: var(--primary, #FF4338);
+}
+
+.dg-filter-range-label {
+    text-align: center;
+    color: var(--text-secondary, #666);
+    font-size: 13px;
+}
+
+.dg-filter-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-top: 1px solid #f0f0f0;
+    background: #fafafa;
+}
+
+.dg-filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dg-filter-btn-clear {
+    background: white;
+    border: 1px solid #e0e0e0;
+    color: var(--text-primary, #333);
+}
+
+.dg-filter-btn-clear:hover {
+    border-color: #999;
+}
+
+.dg-filter-btn-apply {
+    background: linear-gradient(135deg, var(--primary, #FF4338) 0%, var(--primary-dark, #D32F2F) 100%);
+    border: none;
+    color: white;
+}
+
+.dg-filter-btn-apply:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 67, 56, 0.3);
+}
+
+.dg-filter-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Dark mode - Data Grid */
+[data-theme="dark"] .dg-table-wrapper {
+    border-color: var(--border-color, #3d3d3d);
+}
+
+[data-theme="dark"] .dg-td {
+    border-color: var(--border-color, #3d3d3d);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .dg-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+[data-theme="dark"] .dg-card {
+    background: var(--bg-secondary);
+    border-color: var(--border-color, #3d3d3d);
+}
+
+[data-theme="dark"] .dg-card:hover {
+    border-color: var(--primary);
+}
+
+[data-theme="dark"] .dg-card-header {
+    border-color: var(--border-color, #3d3d3d);
+}
+
+[data-theme="dark"] .dg-card-actions {
+    border-color: var(--border-color, #3d3d3d);
+}
+
+[data-theme="dark"] .dg-page-btn {
+    background: var(--bg-secondary);
+    border-color: var(--border-color, #3d3d3d);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .dg-page-btn:hover:not([disabled]) {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+[data-theme="dark"] .dg-filter-popup {
+    background: var(--bg-secondary);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .dg-filter-operator-label {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color, #3d3d3d);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .dg-filter-operator-label:hover {
+    border-color: var(--primary);
+}
+
+[data-theme="dark"] .dg-filter-input {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color, #3d3d3d);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .dg-filter-input:focus {
+    border-color: var(--primary);
+}
+
+[data-theme="dark"] .dg-filter-footer {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color, #3d3d3d);
+}
+
+[data-theme="dark"] .dg-filter-btn-clear {
+    background: var(--bg-secondary);
+    border-color: var(--border-color, #3d3d3d);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .dg-empty,
+[data-theme="dark"] .dg-loading {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .dg-empty h3 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .dg-spinner {
+    border-color: var(--bg-tertiary);
+    border-top-color: var(--primary);
+}
+
+[data-theme="dark"] .dg-clear-all-filters {
+    background: transparent;
+}
