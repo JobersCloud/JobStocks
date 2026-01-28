@@ -127,6 +127,96 @@
     --row-hover: #f3f4f6;
 }
 
+/* ==================== TEMAS PROFESIONALES ==================== */
+
+/* Tema Corporativo (Navy Blue - Azul Corporativo) */
+[data-color-theme="corporativo"] {
+    --primary: #1e3a5f;
+    --primary-dark: #0d2137;
+    --primary-light: #2d5a8a;
+    --secondary: #234b7a;
+    --accent: #d4e4f7;
+    --row-odd: #f5f8fc;
+    --row-hover: #e8f0f8;
+}
+
+/* Tema Ejecutivo (Charcoal - Gris Ejecutivo) */
+[data-color-theme="ejecutivo"] {
+    --primary: #2d3436;
+    --primary-dark: #1a1d1e;
+    --primary-light: #4a5054;
+    --secondary: #3d4447;
+    --accent: #dfe6e9;
+    --row-odd: #f7f8f8;
+    --row-hover: #eceeef;
+}
+
+/* Tema Océano (Deep Blue - Azul Profundo) */
+[data-color-theme="oceano"] {
+    --primary: #006994;
+    --primary-dark: #004d6d;
+    --primary-light: #0088b4;
+    --secondary: #0077a3;
+    --accent: #cce7f0;
+    --row-odd: #f0f9fc;
+    --row-hover: #e0f2f7;
+}
+
+/* Tema Bosque (Forest Green - Verde Bosque) */
+[data-color-theme="bosque"] {
+    --primary: #1d4e3e;
+    --primary-dark: #0f2d23;
+    --primary-light: #2a7258;
+    --secondary: #236b4e;
+    --accent: #d0e8df;
+    --row-odd: #f2f9f6;
+    --row-hover: #e5f3ec;
+}
+
+/* Tema Vino (Burgundy - Burdeos) */
+[data-color-theme="vino"] {
+    --primary: #722f37;
+    --primary-dark: #4a1f24;
+    --primary-light: #9c4049;
+    --secondary: #8b3a44;
+    --accent: #f0d4d7;
+    --row-odd: #fcf5f6;
+    --row-hover: #f7e8ea;
+}
+
+/* Tema Medianoche (Midnight - Índigo Oscuro) */
+[data-color-theme="medianoche"] {
+    --primary: #2c3e50;
+    --primary-dark: #1a252f;
+    --primary-light: #3d566e;
+    --secondary: #34495e;
+    --accent: #d5dce4;
+    --row-odd: #f5f7f9;
+    --row-hover: #e8ecf1;
+}
+
+/* Tema Titanio (Slate - Pizarra Moderna) */
+[data-color-theme="titanio"] {
+    --primary: #475569;
+    --primary-dark: #1e293b;
+    --primary-light: #64748b;
+    --secondary: #526077;
+    --accent: #e2e8f0;
+    --row-odd: #f8fafc;
+    --row-hover: #f1f5f9;
+}
+
+/* Tema Bronce (Bronze - Cobre Elegante) */
+[data-color-theme="bronce"] {
+    --primary: #8b5a2b;
+    --primary-dark: #5c3a1c;
+    --primary-light: #b8763a;
+    --secondary: #a06830;
+    --accent: #f0e0d0;
+    --row-odd: #fdfaf6;
+    --row-hover: #f8f0e6;
+}
+
 /* Asegurar que los temas de color funcionen con dark mode */
 [data-theme="dark"][data-color-theme="rubi"] {
     --accent: #4a1e1e;
@@ -170,6 +260,63 @@
     --row-hover: #2d3a47;
 }
 
+/* Dark mode para temas profesionales */
+[data-theme="dark"][data-color-theme="corporativo"] {
+    --accent: #1a3050;
+    --row-even: #1e293b;
+    --row-odd: #0d1a2a;
+    --row-hover: #1e3a5f;
+}
+
+[data-theme="dark"][data-color-theme="ejecutivo"] {
+    --accent: #2d3436;
+    --row-even: #1e293b;
+    --row-odd: #141718;
+    --row-hover: #2d3436;
+}
+
+[data-theme="dark"][data-color-theme="oceano"] {
+    --accent: #003d54;
+    --row-even: #1e293b;
+    --row-odd: #0a1e28;
+    --row-hover: #004d6d;
+}
+
+[data-theme="dark"][data-color-theme="bosque"] {
+    --accent: #1a3d30;
+    --row-even: #1e293b;
+    --row-odd: #0d1f18;
+    --row-hover: #1d4e3e;
+}
+
+[data-theme="dark"][data-color-theme="vino"] {
+    --accent: #4a1f24;
+    --row-even: #1e293b;
+    --row-odd: #1a0f11;
+    --row-hover: #5c2830;
+}
+
+[data-theme="dark"][data-color-theme="medianoche"] {
+    --accent: #1a252f;
+    --row-even: #1e293b;
+    --row-odd: #0f161c;
+    --row-hover: #2c3e50;
+}
+
+[data-theme="dark"][data-color-theme="titanio"] {
+    --accent: #334155;
+    --row-even: #1e293b;
+    --row-odd: #0f172a;
+    --row-hover: #475569;
+}
+
+[data-theme="dark"][data-color-theme="bronce"] {
+    --accent: #5c3a1c;
+    --row-even: #1e293b;
+    --row-odd: #1a1410;
+    --row-hover: #6b4520;
+}
+
 /* ==================== MODO OSCURO ==================== */
 [data-theme="dark"] {
     --text-primary: #f1f5f9;
@@ -200,6 +347,572 @@
 
 [data-theme="dark"] .filters {
     background: var(--bg-primary);
+}
+
+/* ==================== MASTERPAGE - LAYOUT 3 PANELES ==================== */
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+    background: var(--bg-secondary);
+}
+
+/* Sidebar */
+.sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--bg-primary);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: fixed;
+    left: 0;
+    top: 70px; /* Empieza debajo del header */
+    bottom: 0;
+    z-index: 100;
+}
+
+.sidebar.collapsed {
+    width: 60px;
+    min-width: 60px;
+}
+
+/* Botón toggle en el sidebar */
+.sidebar-toggle-container {
+    padding: 10px;
+    display: flex;
+    justify-content: flex-end;
+    border-bottom: 1px solid var(--border);
+}
+
+.sidebar-toggle {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sidebar-toggle:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.sidebar-toggle svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s;
+    stroke: var(--text-primary);
+}
+
+.sidebar.collapsed .sidebar-toggle svg {
+    transform: rotate(180deg);
+}
+
+.sidebar.collapsed .sidebar-toggle-container {
+    justify-content: center;
+}
+
+/* Navegación del sidebar */
+.sidebar-nav {
+    flex: 1;
+    padding: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sidebar-section {
+    margin-bottom: 4px;
+}
+
+/* Título de sección simple (no colapsable) */
+.sidebar-section-title {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 10px 12px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 0.2s;
+}
+
+.sidebar.collapsed .sidebar-section-title {
+    opacity: 0;
+    height: 0;
+    padding: 0;
+}
+
+/* Sección colapsable (acordeón) */
+.sidebar-accordion {
+    margin-bottom: 4px;
+}
+
+.sidebar-accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: all 0.2s;
+    color: var(--text-secondary);
+}
+
+.sidebar-accordion-header:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.sidebar-accordion-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+}
+
+.sidebar-accordion-title svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.sidebar-accordion-arrow {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+.sidebar-accordion.expanded .sidebar-accordion-arrow {
+    transform: rotate(180deg);
+}
+
+.sidebar-accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.sidebar-accordion.expanded .sidebar-accordion-content {
+    max-height: 500px;
+}
+
+.sidebar-accordion-content .sidebar-item {
+    padding-left: 40px;
+}
+
+/* Sidebar colapsado - acordeones */
+.sidebar.collapsed .sidebar-accordion-header span:not(.sidebar-accordion-title svg) {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-accordion-arrow {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-accordion-header {
+    justify-content: center;
+    padding: 10px;
+}
+
+.sidebar.collapsed .sidebar-accordion-content .sidebar-item {
+    padding-left: 0;
+    justify-content: center;
+}
+
+/* Items del menú */
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 4px;
+    position: relative;
+    white-space: nowrap;
+}
+
+.sidebar-item:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.sidebar-item.active {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(var(--primary), 0.3);
+}
+
+.sidebar-item-icon {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sidebar-item-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.sidebar-item-text {
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    transition: opacity 0.2s, width 0.2s;
+}
+
+.sidebar.collapsed .sidebar-item-text {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+}
+
+/* Tooltip para sidebar colapsado */
+.sidebar.collapsed .sidebar-item {
+    justify-content: center;
+    padding: 12px;
+}
+
+.sidebar.collapsed .sidebar-item::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 100%;
+    margin-left: 10px;
+    padding: 8px 12px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-radius: var(--radius);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    z-index: 1001;
+}
+
+.sidebar.collapsed .sidebar-item:hover::after {
+    opacity: 1;
+}
+
+/* Footer del sidebar */
+.sidebar-footer {
+    padding: 15px;
+    border-top: 1px solid var(--border);
+}
+
+/* Contenedor principal (header + content) */
+.main-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Header superior - FIJO en toda la pantalla */
+.top-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 0 20px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1001;
+    border-radius: 0 !important;
+    border: none !important;
+}
+
+.top-header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Logo en el header */
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-logo img {
+    height: 40px;
+    width: auto;
+    /* El filtro se aplica dinámicamente desde JavaScript según la configuración */
+}
+
+.header-logo-text {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: white;
+}
+
+.header-divider {
+    width: 1px;
+    height: 30px;
+    background: rgba(255,255,255,0.3);
+    margin: 0 5px;
+}
+
+.top-header-title {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: white !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: white !important;
+    background-clip: unset !important;
+}
+
+.top-header-subtitle {
+    font-size: var(--font-size-sm);
+    opacity: 0.9;
+}
+
+.top-header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Botón toggle tema en header */
+.theme-toggle-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: var(--radius);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1.1rem;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Selector idioma en header */
+.lang-selector-header {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: var(--radius);
+    color: white;
+    padding: 6px 10px;
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.lang-selector-header:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.lang-selector-header option {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+/* Área de contenido principal */
+.main-content-area {
+    flex: 1;
+    padding: 25px;
+    padding-top: 95px; /* 70px header + 25px padding */
+    margin-left: 240px;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+}
+
+.sidebar.collapsed ~ .main-wrapper .main-content-area {
+    margin-left: 60px;
+}
+
+/* ==================== MODO OSCURO PARA MASTERPAGE ==================== */
+[data-theme="dark"] .sidebar {
+    background: linear-gradient(180deg, var(--bg-secondary) 0%, #0f172a 100%);
+    border-right-color: var(--border);
+}
+
+[data-theme="dark"] .sidebar-header {
+    border-bottom-color: var(--border);
+}
+
+[data-theme="dark"] .sidebar-toggle {
+    background: var(--bg-tertiary);
+    border-color: var(--border);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .sidebar-toggle:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+[data-theme="dark"] .sidebar-item:hover {
+    background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .sidebar.collapsed .sidebar-item::after {
+    background: var(--bg-secondary);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .sidebar-footer {
+    border-top-color: var(--border);
+}
+
+[data-theme="dark"] .sidebar-toggle-container {
+    border-bottom-color: var(--border);
+}
+
+[data-theme="dark"] .sidebar-accordion-header:hover {
+    background: var(--bg-tertiary);
+}
+
+/* ==================== RESPONSIVE MASTERPAGE ==================== */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 60px;
+        min-width: 60px;
+    }
+
+    .sidebar .sidebar-section-title,
+    .sidebar .sidebar-item-text,
+    .sidebar .sidebar-accordion-title span:not(svg),
+    .sidebar .sidebar-accordion-arrow {
+        opacity: 0;
+        width: 0;
+        overflow: hidden;
+        display: none;
+    }
+
+    .sidebar .sidebar-item {
+        justify-content: center;
+        padding: 10px;
+    }
+
+    .sidebar .sidebar-accordion-header {
+        justify-content: center;
+    }
+
+    .sidebar .sidebar-accordion-content .sidebar-item {
+        padding-left: 0;
+    }
+
+    .sidebar .sidebar-toggle svg {
+        transform: rotate(180deg);
+    }
+
+    .main-content-area {
+        margin-left: 60px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: 240px;
+        top: 70px;
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .main-content-area {
+        margin-left: 0;
+    }
+
+    .sidebar.collapsed ~ .main-wrapper .main-content-area {
+        margin-left: 0;
+    }
+
+    /* Mostrar textos en móvil cuando está abierto */
+    .sidebar.mobile-open .sidebar-section-title,
+    .sidebar.mobile-open .sidebar-item-text,
+    .sidebar.mobile-open .sidebar-accordion-title span,
+    .sidebar.mobile-open .sidebar-accordion-arrow {
+        opacity: 1;
+        width: auto;
+        display: inline;
+    }
+
+    .sidebar.mobile-open .sidebar-item {
+        justify-content: flex-start;
+        padding: 12px 14px;
+    }
+
+    .sidebar.mobile-open .sidebar-accordion-header {
+        justify-content: space-between;
+    }
+
+    .sidebar.mobile-open .sidebar-accordion-content .sidebar-item {
+        padding-left: 40px;
+    }
+
+    /* Overlay para móvil */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    .sidebar.mobile-open ~ .sidebar-overlay {
+        display: block;
+    }
+
+    /* Botón hamburguesa para móvil */
+    .mobile-menu-btn {
+        display: flex;
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        padding: 8px;
+    }
+
+    .mobile-menu-btn svg {
+        width: 24px;
+        height: 24px;
+    }
+}
+
+@media (min-width: 769px) {
+    .mobile-menu-btn {
+        display: none;
+    }
+
+    .sidebar-overlay {
+        display: none !important;
+    }
 }
 
 [data-theme="dark"] select,

@@ -344,7 +344,9 @@ function toggleTheme() {
 
 // Aplicar tema de color
 function applyColorTheme(tema) {
-    const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito'];
+    const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito',
+                         'corporativo', 'ejecutivo', 'oceano', 'bosque', 'vino',
+                         'medianoche', 'titanio', 'bronce'];
     if (!validThemes.includes(tema)) {
         tema = 'rubi';
     }
@@ -362,7 +364,8 @@ async function cargarLogoEmpresa() {
         applyColorTheme('rubi');
         return;
     }
-    const logoElements = document.querySelectorAll('.logo');
+    // Seleccionar todos los elementos de logo (clase .logo y #header-logo)
+    const logoElements = document.querySelectorAll('.logo, #header-logo');
 
     try {
         // Obtener configuración completa del logo (incluye invertir_logo y tema)
@@ -372,7 +375,7 @@ async function cargarLogoEmpresa() {
         // Aplicar tema de color
         applyColorTheme(config.tema || 'rubi');
 
-        // Determinar el filtro CSS según la configuración
+        // Determinar el filtro CSS según la configuración de invertir_logo
         const invertirFilter = config.invertir_logo ? 'brightness(0) invert(1)' : 'none';
 
         if (config.tiene_logo) {
@@ -413,6 +416,10 @@ async function cargarLogoEmpresa() {
             });
             console.log(`No hay logo en BD para connection ${connection}, usando default con inversión`);
         }
+
+        // Guardar configuración de inversión en localStorage para otras páginas
+        localStorage.setItem('logoInvert', config.invertir_logo ? 'true' : 'false');
+
     } catch (error) {
         console.log('Error al cargar logo:', error);
         // En caso de error, mostrar logo por defecto con inversión y tema rubi
@@ -796,6 +803,25 @@ function displayUserInfo(user) {
             adminSection.style.display = 'block';
         } else {
             adminSection.style.display = 'none';
+        }
+    }
+
+    // Mostrar secciones del sidebar si es admin
+    const sidebarAdminSection = document.getElementById('sidebar-admin-section');
+    const sidebarConfigSection = document.getElementById('sidebar-config-section');
+    if (sidebarAdminSection) {
+        sidebarAdminSection.style.display = (user.rol === 'administrador' || user.rol === 'superusuario') ? 'block' : 'none';
+    }
+    if (sidebarConfigSection) {
+        sidebarConfigSection.style.display = (user.rol === 'administrador' || user.rol === 'superusuario') ? 'block' : 'none';
+    }
+
+    // Cargar logo en el header
+    const headerLogo = document.getElementById('header-logo');
+    if (headerLogo) {
+        const logoUrl = localStorage.getItem('logoUrl');
+        if (logoUrl) {
+            headerLogo.src = logoUrl;
         }
     }
 

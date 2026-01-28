@@ -13,7 +13,6 @@
             document.documentElement.setAttribute('data-theme', theme);
             const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
             document.documentElement.setAttribute('data-color-theme', colorTheme);
-            // Crear favicon desde localStorage (sin link estático para evitar flash)
             const faviconUrl = localStorage.getItem('faviconUrl');
             if (faviconUrl) {
                 const link = document.createElement('link');
@@ -26,159 +25,278 @@
 </head>
 
 <body>
-    <div class="container">
-        <div class="page-header">
-            <div class="logo-section">
-                <img src="" alt="Logo" class="logo" style="visibility: hidden;">
-                <div class="header-titles">
-                    <h1 data-i18n="header.title">Gestión de Stocks</h1>
-                    <h2 id="header-company-name" class="company-name" style="display: none;"></h2>
-                    <p class="subtitle" data-i18n="header.subtitle">Sistema de consulta de inventario en tiempo real</p>
+    <!-- ==================== MASTERPAGE LAYOUT ==================== -->
+    <div class="app-layout">
+        <!-- Header Superior FIJO -->
+        <header class="top-header">
+            <div class="top-header-left">
+                <button class="mobile-menu-btn" onclick="SidebarNav.toggleMobile()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="header-logo">
+                    <img src="" alt="Logo" id="header-logo">
+                    <span class="header-logo-text" id="header-company-name">Stocks</span>
+                </div>
+                <div class="header-divider"></div>
+                <div>
+                    <h1 class="top-header-title" data-i18n="header.title">Gestión de Stocks</h1>
                 </div>
             </div>
-            <div class="header-actions">
-                <!-- Menú de usuario -->
+            <div class="top-header-right">
+                <select id="lang-selector" class="lang-selector-header" onchange="I18n.setLanguage(this.value)">
+                    <option value="es">ES</option>
+                    <option value="en">EN</option>
+                    <option value="fr">FR</option>
+                </select>
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">
+                    <span id="theme-icon">🌙</span>
+                </button>
                 <div class="menu-container">
                     <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
-                        <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
                         </svg>
                         <span class="user-name-display" id="user-name-display">Usuario</span>
-                        <span class="menu-arrow">▼</span>
                     </button>
                     <div class="menu-dropdown" id="menu-dropdown">
                         <div class="menu-header">
                             <div class="user-name" id="menu-user-name">Usuario</div>
                             <div class="user-rol" id="menu-user-rol">usuario</div>
                         </div>
-                        <!-- Sección para todos los usuarios -->
-                        <div class="menu-section">
-                            <div class="menu-item" onclick="navigateTo('mis-propuestas')">
-                                <span class="menu-item-icon">📋</span>
-                                <span data-i18n="menu.myProposals">Mis Propuestas</span>
-                            </div>
-                        </div>
-                        <!-- Sección solo para admin -->
-                        <div class="menu-section" id="menu-admin-section" style="display: none;">
-                            <div class="menu-section-title" data-i18n="menu.administration">Administración</div>
-                            <div class="menu-item" onclick="navigateTo('dashboard')">
-                                <span class="menu-item-icon">📈</span>
-                                <span data-i18n="menu.dashboard">Dashboard</span>
-                            </div>
-                            <div class="menu-item" onclick="navigateTo('todas-propuestas')">
-                                <span class="menu-item-icon">📊</span>
-                                <span data-i18n="menu.allProposals">Todas las Propuestas</span>
-                            </div>
-                            <div class="menu-item" onclick="navigateTo('todas-consultas')">
-                                <span class="menu-item-icon">❓</span>
-                                <span data-i18n="menu.allInquiries">Todas las Consultas</span>
-                            </div>
-                            <div class="menu-item" onclick="navigateTo('usuarios')">
-                                <span class="menu-item-icon">👥</span>
-                                <span data-i18n="menu.users">Gestión de Usuarios</span>
-                            </div>
-                            <div class="menu-item" onclick="navigateTo('email-config')">
-                                <span class="menu-item-icon">📧</span>
-                                <span data-i18n="menu.emailConfig">Configuración Email</span>
-                            </div>
-                            <div class="menu-item" onclick="navigateTo('parametros')">
-                                <span class="menu-item-icon">⚙️</span>
-                                <span data-i18n="menu.parameters">Parámetros</span>
-                            </div>
-                            <div class="menu-item" onclick="navigateTo('empresa-logo')">
-                                <span class="menu-item-icon">🖼️</span>
-                                <span data-i18n="menu.companyLogo">Logo de Empresa</span>
-                            </div>
-                        </div>
-                        <!-- Apariencia -->
-                        <div class="menu-section">
-                            <div class="menu-section-title" data-i18n="menu.appearance">Apariencia</div>
-                            <div class="menu-item theme-toggle" onclick="toggleTheme()">
-                                <span class="menu-item-icon" id="theme-icon">🌙</span>
-                                <span data-i18n="menu.darkMode">Modo Oscuro</span>
-                                <label class="switch">
-                                    <input type="checkbox" id="theme-switch" onchange="toggleTheme()">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div class="menu-item">
-                                <span class="menu-item-icon">🌐</span>
-                                <span data-i18n="menu.language">Idioma</span>
-                                <select id="lang-selector" class="lang-selector-menu" onchange="I18n.setLanguage(this.value)">
-                                    <option value="es">Español</option>
-                                    <option value="en">English</option>
-                                    <option value="fr">Français</option>
-                                </select>
-                            </div>
-                        </div>
-                        <!-- Cerrar sesión -->
-                        <div class="menu-section">
-                            <div class="menu-item danger" onclick="logout()">
-                                <span class="menu-item-icon">🚪</span>
-                                <span data-i18n="menu.logout">Cerrar Sesión</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <div class="main-content">
-            <div class="filters">
-                <h2 data-i18n="filters.title">Filtros de Búsqueda</h2>
-                <div class="filter-grid">
-                    <div class="form-group">
-                        <label data-i18n="filters.format">Formato</label>
-                        <select id="filter-formato">
-                            <option value="" data-i18n="filters.allFormats">Todos los formatos</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label data-i18n="filters.model">Modelo</label>
-                        <select id="filter-serie">
-                            <option value="" data-i18n="filters.allModels">Todos los modelos</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label data-i18n="filters.color">Color</label>
-                        <select id="filter-color">
-                            <option value="" data-i18n="filters.allColors">Todos los colores</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label data-i18n="filters.quality">Calidad</label>
-                        <select id="filter-calidad">
-                            <option value="" data-i18n="filters.allQualities">Todas las calidades</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label data-i18n="filters.minStock">Existencias Mínimas</label>
-                        <input type="number" id="filter-existencias" data-i18n-placeholder="filters.placeholder"
-                            placeholder="Ej: 100">
-                    </div>
-                </div>
-                <div class="button-group">
-                    <button class="btn-primary" onclick="buscarStocks()">
-                        <span data-i18n="common.search">Buscar</span>
-                    </button>
-                    <button class="btn-secondary" onclick="cargarTodos()">
-                        <span data-i18n="common.viewAll">Ver Todos</span>
-                    </button>
-                    <button class="btn-clear" onclick="limpiarFiltros()">
-                        <span data-i18n="common.clear">Limpiar</span>
-                    </button>
-                </div>
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-toggle-container">
+                <button class="sidebar-toggle" title="Ctrl+B">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
             </div>
 
-            <div class="table-container" id="table-container">
-                <!-- El spinner se muestra como modal overlay mediante mostrarCargando() -->
+            <nav class="sidebar-nav">
+                <!-- Items principales (siempre visibles) -->
+                <div class="sidebar-section">
+                    <a class="sidebar-item" data-page="index.html" data-tooltip="Stocks" onclick="SidebarNav.navigateTo('index.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.stocks">Stocks</span>
+                    </a>
+                    <a class="sidebar-item" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.myProposals">Mis Propuestas</span>
+                    </a>
+                </div>
+
+                <!-- Acordeón Administración (solo admin) -->
+                <div class="sidebar-accordion" id="sidebar-admin-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                            <span data-i18n="menu.administration">Administración</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="dashboard.html" data-tooltip="Dashboard" onclick="SidebarNav.navigateTo('dashboard.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.dashboard">Dashboard</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allProposals">Propuestas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-consultas.html" data-tooltip="Consultas" onclick="SidebarNav.navigateTo('todas-consultas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allInquiries">Consultas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="usuarios.html" data-tooltip="Usuarios" onclick="SidebarNav.navigateTo('usuarios.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.users">Usuarios</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Acordeón Configuración (solo admin) -->
+                <div class="sidebar-accordion" id="sidebar-config-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                            <span data-i18n="menu.settings">Configuración</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="email-config.html" data-tooltip="Email" onclick="SidebarNav.navigateTo('email-config.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.emailConfig">Email</span>
+                        </a>
+                        <a class="sidebar-item" data-page="parametros.html" data-tooltip="Parámetros" onclick="SidebarNav.navigateTo('parametros.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.parameters">Parámetros</span>
+                        </a>
+                        <a class="sidebar-item" data-page="empresa-logo.html" data-tooltip="Logo" onclick="SidebarNav.navigateTo('empresa-logo.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.companyLogo">Logo</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Footer del Sidebar -->
+            <div class="sidebar-footer">
+                <a class="sidebar-item" data-tooltip="Cerrar Sesión" onclick="logout()">
+                    <span class="sidebar-item-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </span>
+                    <span class="sidebar-item-text" data-i18n="menu.logout">Cerrar Sesión</span>
+                </a>
             </div>
+        </aside>
+
+        <!-- Overlay para móvil -->
+        <div class="sidebar-overlay"></div>
+
+        <!-- Contenedor Principal -->
+        <div class="main-wrapper">
+            <!-- Área de Contenido Principal -->
+            <main class="main-content-area">
+                <div class="filters">
+                    <h2 data-i18n="filters.title">Filtros de Búsqueda</h2>
+                    <div class="filter-grid">
+                        <div class="form-group">
+                            <label data-i18n="filters.format">Formato</label>
+                            <select id="filter-formato">
+                                <option value="" data-i18n="filters.allFormats">Todos los formatos</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="filters.model">Modelo</label>
+                            <select id="filter-serie">
+                                <option value="" data-i18n="filters.allModels">Todos los modelos</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="filters.color">Color</label>
+                            <select id="filter-color">
+                                <option value="" data-i18n="filters.allColors">Todos los colores</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="filters.quality">Calidad</label>
+                            <select id="filter-calidad">
+                                <option value="" data-i18n="filters.allQualities">Todas las calidades</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="filters.minStock">Existencias Mínimas</label>
+                            <input type="number" id="filter-existencias" data-i18n-placeholder="filters.placeholder" placeholder="Ej: 100">
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="buscarStocks()">
+                            <span data-i18n="common.search">Buscar</span>
+                        </button>
+                        <button class="btn-secondary" onclick="cargarTodos()">
+                            <span data-i18n="common.viewAll">Ver Todos</span>
+                        </button>
+                        <button class="btn-clear" onclick="limpiarFiltros()">
+                            <span data-i18n="common.clear">Limpiar</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container" id="table-container">
+                    <!-- El spinner se muestra como modal overlay mediante mostrarCargando() -->
+                </div>
+            </main>
         </div>
     </div>
 
-    <!-- Modal de detalle del stock (ORIGINAL) -->
+    <!-- Modal de detalle del stock -->
     <div class="detail-modal" id="detail-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -189,7 +307,7 @@
         </div>
     </div>
 
-    <!-- ==================== MODAL DEL CARRITO (NUEVO) ==================== -->
+    <!-- Modal del Carrito -->
     <div id="carrito-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -200,14 +318,22 @@
         </div>
     </div>
 
-    <!-- ==================== BOTÓN FLOTANTE DEL CARRITO (NUEVO) ==================== -->
+    <!-- Botón flotante del Carrito -->
     <button class="carrito-btn" onclick="verCarrito()" title="Ver carrito">
         🛒
         <span class="carrito-badge" id="carrito-badge" style="display: none;">0</span>
     </button>
 
-    <script src="js/i18n/i18n.js?v=20260127"></script>
-    <script src="js/app.js?v=20260127"></script>
+    <script src="js/i18n/i18n.js?v=20260128"></script>
+    <script src="js/sidebar.js?v=20260128"></script>
+    <script src="js/app.js?v=20260128"></script>
+    <script>
+        // Función para toggle de acordeones
+        function toggleAccordion(header) {
+            const accordion = header.closest('.sidebar-accordion');
+            accordion.classList.toggle('expanded');
+        }
+    </script>
 </body>
 
 </html>

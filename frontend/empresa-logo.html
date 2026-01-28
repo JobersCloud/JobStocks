@@ -155,6 +155,47 @@
                                 style="background: linear-gradient(135deg, #607D8B 0%, #37474F 100%);"></div>
                             <span class="theme-name">Grafito</span>
                         </div>
+                        <!-- Temas Profesionales -->
+                        <div class="theme-card" data-theme="corporativo" onclick="selectTheme('corporativo')">
+                            <div class="theme-preview"
+                                style="background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 100%);"></div>
+                            <span class="theme-name">Corporativo</span>
+                        </div>
+                        <div class="theme-card" data-theme="ejecutivo" onclick="selectTheme('ejecutivo')">
+                            <div class="theme-preview"
+                                style="background: linear-gradient(135deg, #2d3436 0%, #1a1d1e 100%);"></div>
+                            <span class="theme-name">Ejecutivo</span>
+                        </div>
+                        <div class="theme-card" data-theme="oceano" onclick="selectTheme('oceano')">
+                            <div class="theme-preview"
+                                style="background: linear-gradient(135deg, #006994 0%, #004d6d 100%);"></div>
+                            <span class="theme-name">Océano</span>
+                        </div>
+                        <div class="theme-card" data-theme="bosque" onclick="selectTheme('bosque')">
+                            <div class="theme-preview"
+                                style="background: linear-gradient(135deg, #1d4e3e 0%, #0f2d23 100%);"></div>
+                            <span class="theme-name">Bosque</span>
+                        </div>
+                        <div class="theme-card" data-theme="vino" onclick="selectTheme('vino')">
+                            <div class="theme-preview"
+                                style="background: linear-gradient(135deg, #722f37 0%, #4a1f24 100%);"></div>
+                            <span class="theme-name">Vino</span>
+                        </div>
+                        <div class="theme-card" data-theme="medianoche" onclick="selectTheme('medianoche')">
+                            <div class="theme-preview"
+                                style="background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);"></div>
+                            <span class="theme-name">Medianoche</span>
+                        </div>
+                        <div class="theme-card" data-theme="titanio" onclick="selectTheme('titanio')">
+                            <div class="theme-preview"
+                                style="background: linear-gradient(135deg, #475569 0%, #1e293b 100%);"></div>
+                            <span class="theme-name">Titanio</span>
+                        </div>
+                        <div class="theme-card" data-theme="bronce" onclick="selectTheme('bronce')">
+                            <div class="theme-preview"
+                                style="background: linear-gradient(135deg, #8b5a2b 0%, #5c3a1c 100%);"></div>
+                            <span class="theme-name">Bronce</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -520,7 +561,7 @@
 
         // Aplicar tema de color
         function applyColorTheme(tema) {
-            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito'];
+            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito', 'corporativo', 'ejecutivo', 'oceano', 'bosque', 'vino', 'medianoche', 'titanio', 'bronce'];
             if (!validThemes.includes(tema)) tema = 'rubi';
             document.documentElement.setAttribute('data-color-theme', tema);
             localStorage.setItem('colorTheme', tema);

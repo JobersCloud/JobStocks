@@ -72,7 +72,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.10.9'
+APP_VERSION = 'v1.11.3'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -622,6 +622,15 @@ def serve_login_js():
 @app.route('/js/register.js')
 def serve_register_js():
     return send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'register.js', mimetype='application/javascript')
+
+@app.route('/js/sidebar.js')
+@login_required
+def serve_sidebar_js():
+    response = send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'sidebar.js', mimetype='application/javascript')
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 @app.route('/js/i18n/i18n.js')
 def serve_i18n_js():
