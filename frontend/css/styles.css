@@ -412,18 +412,18 @@
     display: block;
 }
 
-/* Líneas del icono hamburguesa - color explícito para máxima visibilidad */
-.sidebar-toggle svg line {
+/* Icono hamburguesa - color explícito para máxima visibilidad */
+.sidebar-toggle svg path {
     stroke: #1f2937 !important;
     stroke-width: 2.5px !important;
     stroke-linecap: round !important;
 }
 
-[data-theme="dark"] .sidebar-toggle svg line {
+[data-theme="dark"] .sidebar-toggle svg path {
     stroke: #f1f5f9 !important;
 }
 
-.sidebar-toggle:hover svg line {
+.sidebar-toggle:hover svg path {
     stroke: white !important;
 }
 
@@ -1095,7 +1095,7 @@
     background: rgba(255, 255, 255, 0.25) !important;
 }
 
-.sidebar-toggle svg line {
+.sidebar-toggle svg path {
     stroke: white !important;
 }
 

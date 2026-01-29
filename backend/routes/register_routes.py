@@ -362,10 +362,11 @@ def resend_verification():
                 'message': 'Email de verificación reenviado. Revisa tu bandeja de entrada.'
             }), 200
         except Exception as e:
-            print(f"Error al reenviar email: {e}")
+            error_msg = str(e)
+            print(f"Error al reenviar email: {error_msg}")
             return jsonify({
                 'success': False,
-                'message': 'Error al enviar el email. Verifica la configuración de email del sistema.'
+                'message': f'Error al enviar el email: {error_msg}'
             }), 500
 
     except Exception as e:
