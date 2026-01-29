@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-color-theme="none">
 
 <head>
     <meta charset="UTF-8">
@@ -31,11 +31,10 @@
             document.documentElement.setAttribute('data-theme', theme);
             document.documentElement.setAttribute('data-color-theme', colorTheme);
 
-            // Inyectar colores como CSS inline con !important para ganar especificidad
-            const style = document.createElement('style');
-            style.id = 'theme-colors-inline';
-            style.textContent = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
-            document.head.appendChild(style);
+            // Aplicar colores directamente en el elemento HTML (máxima prioridad)
+            document.documentElement.style.setProperty('--primary', colors.primary, 'important');
+            document.documentElement.style.setProperty('--primary-dark', colors.primaryDark, 'important');
+            document.documentElement.style.setProperty('--primary-light', colors.primaryLight, 'important');
 
             // Favicon
             const faviconUrl = localStorage.getItem('faviconUrl');
@@ -47,7 +46,7 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.12.18">
+    <link rel="stylesheet" href="css/styles.css?v=1.12.20">
 </head>
 
 <body>

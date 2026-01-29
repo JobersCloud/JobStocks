@@ -369,14 +369,10 @@ function applyColorTheme(tema) {
     document.documentElement.setAttribute('data-color-theme', tema);
     localStorage.setItem('colorTheme', tema);
 
-    // Actualizar estilo inline con !important para evitar flash
-    let inlineStyle = document.getElementById('theme-colors-inline');
-    if (!inlineStyle) {
-        inlineStyle = document.createElement('style');
-        inlineStyle.id = 'theme-colors-inline';
-        document.head.appendChild(inlineStyle);
-    }
-    inlineStyle.textContent = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
+    // Aplicar colores directamente en el elemento HTML (máxima prioridad)
+    document.documentElement.style.setProperty('--primary', colors.primary, 'important');
+    document.documentElement.style.setProperty('--primary-dark', colors.primaryDark, 'important');
+    document.documentElement.style.setProperty('--primary-light', colors.primaryLight, 'important');
 
     console.log(`🎨 Tema de color aplicado: ${tema}`);
 }
