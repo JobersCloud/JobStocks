@@ -4,16 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Gestión de Stocks</title>
-    <link rel="stylesheet" href="css/styles.css">
     <link rel="icon" type="image/x-icon" href="/assets/faviconjobers.ico">
     <script>
-        // Cargar tema guardado inmediatamente para evitar flash
+        // Cargar tema ANTES del CSS para evitar flash
         (function() {
             const theme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', theme);
             const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
+            document.documentElement.setAttribute('data-theme', theme);
             document.documentElement.setAttribute('data-color-theme', colorTheme);
+            document.documentElement.style.visibility = 'hidden';
         })();
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        document.documentElement.style.visibility = 'visible';
     </script>
 </head>
 <body>
