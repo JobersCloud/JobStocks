@@ -1,5 +1,71 @@
 // sidebar.js - Control del sidebar colapsable
 
+// Función global para toggle móvil (disponible inmediatamente)
+window.toggleSidebarMobile = function() {
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
+    var mobileMenu = document.getElementById('mobile-menu-panel');
+
+    if (!sidebar) return;
+
+    // Verificar si está abierto por la existencia del panel
+    var isOpen = mobileMenu !== null;
+
+    if (isOpen) {
+        // Cerrar
+        mobileMenu.remove();
+        if (overlay) overlay.style.display = '';
+    } else {
+        // Abrir - crear menú móvil clonando el sidebar
+        mobileMenu = sidebar.cloneNode(true);
+        mobileMenu.id = 'mobile-menu-panel';
+        mobileMenu.className = 'sidebar mobile-open';
+        mobileMenu.style.cssText = 'position: fixed !important; left: 0 !important; top: 70px !important; bottom: 0 !important; width: 240px !important; min-width: 240px !important; z-index: 99999 !important; display: flex !important; flex-direction: column !important; transform: none !important; visibility: visible !important; opacity: 1 !important;';
+
+        // Mostrar todos los textos y secciones
+        var allTexts = mobileMenu.querySelectorAll('.sidebar-item-text, .sidebar-section-title, .sidebar-accordion-title span, .sidebar-accordion-arrow');
+        allTexts.forEach(function(el) {
+            el.style.cssText = 'opacity: 1 !important; width: auto !important; display: inline !important; overflow: visible !important;';
+        });
+
+        var allItems = mobileMenu.querySelectorAll('.sidebar-item');
+        allItems.forEach(function(el) {
+            el.style.cssText = 'justify-content: flex-start !important; padding: 12px 14px !important;';
+        });
+
+        // Mostrar secciones de admin si estaban visibles
+        var adminSections = mobileMenu.querySelectorAll('.sidebar-accordion, .sidebar-section');
+        adminSections.forEach(function(el) {
+            if (el.style.display !== 'none') {
+                el.style.display = 'block';
+            }
+        });
+
+        // Ocultar el toggle (no se necesita en móvil)
+        var toggleContainer = mobileMenu.querySelector('.sidebar-toggle-container');
+        if (toggleContainer) toggleContainer.style.display = 'none';
+
+        document.body.appendChild(mobileMenu);
+        if (overlay) {
+            overlay.style.display = 'block';
+            overlay.onclick = function() { toggleSidebarMobile(); };
+        }
+    }
+};
+
+// Limpiar estilos móviles al cambiar a desktop
+window.addEventListener('resize', function() {
+    if (window.innerWidth > 768) {
+        var sidebar = document.querySelector('.sidebar');
+        var overlay = document.querySelector('.sidebar-overlay');
+        if (sidebar) {
+            sidebar.classList.remove('mobile-open');
+            sidebar.style.cssText = '';
+        }
+        if (overlay) overlay.style.display = '';
+    }
+});
+
 (function() {
     'use strict';
 
