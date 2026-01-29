@@ -49,6 +49,9 @@
                 toggle();
             }
         });
+
+        // Limpiar estilos móviles al cambiar tamaño de ventana
+        window.addEventListener('resize', handleResize);
     }
 
     /**
@@ -65,18 +68,60 @@
      * Toggle para móvil
      */
     function toggleMobile() {
+        if (!sidebar) {
+            sidebar = document.querySelector('.sidebar');
+        }
+        if (!overlay) {
+            overlay = document.querySelector('.sidebar-overlay');
+        }
         if (!sidebar) return;
 
-        sidebar.classList.toggle('mobile-open');
+        // Solo funciona en móvil
+        if (window.innerWidth > 768) return;
+
+        const isOpen = sidebar.classList.contains('mobile-open');
+
+        if (isOpen) {
+            sidebar.classList.remove('mobile-open');
+            sidebar.style.transform = '';
+            sidebar.style.zIndex = '';
+            if (overlay) overlay.style.display = '';
+        } else {
+            sidebar.classList.add('mobile-open');
+            sidebar.style.transform = 'translateX(0)';
+            sidebar.style.zIndex = '9999';
+            if (overlay) overlay.style.display = 'block';
+        }
     }
 
     /**
      * Cerrar sidebar en móvil
      */
     function closeMobile() {
+        if (!sidebar) {
+            sidebar = document.querySelector('.sidebar');
+        }
+        if (!overlay) {
+            overlay = document.querySelector('.sidebar-overlay');
+        }
         if (!sidebar) return;
 
         sidebar.classList.remove('mobile-open');
+        sidebar.style.transform = '';
+        sidebar.style.zIndex = '';
+        if (overlay) overlay.style.display = '';
+    }
+
+    /**
+     * Limpiar estilos móviles al cambiar a desktop
+     */
+    function handleResize() {
+        if (window.innerWidth > 768 && sidebar) {
+            sidebar.classList.remove('mobile-open');
+            sidebar.style.transform = '';
+            sidebar.style.zIndex = '';
+            if (overlay) overlay.style.display = '';
+        }
     }
 
     /**

@@ -667,12 +667,16 @@
     padding: 8px;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
 }
 
 .mobile-menu-btn svg {
     width: 24px;
     height: 24px;
     stroke: white;
+    pointer-events: none; /* El clic lo recibe el botón, no el SVG */
 }
 
 .top-header-left {
@@ -928,13 +932,24 @@
 
 @media (max-width: 768px) {
     .sidebar {
-        transform: translateX(-100%);
-        width: 240px;
+        transform: translateX(-100%) !important;
+        width: 240px !important;
+        min-width: 240px !important;
         top: 70px;
+        position: fixed !important;
+        left: 0;
+        bottom: 0;
+        transition: transform 0.3s ease !important;
     }
 
     .sidebar.mobile-open {
-        transform: translateX(0);
+        transform: translateX(0) !important;
+        z-index: 1000 !important;
+    }
+
+    /* Ocultar el toggle del sidebar en móvil - usamos el botón del header */
+    .sidebar-toggle-container {
+        display: none !important;
     }
 
     .main-content-area {
@@ -986,19 +1001,21 @@
 
     /* Botón hamburguesa para móvil */
     .mobile-menu-btn {
-        display: flex;
+        display: flex !important;
         background: var(--bg-tertiary);
         border: 1px solid var(--border);
         border-radius: var(--radius);
         color: var(--primary);
         cursor: pointer;
         padding: 8px;
+        pointer-events: auto;
     }
 
     .mobile-menu-btn svg {
         width: 24px;
         height: 24px;
         stroke: var(--primary);
+        pointer-events: none;
     }
 
     /* Título más pequeño en móvil */
@@ -1080,10 +1097,12 @@
 .top-header .mobile-menu-btn {
     background: rgba(255, 255, 255, 0.15) !important;
     border-color: rgba(255, 255, 255, 0.3) !important;
+    pointer-events: auto !important;
 }
 
 .top-header .mobile-menu-btn svg {
     stroke: white !important;
+    pointer-events: none !important;
 }
 
 /* Logo en header - invertir para que se vea en fondo oscuro */
