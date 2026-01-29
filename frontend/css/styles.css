@@ -386,8 +386,8 @@
 }
 
 .sidebar-toggle {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: var(--radius);
     width: 32px;
     height: 32px;
@@ -396,7 +396,9 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
-    color: var(--text-primary);
+    color: white;
+    font-size: 18px;
+    line-height: 1;
 }
 
 .sidebar-toggle:hover {
