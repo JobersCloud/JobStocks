@@ -24,3 +24,5 @@ cookies.txt
 # Temp files
 screenshots_promo/*_frame_*.png
 audio_promo/
+%USERPROFILE%.sshid_ed25519
+%USERPROFILE%.sshid_ed25519.pub

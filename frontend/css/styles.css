@@ -1016,6 +1016,164 @@
     }
 }
 
+/* ==================== ESTILOS DE TEMA CON PRESENCIA ==================== */
+
+/* Header con barra de color del tema en la parte superior */
+.top-header {
+    border-top: 3px solid var(--primary) !important;
+}
+
+/* Items activos del sidebar con color del tema */
+.sidebar-item.active {
+    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+    color: white !important;
+}
+
+.sidebar-item.active svg {
+    stroke: white !important;
+}
+
+.sidebar-item.active .sidebar-item-text {
+    color: white !important;
+}
+
+/* Hover de items del sidebar con tinte del tema */
+.sidebar-item:hover:not(.active) {
+    background: var(--accent);
+}
+
+/* Acordeón headers con borde lateral del tema */
+.sidebar-accordion-header {
+    border-left: 3px solid transparent;
+}
+
+.sidebar-accordion-header:hover {
+    border-left-color: var(--primary);
+    background: var(--accent);
+}
+
+.sidebar-accordion.expanded > .sidebar-accordion-header {
+    border-left-color: var(--primary);
+    background: var(--accent);
+}
+
+/* Iconos del acordeón con color del tema cuando expandido */
+.sidebar-accordion.expanded > .sidebar-accordion-header svg {
+    stroke: var(--primary);
+}
+
+/* Logo text con color del tema */
+.header-logo-text {
+    color: var(--primary) !important;
+}
+
+/* Botón menú usuario con hover del tema */
+.menu-btn:hover {
+    border-color: var(--primary);
+    background: var(--accent);
+}
+
+/* Footer del sidebar con línea del tema */
+.sidebar-footer {
+    border-top: 1px solid var(--primary);
+    background: var(--accent);
+}
+
+.sidebar-footer .sidebar-item:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.sidebar-footer .sidebar-item:hover svg {
+    stroke: white;
+}
+
+/* Cards y paneles con borde superior del tema */
+.logo-card,
+.config-card,
+.email-config-card,
+.param-section,
+.proposal-card,
+.user-card,
+.inquiry-card {
+    border-top: 3px solid var(--primary);
+}
+
+/* Headers de tablas con gradiente del tema */
+.users-table thead,
+.proposals-table thead,
+.inquiries-table thead,
+.config-list thead,
+.audit-table thead {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+}
+
+/* Selectores e inputs con focus del tema */
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(var(--primary), 0.2);
+    outline: none;
+}
+
+/* Toggle switches con color del tema */
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--primary);
+}
+
+/* Botones primarios con colores del tema */
+.btn-primary,
+.btn-action.btn-edit,
+button[type="submit"]:not(.btn-delete) {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover,
+.btn-action.btn-edit:hover {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+}
+
+/* Scrollbar del sidebar con color del tema */
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: var(--primary-light);
+    border-radius: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* Paginación con colores del tema */
+.pagination-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+/* Badges de estado con colores que respetan el tema */
+.status-badge {
+    border: 1px solid var(--primary);
+}
+
+/* Links con color del tema */
+a:not(.sidebar-item):not(.btn):hover {
+    color: var(--primary);
+}
+
+/* Selector de tema activo */
+.theme-card.selected {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--accent);
+}
+
+/* Modal headers con gradiente del tema */
+.modal-header,
+#edit-modal .modal-header,
+#detail-modal .modal-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+}
+
 [data-theme="dark"] select,
 [data-theme="dark"] input[type="text"],
 [data-theme="dark"] input[type="number"],
