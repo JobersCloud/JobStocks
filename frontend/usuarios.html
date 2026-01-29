@@ -1134,7 +1134,10 @@
             try {
                 const response = await fetch(`${API_URL}/api/usuarios/${userId}/activar`, {
                     method: 'POST',
-                    credentials: 'include'
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRF-Token': csrfToken
+                    }
                 });
 
                 if (!response.ok) {
@@ -1161,7 +1164,10 @@
             try {
                 const response = await fetch(`${API_URL}/api/usuarios/${userId}/desactivar`, {
                     method: 'POST',
-                    credentials: 'include'
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRF-Token': csrfToken
+                    }
                 });
 
                 if (!response.ok) {
@@ -1191,7 +1197,8 @@
                     method: 'POST',
                     credentials: 'include',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
                     },
                     body: JSON.stringify({ email, empresa_id: empresaId })
                 });
@@ -1222,7 +1229,8 @@
                     method: 'POST',
                     credentials: 'include',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
                     },
                     body: JSON.stringify({ verificado })
                 });
@@ -1267,7 +1275,8 @@
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
                     },
                     body: JSON.stringify({ rol: newRole })
                 });
@@ -1478,7 +1487,8 @@
                     method: isEditing ? 'PUT' : 'POST',
                     credentials: 'include',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
                     },
                     body: JSON.stringify(data)
                 });
