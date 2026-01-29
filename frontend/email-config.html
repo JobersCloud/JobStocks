@@ -344,6 +344,22 @@
 
         let currentUser = null;
         let configs = [];
+        let csrfToken = null;
+
+        // ==================== CSRF TOKEN ====================
+        async function obtenerCsrfToken() {
+            try {
+                csrfToken = localStorage.getItem('csrf_token');
+                const response = await fetch(`${API_URL}/api/csrf-token`, { credentials: 'include' });
+                if (response.ok) {
+                    const data = await response.json();
+                    csrfToken = data.csrf_token;
+                    localStorage.setItem('csrf_token', csrfToken);
+                }
+            } catch (e) {
+                console.error('Error obteniendo CSRF token:', e);
+            }
+        }
 
         // ==================== TEMA ====================
         function loadTheme() {
@@ -438,6 +454,7 @@
             const langSelector = document.getElementById('lang-selector');
             if (langSelector) langSelector.value = I18n.currentLang;
             await checkAuth();
+            await obtenerCsrfToken();
             await loadConfigs();
             document.getElementById('edit-form').addEventListener('submit', saveConfig);
         });
@@ -694,7 +711,8 @@
                     method: 'POST',
                     credentials: 'include',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
                     },
                     body: JSON.stringify(data)
                 });
@@ -709,7 +727,7 @@
                         btn.style.background = '';
                     }, 3000);
                 } else {
-                    alert('❌ Error: ' + result.error);
+                    alert('❌ Error: ' + (result.error || result.message || 'Error desconocido'));
                     btn.innerHTML = originalText;
                 }
             } catch (error) {
