@@ -412,19 +412,11 @@
     display: block;
 }
 
-/* Icono hamburguesa - color explícito para máxima visibilidad */
+/* Icono hamburguesa - siempre blanco sobre fondo del tema */
 .sidebar-toggle svg path {
-    stroke: #1f2937 !important;
+    stroke: white !important;
     stroke-width: 2.5px !important;
     stroke-linecap: round !important;
-}
-
-[data-theme="dark"] .sidebar-toggle svg path {
-    stroke: #f1f5f9 !important;
-}
-
-.sidebar-toggle:hover svg path {
-    stroke: white !important;
 }
 
 .sidebar.collapsed .sidebar-toggle svg {
