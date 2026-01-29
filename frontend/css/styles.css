@@ -6780,6 +6780,32 @@ tbody tr:hover {
     background: #fff5f5;
 }
 
+.menu-divider {
+    height: 1px;
+    background: #e5e5e5;
+    margin: 8px 0;
+}
+
+[data-theme="dark"] .menu-divider {
+    background: var(--border-color);
+}
+
+.menu-item-logout {
+    color: var(--danger) !important;
+}
+
+.menu-item-logout:hover {
+    background: rgba(239, 68, 68, 0.1) !important;
+}
+
+[data-theme="dark"] .menu-item-logout {
+    color: #ff6b6b !important;
+}
+
+[data-theme="dark"] .menu-item-logout:hover {
+    background: rgba(220, 53, 69, 0.15) !important;
+}
+
 /* Responsive para menú */
 @media (max-width: 768px) {
     .menu-dropdown {
