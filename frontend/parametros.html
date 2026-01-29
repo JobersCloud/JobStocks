@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parámetros del Sistema - Administración</title>
+    <title>Parametros del Sistema - Administracion</title>
     <link rel="stylesheet" href="css/styles.css">
     <script>
         // Cargar tema guardado inmediatamente para evitar flash
         (function() {
-            const theme = localStorage.getItem('theme') || 'light';
+            const theme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
             const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
             document.documentElement.setAttribute('data-color-theme', colorTheme);
-            // Crear favicon desde localStorage (sin link estático para evitar flash)
             const faviconUrl = localStorage.getItem('faviconUrl');
             if (faviconUrl) {
                 const link = document.createElement('link');
@@ -24,73 +23,323 @@
     </script>
 </head>
 <body>
-    <div class="container">
-        <!-- Header de la página -->
-        <div class="page-header">
-            <div class="logo-section">
-                <a href="#" onclick="goBack(); return false;" style="display: flex; align-items: center;">
-                    <img src="" alt="Logo" class="logo" style="cursor: pointer; visibility: hidden;">
-                </a>
-                <h1 data-i18n="menu.parameters">Parámetros</h1>
+    <!-- ==================== MASTERPAGE LAYOUT ==================== -->
+    <div class="app-layout">
+        <!-- Header Superior FIJO -->
+        <header class="top-header">
+            <div class="top-header-left">
+                <button class="mobile-menu-btn" onclick="SidebarNav.toggleMobile()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="header-logo">
+                    <img src="" alt="Logo" id="header-logo">
+                    <span class="header-logo-text" id="header-company-name">Stocks</span>
+                </div>
+                <div class="header-divider"></div>
+                <div>
+                    <h1 class="top-header-title" data-i18n="menu.parameters">Parametros</h1>
+                </div>
             </div>
-            <div class="header-actions">
-                <button class="back-btn" onclick="goBack()">
-                    <span data-i18n="proposals.backToStocks">Volver a Stocks</span>
+            <div class="top-header-right">
+                <select id="lang-selector" class="lang-selector-header" onchange="I18n.setLanguage(this.value)">
+                    <option value="es">ES</option>
+                    <option value="en">EN</option>
+                    <option value="fr">FR</option>
+                </select>
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">
+                    <span id="theme-icon">🌙</span>
+                </button>
+                <div class="menu-container">
+                    <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
+                        <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span class="user-name-display" id="user-name-display">Usuario</span>
+                    </button>
+                    <div class="menu-dropdown" id="menu-dropdown">
+                        <div class="menu-header">
+                            <div class="user-name" id="menu-user-name">Usuario</div>
+                            <div class="user-rol" id="menu-user-rol">usuario</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-toggle-container">
+                <button class="sidebar-toggle" title="Ctrl+B">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
                 </button>
             </div>
-        </div>
 
-        <!-- Contenedor principal -->
-        <div class="params-container">
-            <div class="params-content">
-                <div class="info-box">
-                    <p>Los parámetros del sistema controlan el comportamiento de la aplicación. Los cambios se aplican inmediatamente.</p>
+            <nav class="sidebar-nav">
+                <!-- Items principales -->
+                <div class="sidebar-section">
+                    <a class="sidebar-item" data-page="index.html" data-tooltip="Stocks" onclick="SidebarNav.navigateTo('index.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.stocks">Stocks</span>
+                    </a>
+                    <a class="sidebar-item" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.myProposals">Mis Propuestas</span>
+                    </a>
                 </div>
 
-                <!-- Loading state -->
-                <div class="params-loading" id="params-loading">
-                    <div class="spinner"></div>
-                    <p data-i18n="common.loading">Cargando...</p>
+                <!-- Acordeon Administracion -->
+                <div class="sidebar-accordion expanded" id="sidebar-admin-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                            <span data-i18n="menu.administration">Administracion</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="dashboard.html" data-tooltip="Dashboard" onclick="SidebarNav.navigateTo('dashboard.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.dashboard">Dashboard</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allProposals">Propuestas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-consultas.html" data-tooltip="Consultas" onclick="SidebarNav.navigateTo('todas-consultas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allInquiries">Consultas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="usuarios.html" data-tooltip="Usuarios" onclick="SidebarNav.navigateTo('usuarios.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.users">Usuarios</span>
+                        </a>
+                    </div>
                 </div>
 
-                <!-- Empty state -->
-                <div class="params-empty" id="params-empty" style="display: none;">
-                    <div class="params-empty-icon">⚙️</div>
-                    <h3>No hay parámetros configurados</h3>
+                <!-- Acordeon Configuracion -->
+                <div class="sidebar-accordion expanded" id="sidebar-config-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                            <span data-i18n="menu.settings">Configuracion</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="email-config.html" data-tooltip="Email" onclick="SidebarNav.navigateTo('email-config.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.emailConfig">Email</span>
+                        </a>
+                        <a class="sidebar-item active" data-page="parametros.html" data-tooltip="Parametros" onclick="SidebarNav.navigateTo('parametros.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.parameters">Parametros</span>
+                        </a>
+                        <a class="sidebar-item" data-page="empresa-logo.html" data-tooltip="Logo" onclick="SidebarNav.navigateTo('empresa-logo.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.companyLogo">Logo</span>
+                        </a>
+                    </div>
                 </div>
+            </nav>
 
-                <!-- Lista de parámetros -->
-                <div class="params-list" id="params-list" style="display: none;">
-                </div>
+            <!-- Footer del Sidebar -->
+            <div class="sidebar-footer">
+                <a class="sidebar-item" data-tooltip="Cerrar Sesion" onclick="logout()">
+                    <span class="sidebar-item-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </span>
+                    <span class="sidebar-item-text" data-i18n="menu.logout">Cerrar Sesion</span>
+                </a>
             </div>
+        </aside>
+
+        <!-- Overlay para movil -->
+        <div class="sidebar-overlay"></div>
+
+        <!-- Contenedor Principal -->
+        <div class="main-wrapper">
+            <main class="main-content-area">
+                <!-- Contenedor principal -->
+                <div class="params-container">
+                    <div class="params-content">
+                        <div class="info-box">
+                            <p>Los parametros del sistema controlan el comportamiento de la aplicacion. Los cambios se aplican inmediatamente.</p>
+                        </div>
+
+                        <!-- Loading state -->
+                        <div class="params-loading" id="params-loading">
+                            <div class="spinner"></div>
+                            <p data-i18n="common.loading">Cargando...</p>
+                        </div>
+
+                        <!-- Empty state -->
+                        <div class="params-empty" id="params-empty" style="display: none;">
+                            <div class="params-empty-icon">⚙️</div>
+                            <h3>No hay parametros configurados</h3>
+                        </div>
+
+                        <!-- Lista de parametros -->
+                        <div class="params-list" id="params-list" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
 
     <script src="js/i18n/i18n.js"></script>
+    <script src="js/sidebar.js"></script>
     <script>
-        // ==================== CONFIGURACIÓN ====================
+        // ==================== CONFIGURACION ====================
         const hostname = window.location.hostname;
         const protocol = window.location.protocol;
         const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
         const API_URL = isLocalhost ? `${protocol}//${hostname}:5000` : `${protocol}//${hostname}`;
 
-        // ==================== LOGO DINÁMICO POR EMPRESA ====================
+        let currentUser = null;
+        let params = [];
+        let csrfToken = null;
+
+        // ==================== TEMA ====================
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            applyTheme(savedTheme);
+        }
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const icon = document.getElementById('theme-icon');
+            if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        }
+
+        // ==================== ACORDEON ====================
+        function toggleAccordion(header) {
+            const accordion = header.closest('.sidebar-accordion');
+            accordion.classList.toggle('expanded');
+        }
+
+        // ==================== MENU USUARIO ====================
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('menu-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        document.addEventListener('click', (e) => {
+            const menuContainer = document.querySelector('.menu-container');
+            const dropdown = document.getElementById('menu-dropdown');
+            if (menuContainer && !menuContainer.contains(e.target) && dropdown) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // ==================== LOGO DINAMICO POR EMPRESA ====================
         function applyColorTheme(tema) {
-            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito'];
+            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito',
+                                 'corporativo', 'ejecutivo', 'oceano', 'bosque', 'vino',
+                                 'medianoche', 'titanio', 'bronce'];
             if (!validThemes.includes(tema)) tema = 'rubi';
             document.documentElement.setAttribute('data-color-theme', tema);
             localStorage.setItem('colorTheme', tema);
         }
 
         async function cargarLogoEmpresa() {
-            // Usar connection (empresa_cli_id) para endpoints de logo
             const connection = localStorage.getItem('connection');
             if (!connection) {
-                console.warn('No hay connection en localStorage, usando valores por defecto');
                 applyColorTheme('rubi');
                 return;
             }
-            const logoElements = document.querySelectorAll('.logo');
+            const logoElements = document.querySelectorAll('.logo, #header-logo');
             try {
                 const configResponse = await fetch(`${API_URL}/api/empresa/${connection}/config`);
                 const config = await configResponse.json();
@@ -111,7 +360,6 @@
                     });
                 }
             } catch (error) {
-                console.log('Error al cargar logo:', error);
                 applyColorTheme('rubi');
                 logoElements.forEach(el => {
                     el.src = 'assets/logo.svg';
@@ -121,16 +369,13 @@
             }
         }
 
-        let params = [];
-        let csrfToken = null;
-
-        // ==================== DEFINICIÓN DE SECCIONES ====================
+        // ==================== DEFINICION DE SECCIONES ====================
         const PARAM_SECTIONS = {
             design: {
-                title: 'Diseño',
+                title: 'Diseno',
                 titleKey: 'params.sectionDesign',
                 icon: '🎨',
-                description: 'Configuración visual de la aplicación',
+                description: 'Configuracion visual de la aplicacion',
                 descKey: 'params.sectionDesignDesc',
                 params: ['GRID_CON_IMAGENES', 'PAGINACION_GRID', 'PAGINACION_LIMITE']
             },
@@ -138,7 +383,7 @@
                 title: 'Funcionalidades',
                 titleKey: 'params.sectionFeatures',
                 icon: '⚙️',
-                description: 'Control de características del sistema',
+                description: 'Control de caracteristicas del sistema',
                 descKey: 'params.sectionFeaturesDesc',
                 params: ['WHATSAPP_NUMERO', 'PERMITIR_REGISTRO', 'PERMITIR_PROPUESTAS', 'PERMITIR_FIRMA']
             },
@@ -146,19 +391,16 @@
                 title: 'Otros',
                 titleKey: 'params.sectionOther',
                 icon: '📋',
-                description: 'Parámetros adicionales del sistema',
+                description: 'Parametros adicionales del sistema',
                 descKey: 'params.sectionOtherDesc',
-                params: [] // Se rellenará con los que no estén en otras secciones
+                params: []
             }
         };
 
         // ==================== CSRF TOKEN ====================
         async function obtenerCsrfToken() {
             try {
-                // Primero intentar obtener de localStorage
                 csrfToken = localStorage.getItem('csrf_token');
-
-                // Luego obtener del servidor (puede ser más reciente)
                 const response = await fetch(`${API_URL}/api/csrf-token`, { credentials: 'include' });
                 if (response.ok) {
                     const data = await response.json();
@@ -170,57 +412,51 @@
             }
         }
 
-        // ==================== INICIALIZACIÓN ====================
+        // ==================== INICIALIZACION ====================
         document.addEventListener('DOMContentLoaded', async function() {
-            // Cargar logo de empresa (usa connection de localStorage)
+            loadTheme();
             await cargarLogoEmpresa();
-
-            // Inicializar i18n
             await I18n.init();
-
-            // Actualizar selector de idioma
             const langSelector = document.getElementById('lang-selector');
-            if (langSelector) {
-                langSelector.value = I18n.currentLang;
-            }
-
-            // Verificar autenticación y permisos
+            if (langSelector) langSelector.value = I18n.currentLang;
             await checkAuth();
-
-            // Obtener CSRF token
             await obtenerCsrfToken();
-
-            // Cargar parámetros
             await loadParams();
         });
 
-        // ==================== AUTENTICACIÓN ====================
+        // ==================== AUTENTICACION ====================
         async function checkAuth() {
             try {
-                const response = await fetch(`${API_URL}/api/current-user`, {
-                    credentials: 'include'
-                });
-
+                const response = await fetch(`${API_URL}/api/current-user`, { credentials: 'include' });
                 if (!response.ok) {
                     window.location.href = 'login.html';
                     return;
                 }
-
-                const user = await response.json();
-
-                // Verificar que sea administrador o superusuario
-                if (user.rol !== 'administrador' && user.rol !== 'superusuario') {
-                    alert('No tienes permisos para acceder a esta página');
+                currentUser = await response.json();
+                document.getElementById('user-name-display').textContent = currentUser.username;
+                document.getElementById('menu-user-name').textContent = currentUser.full_name || currentUser.username;
+                document.getElementById('menu-user-rol').textContent = currentUser.rol;
+                if (currentUser.rol !== 'administrador' && currentUser.rol !== 'superusuario') {
+                    alert('No tienes permisos para acceder a esta pagina');
                     window.location.href = 'index.html';
                     return;
                 }
+                document.getElementById('sidebar-admin-section').style.display = 'block';
+                document.getElementById('sidebar-config-section').style.display = 'block';
             } catch (error) {
-                console.error('Error checking auth:', error);
                 window.location.href = 'login.html';
             }
         }
 
-        // ==================== CARGAR PARÁMETROS ====================
+        async function logout() {
+            try {
+                await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
+            } catch (e) {}
+            localStorage.removeItem('csrf_token');
+            window.location.href = 'login.html';
+        }
+
+        // ==================== CARGAR PARAMETROS ====================
         async function loadParams() {
             const loadingEl = document.getElementById('params-loading');
             const emptyEl = document.getElementById('params-empty');
@@ -250,16 +486,14 @@
                     renderParams();
                 }
             } catch (error) {
-                console.error('Error loading params:', error);
-                loadingEl.innerHTML = `<p style="color: #dc3545;">Error al cargar los parámetros</p>`;
+                loadingEl.innerHTML = `<p style="color: #dc3545;">Error al cargar los parametros</p>`;
             }
         }
 
-        // ==================== RENDERIZAR PARÁMETROS ====================
+        // ==================== RENDERIZAR PARAMETROS ====================
         function renderParams() {
             const listEl = document.getElementById('params-list');
 
-            // Identificar parámetros que no están en ninguna sección definida
             const allDefinedParams = [];
             for (const section of Object.values(PARAM_SECTIONS)) {
                 if (section.params) {
@@ -267,7 +501,6 @@
                 }
             }
 
-            // Añadir parámetros no definidos a la sección "other"
             PARAM_SECTIONS.other.params = params
                 .map(p => p.clave)
                 .filter(clave => !allDefinedParams.includes(clave));
@@ -277,7 +510,6 @@
             for (const [sectionKey, section] of Object.entries(PARAM_SECTIONS)) {
                 const sectionParams = params.filter(p => section.params.includes(p.clave));
 
-                // Omitir sección si no tiene parámetros
                 if (sectionParams.length === 0) continue;
 
                 html += `
@@ -298,13 +530,12 @@
 
             listEl.innerHTML = html;
 
-            // Re-aplicar traducciones a los nuevos elementos
             if (window.I18n) {
                 I18n.translatePage();
             }
         }
 
-        // ==================== RENDERIZAR TARJETA DE PARÁMETRO ====================
+        // ==================== RENDERIZAR TARJETA DE PARAMETRO ====================
         function renderParamCard(param) {
             const isBoolean = param.valor === '0' || param.valor === '1';
             const isTrue = param.valor === '1';
@@ -313,9 +544,9 @@
                 <div class="param-card" data-key="${param.clave}">
                     <div class="param-info">
                         <span class="param-key">${param.clave}</span>
-                        <p class="param-description">${param.descripcion || 'Sin descripción'}</p>
+                        <p class="param-description">${param.descripcion || 'Sin descripcion'}</p>
                         <span class="param-meta">
-                            <span data-i18n="params.lastModified">Última modificación</span>: ${formatDate(param.fecha_modificacion)}
+                            <span data-i18n="params.lastModified">Ultima modificacion</span>: ${formatDate(param.fecha_modificacion)}
                         </span>
                     </div>
                     <div class="param-value-section">
@@ -338,7 +569,7 @@
             `;
         }
 
-        // ==================== TOGGLE PARÁMETRO BOOLEANO ====================
+        // ==================== TOGGLE PARAMETRO BOOLEANO ====================
         async function toggleParam(clave, checked) {
             const newValue = checked ? '1' : '0';
             const empresaId = localStorage.getItem('empresa_id') || '1';
@@ -358,32 +589,28 @@
                     throw new Error('Error updating param');
                 }
 
-                // Actualizar UI
                 const card = document.querySelector(`[data-key="${clave}"]`);
                 const valueDisplay = card.querySelector('.param-value-display');
                 valueDisplay.textContent = checked ? 'Activo' : 'Inactivo';
                 valueDisplay.className = `param-value-display ${checked ? 'value-true' : 'value-false'}`;
 
-                // Actualizar array local
                 const index = params.findIndex(p => p.clave === clave);
                 if (index !== -1) {
                     params[index].valor = newValue;
                     params[index].fecha_modificacion = new Date().toISOString();
                 }
 
-                showToast('Parámetro actualizado correctamente', 'success');
+                showToast('Parametro actualizado correctamente', 'success');
             } catch (error) {
-                console.error('Error updating param:', error);
-                showToast('Error al actualizar el parámetro', 'error');
+                showToast('Error al actualizar el parametro', 'error');
 
-                // Revertir el switch
                 const card = document.querySelector(`[data-key="${clave}"]`);
                 const input = card.querySelector('input[type="checkbox"]');
                 input.checked = !checked;
             }
         }
 
-        // ==================== GUARDAR PARÁMETRO DE TEXTO ====================
+        // ==================== GUARDAR PARAMETRO DE TEXTO ====================
         async function saveTextParam(clave) {
             const input = document.getElementById(`input-${clave}`);
             const newValue = input.value;
@@ -404,23 +631,20 @@
                     throw new Error('Error updating param');
                 }
 
-                // Actualizar array local
                 const index = params.findIndex(p => p.clave === clave);
                 if (index !== -1) {
                     params[index].valor = newValue;
                     params[index].fecha_modificacion = new Date().toISOString();
                 }
 
-                showToast('Parámetro actualizado correctamente', 'success');
+                showToast('Parametro actualizado correctamente', 'success');
             } catch (error) {
-                console.error('Error updating param:', error);
-                showToast('Error al actualizar el parámetro', 'error');
+                showToast('Error al actualizar el parametro', 'error');
             }
         }
 
         // ==================== TOAST NOTIFICATION ====================
         function showToast(message, type) {
-            // Remover toast existente si hay
             const existingToast = document.querySelector('.toast');
             if (existingToast) {
                 existingToast.remove();

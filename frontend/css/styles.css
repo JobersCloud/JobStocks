@@ -396,6 +396,7 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
+    color: var(--text-primary);
 }
 
 .sidebar-toggle:hover {
@@ -408,7 +409,20 @@
     width: 18px;
     height: 18px;
     transition: transform 0.3s;
-    stroke: var(--text-primary);
+    stroke: var(--text-primary, #1f2937);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Asegurar visibilidad de las líneas del icono */
+.sidebar-toggle svg line {
+    stroke: inherit;
+}
+
+.sidebar-toggle:hover svg {
+    stroke: white;
 }
 
 .sidebar.collapsed .sidebar-toggle svg {
@@ -627,8 +641,8 @@
 
 /* Header superior - FIJO en toda la pantalla */
 .top-header {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    color: white;
+    background: var(--bg-primary);
+    color: var(--text-primary);
     padding: 0 20px;
     height: 70px;
     display: flex;
@@ -640,7 +654,8 @@
     right: 0;
     z-index: 1001;
     border-radius: 0 !important;
-    border: none !important;
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .top-header-left {
@@ -665,23 +680,23 @@
 .header-logo-text {
     font-size: var(--font-size-lg);
     font-weight: 700;
-    color: white;
+    color: var(--primary);
 }
 
 .header-divider {
     width: 1px;
     height: 30px;
-    background: rgba(255,255,255,0.3);
+    background: var(--border);
     margin: 0 5px;
 }
 
 .top-header-title {
     font-size: var(--font-size-xl);
     font-weight: 600;
-    color: white !important;
+    color: var(--text-primary) !important;
     background: none !important;
     -webkit-background-clip: unset !important;
-    -webkit-text-fill-color: white !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
     background-clip: unset !important;
 }
 
@@ -698,8 +713,8 @@
 
 /* Botón toggle tema en header */
 .theme-toggle-btn {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
     width: 36px;
     height: 36px;
@@ -712,19 +727,24 @@
 }
 
 .theme-toggle-btn:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: var(--primary-light);
+    border-color: var(--primary);
 }
 
 /* Selector idioma en header */
 .lang-selector-header {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
-    color: white;
+    color: var(--text-primary);
     padding: 6px 10px;
     font-size: var(--font-size-sm);
     cursor: pointer;
     transition: all 0.2s;
+}
+
+.lang-selector-header:hover {
+    border-color: var(--primary);
 }
 
 .lang-selector-header:hover {
@@ -739,11 +759,69 @@
 /* Área de contenido principal */
 .main-content-area {
     flex: 1;
+    display: flex;
+    flex-direction: column;
     padding: 25px;
     padding-top: 95px; /* 70px header + 25px padding */
     margin-left: 240px;
     transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow-y: auto;
+    min-height: 100vh;
+}
+
+/* Panel de filtros arriba - SIEMPRE horizontal */
+.main-content-area .filters {
+    flex-shrink: 0;
+    width: 100% !important;
+    min-width: unset !important;
+    max-width: 100% !important;
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-right: none !important;
+    border-bottom: 1px solid var(--border);
+    padding: 20px !important;
+}
+
+.main-content-area .filters h2 {
+    font-size: 1rem !important;
+    margin-bottom: 16px !important;
+}
+
+.main-content-area .filter-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+    gap: 16px !important;
+}
+
+.main-content-area .filters label {
+    font-size: 0.75rem !important;
+}
+
+.main-content-area .filters input,
+.main-content-area .filters select {
+    padding: 10px 14px !important;
+    font-size: 0.875rem !important;
+}
+
+.main-content-area .button-group {
+    flex-direction: row !important;
+    gap: 12px !important;
+    margin-top: 8px;
+}
+
+.main-content-area .button-group button {
+    width: auto !important;
+    padding: 10px 20px !important;
+    font-size: 0.875rem !important;
+}
+
+/* Grid de datos ocupa el resto */
+.main-content-area .table-container {
+    flex: 1;
+    overflow: auto;
+    background: var(--bg-primary);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .sidebar.collapsed ~ .main-wrapper .main-content-area {
@@ -892,9 +970,10 @@
     /* Botón hamburguesa para móvil */
     .mobile-menu-btn {
         display: flex;
-        background: none;
-        border: none;
-        color: white;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--primary);
         cursor: pointer;
         padding: 8px;
     }
@@ -902,6 +981,28 @@
     .mobile-menu-btn svg {
         width: 24px;
         height: 24px;
+        stroke: var(--primary);
+    }
+
+    /* Título más pequeño en móvil */
+    .top-header-title {
+        font-size: var(--font-size-base) !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
+
+    .top-header-subtitle {
+        display: none;
+    }
+
+    .header-logo img {
+        max-height: 30px;
+    }
+
+    .header-divider {
+        display: none;
     }
 }
 
@@ -6303,9 +6404,9 @@ tbody tr:hover {
 }
 
 .menu-btn {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
     padding: 8px 12px;
     border-radius: 8px;
     cursor: pointer;
@@ -6317,7 +6418,12 @@ tbody tr:hover {
 }
 
 .menu-btn:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: var(--primary-light);
+    border-color: var(--primary);
+}
+
+.menu-btn .menu-icon {
+    stroke: var(--primary);
 }
 
 .menu-btn .menu-icon {

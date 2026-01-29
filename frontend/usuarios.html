@@ -8,11 +8,10 @@
     <script>
         // Cargar tema guardado inmediatamente para evitar flash
         (function() {
-            const theme = localStorage.getItem('theme') || 'light';
+            const theme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
             const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
             document.documentElement.setAttribute('data-color-theme', colorTheme);
-            // Crear favicon desde localStorage (sin link estático para evitar flash)
             const faviconUrl = localStorage.getItem('faviconUrl');
             if (faviconUrl) {
                 const link = document.createElement('link');
@@ -24,147 +23,353 @@
     </script>
 </head>
 <body>
-    <div class="container">
-        <!-- Header de la página -->
-        <div class="page-header">
-            <div class="logo-section">
-                <a href="#" onclick="goBack(); return false;" style="display: flex; align-items: center;">
-                    <img src="" alt="Logo" class="logo" style="cursor: pointer; visibility: hidden;">
-                </a>
-                <h1 data-i18n="users.title">Gestión de Usuarios</h1>
+    <!-- ==================== MASTERPAGE LAYOUT ==================== -->
+    <div class="app-layout">
+        <!-- Header Superior FIJO -->
+        <header class="top-header">
+            <div class="top-header-left">
+                <button class="mobile-menu-btn" onclick="SidebarNav.toggleMobile()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="header-logo">
+                    <img src="" alt="Logo" id="header-logo">
+                    <span class="header-logo-text" id="header-company-name">Stocks</span>
+                </div>
+                <div class="header-divider"></div>
+                <div>
+                    <h1 class="top-header-title" data-i18n="users.title">Gestión de Usuarios</h1>
+                </div>
             </div>
-            <div class="header-actions">
-                <button class="back-btn" onclick="goBack()">
-                    <span data-i18n="proposals.backToStocks">Volver a Stocks</span>
+            <div class="top-header-right">
+                <select id="lang-selector" class="lang-selector-header" onchange="I18n.setLanguage(this.value)">
+                    <option value="es">ES</option>
+                    <option value="en">EN</option>
+                    <option value="fr">FR</option>
+                </select>
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">
+                    <span id="theme-icon">🌙</span>
+                </button>
+                <div class="menu-container">
+                    <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
+                        <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span class="user-name-display" id="user-name-display">Usuario</span>
+                    </button>
+                    <div class="menu-dropdown" id="menu-dropdown">
+                        <div class="menu-header">
+                            <div class="user-name" id="menu-user-name">Usuario</div>
+                            <div class="user-rol" id="menu-user-rol">usuario</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-toggle-container">
+                <button class="sidebar-toggle" title="Ctrl+B">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
                 </button>
             </div>
-        </div>
 
-        <!-- Contenedor principal de usuarios -->
-        <div class="users-container">
-            <div class="users-content">
-                <!-- Toolbar -->
-                <div class="users-toolbar" id="users-toolbar" style="display: none;">
-                    <button class="btn-new-user" onclick="openCreateUserModal()">
-                        <span class="btn-icon">➕</span>
-                        <span data-i18n="users.newUser">Nuevo Usuario</span>
-                    </button>
+            <nav class="sidebar-nav">
+                <!-- Items principales -->
+                <div class="sidebar-section">
+                    <a class="sidebar-item" data-page="index.html" data-tooltip="Stocks" onclick="SidebarNav.navigateTo('index.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.stocks">Stocks</span>
+                    </a>
+                    <a class="sidebar-item" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.myProposals">Mis Propuestas</span>
+                    </a>
                 </div>
 
-                <!-- Loading state -->
-                <div class="users-loading" id="users-loading">
-                    <div class="spinner"></div>
-                    <p data-i18n="users.loading">Cargando usuarios...</p>
-                </div>
-
-                <!-- Chips de filtros activos (ANTES del empty state para siempre verlos) -->
-                <div class="column-filters-chips" id="column-filters-chips" style="display: none;"></div>
-
-                <!-- Empty state (no hay usuarios en BD) -->
-                <div class="users-empty" id="users-empty" style="display: none;">
-                    <div class="users-empty-icon">👥</div>
-                    <h3 data-i18n="users.noUsers">No hay usuarios</h3>
-                    <button class="btn-new-user btn-new-empty" onclick="openCreateUserModal()">
-                        <span class="btn-icon">➕</span>
-                        <span data-i18n="users.newUser">Nuevo Usuario</span>
-                    </button>
-                </div>
-
-                <!-- No results from filter -->
-                <div class="users-no-results" id="users-no-results" style="display: none;">
-                    <div class="users-empty-icon">🔍</div>
-                    <h3>No se encontraron resultados</h3>
-                    <p>Prueba con otros criterios de búsqueda</p>
-                </div>
-
-                <!-- Table view (desktop) -->
-                <div class="users-table-wrapper" id="users-table-wrapper" style="display: none;">
-                    <div class="table-scroll-container">
-                        <table class="users-table">
-                            <thead>
-                                <tr>
-                                    <th data-column="username">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('username')">
-                                            Usuario
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('username', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-column="full_name">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('full_name')">
-                                            Nombre Completo
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('full_name', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-column="email">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('email')">
-                                            Email
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('email', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-column="pais">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('pais')">
-                                            País
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('pais', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-column="rol">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('rol')">
-                                            Rol
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('rol', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-column="active">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('active')">
-                                            Estado
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('active', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-i18n="users.actions">Acciones</th>
-                            </tr>
-                            </thead>
-                            <tbody id="users-table-body">
-                            </tbody>
-                        </table>
+                <!-- Acordeón Administración -->
+                <div class="sidebar-accordion expanded" id="sidebar-admin-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                            <span data-i18n="menu.administration">Administración</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="dashboard.html" data-tooltip="Dashboard" onclick="SidebarNav.navigateTo('dashboard.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.dashboard">Dashboard</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allProposals">Propuestas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-consultas.html" data-tooltip="Consultas" onclick="SidebarNav.navigateTo('todas-consultas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allInquiries">Consultas</span>
+                        </a>
+                        <a class="sidebar-item active" data-page="usuarios.html" data-tooltip="Usuarios" onclick="SidebarNav.navigateTo('usuarios.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.users">Usuarios</span>
+                        </a>
                     </div>
                 </div>
 
-                <!-- Cards view (mobile) -->
-                <div class="users-cards" id="users-cards">
+                <!-- Acordeón Configuración -->
+                <div class="sidebar-accordion" id="sidebar-config-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                            <span data-i18n="menu.settings">Configuración</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="email-config.html" data-tooltip="Email" onclick="SidebarNav.navigateTo('email-config.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.emailConfig">Email</span>
+                        </a>
+                        <a class="sidebar-item" data-page="parametros.html" data-tooltip="Parámetros" onclick="SidebarNav.navigateTo('parametros.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.parameters">Parámetros</span>
+                        </a>
+                        <a class="sidebar-item" data-page="empresa-logo.html" data-tooltip="Logo" onclick="SidebarNav.navigateTo('empresa-logo.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.companyLogo">Logo</span>
+                        </a>
+                    </div>
                 </div>
+            </nav>
 
-                <!-- Footer con total de registros (visible en ambas vistas) -->
-                <div class="grid-footer" id="grid-footer"></div>
+            <!-- Footer del Sidebar -->
+            <div class="sidebar-footer">
+                <a class="sidebar-item" data-tooltip="Cerrar Sesión" onclick="logout()">
+                    <span class="sidebar-item-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </span>
+                    <span class="sidebar-item-text" data-i18n="menu.logout">Cerrar Sesión</span>
+                </a>
             </div>
+        </aside>
+
+        <!-- Overlay para móvil -->
+        <div class="sidebar-overlay"></div>
+
+        <!-- Contenedor Principal -->
+        <div class="main-wrapper">
+            <main class="main-content-area">
+                <!-- Contenedor principal de usuarios -->
+                <div class="users-container">
+                    <div class="users-content">
+                        <!-- Toolbar -->
+                        <div class="users-toolbar" id="users-toolbar" style="display: none;">
+                            <button class="btn-new-user" onclick="openCreateUserModal()">
+                                <span class="btn-icon">➕</span>
+                                <span data-i18n="users.newUser">Nuevo Usuario</span>
+                            </button>
+                        </div>
+
+                        <!-- Loading state -->
+                        <div class="users-loading" id="users-loading">
+                            <div class="spinner"></div>
+                            <p data-i18n="users.loading">Cargando usuarios...</p>
+                        </div>
+
+                        <!-- Chips de filtros activos (ANTES del empty state para siempre verlos) -->
+                        <div class="column-filters-chips" id="column-filters-chips" style="display: none;"></div>
+
+                        <!-- Empty state (no hay usuarios en BD) -->
+                        <div class="users-empty" id="users-empty" style="display: none;">
+                            <div class="users-empty-icon">👥</div>
+                            <h3 data-i18n="users.noUsers">No hay usuarios</h3>
+                            <button class="btn-new-user btn-new-empty" onclick="openCreateUserModal()">
+                                <span class="btn-icon">➕</span>
+                                <span data-i18n="users.newUser">Nuevo Usuario</span>
+                            </button>
+                        </div>
+
+                        <!-- No results from filter -->
+                        <div class="users-no-results" id="users-no-results" style="display: none;">
+                            <div class="users-empty-icon">🔍</div>
+                            <h3>No se encontraron resultados</h3>
+                            <p>Prueba con otros criterios de búsqueda</p>
+                        </div>
+
+                        <!-- Table view (desktop) -->
+                        <div class="users-table-wrapper" id="users-table-wrapper" style="display: none;">
+                            <div class="table-scroll-container">
+                                <table class="users-table">
+                                    <thead>
+                                        <tr>
+                                            <th data-column="username">
+                                            <div class="column-header-wrapper">
+                                                <span class="sortable-header" onclick="ordenarPor('username')">
+                                                    Usuario
+                                                    <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                                </span>
+                                                <button class="column-filter-btn" onclick="abrirPopupFiltro('username', this)" title="Filtrar">
+                                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                                </button>
+                                            </div>
+                                        </th>
+                                        <th data-column="full_name">
+                                            <div class="column-header-wrapper">
+                                                <span class="sortable-header" onclick="ordenarPor('full_name')">
+                                                    Nombre Completo
+                                                    <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                                </span>
+                                                <button class="column-filter-btn" onclick="abrirPopupFiltro('full_name', this)" title="Filtrar">
+                                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                                </button>
+                                            </div>
+                                        </th>
+                                        <th data-column="email">
+                                            <div class="column-header-wrapper">
+                                                <span class="sortable-header" onclick="ordenarPor('email')">
+                                                    Email
+                                                    <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                                </span>
+                                                <button class="column-filter-btn" onclick="abrirPopupFiltro('email', this)" title="Filtrar">
+                                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                                </button>
+                                            </div>
+                                        </th>
+                                        <th data-column="pais">
+                                            <div class="column-header-wrapper">
+                                                <span class="sortable-header" onclick="ordenarPor('pais')">
+                                                    País
+                                                    <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                                </span>
+                                                <button class="column-filter-btn" onclick="abrirPopupFiltro('pais', this)" title="Filtrar">
+                                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                                </button>
+                                            </div>
+                                        </th>
+                                        <th data-column="rol">
+                                            <div class="column-header-wrapper">
+                                                <span class="sortable-header" onclick="ordenarPor('rol')">
+                                                    Rol
+                                                    <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                                </span>
+                                                <button class="column-filter-btn" onclick="abrirPopupFiltro('rol', this)" title="Filtrar">
+                                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                                </button>
+                                            </div>
+                                        </th>
+                                        <th data-column="active">
+                                            <div class="column-header-wrapper">
+                                                <span class="sortable-header" onclick="ordenarPor('active')">
+                                                    Estado
+                                                    <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                                </span>
+                                                <button class="column-filter-btn" onclick="abrirPopupFiltro('active', this)" title="Filtrar">
+                                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                                </button>
+                                            </div>
+                                        </th>
+                                        <th data-i18n="users.actions">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="users-table-body">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Cards view (mobile) -->
+                        <div class="users-cards" id="users-cards">
+                        </div>
+
+                        <!-- Footer con total de registros (visible en ambas vistas) -->
+                        <div class="grid-footer" id="grid-footer"></div>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
 
@@ -278,6 +483,7 @@
     </div>
 
     <script src="js/i18n/i18n.js"></script>
+    <script src="js/sidebar.js"></script>
     <script>
         // ==================== CONFIGURACIÓN ====================
         const hostname = window.location.hostname;
@@ -285,23 +491,73 @@
         const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
         const API_URL = isLocalhost ? `${protocol}//${hostname}:5000` : `${protocol}//${hostname}`;
 
+        let users = [];
+        let filteredUsers = [];
+        let currentUser = null;
+        let selectedUserId = null;
+        let editingUserId = null;
+        let clientSearchTimeout = null;
+        let paises = [];
+        let csrfToken = null;
+
+        // ==================== TEMA ====================
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            applyTheme(savedTheme);
+        }
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const icon = document.getElementById('theme-icon');
+            if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        }
+
+        // ==================== ACORDEÓN ====================
+        function toggleAccordion(header) {
+            const accordion = header.closest('.sidebar-accordion');
+            accordion.classList.toggle('expanded');
+        }
+
+        // ==================== MENÚ USUARIO ====================
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('menu-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Cerrar menú al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            const menuContainer = document.querySelector('.menu-container');
+            const dropdown = document.getElementById('menu-dropdown');
+            if (menuContainer && !menuContainer.contains(e.target) && dropdown) {
+                dropdown.classList.remove('show');
+            }
+        });
+
         // ==================== LOGO DINÁMICO POR EMPRESA ====================
         function applyColorTheme(tema) {
-            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito'];
+            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito',
+                                 'corporativo', 'ejecutivo', 'oceano', 'bosque', 'vino',
+                                 'medianoche', 'titanio', 'bronce'];
             if (!validThemes.includes(tema)) tema = 'rubi';
             document.documentElement.setAttribute('data-color-theme', tema);
             localStorage.setItem('colorTheme', tema);
         }
 
         async function cargarLogoEmpresa() {
-            // Usar connection (empresa_cli_id) para endpoints de logo
             const connection = localStorage.getItem('connection');
             if (!connection) {
                 console.warn('No hay connection en localStorage, usando valores por defecto');
                 applyColorTheme('rubi');
                 return;
             }
-            const logoElements = document.querySelectorAll('.logo');
+            const logoElements = document.querySelectorAll('.logo, #header-logo');
             try {
                 const configResponse = await fetch(`${API_URL}/api/empresa/${connection}/config`);
                 const config = await configResponse.json();
@@ -331,14 +587,6 @@
                 });
             }
         }
-
-        let users = [];
-        let filteredUsers = [];
-        let currentUser = null;
-        let selectedUserId = null;
-        let editingUserId = null;
-        let clientSearchTimeout = null;
-        let paises = [];
 
         // ==================== ORDENACIÓN Y FILTROS DE COLUMNAS ====================
         let ordenActual = { columna: 'username', direccion: 'ASC' };
@@ -609,24 +857,6 @@
             renderUsersConDatos(resultado);
         }
 
-        // ==================== INICIALIZACIÓN ====================
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Cargar logo de empresa (usa connection de localStorage)
-            await cargarLogoEmpresa();
-
-            // Inicializar i18n
-            await I18n.init();
-
-            // Verificar autenticación y permisos de admin
-            await checkAuth();
-
-            // Cargar países y usuarios en paralelo
-            await Promise.all([loadPaises(), loadUsers()]);
-
-            // Inicializar buscador de clientes
-            initClientAutocomplete();
-        });
-
         // ==================== AUTENTICACIÓN ====================
         async function checkAuth() {
             try {
@@ -635,12 +865,16 @@
                 });
 
                 if (!response.ok) {
-                    // Redirigir a login - el connection ya está en localStorage
                     window.location.href = 'login.html';
                     return;
                 }
 
                 currentUser = await response.json();
+
+                // Actualizar UI con datos del usuario
+                document.getElementById('user-name-display').textContent = currentUser.username;
+                document.getElementById('menu-user-name').textContent = currentUser.full_name || currentUser.username;
+                document.getElementById('menu-user-rol').textContent = currentUser.rol;
 
                 // Verificar que sea administrador o superusuario
                 if (currentUser.rol !== 'administrador' && currentUser.rol !== 'superusuario') {
@@ -648,11 +882,49 @@
                     window.location.href = 'index.html';
                     return;
                 }
+
+                // Mostrar secciones admin
+                document.getElementById('sidebar-admin-section').style.display = 'block';
+                document.getElementById('sidebar-config-section').style.display = 'block';
             } catch (error) {
                 console.error('Error checking auth:', error);
                 window.location.href = 'login.html';
             }
         }
+
+        async function logout() {
+            try {
+                await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
+            } catch (e) {}
+            localStorage.removeItem('csrf_token');
+            window.location.href = 'login.html';
+        }
+
+        async function obtenerCsrfToken() {
+            try {
+                csrfToken = localStorage.getItem('csrf_token');
+                const response = await fetch(`${API_URL}/api/csrf-token`, { credentials: 'include' });
+                if (response.ok) {
+                    const data = await response.json();
+                    csrfToken = data.csrf_token;
+                    localStorage.setItem('csrf_token', csrfToken);
+                }
+            } catch (e) {
+                console.error('Error obteniendo CSRF token:', e);
+            }
+        }
+
+        // ==================== INICIALIZACIÓN ====================
+        document.addEventListener('DOMContentLoaded', async function() {
+            loadTheme();
+            await cargarLogoEmpresa();
+            await I18n.init();
+            document.getElementById('lang-selector').value = I18n.currentLang;
+            await checkAuth();
+            await obtenerCsrfToken();
+            await Promise.all([loadPaises(), loadUsers()]);
+            initClientAutocomplete();
+        });
 
         // ==================== CARGAR PAÍSES ====================
         async function loadPaises() {

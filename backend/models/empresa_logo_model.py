@@ -324,7 +324,9 @@ class EmpresaLogoModel:
     def set_tema(empresa_id, tema, connection=None):
         """Establece el tema de colores de una empresa"""
         # Validar que el tema sea válido
-        temas_validos = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito']
+        temas_validos = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito',
+                         'corporativo', 'ejecutivo', 'oceano', 'bosque', 'vino',
+                         'medianoche', 'titanio', 'bronce']
         if tema not in temas_validos:
             return False
 

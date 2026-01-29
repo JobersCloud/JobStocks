@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todas las Propuestas - Administración</title>
+    <title>Todas las Propuestas - Administracion</title>
     <link rel="stylesheet" href="css/styles.css">
     <script>
         // Cargar tema guardado inmediatamente para evitar flash
         (function() {
-            const theme = localStorage.getItem('theme') || 'light';
+            const theme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
             const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
             document.documentElement.setAttribute('data-color-theme', colorTheme);
-            // Crear favicon desde localStorage (sin link estático para evitar flash)
             const faviconUrl = localStorage.getItem('faviconUrl');
             if (faviconUrl) {
                 const link = document.createElement('link');
@@ -24,162 +23,371 @@
     </script>
 </head>
 <body>
-    <div class="container">
-        <!-- Header de la página -->
-        <div class="page-header">
-            <div class="logo-section">
-                <a href="#" onclick="goBack(); return false;" style="display: flex; align-items: center;">
-                    <img src="" alt="Logo" class="logo" style="cursor: pointer; visibility: hidden;">
-                </a>
-                <h1 data-i18n="proposals.allTitle">Todas las Propuestas</h1>
+    <!-- ==================== MASTERPAGE LAYOUT ==================== -->
+    <div class="app-layout">
+        <!-- Header Superior FIJO -->
+        <header class="top-header">
+            <div class="top-header-left">
+                <button class="mobile-menu-btn" onclick="SidebarNav.toggleMobile()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="header-logo">
+                    <img src="" alt="Logo" id="header-logo">
+                    <span class="header-logo-text" id="header-company-name">Stocks</span>
+                </div>
+                <div class="header-divider"></div>
+                <div>
+                    <h1 class="top-header-title" data-i18n="proposals.allTitle">Todas las Propuestas</h1>
+                </div>
             </div>
-            <div class="header-actions">
-                <button class="back-btn" onclick="goBack()">
-                    <span data-i18n="proposals.backToStocks">Volver a Stocks</span>
+            <div class="top-header-right">
+                <select id="lang-selector" class="lang-selector-header" onchange="I18n.setLanguage(this.value)">
+                    <option value="es">ES</option>
+                    <option value="en">EN</option>
+                    <option value="fr">FR</option>
+                </select>
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">
+                    <span id="theme-icon">🌙</span>
+                </button>
+                <div class="menu-container">
+                    <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
+                        <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span class="user-name-display" id="user-name-display">Usuario</span>
+                    </button>
+                    <div class="menu-dropdown" id="menu-dropdown">
+                        <div class="menu-header">
+                            <div class="user-name" id="menu-user-name">Usuario</div>
+                            <div class="user-rol" id="menu-user-rol">usuario</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-toggle-container">
+                <button class="sidebar-toggle" title="Ctrl+B">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
                 </button>
             </div>
-        </div>
 
-        <!-- Filtros -->
-        <div class="filters-container" style="background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <div class="filters-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end;">
-                <div class="filter-group">
-                    <label style="display: block; font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 6px;" data-i18n="proposals.filterStatus">Estado</label>
-                    <select id="filter-estado" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
-                        <option value="" data-i18n="proposals.allStatuses">Todos los estados</option>
-                        <option value="Enviada" data-i18n="proposals.statusSent">Enviada</option>
-                        <option value="Procesada" data-i18n="proposals.statusProcessed">Procesada</option>
-                        <option value="Cancelada" data-i18n="proposals.statusCancelled">Cancelada</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label style="display: block; font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 6px;" data-i18n="proposals.filterDateFrom">Desde</label>
-                    <input type="date" id="filter-fecha-desde" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
-                </div>
-                <div class="filter-group">
-                    <label style="display: block; font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 6px;" data-i18n="proposals.filterDateTo">Hasta</label>
-                    <input type="date" id="filter-fecha-hasta" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
-                </div>
-                <div class="filter-actions" style="display: flex; gap: 10px;">
-                    <button onclick="applyFilters()" class="btn-primary" style="padding: 10px 20px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;" data-i18n="common.search">Buscar</button>
-                    <button onclick="clearFilters()" class="btn-secondary" style="padding: 10px 20px; background: #f0f0f0; color: #333; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;" data-i18n="common.clear">Limpiar</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Contenedor principal de propuestas -->
-        <div class="proposals-container">
-            <div class="proposals-content">
-                <!-- Loading state -->
-                <div class="proposals-loading" id="proposals-loading">
-                    <div class="spinner"></div>
-                    <p data-i18n="proposals.loading">Cargando propuestas...</p>
+            <nav class="sidebar-nav">
+                <!-- Items principales -->
+                <div class="sidebar-section">
+                    <a class="sidebar-item" data-page="index.html" data-tooltip="Stocks" onclick="SidebarNav.navigateTo('index.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.stocks">Stocks</span>
+                    </a>
+                    <a class="sidebar-item" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.myProposals">Mis Propuestas</span>
+                    </a>
                 </div>
 
-                <!-- Chips de filtros activos (ANTES del empty state) -->
-                <div class="column-filters-chips" id="column-filters-chips" style="display: none;"></div>
-
-                <!-- Empty state -->
-                <div class="proposals-empty" id="proposals-empty" style="display: none;">
-                    <div class="proposals-empty-icon">📋</div>
-                    <h3 data-i18n="proposals.noProposals">No hay propuestas</h3>
-                </div>
-
-                <!-- No results from filter -->
-                <div class="proposals-no-results" id="proposals-no-results" style="display: none;">
-                    <div class="proposals-empty-icon">🔍</div>
-                    <h3>No se encontraron resultados</h3>
-                    <p>Prueba con otros criterios de búsqueda</p>
-                </div>
-
-                <!-- Table view (desktop) -->
-                <div class="proposals-table-wrapper" id="proposals-table-wrapper" style="display: none;">
-                    <div class="table-scroll-container">
-                        <table class="proposals-table" id="proposals-table">
-                            <thead>
-                                <tr>
-                                    <th data-column="id">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('id')">
-                                            ID
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('id', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-column="usuario" data-i18n="proposals.user">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('usuario')">
-                                            Usuario
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('usuario', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-column="fecha" data-i18n="proposals.date">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('fecha')">
-                                            Fecha
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('fecha', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-column="total_items" data-i18n="proposals.items">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('total_items')">
-                                            Artículos
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('total_items', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-column="estado" data-i18n="proposals.status">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('estado')">
-                                            Estado
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('estado', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-column="referencia" data-i18n="proposals.reference">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('referencia')">
-                                            Referencia
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('referencia', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-i18n="users.actions">Acciones</th>
-                            </tr>
-                            </thead>
-                            <tbody id="proposals-table-body">
-                            </tbody>
-                        </table>
+                <!-- Acordeon Administracion -->
+                <div class="sidebar-accordion expanded" id="sidebar-admin-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                            <span data-i18n="menu.administration">Administracion</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="dashboard.html" data-tooltip="Dashboard" onclick="SidebarNav.navigateTo('dashboard.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.dashboard">Dashboard</span>
+                        </a>
+                        <a class="sidebar-item active" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allProposals">Propuestas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-consultas.html" data-tooltip="Consultas" onclick="SidebarNav.navigateTo('todas-consultas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allInquiries">Consultas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="usuarios.html" data-tooltip="Usuarios" onclick="SidebarNav.navigateTo('usuarios.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.users">Usuarios</span>
+                        </a>
                     </div>
                 </div>
 
-                <!-- Cards view (mobile) -->
-                <div class="proposals-cards" id="proposals-cards">
+                <!-- Acordeon Configuracion -->
+                <div class="sidebar-accordion" id="sidebar-config-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                            <span data-i18n="menu.settings">Configuracion</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="email-config.html" data-tooltip="Email" onclick="SidebarNav.navigateTo('email-config.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.emailConfig">Email</span>
+                        </a>
+                        <a class="sidebar-item" data-page="parametros.html" data-tooltip="Parametros" onclick="SidebarNav.navigateTo('parametros.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.parameters">Parametros</span>
+                        </a>
+                        <a class="sidebar-item" data-page="empresa-logo.html" data-tooltip="Logo" onclick="SidebarNav.navigateTo('empresa-logo.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.companyLogo">Logo</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Footer del Sidebar -->
+            <div class="sidebar-footer">
+                <a class="sidebar-item" data-tooltip="Cerrar Sesion" onclick="logout()">
+                    <span class="sidebar-item-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </span>
+                    <span class="sidebar-item-text" data-i18n="menu.logout">Cerrar Sesion</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Overlay para movil -->
+        <div class="sidebar-overlay"></div>
+
+        <!-- Contenedor Principal -->
+        <div class="main-wrapper">
+            <main class="main-content-area">
+                <!-- Panel de Filtros -->
+                <div class="filters">
+                    <h2 data-i18n="filters.title">Filtros de Busqueda</h2>
+                    <div class="filter-grid">
+                        <div class="form-group">
+                            <label data-i18n="proposals.filterStatus">Estado</label>
+                            <select id="filter-estado">
+                                <option value="" data-i18n="proposals.allStatuses">Todos los estados</option>
+                                <option value="Enviada" data-i18n="proposals.statusSent">Enviada</option>
+                                <option value="Procesada" data-i18n="proposals.statusProcessed">Procesada</option>
+                                <option value="Cancelada" data-i18n="proposals.statusCancelled">Cancelada</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="proposals.filterDateFrom">Desde</label>
+                            <input type="date" id="filter-fecha-desde">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="proposals.filterDateTo">Hasta</label>
+                            <input type="date" id="filter-fecha-hasta">
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="applyFilters()">
+                            <span data-i18n="common.search">Buscar</span>
+                        </button>
+                        <button class="btn-secondary" onclick="clearFilters()">
+                            <span data-i18n="common.clear">Limpiar</span>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Footer con total de registros (visible en ambas vistas) -->
-                <div class="grid-footer" id="grid-footer"></div>
-            </div>
+                <!-- Contenedor de Propuestas -->
+                <div class="proposals-container">
+                    <div class="proposals-content">
+                        <!-- Loading state -->
+                        <div class="proposals-loading" id="proposals-loading">
+                            <div class="spinner"></div>
+                            <p data-i18n="proposals.loading">Cargando propuestas...</p>
+                        </div>
+
+                        <!-- Chips de filtros activos -->
+                        <div class="column-filters-chips" id="column-filters-chips" style="display: none;"></div>
+
+                        <!-- Empty state -->
+                        <div class="proposals-empty" id="proposals-empty" style="display: none;">
+                            <div class="proposals-empty-icon">📋</div>
+                            <h3 data-i18n="proposals.noProposals">No hay propuestas</h3>
+                        </div>
+
+                        <!-- No results from filter -->
+                        <div class="proposals-no-results" id="proposals-no-results" style="display: none;">
+                            <div class="proposals-empty-icon">🔍</div>
+                            <h3>No se encontraron resultados</h3>
+                            <p>Prueba con otros criterios de busqueda</p>
+                        </div>
+
+                        <!-- Table view (desktop) -->
+                        <div class="proposals-table-wrapper" id="proposals-table-wrapper" style="display: none;">
+                            <div class="table-scroll-container">
+                                <table class="proposals-table" id="proposals-table">
+                                    <thead>
+                                        <tr>
+                                            <th data-column="id">
+                                                <div class="column-header-wrapper">
+                                                    <span class="sortable-header" onclick="ordenarPor('id')">
+                                                        ID
+                                                        <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                                    </span>
+                                                    <button class="column-filter-btn" onclick="abrirPopupFiltro('id', this)" title="Filtrar">
+                                                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                                    </button>
+                                                </div>
+                                            </th>
+                                            <th data-column="usuario" data-i18n="proposals.user">
+                                                <div class="column-header-wrapper">
+                                                    <span class="sortable-header" onclick="ordenarPor('usuario')">
+                                                        Usuario
+                                                        <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                                    </span>
+                                                    <button class="column-filter-btn" onclick="abrirPopupFiltro('usuario', this)" title="Filtrar">
+                                                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                                    </button>
+                                                </div>
+                                            </th>
+                                            <th data-column="fecha" data-i18n="proposals.date">
+                                                <div class="column-header-wrapper">
+                                                    <span class="sortable-header" onclick="ordenarPor('fecha')">
+                                                        Fecha
+                                                        <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                                    </span>
+                                                    <button class="column-filter-btn" onclick="abrirPopupFiltro('fecha', this)" title="Filtrar">
+                                                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                                    </button>
+                                                </div>
+                                            </th>
+                                            <th data-column="total_items" data-i18n="proposals.items">
+                                                <div class="column-header-wrapper">
+                                                    <span class="sortable-header" onclick="ordenarPor('total_items')">
+                                                        Articulos
+                                                        <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                                    </span>
+                                                    <button class="column-filter-btn" onclick="abrirPopupFiltro('total_items', this)" title="Filtrar">
+                                                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                                    </button>
+                                                </div>
+                                            </th>
+                                            <th data-column="estado" data-i18n="proposals.status">
+                                                <div class="column-header-wrapper">
+                                                    <span class="sortable-header" onclick="ordenarPor('estado')">
+                                                        Estado
+                                                        <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                                    </span>
+                                                    <button class="column-filter-btn" onclick="abrirPopupFiltro('estado', this)" title="Filtrar">
+                                                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                                    </button>
+                                                </div>
+                                            </th>
+                                            <th data-column="referencia" data-i18n="proposals.reference">
+                                                <div class="column-header-wrapper">
+                                                    <span class="sortable-header" onclick="ordenarPor('referencia')">
+                                                        Referencia
+                                                        <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                                    </span>
+                                                    <button class="column-filter-btn" onclick="abrirPopupFiltro('referencia', this)" title="Filtrar">
+                                                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                                    </button>
+                                                </div>
+                                            </th>
+                                            <th data-i18n="users.actions">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="proposals-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Cards view (mobile) -->
+                        <div class="proposals-cards" id="proposals-cards"></div>
+
+                        <!-- Footer con total de registros -->
+                        <div class="grid-footer" id="grid-footer"></div>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
 
@@ -188,38 +396,105 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 data-i18n="proposals.viewDetails">Ver Detalles</h2>
-                <button class="modal-close" onclick="closeProposalModal()">×</button>
+                <button class="modal-close" onclick="closeProposalModal()">&times;</button>
             </div>
-            <div class="proposal-detail-content" id="proposal-detail-content">
-            </div>
+            <div class="proposal-detail-content" id="proposal-detail-content"></div>
         </div>
     </div>
 
-    <script src="js/i18n/i18n.js"></script>
+    <script src="js/i18n/i18n.js?v=20260128"></script>
+    <script src="js/sidebar.js?v=20260128"></script>
     <script>
-        // ==================== CONFIGURACIÓN ====================
+        // ==================== CONFIGURACION ====================
         const hostname = window.location.hostname;
         const protocol = window.location.protocol;
         const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
         const API_URL = isLocalhost ? `${protocol}//${hostname}:5000` : `${protocol}//${hostname}`;
 
-        // ==================== LOGO DINÁMICO POR EMPRESA ====================
+        let currentUser = null;
+        let allProposals = [];
+        let filteredProposals = [];
+        let csrfToken = null;
+        let ordenActual = { columna: 'fecha', direccion: 'DESC' };
+        let filtrosColumna = [];
+        let popupFiltroAbierto = null;
+
+        const operadoresTexto = [
+            { key: 'contains', label: 'Contiene' },
+            { key: 'not_contains', label: 'No contiene', negativo: true },
+            { key: 'eq', label: 'Igual a' },
+            { key: 'neq', label: 'No igual a', negativo: true },
+            { key: 'starts', label: 'Empieza por' },
+            { key: 'not_starts', label: 'No empieza por', negativo: true },
+            { key: 'ends', label: 'Termina en' },
+            { key: 'not_ends', label: 'No termina en', negativo: true }
+        ];
+
+        const columnasFiltrables = [
+            { key: 'id', label: 'ID', tipo: 'numero' },
+            { key: 'usuario', label: 'Usuario', tipo: 'texto' },
+            { key: 'fecha', label: 'Fecha', tipo: 'fecha' },
+            { key: 'total_items', label: 'Articulos', tipo: 'numero' },
+            { key: 'estado', label: 'Estado', tipo: 'texto' },
+            { key: 'referencia', label: 'Referencia', tipo: 'texto' }
+        ];
+
+        // ==================== TEMA ====================
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            applyTheme(savedTheme);
+        }
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const icon = document.getElementById('theme-icon');
+            if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        }
+
+        // ==================== ACORDEON ====================
+        function toggleAccordion(header) {
+            const accordion = header.closest('.sidebar-accordion');
+            accordion.classList.toggle('expanded');
+        }
+
+        // ==================== MENU USUARIO ====================
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('menu-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        document.addEventListener('click', (e) => {
+            const menuContainer = document.querySelector('.menu-container');
+            const dropdown = document.getElementById('menu-dropdown');
+            if (menuContainer && !menuContainer.contains(e.target) && dropdown) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // ==================== LOGO DINAMICO ====================
         function applyColorTheme(tema) {
-            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito'];
+            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito',
+                                 'corporativo', 'ejecutivo', 'oceano', 'bosque', 'vino',
+                                 'medianoche', 'titanio', 'bronce'];
             if (!validThemes.includes(tema)) tema = 'rubi';
             document.documentElement.setAttribute('data-color-theme', tema);
             localStorage.setItem('colorTheme', tema);
         }
 
         async function cargarLogoEmpresa() {
-            // Usar connection (empresa_cli_id) para endpoints de logo
             const connection = localStorage.getItem('connection');
             if (!connection) {
-                console.warn('No hay connection en localStorage, usando valores por defecto');
                 applyColorTheme('rubi');
                 return;
             }
-            const logoElements = document.querySelectorAll('.logo');
+            const logoElements = document.querySelectorAll('.logo, #header-logo');
             try {
                 const configResponse = await fetch(`${API_URL}/api/empresa/${connection}/config`);
                 const config = await configResponse.json();
@@ -240,7 +515,6 @@
                     });
                 }
             } catch (error) {
-                console.log('Error al cargar logo:', error);
                 applyColorTheme('rubi');
                 logoElements.forEach(el => {
                     el.src = 'assets/logo.svg';
@@ -250,98 +524,68 @@
             }
         }
 
-        let allProposals = [];
-        let filteredProposals = [];
-        let csrfToken = null;
+        // ==================== AUTENTICACION ====================
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_URL}/api/current-user`, { credentials: 'include' });
+                if (!response.ok) {
+                    window.location.href = 'login.html';
+                    return null;
+                }
+                const data = await response.json();
+                currentUser = data;
 
-        // ==================== ORDENACIÓN Y FILTROS DE COLUMNAS ====================
-        let ordenActual = { columna: 'fecha', direccion: 'DESC' };
-        let filtrosColumna = [];
-        let popupFiltroAbierto = null;
+                document.getElementById('user-name-display').textContent = data.username;
+                document.getElementById('menu-user-name').textContent = data.full_name || data.username;
+                document.getElementById('menu-user-rol').textContent = data.rol;
 
-        // Operadores disponibles
-        const operadoresTexto = [
-            { key: 'contains', label: 'Contiene' },
-            { key: 'not_contains', label: 'No contiene', negativo: true },
-            { key: 'eq', label: 'Igual a' },
-            { key: 'neq', label: 'No igual a', negativo: true },
-            { key: 'starts', label: 'Empieza por' },
-            { key: 'not_starts', label: 'No empieza por', negativo: true },
-            { key: 'ends', label: 'Termina en' },
-            { key: 'not_ends', label: 'No termina en', negativo: true }
-        ];
+                if (data.rol !== 'administrador' && data.rol !== 'superusuario') {
+                    alert('No tienes permisos para acceder a esta pagina');
+                    window.location.href = 'index.html';
+                    return null;
+                }
 
-        // Columnas disponibles para filtrar
-        const columnasFiltrables = [
-            { key: 'id', label: 'ID', tipo: 'numero' },
-            { key: 'usuario', label: 'Usuario', tipo: 'texto' },
-            { key: 'fecha', label: 'Fecha', tipo: 'fecha' },
-            { key: 'total_items', label: 'Artículos', tipo: 'numero' },
-            { key: 'estado', label: 'Estado', tipo: 'texto' },
-            { key: 'referencia', label: 'Referencia', tipo: 'texto' }
-        ];
+                document.getElementById('sidebar-admin-section').style.display = 'block';
+                document.getElementById('sidebar-config-section').style.display = 'block';
 
-        // ==================== CSRF TOKEN ====================
+                return data;
+            } catch (error) {
+                console.error('Error checking auth:', error);
+                window.location.href = 'login.html';
+                return null;
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
+            } catch (e) {}
+            localStorage.removeItem('csrf_token');
+            window.location.href = 'login.html';
+        }
+
         async function obtenerCsrfToken() {
             try {
-                // Primero intentar obtener de localStorage
                 csrfToken = localStorage.getItem('csrf_token');
-
-                // Luego obtener del servidor (puede ser más reciente)
                 const response = await fetch(`${API_URL}/api/csrf-token`, { credentials: 'include' });
                 if (response.ok) {
                     const data = await response.json();
                     csrfToken = data.csrf_token;
                     localStorage.setItem('csrf_token', csrfToken);
                 }
-            } catch (e) {
-                console.error('Error obteniendo CSRF token:', e);
-            }
+            } catch (e) {}
         }
 
-        // ==================== INICIALIZACIÓN ====================
+        // ==================== INICIALIZACION ====================
         document.addEventListener('DOMContentLoaded', async function() {
-            // Cargar logo de empresa (usa connection de localStorage)
+            loadTheme();
             await cargarLogoEmpresa();
-
-            // Inicializar i18n
             await I18n.init();
-
-            // Verificar autenticación y permisos de admin
+            document.getElementById('lang-selector').value = I18n.currentLang;
             await checkAuth();
-
-            // Obtener CSRF token
             await obtenerCsrfToken();
-
-            // Cargar propuestas
             await loadProposals();
         });
-
-        // ==================== AUTENTICACIÓN ====================
-        async function checkAuth() {
-            try {
-                const response = await fetch(`${API_URL}/api/current-user`, {
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                const user = await response.json();
-
-                // Verificar que sea administrador o superusuario
-                if (user.rol !== 'administrador' && user.rol !== 'superusuario') {
-                    alert('No tienes permisos para acceder a esta página');
-                    window.location.href = 'index.html';
-                    return;
-                }
-            } catch (error) {
-                console.error('Error checking auth:', error);
-                window.location.href = 'login.html';
-            }
-        }
 
         // ==================== CARGAR PROPUESTAS ====================
         async function loadProposals() {
@@ -350,10 +594,7 @@
             const tableWrapper = document.getElementById('proposals-table-wrapper');
 
             try {
-                const empresaId = localStorage.getItem('empresa_id');
-                const response = await fetch(`${API_URL}/api/propuestas`, {
-                    credentials: 'include'
-                });
+                const response = await fetch(`${API_URL}/api/propuestas`, { credentials: 'include' });
 
                 if (!response.ok) {
                     if (response.status === 403) {
@@ -380,41 +621,24 @@
                 }
             } catch (error) {
                 console.error('Error loading proposals:', error);
-                loadingEl.innerHTML = `<p style="color: #dc3545;">Error al cargar las propuestas</p>`;
+                loadingEl.innerHTML = '<p style="color: #dc3545;">Error al cargar las propuestas</p>';
             }
         }
 
-        // ==================== FILTRAR PROPUESTAS ====================
+        // ==================== FILTROS ====================
         function applyFilters() {
             const estado = document.getElementById('filter-estado').value;
             const fechaDesde = document.getElementById('filter-fecha-desde').value;
             const fechaHasta = document.getElementById('filter-fecha-hasta').value;
 
             filteredProposals = allProposals.filter(proposal => {
-                // Filtrar por estado
-                if (estado && proposal.estado !== estado) {
-                    return false;
-                }
-
-                // Filtrar por fecha desde
-                if (fechaDesde) {
-                    const proposalDate = new Date(proposal.fecha);
-                    const filterDate = new Date(fechaDesde);
-                    if (proposalDate < filterDate) {
-                        return false;
-                    }
-                }
-
-                // Filtrar por fecha hasta
+                if (estado && proposal.estado !== estado) return false;
+                if (fechaDesde && new Date(proposal.fecha) < new Date(fechaDesde)) return false;
                 if (fechaHasta) {
-                    const proposalDate = new Date(proposal.fecha);
                     const filterDate = new Date(fechaHasta);
-                    filterDate.setHours(23, 59, 59, 999);  // Fin del día
-                    if (proposalDate > filterDate) {
-                        return false;
-                    }
+                    filterDate.setHours(23, 59, 59, 999);
+                    if (new Date(proposal.fecha) > filterDate) return false;
                 }
-
                 return true;
             });
 
@@ -425,27 +649,25 @@
             document.getElementById('filter-estado').value = '';
             document.getElementById('filter-fecha-desde').value = '';
             document.getElementById('filter-fecha-hasta').value = '';
-
             filteredProposals = [...allProposals];
             renderProposals();
         }
 
         // ==================== RENDERIZAR PROPUESTAS ====================
-        function renderProposals() {
+        function renderProposals(datos = null) {
             const tableBody = document.getElementById('proposals-table-body');
             const cardsEl = document.getElementById('proposals-cards');
             const emptyEl = document.getElementById('proposals-empty');
             const noResultsEl = document.getElementById('proposals-no-results');
             const tableWrapper = document.getElementById('proposals-table-wrapper');
 
-            if (filteredProposals.length === 0) {
-                // Distinguir entre "sin datos" y "sin resultados por filtro"
+            const dataToRender = datos !== null ? datos : filteredProposals;
+
+            if (dataToRender.length === 0) {
                 if (filtrosColumna.length > 0) {
-                    // Hay filtros pero no resultados
                     if (noResultsEl) noResultsEl.style.display = 'block';
                     emptyEl.style.display = 'none';
                 } else {
-                    // No hay datos en absoluto
                     emptyEl.style.display = 'block';
                     if (noResultsEl) noResultsEl.style.display = 'none';
                 }
@@ -458,8 +680,7 @@
             if (noResultsEl) noResultsEl.style.display = 'none';
             tableWrapper.style.display = 'block';
 
-            // Renderizar tabla
-            tableBody.innerHTML = filteredProposals.map(proposal => `
+            tableBody.innerHTML = dataToRender.map(proposal => `
                 <tr>
                     <td><strong>#${proposal.id}</strong></td>
                     <td>
@@ -473,7 +694,7 @@
                     <td>${getStatusBadge(proposal.estado)}</td>
                     <td>${proposal.referencia || '-'}</td>
                     <td>
-                        <div class="status-actions">
+                        <div class="action-buttons">
                             <button class="btn-view-details" onclick="viewProposalDetails(${proposal.id})">
                                 ${t('proposals.viewDetails')}
                             </button>
@@ -493,8 +714,7 @@
                 </tr>
             `).join('');
 
-            // Renderizar cards (móvil)
-            cardsEl.innerHTML = filteredProposals.map(proposal => `
+            cardsEl.innerHTML = dataToRender.map(proposal => `
                 <div class="proposal-card">
                     <div class="proposal-card-header">
                         <span class="proposal-card-id">#${proposal.id}</span>
@@ -524,9 +744,7 @@
                             <button class="btn-view-details" onclick="viewProposalDetails(${proposal.id})">
                                 ${t('proposals.viewDetails')}
                             </button>
-                            <button class="btn-download-excel" onclick="downloadExcel(${proposal.id})" title="${t('proposals.downloadExcel')}">
-                                📥 Excel
-                            </button>
+                            <button class="btn-download-excel" onclick="downloadExcel(${proposal.id})">📥 Excel</button>
                         </div>
                         ${proposal.estado === 'Enviada' ? `
                             <div class="status-actions" style="justify-content: center; margin-top: 8px;">
@@ -542,17 +760,15 @@
                 </div>
             `).join('');
 
-            // Actualizar footer con total de registros
             const footerEl = document.getElementById('grid-footer');
             if (footerEl) {
                 const totalOriginal = allProposals.length;
-                const totalFiltrado = filteredProposals.length;
+                const totalFiltrado = dataToRender.length;
                 const hayFiltros = filtrosColumna.length > 0;
-
                 if (hayFiltros && totalFiltrado !== totalOriginal) {
-                    footerEl.innerHTML = `${totalFiltrado} ${t('dataGrid.records') || 'registros'} (${t('dataGrid.filteredFrom') || 'filtrados de'} ${totalOriginal})`;
+                    footerEl.innerHTML = `${totalFiltrado} registros (filtrados de ${totalOriginal})`;
                 } else {
-                    footerEl.innerHTML = `${totalFiltrado} ${t('dataGrid.records') || 'registros'}`;
+                    footerEl.innerHTML = `${totalFiltrado} registros`;
                 }
             }
         }
@@ -560,14 +776,8 @@
         // ==================== DESCARGAR EXCEL ====================
         async function downloadExcel(proposalId) {
             try {
-                const response = await fetch(`${API_URL}/api/propuestas/${proposalId}/excel`, {
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error al descargar Excel');
-                }
-
+                const response = await fetch(`${API_URL}/api/propuestas/${proposalId}/excel`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Error al descargar Excel');
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -586,38 +796,23 @@
         // ==================== CAMBIAR ESTADO ====================
         async function changeStatus(proposalId, newStatus) {
             const statusText = newStatus === 'Procesada' ? t('proposals.statusProcessed') : t('proposals.statusCancelled');
-
-            if (!confirm(`¿Cambiar el estado a "${statusText}"?`)) {
-                return;
-            }
+            if (!confirm(`Cambiar el estado a "${statusText}"?`)) return;
 
             try {
-                const empresaId = localStorage.getItem('empresa_id');
                 const response = await fetch(`${API_URL}/api/propuestas/${proposalId}/estado`, {
                     method: 'PUT',
                     credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
-                    },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
                     body: JSON.stringify({ estado: newStatus })
                 });
 
-                if (!response.ok) {
-                    throw new Error('Error changing status');
-                }
+                if (!response.ok) throw new Error('Error changing status');
 
-                // Actualizar la propuesta en la lista local
                 const index = allProposals.findIndex(p => p.id === proposalId);
-                if (index !== -1) {
-                    allProposals[index].estado = newStatus;
-                }
+                if (index !== -1) allProposals[index].estado = newStatus;
 
-                // Actualizar en filteredProposals también
                 const filteredIndex = filteredProposals.findIndex(p => p.id === proposalId);
-                if (filteredIndex !== -1) {
-                    filteredProposals[filteredIndex].estado = newStatus;
-                }
+                if (filteredIndex !== -1) filteredProposals[filteredIndex].estado = newStatus;
 
                 renderProposals();
             } catch (error) {
@@ -626,80 +821,36 @@
             }
         }
 
-        // ==================== VER DETALLE DE PROPUESTA ====================
+        // ==================== VER DETALLE ====================
         async function viewProposalDetails(proposalId) {
             const modal = document.getElementById('proposal-detail-modal');
             const content = document.getElementById('proposal-detail-content');
-
             modal.style.display = 'flex';
-            content.innerHTML = `
-                <div class="proposals-loading">
-                    <div class="spinner"></div>
-                    <p>${t('common.loading')}</p>
-                </div>
-            `;
+            content.innerHTML = '<div class="proposals-loading"><div class="spinner"></div><p>Cargando...</p></div>';
 
             try {
-                const empresaId = localStorage.getItem('empresa_id');
-                const response = await fetch(`${API_URL}/api/propuestas/${proposalId}`, {
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error loading proposal details');
-                }
+                const response = await fetch(`${API_URL}/api/propuestas/${proposalId}`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Error loading proposal details');
 
                 const data = await response.json();
                 const proposal = data.propuesta;
                 const lines = proposal.lineas || [];
 
-                // Renderizar primero sin imágenes, luego cargarlas
                 content.innerHTML = `
                     <div class="proposal-info">
-                        <div class="proposal-info-item">
-                            <label>ID</label>
-                            <span>#${proposal.id}</span>
-                        </div>
-                        <div class="proposal-info-item">
-                            <label>${t('proposals.user')}</label>
-                            <span>${proposal.username || 'Usuario'}</span>
-                        </div>
-                        <div class="proposal-info-item">
-                            <label>${t('proposals.date')}</label>
-                            <span>${formatDate(proposal.fecha)}</span>
-                        </div>
-                        <div class="proposal-info-item">
-                            <label>${t('proposals.status')}</label>
-                            <span>${getStatusBadge(proposal.estado)}</span>
-                        </div>
-                        <div class="proposal-info-item">
-                            <label>${t('proposals.items')}</label>
-                            <span>${proposal.total_items}</span>
-                        </div>
-                        ${proposal.referencia ? `
-                        <div class="proposal-info-item">
-                            <label>${t('proposals.reference')}</label>
-                            <span>${proposal.referencia}</span>
-                        </div>
-                        ` : ''}
+                        <div class="proposal-info-item"><label>ID</label><span>#${proposal.id}</span></div>
+                        <div class="proposal-info-item"><label>${t('proposals.user')}</label><span>${proposal.username || 'Usuario'}</span></div>
+                        <div class="proposal-info-item"><label>${t('proposals.date')}</label><span>${formatDate(proposal.fecha)}</span></div>
+                        <div class="proposal-info-item"><label>${t('proposals.status')}</label><span>${getStatusBadge(proposal.estado)}</span></div>
+                        <div class="proposal-info-item"><label>${t('proposals.items')}</label><span>${proposal.total_items}</span></div>
+                        ${proposal.referencia ? `<div class="proposal-info-item"><label>${t('proposals.reference')}</label><span>${proposal.referencia}</span></div>` : ''}
                     </div>
-
-                    ${proposal.comentarios ? `
-                        <div class="proposal-comments">
-                            <h4>${t('proposals.comments')}</h4>
-                            <p>${proposal.comentarios}</p>
-                        </div>
-                    ` : ''}
-
+                    ${proposal.comentarios ? `<div class="proposal-comments"><h4>${t('proposals.comments')}</h4><p>${proposal.comentarios}</p></div>` : ''}
                     <h3 class="proposal-lines-title">${t('proposals.items')}</h3>
-
-                    <!-- Lista de productos con imágenes -->
                     <div class="proposal-lines-list">
                         ${lines.map((line, index) => `
                             <div class="proposal-line-item">
-                                <div class="proposal-line-image" data-img-index="${index}">
-                                    <div class="no-image loading-img">⏳</div>
-                                </div>
+                                <div class="proposal-line-image" data-img-index="${index}"><div class="no-image loading-img">⏳</div></div>
                                 <div class="proposal-line-info">
                                     <div class="proposal-line-header">
                                         <span class="proposal-line-code">${line.codigo}</span>
@@ -723,61 +874,43 @@
                     </div>
                 `;
 
-                // Cargar imágenes de cada producto
-                lines.forEach((line, index) => {
-                    cargarImagenProducto(line.codigo, index);
-                });
+                lines.forEach((line, index) => cargarImagenProducto(line.codigo, index));
             } catch (error) {
-                console.error('Error loading proposal details:', error);
-                content.innerHTML = `<p style="color: #dc3545; text-align: center;">Error al cargar los detalles</p>`;
+                content.innerHTML = '<p style="color: #dc3545; text-align: center;">Error al cargar los detalles</p>';
             }
         }
 
-        // ==================== CARGAR IMAGEN DE PRODUCTO ====================
         async function cargarImagenProducto(codigo, index) {
             const container = document.querySelector(`[data-img-index="${index}"]`);
             if (!container) return;
-
             try {
-                const response = await fetch(`${API_URL}/api/stocks/${encodeURIComponent(codigo)}/imagenes`, {
-                    credentials: 'include'
-                });
-
+                const response = await fetch(`${API_URL}/api/stocks/${encodeURIComponent(codigo)}/imagenes`, { credentials: 'include' });
                 if (response.ok) {
                     const imagenes = await response.json();
                     if (imagenes.length > 0 && imagenes[0].imagen) {
-                        // Imagen clickable con galería si hay múltiples
                         const imgBase64 = imagenes[0].imagen;
                         const totalImgs = imagenes.length;
                         container.innerHTML = `
-                            <img src="data:image/jpeg;base64,${imgBase64}"
-                                 alt="${codigo}"
-                                 style="width:100%;height:100%;object-fit:cover;border-radius:8px;cursor:pointer;"
-                                 onclick="ampliarImagen('${imgBase64}')">
+                            <img src="data:image/jpeg;base64,${imgBase64}" alt="${codigo}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;cursor:pointer;" onclick="ampliarImagen('${imgBase64}')">
                             ${totalImgs > 1 ? `<span class="img-count">+${totalImgs - 1}</span>` : ''}
                         `;
-                        // Guardar todas las imágenes para la galería
                         container.dataset.imagenes = JSON.stringify(imagenes.map(i => i.imagen));
                         container.dataset.codigo = codigo;
                         container.onclick = () => abrirGaleria(container.dataset.imagenes, codigo);
                     } else {
-                        container.innerHTML = `<div class="no-image">📦</div>`;
+                        container.innerHTML = '<div class="no-image">📦</div>';
                     }
                 } else {
-                    container.innerHTML = `<div class="no-image">📦</div>`;
+                    container.innerHTML = '<div class="no-image">📦</div>';
                 }
             } catch (e) {
-                console.log('Error cargando imagen:', codigo, e);
-                container.innerHTML = `<div class="no-image">📦</div>`;
+                container.innerHTML = '<div class="no-image">📦</div>';
             }
         }
 
-        // ==================== GALERÍA DE IMÁGENES ====================
         function abrirGaleria(imagenesJson, codigo) {
             const imagenes = JSON.parse(imagenesJson);
             if (!imagenes || imagenes.length === 0) return;
-
-            // Crear modal de galería
             let modal = document.getElementById('galeria-modal');
             if (!modal) {
                 modal = document.createElement('div');
@@ -785,33 +918,22 @@
                 modal.className = 'galeria-modal';
                 modal.innerHTML = `
                     <div class="galeria-content">
-                        <button class="galeria-close" onclick="cerrarGaleria()">×</button>
-                        <div class="galeria-main">
-                            <img id="galeria-img-principal" src="" alt="Imagen">
-                        </div>
+                        <button class="galeria-close" onclick="cerrarGaleria()">&times;</button>
+                        <div class="galeria-main"><img id="galeria-img-principal" src="" alt="Imagen"></div>
                         <div class="galeria-thumbs" id="galeria-thumbs"></div>
                     </div>
                 `;
                 document.body.appendChild(modal);
-
-                // Cerrar al hacer clic fuera
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) cerrarGaleria();
-                });
+                modal.addEventListener('click', (e) => { if (e.target === modal) cerrarGaleria(); });
             }
-
-            // Llenar galería
             const imgPrincipal = document.getElementById('galeria-img-principal');
             const thumbsContainer = document.getElementById('galeria-thumbs');
-
             imgPrincipal.src = `data:image/jpeg;base64,${imagenes[0]}`;
-
             thumbsContainer.innerHTML = imagenes.map((img, i) => `
                 <div class="galeria-thumb ${i === 0 ? 'active' : ''}" onclick="seleccionarImagen('${img}', this)">
                     <img src="data:image/jpeg;base64,${img}" alt="Thumb ${i + 1}">
                 </div>
             `).join('');
-
             modal.style.display = 'flex';
         }
 
@@ -830,7 +952,6 @@
             abrirGaleria(JSON.stringify([imgBase64]), '');
         }
 
-        // ==================== CERRAR MODAL ====================
         function closeProposalModal() {
             document.getElementById('proposal-detail-modal').style.display = 'none';
         }
@@ -838,13 +959,7 @@
         // ==================== UTILIDADES ====================
         function formatDate(dateString) {
             const date = new Date(dateString);
-            return date.toLocaleDateString('es-ES', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+            return date.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
         }
 
         function getStatusBadge(status) {
@@ -853,32 +968,11 @@
                 'Procesada': { class: 'status-procesada', key: 'proposals.statusProcessed' },
                 'Cancelada': { class: 'status-cancelada', key: 'proposals.statusCancelled' }
             };
-
             const statusInfo = statusMap[status] || { class: 'status-enviada', key: 'proposals.statusSent' };
             return `<span class="status-badge ${statusInfo.class}">${t(statusInfo.key)}</span>`;
         }
 
-        function goBack() {
-            const empresaId = localStorage.getItem('empresa_id');
-            window.location.href = `index.html?empresa=${empresaId}`;
-        }
-
-        // Cerrar modal al hacer clic fuera
-        document.getElementById('proposal-detail-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeProposalModal();
-            }
-        });
-
-        // Cerrar modal con Escape
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeProposalModal();
-                cerrarPopupFiltro();
-            }
-        });
-
-        // ==================== ORDENACIÓN POR COLUMNAS ====================
+        // ==================== ORDENACION ====================
         function ordenarPor(columna) {
             if (ordenActual.columna === columna) {
                 ordenActual.direccion = ordenActual.direccion === 'ASC' ? 'DESC' : 'ASC';
@@ -895,18 +989,14 @@
                 icon.classList.remove('active', 'asc', 'desc');
             });
             const thActivo = document.querySelector(`.proposals-table th[data-column="${ordenActual.columna}"] .sort-icon`);
-            if (thActivo) {
-                thActivo.classList.add('active', ordenActual.direccion.toLowerCase());
-            }
+            if (thActivo) thActivo.classList.add('active', ordenActual.direccion.toLowerCase());
         }
 
         // ==================== FILTROS POR COLUMNA ====================
         function abrirPopupFiltro(columna, elemento) {
             cerrarPopupFiltro();
-
             const colConfig = columnasFiltrables.find(c => c.key === columna);
             if (!colConfig) return;
-
             const filtroExistente = filtrosColumna.find(f => f.columna === columna);
             const valoresUnicos = obtenerValoresUnicos(columna);
 
@@ -915,43 +1005,33 @@
             popup.innerHTML = `
                 <div class="filter-popup-header">
                     <span class="filter-popup-title">${colConfig.label}</span>
-                    <button class="filter-popup-close" onclick="cerrarPopupFiltro()">×</button>
+                    <button class="filter-popup-close" onclick="cerrarPopupFiltro()">&times;</button>
                 </div>
                 <div class="filter-popup-content">
                     <div class="filter-condition-operators">
                         ${operadoresTexto.map((op, idx) => `
                             <label class="filter-condition-option ${op.negativo ? 'negativo' : ''}">
-                                <input type="radio" name="op-${columna}" value="${op.key}"
-                                       ${(filtroExistente?.operador === op.key || (!filtroExistente && idx === 0)) ? 'checked' : ''}>
+                                <input type="radio" name="op-${columna}" value="${op.key}" ${(filtroExistente?.operador === op.key || (!filtroExistente && idx === 0)) ? 'checked' : ''}>
                                 <span class="filter-radio-dot"></span>
                                 ${op.label}
                             </label>
                         `).join('')}
                     </div>
-                    <div class="filter-inputs-container">
-                        <input type="text" class="filter-condition-input" id="filter-value-${columna}"
-                               placeholder="Valor..." value="${filtroExistente?.valor || ''}"
-                               onkeypress="if(event.key==='Enter') aplicarFiltroColumna('${columna}')">
-                    </div>
+                    <input type="text" class="filter-condition-input" id="filter-value-${columna}" placeholder="Valor..." value="${filtroExistente?.valor || ''}" onkeypress="if(event.key==='Enter') aplicarFiltroColumna('${columna}')">
                     ${valoresUnicos.length > 0 && valoresUnicos.length <= 20 ? `
                     <div class="filter-values-list" id="filter-values-list-${columna}">
                         ${valoresUnicos.map(v => `
                             <label class="filter-value-item">
                                 <input type="checkbox" value="${v}" ${filtroExistente?.valores?.includes(v) ? 'checked' : ''}>
-                                <span>${v || '(vacío)'}</span>
+                                <span>${v || '(vacio)'}</span>
                             </label>
                         `).join('')}
                     </div>
                     ` : ''}
                 </div>
                 <div class="filter-popup-footer">
-                    <button class="btn-filter-clear" onclick="limpiarFiltroColumna('${columna}')" title="Limpiar">
-                        <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
-                    </button>
-                    <button class="btn-filter-apply" onclick="aplicarFiltroColumna('${columna}')">
-                        <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
-                        Aplicar
-                    </button>
+                    <button class="btn-filter-clear" onclick="limpiarFiltroColumna('${columna}')">Limpiar</button>
+                    <button class="btn-filter-apply" onclick="aplicarFiltroColumna('${columna}')">Aplicar</button>
                 </div>
             `;
 
@@ -960,10 +1040,8 @@
             popup.style.top = `${rect.bottom + 5}px`;
             popup.style.left = `${Math.min(rect.left, window.innerWidth - 280)}px`;
             popup.style.zIndex = '1000';
-
             document.body.appendChild(popup);
             popupFiltroAbierto = popup;
-
             popup.addEventListener('click', (e) => e.stopPropagation());
         }
 
@@ -994,7 +1072,6 @@
             const valoresSeleccionados = Array.from(checkboxes).map(cb => cb.value);
 
             filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
-
             if (valoresSeleccionados.length > 0) {
                 filtrosColumna.push({ columna, operador: 'in', valores: valoresSeleccionados });
             } else if (valorInput) {
@@ -1025,38 +1102,24 @@
         function renderizarChipsFiltros() {
             const container = document.getElementById('column-filters-chips');
             if (!container) return;
-
             if (filtrosColumna.length === 0) {
                 container.innerHTML = '';
                 container.style.display = 'none';
                 return;
             }
-
             container.style.display = 'flex';
             container.innerHTML = filtrosColumna.map((filtro, idx) => {
                 const labelColumna = columnasFiltrables.find(c => c.key === filtro.columna)?.label || filtro.columna;
                 const esNegativo = filtro.operador?.startsWith('not_') || filtro.operador === 'neq';
                 const chipClass = esNegativo ? 'filter-chip filter-chip-negative' : 'filter-chip';
-
                 if (filtro.operador === 'in' && filtro.valores) {
-                    const valorMostrar = filtro.valores.length <= 2
-                        ? filtro.valores.join(', ')
-                        : `${filtro.valores[0]}... (+${filtro.valores.length - 1})`;
-                    return `<span class="filter-chip filter-chip-multi">
-                        <span class="filter-chip-column">${labelColumna}:</span>
-                        <span class="filter-chip-value">${valorMostrar}</span>
-                        <span class="filter-chip-remove" onclick="quitarFiltroColumna(${idx})">✕</span>
-                    </span>`;
+                    const valorMostrar = filtro.valores.length <= 2 ? filtro.valores.join(', ') : `${filtro.valores[0]}... (+${filtro.valores.length - 1})`;
+                    return `<span class="filter-chip filter-chip-multi"><span class="filter-chip-column">${labelColumna}:</span><span class="filter-chip-value">${valorMostrar}</span><span class="filter-chip-remove" onclick="quitarFiltroColumna(${idx})">✕</span></span>`;
                 } else {
                     const opLabel = operadoresTexto.find(o => o.key === filtro.operador)?.label || filtro.operador;
-                    return `<span class="${chipClass}">
-                        <span class="filter-chip-column">${labelColumna}:</span>
-                        <span class="filter-chip-operator">${opLabel.toLowerCase()}</span>
-                        <span class="filter-chip-value">"${filtro.valor}"</span>
-                        <span class="filter-chip-remove" onclick="quitarFiltroColumna(${idx})">✕</span>
-                    </span>`;
+                    return `<span class="${chipClass}"><span class="filter-chip-column">${labelColumna}:</span><span class="filter-chip-operator">${opLabel.toLowerCase()}</span><span class="filter-chip-value">"${filtro.valor}"</span><span class="filter-chip-remove" onclick="quitarFiltroColumna(${idx})">✕</span></span>`;
                 }
-            }).join('') + `<button class="btn-clear-filters" onclick="limpiarTodosFiltrosColumna()">Limpiar todo</button>`;
+            }).join('') + '<button class="btn-clear-filters" onclick="limpiarTodosFiltrosColumna()">Limpiar todo</button>';
         }
 
         function quitarFiltroColumna(index) {
@@ -1079,7 +1142,6 @@
         function aplicarFiltrosYOrdenacion() {
             let datos = [...allProposals];
 
-            // Aplicar filtros de columna
             filtrosColumna.forEach(filtro => {
                 datos = datos.filter(item => {
                     let valorItem = item[filtro.columna];
@@ -1105,20 +1167,11 @@
                 });
             });
 
-            // Aplicar ordenación
             datos.sort((a, b) => {
                 let valA = a[ordenActual.columna];
                 let valB = b[ordenActual.columna];
-                if (ordenActual.columna === 'usuario') {
-                    valA = a.username;
-                    valB = b.username;
-                }
-
-                if (ordenActual.columna === 'fecha') {
-                    valA = new Date(valA);
-                    valB = new Date(valB);
-                }
-
+                if (ordenActual.columna === 'usuario') { valA = a.username; valB = b.username; }
+                if (ordenActual.columna === 'fecha') { valA = new Date(valA); valB = new Date(valB); }
                 if (valA < valB) return ordenActual.direccion === 'ASC' ? -1 : 1;
                 if (valA > valB) return ordenActual.direccion === 'ASC' ? 1 : -1;
                 return 0;
@@ -1128,7 +1181,18 @@
             renderProposals(filteredProposals);
         }
 
-        // Cerrar popup al hacer clic fuera
+        // ==================== EVENT LISTENERS ====================
+        document.getElementById('proposal-detail-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeProposalModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeProposalModal();
+                cerrarPopupFiltro();
+            }
+        });
+
         document.addEventListener('click', (e) => {
             if (popupFiltroAbierto && !popupFiltroAbierto.contains(e.target) && !e.target.classList.contains('column-filter-btn')) {
                 cerrarPopupFiltro();

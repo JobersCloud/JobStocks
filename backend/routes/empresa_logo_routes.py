@@ -418,7 +418,7 @@ def set_tema(empresa_id):
           properties:
             tema:
               type: string
-              enum: [rubi, zafiro, esmeralda, amatista, ambar, grafito]
+              enum: [rubi, zafiro, esmeralda, amatista, ambar, grafito, corporativo, ejecutivo, oceano, bosque, vino, medianoche, titanio, bronce]
     responses:
       200:
         description: Tema actualizado correctamente
@@ -432,10 +432,24 @@ def set_tema(empresa_id):
         data = request.json
         tema = data.get('tema', 'rubi')
 
+        # Validar tema antes de intentar guardar
+        temas_validos = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito',
+                         'corporativo', 'ejecutivo', 'oceano', 'bosque', 'vino',
+                         'medianoche', 'titanio', 'bronce']
+        if tema not in temas_validos:
+            return jsonify({"error": f"Tema '{tema}' no válido. Valores permitidos: {', '.join(temas_validos)}"}), 400
+
+        if not connection:
+            return jsonify({"error": "No hay conexión de empresa activa. Por favor, inicie sesión de nuevo."}), 400
+
+        if not empresa_id_val:
+            return jsonify({"error": "No se pudo obtener el ID de empresa. Por favor, inicie sesión de nuevo."}), 400
+
         if EmpresaLogoModel.set_tema(empresa_id_val, tema, connection):
             return jsonify({"message": "Tema actualizado correctamente"}), 200
         else:
-            return jsonify({"error": "Tema no válido. Valores permitidos: rubi, zafiro, esmeralda, amatista, ambar, grafito"}), 400
+            return jsonify({"error": "Error al guardar en la base de datos. Verifique que la tabla empresa_logo existe."}), 500
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error en set_tema: {e}")
+        return jsonify({"error": f"Error del servidor: {str(e)}"}), 500

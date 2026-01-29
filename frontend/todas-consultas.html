@@ -6,13 +6,11 @@
     <title>Consultas de Productos - Administracion</title>
     <link rel="stylesheet" href="css/styles.css">
     <script>
-        // Cargar tema guardado inmediatamente para evitar flash
         (function() {
-            const theme = localStorage.getItem('theme') || 'light';
+            const theme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
             const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
             document.documentElement.setAttribute('data-color-theme', colorTheme);
-            // Crear favicon desde localStorage (sin link estático para evitar flash)
             const faviconUrl = localStorage.getItem('faviconUrl');
             if (faviconUrl) {
                 const link = document.createElement('link');
@@ -24,242 +22,227 @@
     </script>
 </head>
 <body>
-    <div class="container">
-        <!-- Header de la pagina -->
-        <div class="page-header">
-            <div class="logo-section">
-                <a href="#" onclick="goBack(); return false;" style="display: flex; align-items: center;">
-                    <img src="" alt="Logo" class="logo" style="cursor: pointer; visibility: hidden;">
-                </a>
-                <h1 data-i18n="inquiries.allTitle">Consultas de Productos</h1>
-                <span class="pending-badge" id="pending-count" style="display: none;">0 pendientes</span>
+    <div class="app-layout">
+        <header class="top-header">
+            <div class="top-header-left">
+                <button class="mobile-menu-btn" onclick="SidebarNav.toggleMobile()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="header-logo">
+                    <img src="" alt="Logo" id="header-logo">
+                    <span class="header-logo-text" id="header-company-name">Stocks</span>
+                </div>
+                <div class="header-divider"></div>
+                <div>
+                    <h1 class="top-header-title" data-i18n="inquiries.allTitle">Consultas de Productos</h1>
+                    <span class="pending-badge" id="pending-count" style="display: none;">0 pendientes</span>
+                </div>
             </div>
-            <div class="header-actions">
-                <button class="back-btn" onclick="goBack()">
-                    <span data-i18n="common.back">Volver</span>
+            <div class="top-header-right">
+                <select id="lang-selector" class="lang-selector-header" onchange="I18n.setLanguage(this.value)">
+                    <option value="es">ES</option>
+                    <option value="en">EN</option>
+                    <option value="fr">FR</option>
+                </select>
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">
+                    <span id="theme-icon">🌙</span>
+                </button>
+                <div class="menu-container">
+                    <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
+                        <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span class="user-name-display" id="user-name-display">Usuario</span>
+                    </button>
+                    <div class="menu-dropdown" id="menu-dropdown">
+                        <div class="menu-header">
+                            <div class="user-name" id="menu-user-name">Usuario</div>
+                            <div class="user-rol" id="menu-user-rol">usuario</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-toggle-container">
+                <button class="sidebar-toggle" title="Ctrl+B">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
                 </button>
             </div>
-        </div>
-
-        <!-- Filtros -->
-        <div class="filters-container" style="background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <div class="filters-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end;">
-                <div class="filter-group">
-                    <label style="display: block; font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 6px;" data-i18n="inquiries.filterStatus">Estado</label>
-                    <select id="filter-estado" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
-                        <option value="" data-i18n="inquiries.allStatuses">Todos los estados</option>
-                        <option value="pendiente" data-i18n="inquiries.statusPending">Pendiente</option>
-                        <option value="respondida" data-i18n="inquiries.statusAnswered">Respondida</option>
-                        <option value="cerrada" data-i18n="inquiries.statusClosed">Cerrada</option>
-                    </select>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section">
+                    <a class="sidebar-item" data-page="index.html" data-tooltip="Stocks" onclick="SidebarNav.navigateTo('index.html')">
+                        <span class="sidebar-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+                        <span class="sidebar-item-text" data-i18n="menu.stocks">Stocks</span>
+                    </a>
+                    <a class="sidebar-item" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')">
+                        <span class="sidebar-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></span>
+                        <span class="sidebar-item-text" data-i18n="menu.myProposals">Mis Propuestas</span>
+                    </a>
                 </div>
-                <div class="filter-group">
-                    <label style="display: block; font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 6px;" data-i18n="proposals.filterDateFrom">Desde</label>
-                    <input type="date" id="filter-fecha-desde" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                <div class="sidebar-accordion expanded" id="sidebar-admin-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                            <span data-i18n="menu.administration">Administracion</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="dashboard.html" data-tooltip="Dashboard" onclick="SidebarNav.navigateTo('dashboard.html')">
+                            <span class="sidebar-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
+                            <span class="sidebar-item-text" data-i18n="menu.dashboard">Dashboard</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')">
+                            <span class="sidebar-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></span>
+                            <span class="sidebar-item-text" data-i18n="menu.allProposals">Propuestas</span>
+                        </a>
+                        <a class="sidebar-item active" data-page="todas-consultas.html" data-tooltip="Consultas" onclick="SidebarNav.navigateTo('todas-consultas.html')">
+                            <span class="sidebar-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span>
+                            <span class="sidebar-item-text" data-i18n="menu.allInquiries">Consultas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="usuarios.html" data-tooltip="Usuarios" onclick="SidebarNav.navigateTo('usuarios.html')">
+                            <span class="sidebar-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span>
+                            <span class="sidebar-item-text" data-i18n="menu.users">Usuarios</span>
+                        </a>
+                    </div>
                 </div>
-                <div class="filter-group">
-                    <label style="display: block; font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 6px;" data-i18n="proposals.filterDateTo">Hasta</label>
-                    <input type="date" id="filter-fecha-hasta" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                <div class="sidebar-accordion" id="sidebar-config-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                            <span data-i18n="menu.settings">Configuracion</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="email-config.html" data-tooltip="Email" onclick="SidebarNav.navigateTo('email-config.html')">
+                            <span class="sidebar-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></span>
+                            <span class="sidebar-item-text" data-i18n="menu.emailConfig">Email</span>
+                        </a>
+                        <a class="sidebar-item" data-page="parametros.html" data-tooltip="Parametros" onclick="SidebarNav.navigateTo('parametros.html')">
+                            <span class="sidebar-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg></span>
+                            <span class="sidebar-item-text" data-i18n="menu.parameters">Parametros</span>
+                        </a>
+                        <a class="sidebar-item" data-page="empresa-logo.html" data-tooltip="Logo" onclick="SidebarNav.navigateTo('empresa-logo.html')">
+                            <span class="sidebar-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></span>
+                            <span class="sidebar-item-text" data-i18n="menu.companyLogo">Logo</span>
+                        </a>
+                    </div>
                 </div>
-                <div class="filter-actions" style="display: flex; gap: 10px;">
-                    <button onclick="applyFilters()" class="btn-primary" style="padding: 10px 20px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;" data-i18n="common.search">Buscar</button>
-                    <button onclick="clearFilters()" class="btn-secondary" style="padding: 10px 20px; background: #f0f0f0; color: #333; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;" data-i18n="common.clear">Limpiar</button>
-                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <a class="sidebar-item" data-tooltip="Cerrar Sesion" onclick="logout()">
+                    <span class="sidebar-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></span>
+                    <span class="sidebar-item-text" data-i18n="menu.logout">Cerrar Sesion</span>
+                </a>
             </div>
-        </div>
+        </aside>
 
-        <!-- Contenedor principal -->
-        <div class="inquiries-container">
-            <div class="inquiries-content">
-                <!-- Loading state -->
-                <div class="inquiries-loading" id="inquiries-loading">
-                    <div class="spinner"></div>
-                    <p data-i18n="inquiries.loading">Cargando consultas...</p>
-                </div>
+        <div class="sidebar-overlay"></div>
 
-                <!-- Chips de filtros activos (ANTES del empty state) -->
-                <div class="column-filters-chips" id="column-filters-chips" style="display: none;"></div>
-
-                <!-- Empty state -->
-                <div class="inquiries-empty" id="inquiries-empty" style="display: none;">
-                    <div class="inquiries-empty-icon">💬</div>
-                    <h3 data-i18n="inquiries.noInquiries">No hay consultas</h3>
-                </div>
-
-                <!-- No results from filter -->
-                <div class="inquiries-no-results" id="inquiries-no-results" style="display: none;">
-                    <div class="inquiries-empty-icon">🔍</div>
-                    <h3>No se encontraron resultados</h3>
-                    <p>Prueba con otros criterios de búsqueda</p>
-                </div>
-
-                <!-- Table view (desktop) -->
-                <div class="inquiries-table-wrapper" id="inquiries-table-wrapper" style="display: none;">
-                    <div class="table-scroll-container">
-                        <table class="inquiries-table" id="inquiries-table">
-                            <thead>
-                                <tr>
-                                    <th data-column="id">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('id')">
-                                            ID
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('id', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-column="codigo" data-i18n="inquiries.product">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('codigo')">
-                                            Producto
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('codigo', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-column="nombre" data-i18n="inquiries.client">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('nombre')">
-                                            Cliente
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('nombre', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-column="fecha" data-i18n="proposals.date">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('fecha')">
-                                            Fecha
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('fecha', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-column="estado" data-i18n="proposals.status">
-                                    <div class="column-header-wrapper">
-                                        <span class="sortable-header" onclick="ordenarPor('estado')">
-                                            Estado
-                                            <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                        </span>
-                                        <button class="column-filter-btn" onclick="abrirPopupFiltro('estado', this)" title="Filtrar">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                        </button>
-                                    </div>
-                                </th>
-                                <th data-i18n="users.actions">Acciones</th>
-                            </tr>
-                            </thead>
-                            <tbody id="inquiries-table-body">
-                            </tbody>
-                        </table>
+        <div class="main-wrapper">
+            <main class="main-content-area">
+                <div class="filters">
+                    <h2 data-i18n="filters.title">Filtros de Busqueda</h2>
+                    <div class="filter-grid">
+                        <div class="form-group">
+                            <label data-i18n="inquiries.filterStatus">Estado</label>
+                            <select id="filter-estado">
+                                <option value="" data-i18n="inquiries.allStatuses">Todos los estados</option>
+                                <option value="pendiente" data-i18n="inquiries.statusPending">Pendiente</option>
+                                <option value="respondida" data-i18n="inquiries.statusAnswered">Respondida</option>
+                                <option value="cerrada" data-i18n="inquiries.statusClosed">Cerrada</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="proposals.filterDateFrom">Desde</label>
+                            <input type="date" id="filter-fecha-desde">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="proposals.filterDateTo">Hasta</label>
+                            <input type="date" id="filter-fecha-hasta">
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="applyFilters()"><span data-i18n="common.search">Buscar</span></button>
+                        <button class="btn-secondary" onclick="clearFilters()"><span data-i18n="common.clear">Limpiar</span></button>
                     </div>
                 </div>
 
-                <!-- Cards view (mobile) -->
-                <div class="inquiries-cards" id="inquiries-cards">
+                <div class="inquiries-container">
+                    <div class="inquiries-content">
+                        <div class="inquiries-loading" id="inquiries-loading">
+                            <div class="spinner"></div>
+                            <p data-i18n="inquiries.loading">Cargando consultas...</p>
+                        </div>
+                        <div class="column-filters-chips" id="column-filters-chips" style="display: none;"></div>
+                        <div class="inquiries-empty" id="inquiries-empty" style="display: none;">
+                            <div class="inquiries-empty-icon">💬</div>
+                            <h3 data-i18n="inquiries.noInquiries">No hay consultas</h3>
+                        </div>
+                        <div class="inquiries-no-results" id="inquiries-no-results" style="display: none;">
+                            <div class="inquiries-empty-icon">🔍</div>
+                            <h3>No se encontraron resultados</h3>
+                            <p>Prueba con otros criterios de busqueda</p>
+                        </div>
+                        <div class="inquiries-table-wrapper" id="inquiries-table-wrapper" style="display: none;">
+                            <div class="table-scroll-container">
+                                <table class="inquiries-table" id="inquiries-table">
+                                    <thead>
+                                        <tr>
+                                            <th data-column="id"><div class="column-header-wrapper"><span class="sortable-header" onclick="ordenarPor('id')">ID<svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg></span><button class="column-filter-btn" onclick="abrirPopupFiltro('id', this)" title="Filtrar"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg></button></div></th>
+                                            <th data-column="codigo" data-i18n="inquiries.product"><div class="column-header-wrapper"><span class="sortable-header" onclick="ordenarPor('codigo')">Producto<svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg></span><button class="column-filter-btn" onclick="abrirPopupFiltro('codigo', this)" title="Filtrar"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg></button></div></th>
+                                            <th data-column="nombre" data-i18n="inquiries.client"><div class="column-header-wrapper"><span class="sortable-header" onclick="ordenarPor('nombre')">Cliente<svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg></span><button class="column-filter-btn" onclick="abrirPopupFiltro('nombre', this)" title="Filtrar"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg></button></div></th>
+                                            <th data-column="fecha" data-i18n="proposals.date"><div class="column-header-wrapper"><span class="sortable-header" onclick="ordenarPor('fecha')">Fecha<svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg></span><button class="column-filter-btn" onclick="abrirPopupFiltro('fecha', this)" title="Filtrar"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg></button></div></th>
+                                            <th data-column="estado" data-i18n="proposals.status"><div class="column-header-wrapper"><span class="sortable-header" onclick="ordenarPor('estado')">Estado<svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg></span><button class="column-filter-btn" onclick="abrirPopupFiltro('estado', this)" title="Filtrar"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg></button></div></th>
+                                            <th data-i18n="users.actions">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="inquiries-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="inquiries-cards" id="inquiries-cards"></div>
+                        <div class="grid-footer" id="grid-footer"></div>
+                    </div>
                 </div>
-
-                <!-- Footer con total de registros (visible en ambas vistas) -->
-                <div class="grid-footer" id="grid-footer"></div>
-            </div>
+            </main>
         </div>
     </div>
 
-    <!-- Modal de detalle -->
     <div id="inquiry-detail-modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 data-i18n="inquiries.viewDetail">Detalle de Consulta</h2>
                 <button class="modal-close" onclick="closeInquiryModal()">&times;</button>
             </div>
-            <div class="inquiry-detail-content" id="inquiry-detail-content">
-            </div>
+            <div class="inquiry-detail-content" id="inquiry-detail-content"></div>
         </div>
     </div>
 
-    <script src="js/i18n/i18n.js"></script>
+    <script src="js/i18n/i18n.js?v=20260128"></script>
+    <script src="js/sidebar.js?v=20260128"></script>
     <script>
-        // ==================== CONFIGURACION ====================
         const hostname = window.location.hostname;
         const protocol = window.location.protocol;
         const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
         const API_URL = isLocalhost ? `${protocol}//${hostname}:5000` : `${protocol}//${hostname}`;
 
-        // ==================== LOGO DINÁMICO POR EMPRESA ====================
-        function applyColorTheme(tema) {
-            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito'];
-            if (!validThemes.includes(tema)) tema = 'rubi';
-            document.documentElement.setAttribute('data-color-theme', tema);
-            localStorage.setItem('colorTheme', tema);
-        }
-
-        async function cargarLogoEmpresa() {
-            // Usar connection (empresa_cli_id) para endpoints de logo
-            const connection = localStorage.getItem('connection');
-            if (!connection) {
-                console.warn('No hay connection en localStorage, usando valores por defecto');
-                applyColorTheme('rubi');
-                return;
-            }
-            const logoElements = document.querySelectorAll('.logo');
-            try {
-                const configResponse = await fetch(`${API_URL}/api/empresa/${connection}/config`);
-                const config = await configResponse.json();
-                applyColorTheme(config.tema || 'rubi');
-                const invertirFilter = config.invertir_logo ? 'brightness(0) invert(1)' : 'none';
-                if (config.tiene_logo) {
-                    const logoUrl = `${API_URL}/api/empresa/${connection}/logo?t=${Date.now()}`;
-                    logoElements.forEach(el => {
-                        el.src = logoUrl;
-                        el.style.filter = invertirFilter;
-                        el.style.visibility = 'visible';
-                    });
-                } else {
-                    logoElements.forEach(el => {
-                        el.src = 'assets/logo.svg';
-                        el.style.filter = 'brightness(0) invert(1)';
-                        el.style.visibility = 'visible';
-                    });
-                }
-            } catch (error) {
-                console.log('Error al cargar logo:', error);
-                applyColorTheme('rubi');
-                logoElements.forEach(el => {
-                    el.src = 'assets/logo.svg';
-                    el.style.filter = 'brightness(0) invert(1)';
-                    el.style.visibility = 'visible';
-                });
-            }
-        }
-
+        let currentUser = null;
         let allInquiries = [];
         let filteredInquiries = [];
         let csrfToken = null;
-
-        // ==================== CSRF TOKEN ====================
-        async function obtenerCsrfToken() {
-            try {
-                csrfToken = localStorage.getItem('csrf_token');
-                const response = await fetch(`${API_URL}/api/csrf-token`, { credentials: 'include' });
-                if (response.ok) {
-                    const data = await response.json();
-                    csrfToken = data.csrf_token;
-                    localStorage.setItem('csrf_token', csrfToken);
-                }
-            } catch (e) {
-                console.error('Error obteniendo CSRF token:', e);
-            }
-        }
-
-        // ==================== ORDENACIÓN Y FILTROS DE COLUMNAS ====================
         let ordenActual = { columna: 'fecha', direccion: 'DESC' };
         let filtrosColumna = [];
         let popupFiltroAbierto = null;
@@ -283,440 +266,164 @@
             { key: 'estado', label: 'Estado', tipo: 'texto' }
         ];
 
-        // ==================== FUNCIONES DE ORDENACIÓN ====================
-        function ordenarPor(columna) {
-            if (ordenActual.columna === columna) {
-                ordenActual.direccion = ordenActual.direccion === 'ASC' ? 'DESC' : 'ASC';
-            } else {
-                ordenActual.columna = columna;
-                ordenActual.direccion = 'ASC';
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            applyTheme(savedTheme);
+        }
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const icon = document.getElementById('theme-icon');
+            if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        }
+        function toggleAccordion(header) {
+            const accordion = header.closest('.sidebar-accordion');
+            accordion.classList.toggle('expanded');
+        }
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('menu-dropdown');
+            dropdown.classList.toggle('show');
+        }
+        document.addEventListener('click', (e) => {
+            const menuContainer = document.querySelector('.menu-container');
+            const dropdown = document.getElementById('menu-dropdown');
+            if (menuContainer && !menuContainer.contains(e.target) && dropdown) {
+                dropdown.classList.remove('show');
             }
-            actualizarIconosOrdenacion();
-            aplicarFiltrosYOrdenacion();
+        });
+
+        function applyColorTheme(tema) {
+            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito', 'corporativo', 'ejecutivo', 'oceano', 'bosque', 'vino', 'medianoche', 'titanio', 'bronce'];
+            if (!validThemes.includes(tema)) tema = 'rubi';
+            document.documentElement.setAttribute('data-color-theme', tema);
+            localStorage.setItem('colorTheme', tema);
         }
-
-        function actualizarIconosOrdenacion() {
-            document.querySelectorAll('.inquiries-table th').forEach(th => {
-                th.classList.remove('sorted-asc', 'sorted-desc');
-            });
-            const thActual = document.querySelector(`.inquiries-table th[data-column="${ordenActual.columna}"]`);
-            if (thActual) {
-                thActual.classList.add(ordenActual.direccion === 'ASC' ? 'sorted-asc' : 'sorted-desc');
-            }
-        }
-
-        // ==================== FUNCIONES DE FILTROS DE COLUMNA ====================
-        function abrirPopupFiltro(columna, botonElement) {
-            cerrarPopupFiltro();
-
-            const columnaConfig = columnasFiltrables.find(c => c.key === columna);
-            if (!columnaConfig) return;
-
-            const filtroExistente = filtrosColumna.find(f => f.columna === columna);
-            const valorActual = filtroExistente ? filtroExistente.valor : '';
-            const operadorActual = filtroExistente ? filtroExistente.operador : 'contains';
-
-            const popup = document.createElement('div');
-            popup.className = 'filter-popup';
-            popup.id = 'filter-popup-activo';
-
-            let opcionesHtml = operadoresTexto.map(op => `
-                <label class="filter-condition-option ${op.negativo ? 'negativo' : ''}">
-                    <input type="radio" name="filter-operador" value="${op.key}" ${operadorActual === op.key ? 'checked' : ''}>
-                    <span>${op.label}</span>
-                </label>
-            `).join('');
-
-            popup.innerHTML = `
-                <div class="filter-popup-header">
-                    <span>Filtrar: ${columnaConfig.label}</span>
-                    <button class="filter-popup-close" onclick="cerrarPopupFiltro()">&times;</button>
-                </div>
-                <div class="filter-popup-body">
-                    <div class="filter-conditions">
-                        ${opcionesHtml}
-                    </div>
-                    <input type="text" class="filter-popup-input" id="filter-valor-input"
-                           placeholder="Escribir valor..." value="${valorActual}">
-                </div>
-                <div class="filter-popup-footer">
-                    <button class="filter-popup-btn filter-popup-btn-apply" onclick="aplicarFiltroColumna('${columna}')">
-                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M13.5 2.5l-7 7-3-3"/>
-                        </svg>
-                        Aplicar
-                    </button>
-                    <button class="filter-popup-btn filter-popup-btn-clear" onclick="limpiarFiltroColumna('${columna}')">
-                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M2 2l12 12M14 2L2 14"/>
-                        </svg>
-                        Limpiar
-                    </button>
-                </div>
-            `;
-
-            document.body.appendChild(popup);
-
-            const rect = botonElement.getBoundingClientRect();
-            popup.style.position = 'fixed';
-            popup.style.top = `${rect.bottom + 5}px`;
-            popup.style.left = `${rect.left}px`;
-            popup.style.zIndex = '9999';
-
-            // Ajustar si se sale de la pantalla
-            const popupRect = popup.getBoundingClientRect();
-            if (popupRect.right > window.innerWidth) {
-                popup.style.left = `${window.innerWidth - popupRect.width - 10}px`;
-            }
-
-            popupFiltroAbierto = popup;
-
-            // Cerrar al hacer clic fuera
-            setTimeout(() => {
-                document.addEventListener('click', cerrarPopupFiltroClickFuera);
-            }, 100);
-
-            // Focus en el input
-            document.getElementById('filter-valor-input').focus();
-        }
-
-        function cerrarPopupFiltro() {
-            const popup = document.getElementById('filter-popup-activo');
-            if (popup) {
-                popup.remove();
-            }
-            popupFiltroAbierto = null;
-            document.removeEventListener('click', cerrarPopupFiltroClickFuera);
-        }
-
-        function cerrarPopupFiltroClickFuera(e) {
-            const popup = document.getElementById('filter-popup-activo');
-            if (popup && !popup.contains(e.target) && !e.target.closest('.column-filter-btn')) {
-                cerrarPopupFiltro();
-            }
-        }
-
-        function aplicarFiltroColumna(columna) {
-            const valor = document.getElementById('filter-valor-input').value.trim();
-            const operadorRadio = document.querySelector('input[name="filter-operador"]:checked');
-            const operador = operadorRadio ? operadorRadio.value : 'contains';
-
-            // Remover filtro existente para esta columna
-            filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
-
-            if (valor) {
-                const columnaConfig = columnasFiltrables.find(c => c.key === columna);
-                filtrosColumna.push({
-                    columna: columna,
-                    operador: operador,
-                    valor: valor,
-                    label: columnaConfig ? columnaConfig.label : columna
-                });
-            }
-
-            cerrarPopupFiltro();
-            renderizarChipsFiltros();
-            aplicarFiltrosYOrdenacion();
-
-            // Marcar botón de filtro como activo
-            actualizarBotonesFiltro();
-        }
-
-        function limpiarFiltroColumna(columna) {
-            filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
-            cerrarPopupFiltro();
-            renderizarChipsFiltros();
-            aplicarFiltrosYOrdenacion();
-            actualizarBotonesFiltro();
-        }
-
-        function actualizarBotonesFiltro() {
-            document.querySelectorAll('.inquiries-table th').forEach(th => {
-                const columna = th.getAttribute('data-column');
-                const btn = th.querySelector('.column-filter-btn');
-                if (btn && columna) {
-                    const tieneFiltro = filtrosColumna.some(f => f.columna === columna);
-                    btn.classList.toggle('active', tieneFiltro);
+        async function cargarLogoEmpresa() {
+            const connection = localStorage.getItem('connection');
+            if (!connection) { applyColorTheme('rubi'); return; }
+            const logoElements = document.querySelectorAll('.logo, #header-logo');
+            try {
+                const configResponse = await fetch(`${API_URL}/api/empresa/${connection}/config`);
+                const config = await configResponse.json();
+                applyColorTheme(config.tema || 'rubi');
+                const invertirFilter = config.invertir_logo ? 'brightness(0) invert(1)' : 'none';
+                if (config.tiene_logo) {
+                    const logoUrl = `${API_URL}/api/empresa/${connection}/logo?t=${Date.now()}`;
+                    logoElements.forEach(el => { el.src = logoUrl; el.style.filter = invertirFilter; el.style.visibility = 'visible'; });
+                } else {
+                    logoElements.forEach(el => { el.src = 'assets/logo.svg'; el.style.filter = 'brightness(0) invert(1)'; el.style.visibility = 'visible'; });
                 }
-            });
-        }
-
-        function renderizarChipsFiltros() {
-            const container = document.getElementById('column-filters-chips');
-            if (!container) return;
-
-            if (filtrosColumna.length === 0) {
-                container.innerHTML = '';
-                container.style.display = 'none';
-                return;
+            } catch (error) {
+                applyColorTheme('rubi');
+                logoElements.forEach(el => { el.src = 'assets/logo.svg'; el.style.filter = 'brightness(0) invert(1)'; el.style.visibility = 'visible'; });
             }
-
-            container.style.display = 'flex';
-            container.innerHTML = filtrosColumna.map(filtro => {
-                const opLabel = operadoresTexto.find(o => o.key === filtro.operador)?.label || filtro.operador;
-                return `
-                    <div class="filter-chip">
-                        <span class="filter-chip-label">${filtro.label}:</span>
-                        <span class="filter-chip-operator">${opLabel}</span>
-                        <span class="filter-chip-value">"${filtro.valor}"</span>
-                        <button class="filter-chip-remove" onclick="limpiarFiltroColumna('${filtro.columna}')">&times;</button>
-                    </div>
-                `;
-            }).join('');
         }
 
-        // ==================== APLICAR FILTROS Y ORDENACIÓN ====================
-        function aplicarFiltrosYOrdenacion() {
-            // Aplicar filtros de columna sobre filteredInquiries (que ya tiene los filtros básicos)
-            let resultado = [...filteredInquiries];
-
-            // Aplicar filtros de columna
-            filtrosColumna.forEach(filtro => {
-                resultado = resultado.filter(item => {
-                    let valorItem = '';
-
-                    // Mapear columnas a campos del objeto
-                    switch(filtro.columna) {
-                        case 'id':
-                            valorItem = String(item.id || '');
-                            break;
-                        case 'codigo':
-                            valorItem = String(item.codigo_producto || '');
-                            break;
-                        case 'nombre':
-                            valorItem = String(item.nombre_cliente || '');
-                            break;
-                        case 'fecha':
-                            valorItem = formatDate(item.fecha_creacion) || '';
-                            break;
-                        case 'estado':
-                            valorItem = String(item.estado || '');
-                            break;
-                        default:
-                            valorItem = String(item[filtro.columna] || '');
-                    }
-
-                    const valorFiltro = filtro.valor.toLowerCase();
-                    valorItem = valorItem.toLowerCase();
-
-                    switch(filtro.operador) {
-                        case 'contains':
-                            return valorItem.includes(valorFiltro);
-                        case 'not_contains':
-                            return !valorItem.includes(valorFiltro);
-                        case 'eq':
-                            return valorItem === valorFiltro;
-                        case 'neq':
-                            return valorItem !== valorFiltro;
-                        case 'starts':
-                            return valorItem.startsWith(valorFiltro);
-                        case 'not_starts':
-                            return !valorItem.startsWith(valorFiltro);
-                        case 'ends':
-                            return valorItem.endsWith(valorFiltro);
-                        case 'not_ends':
-                            return !valorItem.endsWith(valorFiltro);
-                        default:
-                            return true;
-                    }
-                });
-            });
-
-            // Aplicar ordenación
-            resultado.sort((a, b) => {
-                let valorA, valorB;
-
-                switch(ordenActual.columna) {
-                    case 'id':
-                        valorA = a.id || 0;
-                        valorB = b.id || 0;
-                        break;
-                    case 'codigo':
-                        valorA = (a.codigo_producto || '').toLowerCase();
-                        valorB = (b.codigo_producto || '').toLowerCase();
-                        break;
-                    case 'nombre':
-                        valorA = (a.nombre_cliente || '').toLowerCase();
-                        valorB = (b.nombre_cliente || '').toLowerCase();
-                        break;
-                    case 'fecha':
-                        valorA = new Date(a.fecha_creacion || 0);
-                        valorB = new Date(b.fecha_creacion || 0);
-                        break;
-                    case 'estado':
-                        valorA = (a.estado || '').toLowerCase();
-                        valorB = (b.estado || '').toLowerCase();
-                        break;
-                    default:
-                        valorA = a[ordenActual.columna] || '';
-                        valorB = b[ordenActual.columna] || '';
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_URL}/api/current-user`, { credentials: 'include' });
+                if (!response.ok) { window.location.href = 'login.html'; return null; }
+                const data = await response.json();
+                currentUser = data;
+                document.getElementById('user-name-display').textContent = data.username;
+                document.getElementById('menu-user-name').textContent = data.full_name || data.username;
+                document.getElementById('menu-user-rol').textContent = data.rol;
+                if (data.rol !== 'administrador' && data.rol !== 'superusuario') {
+                    alert('No tienes permisos para acceder a esta pagina');
+                    window.location.href = 'index.html';
+                    return null;
                 }
-
-                let comparacion = 0;
-                if (valorA < valorB) comparacion = -1;
-                if (valorA > valorB) comparacion = 1;
-
-                return ordenActual.direccion === 'DESC' ? -comparacion : comparacion;
-            });
-
-            renderInquiriesConDatos(resultado);
+                document.getElementById('sidebar-admin-section').style.display = 'block';
+                document.getElementById('sidebar-config-section').style.display = 'block';
+                return data;
+            } catch (error) {
+                window.location.href = 'login.html';
+                return null;
+            }
+        }
+        async function logout() {
+            try { await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' }); } catch (e) {}
+            localStorage.removeItem('csrf_token');
+            window.location.href = 'login.html';
+        }
+        async function obtenerCsrfToken() {
+            try {
+                csrfToken = localStorage.getItem('csrf_token');
+                const response = await fetch(`${API_URL}/api/csrf-token`, { credentials: 'include' });
+                if (response.ok) { const data = await response.json(); csrfToken = data.csrf_token; localStorage.setItem('csrf_token', csrfToken); }
+            } catch (e) {}
         }
 
-        // ==================== INICIALIZACION ====================
         document.addEventListener('DOMContentLoaded', async function() {
-            // Cargar logo de empresa (usa connection de localStorage)
+            loadTheme();
             await cargarLogoEmpresa();
-
-            // Inicializar i18n
             await I18n.init();
-
-            // Verificar autenticacion y permisos de admin
+            document.getElementById('lang-selector').value = I18n.currentLang;
             await checkAuth();
-
-            // Obtener CSRF token
             await obtenerCsrfToken();
-
-            // Cargar consultas
             await loadInquiries();
-
-            // Cargar contador de pendientes
             await loadPendingCount();
         });
 
-        // ==================== AUTENTICACION ====================
-        async function checkAuth() {
-            try {
-                const response = await fetch(`${API_URL}/api/current-user`, {
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                const user = await response.json();
-
-                // Verificar que sea administrador o superusuario
-                if (user.rol !== 'administrador' && user.rol !== 'superusuario') {
-                    alert('No tienes permisos para acceder a esta pagina');
-                    window.location.href = 'index.html';
-                    return;
-                }
-            } catch (error) {
-                console.error('Error checking auth:', error);
-                window.location.href = 'login.html';
-            }
-        }
-
-        // ==================== CARGAR CONSULTAS ====================
         async function loadInquiries() {
             const loadingEl = document.getElementById('inquiries-loading');
             const emptyEl = document.getElementById('inquiries-empty');
             const tableWrapper = document.getElementById('inquiries-table-wrapper');
-
             try {
                 const empresaId = localStorage.getItem('empresa_id');
-                const response = await fetch(`${API_URL}/api/consultas?empresa_id=${empresaId}`, {
-                    credentials: 'include'
-                });
-
+                const response = await fetch(`${API_URL}/api/consultas?empresa_id=${empresaId}`, { credentials: 'include' });
                 if (!response.ok) {
-                    if (response.status === 403) {
-                        alert('No tienes permisos para ver las consultas');
-                        window.location.href = 'index.html';
-                        return;
-                    }
+                    if (response.status === 403) { alert('No tienes permisos para ver las consultas'); window.location.href = 'index.html'; return; }
                     throw new Error('Error loading inquiries');
                 }
-
                 const data = await response.json();
                 allInquiries = data.consultas || [];
                 filteredInquiries = [...allInquiries];
-
                 loadingEl.style.display = 'none';
-
-                if (allInquiries.length === 0) {
-                    emptyEl.style.display = 'block';
-                    tableWrapper.style.display = 'none';
-                } else {
-                    emptyEl.style.display = 'none';
-                    tableWrapper.style.display = 'block';
-                    renderInquiries();
-                }
+                if (allInquiries.length === 0) { emptyEl.style.display = 'block'; tableWrapper.style.display = 'none'; }
+                else { emptyEl.style.display = 'none'; tableWrapper.style.display = 'block'; renderInquiries(); }
             } catch (error) {
-                console.error('Error loading inquiries:', error);
-                loadingEl.innerHTML = `<p style="color: #dc3545;">Error al cargar las consultas</p>`;
+                loadingEl.innerHTML = '<p style="color: #dc3545;">Error al cargar las consultas</p>';
             }
         }
-
-        // ==================== CARGAR PENDIENTES ====================
         async function loadPendingCount() {
             try {
                 const empresaId = localStorage.getItem('empresa_id');
-                const response = await fetch(`${API_URL}/api/consultas/pendientes/count?empresa_id=${empresaId}`, {
-                    credentials: 'include'
-                });
-
+                const response = await fetch(`${API_URL}/api/consultas/pendientes/count?empresa_id=${empresaId}`, { credentials: 'include' });
                 if (response.ok) {
                     const data = await response.json();
                     const badge = document.getElementById('pending-count');
-                    if (data.count > 0) {
-                        badge.textContent = `${data.count} ${t('inquiries.pending')}`;
-                        badge.style.display = 'inline-block';
-                    }
+                    if (data.count > 0) { badge.textContent = `${data.count} ${t('inquiries.pending')}`; badge.style.display = 'inline-block'; }
                 }
-            } catch (error) {
-                console.error('Error loading pending count:', error);
-            }
+            } catch (error) {}
         }
 
-        // ==================== FILTRAR ====================
         function applyFilters() {
             const estado = document.getElementById('filter-estado').value;
             const fechaDesde = document.getElementById('filter-fecha-desde').value;
             const fechaHasta = document.getElementById('filter-fecha-hasta').value;
-
             filteredInquiries = allInquiries.filter(inquiry => {
-                if (estado && inquiry.estado !== estado) {
-                    return false;
-                }
-
-                if (fechaDesde) {
-                    const inquiryDate = new Date(inquiry.fecha_creacion);
-                    const filterDate = new Date(fechaDesde);
-                    if (inquiryDate < filterDate) {
-                        return false;
-                    }
-                }
-
-                if (fechaHasta) {
-                    const inquiryDate = new Date(inquiry.fecha_creacion);
-                    const filterDate = new Date(fechaHasta);
-                    filterDate.setHours(23, 59, 59, 999);
-                    if (inquiryDate > filterDate) {
-                        return false;
-                    }
-                }
-
+                if (estado && inquiry.estado !== estado) return false;
+                if (fechaDesde && new Date(inquiry.fecha_creacion) < new Date(fechaDesde)) return false;
+                if (fechaHasta) { const filterDate = new Date(fechaHasta); filterDate.setHours(23, 59, 59, 999); if (new Date(inquiry.fecha_creacion) > filterDate) return false; }
                 return true;
             });
-
             renderInquiries();
         }
-
         function clearFilters() {
             document.getElementById('filter-estado').value = '';
             document.getElementById('filter-fecha-desde').value = '';
             document.getElementById('filter-fecha-hasta').value = '';
-
             filteredInquiries = [...allInquiries];
             renderInquiries();
         }
 
-        // ==================== RENDERIZAR ====================
         function renderInquiries() {
-            // Llamar a aplicarFiltrosYOrdenacion que renderizará los datos
             actualizarIconosOrdenacion();
             renderizarChipsFiltros();
             actualizarBotonesFiltro();
@@ -731,352 +438,255 @@
             const tableWrapper = document.getElementById('inquiries-table-wrapper');
 
             if (datos.length === 0) {
-                // Distinguir entre "sin datos" y "sin resultados por filtro"
-                if (filtrosColumna.length > 0) {
-                    // Hay filtros pero no resultados
-                    if (noResultsEl) noResultsEl.style.display = 'block';
-                    emptyEl.style.display = 'none';
-                } else {
-                    // No hay datos en absoluto
-                    emptyEl.style.display = 'block';
-                    if (noResultsEl) noResultsEl.style.display = 'none';
-                }
+                if (filtrosColumna.length > 0) { if (noResultsEl) noResultsEl.style.display = 'block'; emptyEl.style.display = 'none'; }
+                else { emptyEl.style.display = 'block'; if (noResultsEl) noResultsEl.style.display = 'none'; }
                 tableWrapper.style.display = 'none';
                 cardsEl.innerHTML = '';
                 return;
             }
-
             emptyEl.style.display = 'none';
             if (noResultsEl) noResultsEl.style.display = 'none';
             tableWrapper.style.display = 'block';
 
-            // Renderizar tabla
             tableBody.innerHTML = datos.map(inquiry => `
                 <tr>
                     <td><strong>#${inquiry.id}</strong></td>
-                    <td>
-                        <span class="product-badge">${inquiry.codigo_producto}</span>
-                        <br><small style="color: #666;">${truncate(inquiry.descripcion_producto, 30)}</small>
-                    </td>
-                    <td>
-                        <div class="client-info">
-                            <div class="name">${inquiry.nombre_cliente}</div>
-                            <div class="email">${inquiry.email_cliente}</div>
-                        </div>
-                    </td>
+                    <td><span class="product-badge">${inquiry.codigo_producto}</span><br><small style="color: #666;">${truncate(inquiry.descripcion_producto, 30)}</small></td>
+                    <td><div class="client-info"><div class="name">${inquiry.nombre_cliente}</div><div class="email">${inquiry.email_cliente}</div></div></td>
                     <td>${formatDate(inquiry.fecha_creacion)}</td>
                     <td>${getStatusBadge(inquiry.estado)}</td>
                     <td>
-                        <div class="status-actions">
-                            <button class="btn-view-details" onclick="viewInquiryDetails(${inquiry.id})">
-                                ${t('proposals.viewDetails')}
-                            </button>
-                            ${inquiry.estado === 'pendiente' ? `
-                                <button class="btn-status btn-status-respond" onclick="viewInquiryDetails(${inquiry.id})">
-                                    ${t('inquiries.respond')}
-                                </button>
-                            ` : ''}
-                            ${inquiry.estado !== 'cerrada' ? `
-                                <button class="btn-status btn-status-close" onclick="changeStatus(${inquiry.id}, 'cerrada')">
-                                    ${t('inquiries.close')}
-                                </button>
-                            ` : ''}
+                        <div class="action-buttons">
+                            <button class="btn-view-details" onclick="viewInquiryDetails(${inquiry.id})">${t('proposals.viewDetails')}</button>
+                            ${inquiry.estado === 'pendiente' ? `<button class="btn-status btn-status-respond" onclick="viewInquiryDetails(${inquiry.id})">${t('inquiries.respond')}</button>` : ''}
+                            ${inquiry.estado !== 'cerrada' ? `<button class="btn-status btn-status-close" onclick="changeStatus(${inquiry.id}, 'cerrada')">${t('inquiries.close')}</button>` : ''}
                         </div>
                     </td>
                 </tr>
             `).join('');
 
-            // Renderizar cards (movil)
             cardsEl.innerHTML = datos.map(inquiry => `
                 <div class="inquiry-card">
-                    <div class="inquiry-card-header">
-                        <span class="inquiry-card-product">${inquiry.codigo_producto}</span>
-                        ${getStatusBadge(inquiry.estado)}
-                    </div>
-                    <div class="inquiry-card-client">
-                        <span class="name">${inquiry.nombre_cliente}</span>
-                        <br><small>${inquiry.email_cliente}</small>
-                    </div>
+                    <div class="inquiry-card-header"><span class="inquiry-card-product">${inquiry.codigo_producto}</span>${getStatusBadge(inquiry.estado)}</div>
+                    <div class="inquiry-card-client"><span class="name">${inquiry.nombre_cliente}</span><br><small>${inquiry.email_cliente}</small></div>
                     <div class="inquiry-card-date">${formatDate(inquiry.fecha_creacion)}</div>
                     <div class="inquiry-card-message">${inquiry.mensaje}</div>
                     <div class="inquiry-card-actions">
-                        <button class="btn-view-details" onclick="viewInquiryDetails(${inquiry.id})" style="width: 100%;">
-                            ${t('proposals.viewDetails')}
-                        </button>
-                        ${inquiry.estado === 'pendiente' ? `
-                            <button class="btn-status btn-status-respond" onclick="viewInquiryDetails(${inquiry.id})" style="width: 100%;">
-                                ${t('inquiries.respond')}
-                            </button>
-                        ` : ''}
+                        <button class="btn-view-details" onclick="viewInquiryDetails(${inquiry.id})" style="width: 100%;">${t('proposals.viewDetails')}</button>
+                        ${inquiry.estado === 'pendiente' ? `<button class="btn-status btn-status-respond" onclick="viewInquiryDetails(${inquiry.id})" style="width: 100%;">${t('inquiries.respond')}</button>` : ''}
                     </div>
                 </div>
             `).join('');
 
-            // Actualizar footer con total de registros
             const footerEl = document.getElementById('grid-footer');
             if (footerEl) {
                 const totalOriginal = allInquiries.length;
                 const totalFiltrado = datos.length;
-                const hayFiltros = filtrosColumna.length > 0;
-
-                if (hayFiltros && totalFiltrado !== totalOriginal) {
-                    footerEl.innerHTML = `${totalFiltrado} ${t('dataGrid.records') || 'registros'} (${t('dataGrid.filteredFrom') || 'filtrados de'} ${totalOriginal})`;
-                } else {
-                    footerEl.innerHTML = `${totalFiltrado} ${t('dataGrid.records') || 'registros'}`;
-                }
+                if (filtrosColumna.length > 0 && totalFiltrado !== totalOriginal) { footerEl.innerHTML = `${totalFiltrado} registros (filtrados de ${totalOriginal})`; }
+                else { footerEl.innerHTML = `${totalFiltrado} registros`; }
             }
         }
 
-        // ==================== VER DETALLE ====================
+        function ordenarPor(columna) {
+            if (ordenActual.columna === columna) { ordenActual.direccion = ordenActual.direccion === 'ASC' ? 'DESC' : 'ASC'; }
+            else { ordenActual.columna = columna; ordenActual.direccion = 'ASC'; }
+            actualizarIconosOrdenacion();
+            aplicarFiltrosYOrdenacion();
+        }
+        function actualizarIconosOrdenacion() {
+            document.querySelectorAll('.inquiries-table th .sort-icon').forEach(icon => icon.classList.remove('active', 'asc', 'desc'));
+            const thActivo = document.querySelector(`.inquiries-table th[data-column="${ordenActual.columna}"] .sort-icon`);
+            if (thActivo) thActivo.classList.add('active', ordenActual.direccion.toLowerCase());
+        }
+
+        function abrirPopupFiltro(columna, elemento) {
+            cerrarPopupFiltro();
+            const colConfig = columnasFiltrables.find(c => c.key === columna);
+            if (!colConfig) return;
+            const filtroExistente = filtrosColumna.find(f => f.columna === columna);
+            const popup = document.createElement('div');
+            popup.className = 'filter-popup';
+            popup.innerHTML = `
+                <div class="filter-popup-header"><span class="filter-popup-title">${colConfig.label}</span><button class="filter-popup-close" onclick="cerrarPopupFiltro()">&times;</button></div>
+                <div class="filter-popup-content">
+                    <div class="filter-condition-operators">
+                        ${operadoresTexto.map((op, idx) => `<label class="filter-condition-option ${op.negativo ? 'negativo' : ''}"><input type="radio" name="op-${columna}" value="${op.key}" ${(filtroExistente?.operador === op.key || (!filtroExistente && idx === 0)) ? 'checked' : ''}><span class="filter-radio-dot"></span>${op.label}</label>`).join('')}
+                    </div>
+                    <input type="text" class="filter-condition-input" id="filter-value-${columna}" placeholder="Valor..." value="${filtroExistente?.valor || ''}" onkeypress="if(event.key==='Enter') aplicarFiltroColumna('${columna}')">
+                </div>
+                <div class="filter-popup-footer">
+                    <button class="btn-filter-clear" onclick="limpiarFiltroColumna('${columna}')">Limpiar</button>
+                    <button class="btn-filter-apply" onclick="aplicarFiltroColumna('${columna}')">Aplicar</button>
+                </div>
+            `;
+            const rect = elemento.getBoundingClientRect();
+            popup.style.position = 'fixed';
+            popup.style.top = `${rect.bottom + 5}px`;
+            popup.style.left = `${Math.min(rect.left, window.innerWidth - 280)}px`;
+            popup.style.zIndex = '1000';
+            document.body.appendChild(popup);
+            popupFiltroAbierto = popup;
+            popup.addEventListener('click', (e) => e.stopPropagation());
+        }
+        function cerrarPopupFiltro() { if (popupFiltroAbierto) { popupFiltroAbierto.remove(); popupFiltroAbierto = null; } }
+        function aplicarFiltroColumna(columna) {
+            const inputValor = document.getElementById(`filter-value-${columna}`);
+            const radioSeleccionado = document.querySelector(`input[name="op-${columna}"]:checked`);
+            const valorInput = inputValor?.value.trim();
+            const operador = radioSeleccionado?.value || 'contains';
+            filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
+            if (valorInput) filtrosColumna.push({ columna, operador, valor: valorInput, label: columnasFiltrables.find(c => c.key === columna)?.label || columna });
+            cerrarPopupFiltro();
+            renderizarChipsFiltros();
+            actualizarBotonesFiltro();
+            aplicarFiltrosYOrdenacion();
+        }
+        function limpiarFiltroColumna(columna) { filtrosColumna = filtrosColumna.filter(f => f.columna !== columna); cerrarPopupFiltro(); renderizarChipsFiltros(); actualizarBotonesFiltro(); aplicarFiltrosYOrdenacion(); }
+        function actualizarBotonesFiltro() {
+            columnasFiltrables.forEach(col => { const btn = document.querySelector(`.inquiries-table th[data-column="${col.key}"] .column-filter-btn`); if (btn) btn.classList.toggle('active', filtrosColumna.some(f => f.columna === col.key)); });
+        }
+        function renderizarChipsFiltros() {
+            const container = document.getElementById('column-filters-chips');
+            if (!container) return;
+            if (filtrosColumna.length === 0) { container.innerHTML = ''; container.style.display = 'none'; return; }
+            container.style.display = 'flex';
+            container.innerHTML = filtrosColumna.map((filtro, idx) => {
+                const opLabel = operadoresTexto.find(o => o.key === filtro.operador)?.label || filtro.operador;
+                const esNegativo = filtro.operador?.startsWith('not_') || filtro.operador === 'neq';
+                return `<span class="filter-chip ${esNegativo ? 'filter-chip-negative' : ''}"><span class="filter-chip-column">${filtro.label}:</span><span class="filter-chip-operator">${opLabel.toLowerCase()}</span><span class="filter-chip-value">"${filtro.valor}"</span><span class="filter-chip-remove" onclick="quitarFiltroColumna(${idx})">✕</span></span>`;
+            }).join('') + '<button class="btn-clear-filters" onclick="limpiarTodosFiltrosColumna()">Limpiar todo</button>';
+        }
+        function quitarFiltroColumna(index) { filtrosColumna.splice(index, 1); renderizarChipsFiltros(); actualizarBotonesFiltro(); aplicarFiltrosYOrdenacion(); }
+        function limpiarTodosFiltrosColumna() { filtrosColumna = []; renderizarChipsFiltros(); actualizarBotonesFiltro(); aplicarFiltrosYOrdenacion(); }
+
+        function aplicarFiltrosYOrdenacion() {
+            let resultado = [...filteredInquiries];
+            filtrosColumna.forEach(filtro => {
+                resultado = resultado.filter(item => {
+                    let valorItem = '';
+                    switch(filtro.columna) {
+                        case 'id': valorItem = String(item.id || ''); break;
+                        case 'codigo': valorItem = String(item.codigo_producto || ''); break;
+                        case 'nombre': valorItem = String(item.nombre_cliente || ''); break;
+                        case 'fecha': valorItem = formatDate(item.fecha_creacion) || ''; break;
+                        case 'estado': valorItem = String(item.estado || ''); break;
+                        default: valorItem = String(item[filtro.columna] || '');
+                    }
+                    const valorFiltro = filtro.valor.toLowerCase();
+                    valorItem = valorItem.toLowerCase();
+                    switch(filtro.operador) {
+                        case 'contains': return valorItem.includes(valorFiltro);
+                        case 'not_contains': return !valorItem.includes(valorFiltro);
+                        case 'eq': return valorItem === valorFiltro;
+                        case 'neq': return valorItem !== valorFiltro;
+                        case 'starts': return valorItem.startsWith(valorFiltro);
+                        case 'not_starts': return !valorItem.startsWith(valorFiltro);
+                        case 'ends': return valorItem.endsWith(valorFiltro);
+                        case 'not_ends': return !valorItem.endsWith(valorFiltro);
+                        default: return true;
+                    }
+                });
+            });
+            resultado.sort((a, b) => {
+                let valorA, valorB;
+                switch(ordenActual.columna) {
+                    case 'id': valorA = a.id || 0; valorB = b.id || 0; break;
+                    case 'codigo': valorA = (a.codigo_producto || '').toLowerCase(); valorB = (b.codigo_producto || '').toLowerCase(); break;
+                    case 'nombre': valorA = (a.nombre_cliente || '').toLowerCase(); valorB = (b.nombre_cliente || '').toLowerCase(); break;
+                    case 'fecha': valorA = new Date(a.fecha_creacion || 0); valorB = new Date(b.fecha_creacion || 0); break;
+                    case 'estado': valorA = (a.estado || '').toLowerCase(); valorB = (b.estado || '').toLowerCase(); break;
+                    default: valorA = a[ordenActual.columna] || ''; valorB = b[ordenActual.columna] || '';
+                }
+                let comp = 0; if (valorA < valorB) comp = -1; if (valorA > valorB) comp = 1;
+                return ordenActual.direccion === 'DESC' ? -comp : comp;
+            });
+            renderInquiriesConDatos(resultado);
+        }
+
         async function viewInquiryDetails(inquiryId) {
             const modal = document.getElementById('inquiry-detail-modal');
             const content = document.getElementById('inquiry-detail-content');
-
             modal.style.display = 'flex';
-            content.innerHTML = `
-                <div class="inquiries-loading">
-                    <div class="spinner"></div>
-                    <p>${t('common.loading')}</p>
-                </div>
-            `;
-
+            content.innerHTML = '<div class="inquiries-loading"><div class="spinner"></div><p>Cargando...</p></div>';
             try {
                 const empresaId = localStorage.getItem('empresa_id');
-                const response = await fetch(`${API_URL}/api/consultas/${inquiryId}?empresa_id=${empresaId}`, {
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error loading inquiry details');
-                }
-
+                const response = await fetch(`${API_URL}/api/consultas/${inquiryId}?empresa_id=${empresaId}`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Error loading inquiry details');
                 const data = await response.json();
                 const inquiry = data.consulta;
-
                 content.innerHTML = `
-                    <div class="inquiry-section">
-                        <h4>📦 ${t('inquiries.product')}</h4>
-                        <div class="inquiry-section-grid">
-                            <div class="inquiry-field">
-                                <label>${t('table.code')}</label>
-                                <span style="color: var(--primary); font-weight: 600;">${inquiry.codigo_producto}</span>
-                            </div>
-                            <div class="inquiry-field">
-                                <label>${t('table.description')}</label>
-                                <span>${inquiry.descripcion_producto || '-'}</span>
-                            </div>
-                            <div class="inquiry-field">
-                                <label>${t('table.format')}</label>
-                                <span>${inquiry.formato || '-'}</span>
-                            </div>
-                            <div class="inquiry-field">
-                                <label>${t('table.quality')}</label>
-                                <span>${inquiry.calidad || '-'}</span>
-                            </div>
-                            <div class="inquiry-field">
-                                <label>${t('table.tone')}</label>
-                                <span>${inquiry.tono || '-'}</span>
-                            </div>
-                            <div class="inquiry-field">
-                                <label>${t('table.caliber')}</label>
-                                <span>${inquiry.calibre || '-'}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="inquiry-section">
-                        <h4>👤 ${t('inquiries.client')}</h4>
-                        <div class="inquiry-section-grid">
-                            <div class="inquiry-field">
-                                <label>${t('inquiry.name')}</label>
-                                <span>${inquiry.nombre_cliente}</span>
-                            </div>
-                            <div class="inquiry-field">
-                                <label>${t('inquiry.email')}</label>
-                                <span><a href="mailto:${inquiry.email_cliente}">${inquiry.email_cliente}</a></span>
-                            </div>
-                            <div class="inquiry-field">
-                                <label>${t('inquiry.phone')}</label>
-                                <span>${inquiry.telefono_cliente || '-'}</span>
-                            </div>
-                            <div class="inquiry-field">
-                                <label>${t('proposals.status')}</label>
-                                <span>${getStatusBadge(inquiry.estado)}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="inquiry-message">
-                        <h4>💬 ${t('inquiries.message')}</h4>
-                        <p>${inquiry.mensaje}</p>
-                    </div>
-
-                    ${inquiry.respuesta ? `
-                        <div class="inquiry-response">
-                            <h4>✅ ${t('inquiries.response')}</h4>
-                            <p>${inquiry.respuesta}</p>
-                            <div class="meta">
-                                ${inquiry.respondido_por_nombre ? `Por: ${inquiry.respondido_por_nombre}` : ''}
-                                ${inquiry.fecha_respuesta ? ` - ${formatDate(inquiry.fecha_respuesta)}` : ''}
-                            </div>
-                        </div>
-                    ` : ''}
-
-                    ${inquiry.estado === 'pendiente' ? `
-                        <div class="response-form">
-                            <h4>✍️ ${t('inquiries.writeResponse')}</h4>
-                            <textarea id="response-text" placeholder="${t('inquiries.responsePlaceholder')}"></textarea>
-                            <div class="form-actions">
-                                <button class="btn-send" onclick="sendResponse(${inquiry.id})">
-                                    📧 ${t('inquiries.sendResponse')}
-                                </button>
-                            </div>
-                        </div>
-                    ` : ''}
+                    <div class="inquiry-section"><h4>📦 ${t('inquiries.product')}</h4><div class="inquiry-section-grid">
+                        <div class="inquiry-field"><label>${t('table.code')}</label><span style="color: var(--primary); font-weight: 600;">${inquiry.codigo_producto}</span></div>
+                        <div class="inquiry-field"><label>${t('table.description')}</label><span>${inquiry.descripcion_producto || '-'}</span></div>
+                        <div class="inquiry-field"><label>${t('table.format')}</label><span>${inquiry.formato || '-'}</span></div>
+                        <div class="inquiry-field"><label>${t('table.quality')}</label><span>${inquiry.calidad || '-'}</span></div>
+                        <div class="inquiry-field"><label>${t('table.tone')}</label><span>${inquiry.tono || '-'}</span></div>
+                        <div class="inquiry-field"><label>${t('table.caliber')}</label><span>${inquiry.calibre || '-'}</span></div>
+                    </div></div>
+                    <div class="inquiry-section"><h4>👤 ${t('inquiries.client')}</h4><div class="inquiry-section-grid">
+                        <div class="inquiry-field"><label>${t('inquiry.name')}</label><span>${inquiry.nombre_cliente}</span></div>
+                        <div class="inquiry-field"><label>${t('inquiry.email')}</label><span><a href="mailto:${inquiry.email_cliente}">${inquiry.email_cliente}</a></span></div>
+                        <div class="inquiry-field"><label>${t('inquiry.phone')}</label><span>${inquiry.telefono_cliente || '-'}</span></div>
+                        <div class="inquiry-field"><label>${t('proposals.status')}</label><span>${getStatusBadge(inquiry.estado)}</span></div>
+                    </div></div>
+                    <div class="inquiry-message"><h4>💬 ${t('inquiries.message')}</h4><p>${inquiry.mensaje}</p></div>
+                    ${inquiry.respuesta ? `<div class="inquiry-response"><h4>✅ ${t('inquiries.response')}</h4><p>${inquiry.respuesta}</p><div class="meta">${inquiry.respondido_por_nombre ? `Por: ${inquiry.respondido_por_nombre}` : ''}${inquiry.fecha_respuesta ? ` - ${formatDate(inquiry.fecha_respuesta)}` : ''}</div></div>` : ''}
+                    ${inquiry.estado === 'pendiente' ? `<div class="response-form"><h4>✍️ ${t('inquiries.writeResponse')}</h4><textarea id="response-text" placeholder="${t('inquiries.responsePlaceholder')}"></textarea><div class="form-actions"><button class="btn-send" onclick="sendResponse(${inquiry.id})">📧 ${t('inquiries.sendResponse')}</button></div></div>` : ''}
                 `;
-            } catch (error) {
-                console.error('Error loading inquiry details:', error);
-                content.innerHTML = `<p style="color: #dc3545; text-align: center;">Error al cargar los detalles</p>`;
-            }
+            } catch (error) { content.innerHTML = '<p style="color: #dc3545; text-align: center;">Error al cargar los detalles</p>'; }
         }
-
-        // ==================== ENVIAR RESPUESTA ====================
         async function sendResponse(inquiryId) {
             const responseText = document.getElementById('response-text').value.trim();
-
-            if (!responseText) {
-                alert(t('inquiries.responseRequired'));
-                return;
-            }
-
+            if (!responseText) { alert(t('inquiries.responseRequired')); return; }
             try {
                 const empresaId = localStorage.getItem('empresa_id');
                 const response = await fetch(`${API_URL}/api/consultas/${inquiryId}/responder?empresa_id=${empresaId}`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
-                    },
-                    body: JSON.stringify({
-                        respuesta: responseText,
-                        enviar_email: true
-                    })
+                    method: 'POST', credentials: 'include',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+                    body: JSON.stringify({ respuesta: responseText, enviar_email: true })
                 });
-
-                if (!response.ok) {
-                    throw new Error('Error sending response');
-                }
-
+                if (!response.ok) throw new Error('Error sending response');
                 alert(t('inquiries.responseSent'));
                 closeInquiryModal();
                 await loadInquiries();
                 await loadPendingCount();
-            } catch (error) {
-                console.error('Error sending response:', error);
-                alert(t('inquiries.responseError'));
-            }
+            } catch (error) { alert(t('inquiries.responseError')); }
         }
-
-        // ==================== CAMBIAR ESTADO ====================
         async function changeStatus(inquiryId, newStatus) {
-            if (!confirm(`${t('inquiries.confirmClose')}`)) {
-                return;
-            }
-
+            if (!confirm(`${t('inquiries.confirmClose')}`)) return;
             try {
                 const empresaId = localStorage.getItem('empresa_id');
                 const response = await fetch(`${API_URL}/api/consultas/${inquiryId}/estado?empresa_id=${empresaId}`, {
-                    method: 'PUT',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
-                    },
+                    method: 'PUT', credentials: 'include',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
                     body: JSON.stringify({ estado: newStatus })
                 });
-
-                if (!response.ok) {
-                    throw new Error('Error changing status');
-                }
-
-                // Actualizar en la lista local
+                if (!response.ok) throw new Error('Error changing status');
                 const index = allInquiries.findIndex(i => i.id === inquiryId);
-                if (index !== -1) {
-                    allInquiries[index].estado = newStatus;
-                }
-
+                if (index !== -1) allInquiries[index].estado = newStatus;
                 const filteredIndex = filteredInquiries.findIndex(i => i.id === inquiryId);
-                if (filteredIndex !== -1) {
-                    filteredInquiries[filteredIndex].estado = newStatus;
-                }
-
+                if (filteredIndex !== -1) filteredInquiries[filteredIndex].estado = newStatus;
                 renderInquiries();
                 await loadPendingCount();
-            } catch (error) {
-                console.error('Error changing status:', error);
-                alert('Error al cambiar el estado');
-            }
+            } catch (error) { alert('Error al cambiar el estado'); }
         }
+        function closeInquiryModal() { document.getElementById('inquiry-detail-modal').style.display = 'none'; }
 
-        // ==================== CERRAR MODAL ====================
-        function closeInquiryModal() {
-            document.getElementById('inquiry-detail-modal').style.display = 'none';
-        }
-
-        // ==================== UTILIDADES ====================
         function formatDate(dateString) {
             if (!dateString) return '-';
             const date = new Date(dateString);
-            return date.toLocaleDateString('es-ES', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+            return date.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
         }
-
-        function truncate(str, length) {
-            if (!str) return '-';
-            return str.length > length ? str.substring(0, length) + '...' : str;
-        }
-
+        function truncate(str, length) { if (!str) return '-'; return str.length > length ? str.substring(0, length) + '...' : str; }
         function getStatusBadge(status) {
-            const statusMap = {
-                'pendiente': { class: 'status-pendiente', key: 'inquiries.statusPending' },
-                'respondida': { class: 'status-respondida', key: 'inquiries.statusAnswered' },
-                'cerrada': { class: 'status-cerrada', key: 'inquiries.statusClosed' }
-            };
-
+            const statusMap = { 'pendiente': { class: 'status-pendiente', key: 'inquiries.statusPending' }, 'respondida': { class: 'status-respondida', key: 'inquiries.statusAnswered' }, 'cerrada': { class: 'status-cerrada', key: 'inquiries.statusClosed' } };
             const statusInfo = statusMap[status] || { class: 'status-pendiente', key: 'inquiries.statusPending' };
             return `<span class="status-badge ${statusInfo.class}">${t(statusInfo.key)}</span>`;
         }
 
-        function goBack() {
-            const empresaId = localStorage.getItem('empresa_id');
-            window.location.href = `index.html?empresa=${empresaId}`;
-        }
-
-        // Cerrar modal al hacer clic fuera
-        document.getElementById('inquiry-detail-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeInquiryModal();
-            }
-        });
-
-        // Cerrar modal con Escape
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                cerrarPopupFiltro();
-                closeInquiryModal();
-            }
-        });
-
-        // Cerrar popup de filtro al hacer scroll
-        document.querySelector('.inquiries-table-wrapper')?.addEventListener('scroll', function() {
-            cerrarPopupFiltro();
-        });
+        document.getElementById('inquiry-detail-modal').addEventListener('click', function(e) { if (e.target === this) closeInquiryModal(); });
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { cerrarPopupFiltro(); closeInquiryModal(); } });
+        document.addEventListener('click', (e) => { if (popupFiltroAbierto && !popupFiltroAbierto.contains(e.target) && !e.target.classList.contains('column-filter-btn')) cerrarPopupFiltro(); });
     </script>
 </body>
 </html>

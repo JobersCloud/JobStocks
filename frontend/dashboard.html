@@ -9,11 +9,10 @@
     <script>
         // Cargar tema guardado inmediatamente para evitar flash
         (function() {
-            const theme = localStorage.getItem('theme') || 'light';
+            const theme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
             const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
             document.documentElement.setAttribute('data-color-theme', colorTheme);
-            // Crear favicon desde localStorage (sin link estático para evitar flash)
             const faviconUrl = localStorage.getItem('faviconUrl');
             if (faviconUrl) {
                 const link = document.createElement('link');
@@ -25,333 +24,459 @@
     </script>
 </head>
 <body>
-    <div class="container">
-        <!-- Header de la pagina -->
-        <div class="page-header">
-            <div class="logo-section">
-                <a href="#" onclick="goBack(); return false;" style="display: flex; align-items: center;">
-                    <img src="" alt="Logo" class="logo" style="cursor: pointer; visibility: hidden;">
-                </a>
-                <h1 data-i18n="dashboard.title">Dashboard</h1>
+    <!-- ==================== MASTERPAGE LAYOUT ==================== -->
+    <div class="app-layout">
+        <!-- Header Superior FIJO -->
+        <header class="top-header">
+            <div class="top-header-left">
+                <button class="mobile-menu-btn" onclick="SidebarNav.toggleMobile()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="header-logo">
+                    <img src="" alt="Logo" id="header-logo">
+                    <span class="header-logo-text" id="header-company-name">Stocks</span>
+                </div>
+                <div class="header-divider"></div>
+                <div>
+                    <h1 class="top-header-title" data-i18n="dashboard.title">Dashboard</h1>
+                </div>
             </div>
-            <div class="header-actions">
-                <button class="back-btn" onclick="goBack()">
-                    <span data-i18n="proposals.backToStocks">Volver a Stocks</span>
+            <div class="top-header-right">
+                <select id="lang-selector" class="lang-selector-header" onchange="I18n.setLanguage(this.value)">
+                    <option value="es">ES</option>
+                    <option value="en">EN</option>
+                    <option value="fr">FR</option>
+                </select>
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">
+                    <span id="theme-icon">🌙</span>
+                </button>
+                <div class="menu-container">
+                    <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
+                        <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span class="user-name-display" id="user-name-display">Usuario</span>
+                    </button>
+                    <div class="menu-dropdown" id="menu-dropdown">
+                        <div class="menu-header">
+                            <div class="user-name" id="menu-user-name">Usuario</div>
+                            <div class="user-rol" id="menu-user-rol">usuario</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-toggle-container">
+                <button class="sidebar-toggle" title="Ctrl+B">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
                 </button>
             </div>
-        </div>
 
-        <!-- Loading state -->
-        <div class="dashboard-loading" id="dashboard-loading">
-            <div class="spinner"></div>
-            <p data-i18n="common.loading">Cargando...</p>
-        </div>
+            <nav class="sidebar-nav">
+                <!-- Items principales -->
+                <div class="sidebar-section">
+                    <a class="sidebar-item" data-page="index.html" data-tooltip="Stocks" onclick="SidebarNav.navigateTo('index.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.stocks">Stocks</span>
+                    </a>
+                    <a class="sidebar-item" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.myProposals">Mis Propuestas</span>
+                    </a>
+                </div>
 
-        <!-- Contenido del dashboard -->
-        <div class="dashboard-container" id="dashboard-content" style="display: none;">
-            <!-- Cards de resumen -->
-            <div class="stats-cards">
-                <div class="stat-card">
-                    <div class="stat-icon proposals">
-                        <span>📋</span>
+                <!-- Acordeon Administracion -->
+                <div class="sidebar-accordion expanded" id="sidebar-admin-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                            <span data-i18n="menu.administration">Administracion</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
                     </div>
-                    <div class="stat-info">
-                        <div class="stat-value" id="stat-total-propuestas">0</div>
-                        <div class="stat-label" data-i18n="dashboard.totalProposals">Total Propuestas</div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item active" data-page="dashboard.html" data-tooltip="Dashboard" onclick="SidebarNav.navigateTo('dashboard.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.dashboard">Dashboard</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allProposals">Propuestas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-consultas.html" data-tooltip="Consultas" onclick="SidebarNav.navigateTo('todas-consultas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allInquiries">Consultas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="usuarios.html" data-tooltip="Usuarios" onclick="SidebarNav.navigateTo('usuarios.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.users">Usuarios</span>
+                        </a>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon pending">
-                        <span>⏳</span>
+
+                <!-- Acordeon Configuracion -->
+                <div class="sidebar-accordion" id="sidebar-config-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                            <span data-i18n="menu.settings">Configuracion</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
                     </div>
-                    <div class="stat-info">
-                        <div class="stat-value" id="stat-propuestas-pendientes">0</div>
-                        <div class="stat-label" data-i18n="dashboard.pendingProposals">Propuestas Pendientes</div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="email-config.html" data-tooltip="Email" onclick="SidebarNav.navigateTo('email-config.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.emailConfig">Email</span>
+                        </a>
+                        <a class="sidebar-item" data-page="parametros.html" data-tooltip="Parametros" onclick="SidebarNav.navigateTo('parametros.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.parameters">Parametros</span>
+                        </a>
+                        <a class="sidebar-item" data-page="empresa-logo.html" data-tooltip="Logo" onclick="SidebarNav.navigateTo('empresa-logo.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.companyLogo">Logo</span>
+                        </a>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon users">
-                        <span>👥</span>
-                    </div>
-                    <div class="stat-info">
-                        <div class="stat-value" id="stat-usuarios-activos">0</div>
-                        <div class="stat-label" data-i18n="dashboard.activeUsers">Usuarios Activos</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon inquiries">
-                        <span>💬</span>
-                    </div>
-                    <div class="stat-info">
-                        <div class="stat-value" id="stat-consultas-pendientes">0</div>
-                        <div class="stat-label" data-i18n="dashboard.pendingInquiries">Consultas Pendientes</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon items">
-                        <span>📦</span>
-                    </div>
-                    <div class="stat-info">
-                        <div class="stat-value" id="stat-items-solicitados">0</div>
-                        <div class="stat-label" data-i18n="dashboard.totalItemsRequested">Items Solicitados</div>
-                    </div>
-                </div>
+            </nav>
+
+            <!-- Footer del Sidebar -->
+            <div class="sidebar-footer">
+                <a class="sidebar-item" data-tooltip="Cerrar Sesion" onclick="logout()">
+                    <span class="sidebar-item-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </span>
+                    <span class="sidebar-item-text" data-i18n="menu.logout">Cerrar Sesion</span>
+                </a>
             </div>
+        </aside>
 
-            <!-- Primera fila de graficos -->
-            <div class="charts-row">
-                <!-- Grafico de propuestas por dia -->
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <span class="chart-title" data-i18n="dashboard.proposalsByDay">Propuestas por Dia</span>
-                        <div class="chart-period">
-                            <button class="period-btn active" onclick="changePeriod(7, this)" data-i18n="dashboard.last7days">7 dias</button>
-                            <button class="period-btn" onclick="changePeriod(30, this)" data-i18n="dashboard.last30days">30 dias</button>
-                            <button class="period-btn" onclick="changePeriod(90, this)" data-i18n="dashboard.last90days">90 dias</button>
-                        </div>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="proposalsByDayChart"></canvas>
-                    </div>
+        <!-- Overlay para movil -->
+        <div class="sidebar-overlay"></div>
+
+        <!-- Contenedor Principal -->
+        <div class="main-wrapper">
+            <main class="main-content-area">
+                <!-- Loading state -->
+                <div class="dashboard-loading" id="dashboard-loading">
+                    <div class="spinner"></div>
+                    <p data-i18n="common.loading">Cargando...</p>
                 </div>
 
-                <!-- Grafico de propuestas por estado -->
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <span class="chart-title" data-i18n="dashboard.proposalsByStatus">Propuestas por Estado</span>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="proposalsByStatusChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Segunda fila: Productos mas solicitados y usuarios activos -->
-            <div class="charts-row">
-                <!-- Productos mas solicitados -->
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <span class="chart-title" data-i18n="dashboard.topProducts">Productos Mas Solicitados</span>
-                    </div>
-                    <div id="top-products-container">
-                        <!-- Tabla para desktop -->
-                        <table class="products-table top-products-table-desktop">
-                            <thead>
-                                <tr>
-                                    <th data-i18n="table.code">Codigo</th>
-                                    <th data-i18n="table.description">Descripcion</th>
-                                    <th data-i18n="dashboard.quantity">Cantidad</th>
-                                    <th data-i18n="dashboard.times">Veces</th>
-                                </tr>
-                            </thead>
-                            <tbody id="top-products-body">
-                            </tbody>
-                        </table>
-                        <!-- Tarjetas para movil -->
-                        <div class="top-products-cards-mobile" id="top-products-cards">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Usuarios mas activos -->
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <span class="chart-title" data-i18n="dashboard.topUsers">Usuarios Mas Activos</span>
-                    </div>
-                    <!-- Lista para desktop -->
-                    <div id="top-users-container" class="users-list top-users-list-desktop">
-                    </div>
-                    <!-- Tarjetas para movil -->
-                    <div class="top-users-cards-mobile" id="top-users-cards">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tercera fila: Propuestas por mes -->
-            <div class="charts-row">
-                <div class="chart-card" style="grid-column: 1 / -1;">
-                    <div class="chart-header">
-                        <span class="chart-title" data-i18n="dashboard.proposalsByMonth">Propuestas por Mes</span>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="proposalsByMonthChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Cuarta fila: Sesiones activas -->
-            <div class="charts-row">
-                <div class="chart-card" style="grid-column: 1 / -1;">
-                    <div class="chart-header">
-                        <span class="chart-title">Sesiones Activas (<span id="sessions-count">0</span>)</span>
-                        <div class="sessions-actions">
-                            <button class="period-btn" onclick="loadSessions()">Actualizar</button>
-                            <button class="period-btn btn-danger-outline" onclick="killAllSessionsExceptCurrent()">Cerrar Todas</button>
-                        </div>
-                    </div>
-                    <div id="sessions-container">
-                        <!-- Tabla para desktop -->
-                        <table class="products-table sessions-table-desktop" id="sessions-table">
-                            <thead>
-                                <tr>
-                                    <th>Usuario</th>
-                                    <th>Nombre</th>
-                                    <th>Rol</th>
-                                    <th>IP</th>
-                                    <th>Inicio</th>
-                                    <th>Ultima Actividad</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="sessions-body">
-                            </tbody>
-                        </table>
-                        <!-- Tarjetas para movil -->
-                        <div class="sessions-cards-mobile" id="sessions-cards">
-                        </div>
-                        <div id="sessions-empty" style="display: none; text-align: center; padding: 20px; color: var(--text-secondary);">
-                            No hay sesiones activas
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quinta fila: Auditoria de usuarios -->
-            <div class="charts-row">
-                <div class="chart-card" style="grid-column: 1 / -1;">
-                    <div class="chart-header">
-                        <span class="chart-title">Auditoría de Usuarios</span>
-                        <div class="audit-actions">
-                            <button class="period-btn" onclick="loadAuditLogs()">Actualizar</button>
-                        </div>
-                    </div>
-
-                    <!-- Filtros avanzados -->
-                    <div class="audit-filters">
-                        <div class="filter-row">
-                            <div class="filter-group">
-                                <label>Desde</label>
-                                <input type="date" id="audit-fecha-desde">
+                <!-- Contenido del dashboard -->
+                <div class="dashboard-container" id="dashboard-content" style="display: none;">
+                    <!-- Cards de resumen -->
+                    <div class="stats-cards">
+                        <div class="stat-card">
+                            <div class="stat-icon proposals"><span>📋</span></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="stat-total-propuestas">0</div>
+                                <div class="stat-label" data-i18n="dashboard.totalProposals">Total Propuestas</div>
                             </div>
-                            <div class="filter-group">
-                                <label>Hasta</label>
-                                <input type="date" id="audit-fecha-hasta">
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon pending"><span>⏳</span></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="stat-propuestas-pendientes">0</div>
+                                <div class="stat-label" data-i18n="dashboard.pendingProposals">Propuestas Pendientes</div>
                             </div>
-                            <div class="filter-group">
-                                <label>Acción</label>
-                                <select id="audit-accion">
-                                    <option value="">Todas</option>
-                                </select>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon users"><span>👥</span></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="stat-usuarios-activos">0</div>
+                                <div class="stat-label" data-i18n="dashboard.activeUsers">Usuarios Activos</div>
                             </div>
-                            <div class="filter-group">
-                                <label>Resultado</label>
-                                <select id="audit-resultado">
-                                    <option value="">Todos</option>
-                                    <option value="SUCCESS">Éxito</option>
-                                    <option value="FAILED">Fallido</option>
-                                    <option value="BLOCKED">Bloqueado</option>
-                                </select>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon inquiries"><span>💬</span></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="stat-consultas-pendientes">0</div>
+                                <div class="stat-label" data-i18n="dashboard.pendingInquiries">Consultas Pendientes</div>
                             </div>
-                            <div class="filter-group">
-                                <label>Usuario</label>
-                                <input type="text" id="audit-usuario" placeholder="Buscar...">
-                            </div>
-                            <div class="filter-buttons">
-                                <button class="period-btn" onclick="applyAuditFilters()">Filtrar</button>
-                                <button class="period-btn btn-secondary" onclick="clearAuditFilters()">Limpiar</button>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon items"><span>📦</span></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="stat-items-solicitados">0</div>
+                                <div class="stat-label" data-i18n="dashboard.totalItemsRequested">Items Solicitados</div>
                             </div>
                         </div>
                     </div>
 
-                    <div id="audit-container">
-                        <!-- Tabla para desktop -->
-                        <table class="products-table audit-table-desktop" id="audit-table">
-                            <thead>
-                                <tr class="audit-header-row">
-                                    <th class="sortable" data-sort="fecha" onclick="sortAuditColumn('fecha')">
-                                        <div class="th-content">
-                                            <span>Fecha</span>
-                                            <span class="sort-icon" id="sort-fecha">↕</span>
-                                        </div>
-                                    </th>
-                                    <th class="sortable" data-sort="username" onclick="sortAuditColumn('username')">
-                                        <div class="th-content">
-                                            <span>Usuario</span>
-                                            <span class="sort-icon" id="sort-username">↕</span>
-                                        </div>
-                                    </th>
-                                    <th class="sortable" data-sort="accion" onclick="sortAuditColumn('accion')">
-                                        <div class="th-content">
-                                            <span>Acción</span>
-                                            <span class="sort-icon" id="sort-accion">↕</span>
-                                        </div>
-                                    </th>
-                                    <th class="sortable" data-sort="recurso" onclick="sortAuditColumn('recurso')">
-                                        <div class="th-content">
-                                            <span>Recurso</span>
-                                            <span class="sort-icon" id="sort-recurso">↕</span>
-                                        </div>
-                                    </th>
-                                    <th class="sortable" data-sort="ip_address" onclick="sortAuditColumn('ip_address')">
-                                        <div class="th-content">
-                                            <span>IP</span>
-                                            <span class="sort-icon" id="sort-ip_address">↕</span>
-                                        </div>
-                                    </th>
-                                    <th class="sortable" data-sort="resultado" onclick="sortAuditColumn('resultado')">
-                                        <div class="th-content">
-                                            <span>Resultado</span>
-                                            <span class="sort-icon" id="sort-resultado">↕</span>
-                                        </div>
-                                    </th>
-                                </tr>
-                                <tr class="audit-filter-row">
-                                    <td>
-                                        <input type="date" id="filter-fecha" class="column-filter" onchange="applyColumnFilters()">
-                                    </td>
-                                    <td>
-                                        <input type="text" id="filter-username" class="column-filter" placeholder="Usuario..." onkeyup="debounceFilter()">
-                                    </td>
-                                    <td>
-                                        <select id="filter-accion" class="column-filter" onchange="applyColumnFilters()">
-                                            <option value="">Todas</option>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <input type="text" id="filter-recurso" class="column-filter" placeholder="Recurso..." onkeyup="debounceFilter()">
-                                    </td>
-                                    <td>
-                                        <input type="text" id="filter-ip" class="column-filter" placeholder="IP..." onkeyup="debounceFilter()">
-                                    </td>
-                                    <td>
-                                        <select id="filter-resultado" class="column-filter" onchange="applyColumnFilters()">
+                    <!-- Primera fila de graficos -->
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <span class="chart-title" data-i18n="dashboard.proposalsByDay">Propuestas por Dia</span>
+                                <div class="chart-period">
+                                    <button class="period-btn active" onclick="changePeriod(7, this)" data-i18n="dashboard.last7days">7 dias</button>
+                                    <button class="period-btn" onclick="changePeriod(30, this)" data-i18n="dashboard.last30days">30 dias</button>
+                                    <button class="period-btn" onclick="changePeriod(90, this)" data-i18n="dashboard.last90days">90 dias</button>
+                                </div>
+                            </div>
+                            <div class="chart-container"><canvas id="proposalsByDayChart"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <span class="chart-title" data-i18n="dashboard.proposalsByStatus">Propuestas por Estado</span>
+                            </div>
+                            <div class="chart-container"><canvas id="proposalsByStatusChart"></canvas></div>
+                        </div>
+                    </div>
+
+                    <!-- Segunda fila: Productos mas solicitados y usuarios activos -->
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <span class="chart-title" data-i18n="dashboard.topProducts">Productos Mas Solicitados</span>
+                            </div>
+                            <div id="top-products-container">
+                                <table class="products-table top-products-table-desktop">
+                                    <thead>
+                                        <tr>
+                                            <th data-i18n="table.code">Codigo</th>
+                                            <th data-i18n="table.description">Descripcion</th>
+                                            <th data-i18n="dashboard.quantity">Cantidad</th>
+                                            <th data-i18n="dashboard.times">Veces</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="top-products-body"></tbody>
+                                </table>
+                                <div class="top-products-cards-mobile" id="top-products-cards"></div>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <span class="chart-title" data-i18n="dashboard.topUsers">Usuarios Mas Activos</span>
+                            </div>
+                            <div id="top-users-container" class="users-list top-users-list-desktop"></div>
+                            <div class="top-users-cards-mobile" id="top-users-cards"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tercera fila: Propuestas por mes -->
+                    <div class="charts-row">
+                        <div class="chart-card" style="grid-column: 1 / -1;">
+                            <div class="chart-header">
+                                <span class="chart-title" data-i18n="dashboard.proposalsByMonth">Propuestas por Mes</span>
+                            </div>
+                            <div class="chart-container"><canvas id="proposalsByMonthChart"></canvas></div>
+                        </div>
+                    </div>
+
+                    <!-- Cuarta fila: Sesiones activas -->
+                    <div class="charts-row">
+                        <div class="chart-card" style="grid-column: 1 / -1;">
+                            <div class="chart-header">
+                                <span class="chart-title">Sesiones Activas (<span id="sessions-count">0</span>)</span>
+                                <div class="sessions-actions">
+                                    <button class="period-btn" onclick="loadSessions()">Actualizar</button>
+                                    <button class="period-btn btn-danger-outline" onclick="killAllSessionsExceptCurrent()">Cerrar Todas</button>
+                                </div>
+                            </div>
+                            <div id="sessions-container">
+                                <table class="products-table sessions-table-desktop" id="sessions-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Usuario</th>
+                                            <th>Nombre</th>
+                                            <th>Rol</th>
+                                            <th>IP</th>
+                                            <th>Inicio</th>
+                                            <th>Ultima Actividad</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sessions-body"></tbody>
+                                </table>
+                                <div class="sessions-cards-mobile" id="sessions-cards"></div>
+                                <div id="sessions-empty" style="display: none; text-align: center; padding: 20px; color: var(--text-secondary);">No hay sesiones activas</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quinta fila: Auditoria de usuarios -->
+                    <div class="charts-row">
+                        <div class="chart-card" style="grid-column: 1 / -1;">
+                            <div class="chart-header">
+                                <span class="chart-title">Auditoria de Usuarios</span>
+                                <div class="audit-actions">
+                                    <button class="period-btn" onclick="loadAuditLogs()">Actualizar</button>
+                                </div>
+                            </div>
+                            <div class="audit-filters">
+                                <div class="filter-row">
+                                    <div class="filter-group">
+                                        <label>Desde</label>
+                                        <input type="date" id="audit-fecha-desde">
+                                    </div>
+                                    <div class="filter-group">
+                                        <label>Hasta</label>
+                                        <input type="date" id="audit-fecha-hasta">
+                                    </div>
+                                    <div class="filter-group">
+                                        <label>Accion</label>
+                                        <select id="audit-accion"><option value="">Todas</option></select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <label>Resultado</label>
+                                        <select id="audit-resultado">
                                             <option value="">Todos</option>
-                                            <option value="SUCCESS">Éxito</option>
+                                            <option value="SUCCESS">Exito</option>
                                             <option value="FAILED">Fallido</option>
                                             <option value="BLOCKED">Bloqueado</option>
                                         </select>
-                                    </td>
-                                </tr>
-                            </thead>
-                            <tbody id="audit-body">
-                            </tbody>
-                        </table>
-                        <!-- Tarjetas para movil -->
-                        <div class="audit-cards-mobile" id="audit-cards">
-                        </div>
-                        <!-- Paginacion -->
-                        <div class="audit-pagination" id="audit-pagination">
-                        </div>
-                        <div id="audit-empty" style="display: none; text-align: center; padding: 20px; color: var(--text-secondary);">
-                            No hay registros de auditoría
+                                    </div>
+                                    <div class="filter-group">
+                                        <label>Usuario</label>
+                                        <input type="text" id="audit-usuario" placeholder="Buscar...">
+                                    </div>
+                                    <div class="filter-buttons">
+                                        <button class="period-btn" onclick="applyAuditFilters()">Filtrar</button>
+                                        <button class="period-btn btn-secondary" onclick="clearAuditFilters()">Limpiar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="audit-container">
+                                <table class="products-table audit-table-desktop" id="audit-table">
+                                    <thead>
+                                        <tr class="audit-header-row">
+                                            <th class="sortable" data-sort="fecha" onclick="sortAuditColumn('fecha')">
+                                                <div class="th-content"><span>Fecha</span><span class="sort-icon" id="sort-fecha">↕</span></div>
+                                            </th>
+                                            <th class="sortable" data-sort="username" onclick="sortAuditColumn('username')">
+                                                <div class="th-content"><span>Usuario</span><span class="sort-icon" id="sort-username">↕</span></div>
+                                            </th>
+                                            <th class="sortable" data-sort="accion" onclick="sortAuditColumn('accion')">
+                                                <div class="th-content"><span>Accion</span><span class="sort-icon" id="sort-accion">↕</span></div>
+                                            </th>
+                                            <th class="sortable" data-sort="recurso" onclick="sortAuditColumn('recurso')">
+                                                <div class="th-content"><span>Recurso</span><span class="sort-icon" id="sort-recurso">↕</span></div>
+                                            </th>
+                                            <th class="sortable" data-sort="ip_address" onclick="sortAuditColumn('ip_address')">
+                                                <div class="th-content"><span>IP</span><span class="sort-icon" id="sort-ip_address">↕</span></div>
+                                            </th>
+                                            <th class="sortable" data-sort="resultado" onclick="sortAuditColumn('resultado')">
+                                                <div class="th-content"><span>Resultado</span><span class="sort-icon" id="sort-resultado">↕</span></div>
+                                            </th>
+                                        </tr>
+                                        <tr class="audit-filter-row">
+                                            <td><input type="date" id="filter-fecha" class="column-filter" onchange="applyColumnFilters()"></td>
+                                            <td><input type="text" id="filter-username" class="column-filter" placeholder="Usuario..." onkeyup="debounceFilter()"></td>
+                                            <td><select id="filter-accion" class="column-filter" onchange="applyColumnFilters()"><option value="">Todas</option></select></td>
+                                            <td><input type="text" id="filter-recurso" class="column-filter" placeholder="Recurso..." onkeyup="debounceFilter()"></td>
+                                            <td><input type="text" id="filter-ip" class="column-filter" placeholder="IP..." onkeyup="debounceFilter()"></td>
+                                            <td><select id="filter-resultado" class="column-filter" onchange="applyColumnFilters()">
+                                                <option value="">Todos</option>
+                                                <option value="SUCCESS">Exito</option>
+                                                <option value="FAILED">Fallido</option>
+                                                <option value="BLOCKED">Bloqueado</option>
+                                            </select></td>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="audit-body"></tbody>
+                                </table>
+                                <div class="audit-cards-mobile" id="audit-cards"></div>
+                                <div class="audit-pagination" id="audit-pagination"></div>
+                                <div id="audit-empty" style="display: none; text-align: center; padding: 20px; color: var(--text-secondary);">No hay registros de auditoria</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     </div>
 
     <script src="js/i18n/i18n.js"></script>
+    <script src="js/sidebar.js"></script>
     <script>
         // ==================== CONFIGURACION ====================
         const hostname = window.location.hostname;
@@ -359,23 +484,64 @@
         const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
         const API_URL = isLocalhost ? `${protocol}//${hostname}:5000` : `${protocol}//${hostname}`;
 
-        // ==================== LOGO DINÁMICO POR EMPRESA ====================
+        let currentUser = null;
+
+        // ==================== TEMA ====================
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            applyTheme(savedTheme);
+        }
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const icon = document.getElementById('theme-icon');
+            if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        }
+
+        // ==================== ACORDEON ====================
+        function toggleAccordion(header) {
+            const accordion = header.closest('.sidebar-accordion');
+            accordion.classList.toggle('expanded');
+        }
+
+        // ==================== MENU USUARIO ====================
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('menu-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        document.addEventListener('click', (e) => {
+            const menuContainer = document.querySelector('.menu-container');
+            const dropdown = document.getElementById('menu-dropdown');
+            if (menuContainer && !menuContainer.contains(e.target) && dropdown) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // ==================== LOGO DINAMICO POR EMPRESA ====================
         function applyColorTheme(tema) {
-            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito'];
+            const validThemes = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito',
+                                 'corporativo', 'ejecutivo', 'oceano', 'bosque', 'vino',
+                                 'medianoche', 'titanio', 'bronce'];
             if (!validThemes.includes(tema)) tema = 'rubi';
             document.documentElement.setAttribute('data-color-theme', tema);
             localStorage.setItem('colorTheme', tema);
         }
 
         async function cargarLogoEmpresa() {
-            // Usar connection (empresa_cli_id) para endpoints de logo
             const connection = localStorage.getItem('connection');
             if (!connection) {
-                console.warn('No hay connection en localStorage, usando valores por defecto');
                 applyColorTheme('rubi');
                 return;
             }
-            const logoElements = document.querySelectorAll('.logo');
+            const logoElements = document.querySelectorAll('.logo, #header-logo');
             try {
                 const configResponse = await fetch(`${API_URL}/api/empresa/${connection}/config`);
                 const config = await configResponse.json();
@@ -396,7 +562,6 @@
                     });
                 }
             } catch (error) {
-                console.log('Error al cargar logo:', error);
                 applyColorTheme('rubi');
                 logoElements.forEach(el => {
                     el.src = 'assets/logo.svg';
@@ -413,58 +578,52 @@
 
         // ==================== INICIALIZACION ====================
         document.addEventListener('DOMContentLoaded', async function() {
-            // Cargar logo de empresa (usa connection de localStorage)
+            loadTheme();
             await cargarLogoEmpresa();
-
-            // Inicializar i18n
             await I18n.init();
-
-            // Actualizar selector de idioma
             const langSelector = document.getElementById('lang-selector');
-            if (langSelector) {
-                langSelector.value = I18n.currentLang;
-            }
-
-            // Verificar autenticacion y permisos
+            if (langSelector) langSelector.value = I18n.currentLang;
             await checkAuth();
-
-            // Cargar datos del dashboard
             await loadDashboard();
         });
 
         // ==================== AUTENTICACION ====================
         async function checkAuth() {
             try {
-                const response = await fetch(`${API_URL}/api/current-user`, {
-                    credentials: 'include'
-                });
-
+                const response = await fetch(`${API_URL}/api/current-user`, { credentials: 'include' });
                 if (!response.ok) {
                     window.location.href = 'login.html';
                     return;
                 }
-
-                const user = await response.json();
-
-                // Verificar que sea administrador o superusuario
-                if (user.rol !== 'administrador' && user.rol !== 'superusuario') {
+                currentUser = await response.json();
+                document.getElementById('user-name-display').textContent = currentUser.username;
+                document.getElementById('menu-user-name').textContent = currentUser.full_name || currentUser.username;
+                document.getElementById('menu-user-rol').textContent = currentUser.rol;
+                if (currentUser.rol !== 'administrador' && currentUser.rol !== 'superusuario') {
                     alert('No tienes permisos para acceder a esta pagina');
                     window.location.href = 'index.html';
                     return;
                 }
+                document.getElementById('sidebar-admin-section').style.display = 'block';
+                document.getElementById('sidebar-config-section').style.display = 'block';
             } catch (error) {
-                console.error('Error checking auth:', error);
                 window.location.href = 'login.html';
             }
+        }
+
+        async function logout() {
+            try {
+                await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
+            } catch (e) {}
+            localStorage.removeItem('csrf_token');
+            window.location.href = 'login.html';
         }
 
         // ==================== CARGAR DASHBOARD ====================
         async function loadDashboard() {
             const loadingEl = document.getElementById('dashboard-loading');
             const contentEl = document.getElementById('dashboard-content');
-
             try {
-                // Cargar todos los datos en paralelo
                 const [resumen, productosMasSolicitados, propuestasPorDia, propuestasPorEstado, usuariosMasActivos, propuestasPorMes] = await Promise.all([
                     fetchAPI('/api/estadisticas/resumen'),
                     fetchAPI('/api/estadisticas/productos-mas-solicitados?limit=10'),
@@ -473,42 +632,26 @@
                     fetchAPI('/api/estadisticas/usuarios-mas-activos?limit=5'),
                     fetchAPI('/api/estadisticas/propuestas-por-mes?meses=12')
                 ]);
-
-                // Mostrar contenido
                 loadingEl.style.display = 'none';
                 contentEl.style.display = 'flex';
-
-                // Actualizar stats cards
                 updateStatCards(resumen);
-
-                // Renderizar graficos y tablas
                 renderProposalsByDayChart(propuestasPorDia);
                 renderProposalsByStatusChart(propuestasPorEstado);
                 renderTopProducts(productosMasSolicitados);
                 renderTopUsers(usuariosMasActivos);
                 renderProposalsByMonthChart(propuestasPorMes);
-
-                // Cargar sesiones activas
                 await loadSessions();
-
             } catch (error) {
-                console.error('Error loading dashboard:', error);
                 loadingEl.innerHTML = `<p style="color: #dc3545;">Error al cargar el dashboard</p>`;
             }
         }
 
-        // ==================== FETCH API ====================
         async function fetchAPI(endpoint) {
-            const response = await fetch(`${API_URL}${endpoint}`, {
-                credentials: 'include'
-            });
-            if (!response.ok) {
-                throw new Error(`Error fetching ${endpoint}`);
-            }
+            const response = await fetch(`${API_URL}${endpoint}`, { credentials: 'include' });
+            if (!response.ok) throw new Error(`Error fetching ${endpoint}`);
             return response.json();
         }
 
-        // ==================== ACTUALIZAR STATS CARDS ====================
         function updateStatCards(resumen) {
             document.getElementById('stat-total-propuestas').textContent = formatNumber(resumen.total_propuestas);
             document.getElementById('stat-propuestas-pendientes').textContent = formatNumber(resumen.propuestas_pendientes);
@@ -517,282 +660,95 @@
             document.getElementById('stat-items-solicitados').textContent = formatNumber(resumen.total_items_solicitados);
         }
 
-        // ==================== GRAFICO PROPUESTAS POR DIA ====================
         function renderProposalsByDayChart(data) {
             const ctx = document.getElementById('proposalsByDayChart').getContext('2d');
-
-            // Destruir grafico existente si hay
-            if (proposalsByDayChart) {
-                proposalsByDayChart.destroy();
-            }
-
+            if (proposalsByDayChart) proposalsByDayChart.destroy();
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             const textColor = isDark ? '#e0e0e0' : '#666';
             const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-
             const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#FF4338';
-
             proposalsByDayChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: data.map(d => formatDateShort(d.fecha)),
-                    datasets: [{
-                        label: t('dashboard.proposals'),
-                        data: data.map(d => d.cantidad),
-                        borderColor: primaryColor,
-                        backgroundColor: primaryColor + '1A',
-                        fill: true,
-                        tension: 0.4
-                    }]
+                    datasets: [{ label: t('dashboard.proposals'), data: data.map(d => d.cantidad), borderColor: primaryColor, backgroundColor: primaryColor + '1A', fill: true, tension: 0.4 }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { color: textColor },
-                            grid: { color: gridColor }
-                        },
-                        x: {
-                            ticks: { color: textColor },
-                            grid: { color: gridColor }
-                        }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: textColor }, grid: { color: gridColor } }, x: { ticks: { color: textColor }, grid: { color: gridColor } } } }
             });
         }
 
-        // ==================== GRAFICO PROPUESTAS POR ESTADO ====================
         function renderProposalsByStatusChart(data) {
             const ctx = document.getElementById('proposalsByStatusChart').getContext('2d');
-
-            if (proposalsByStatusChart) {
-                proposalsByStatusChart.destroy();
-            }
-
+            if (proposalsByStatusChart) proposalsByStatusChart.destroy();
             const labels = Object.keys(data);
             const values = Object.values(data);
-
-            const colors = {
-                'Enviada': '#ffc107',
-                'Procesada': '#28a745',
-                'Cancelada': '#dc3545'
-            };
-
+            const colors = { 'Enviada': '#ffc107', 'Procesada': '#28a745', 'Cancelada': '#dc3545' };
             proposalsByStatusChart = new Chart(ctx, {
                 type: 'doughnut',
-                data: {
-                    labels: labels.map(l => t(`proposals.status${l}`) || l),
-                    datasets: [{
-                        data: values,
-                        backgroundColor: labels.map(l => colors[l] || '#999'),
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#e0e0e0' : '#666'
-                            }
-                        }
-                    }
-                }
+                data: { labels: labels.map(l => t(`proposals.status${l}`) || l), datasets: [{ data: values, backgroundColor: labels.map(l => colors[l] || '#999'), borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#e0e0e0' : '#666' } } } }
             });
         }
 
-        // ==================== TABLA PRODUCTOS MAS SOLICITADOS ====================
         function renderTopProducts(productos) {
             const tbody = document.getElementById('top-products-body');
             const cardsContainer = document.getElementById('top-products-cards');
-
             if (productos.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" style="text-align: center; color: var(--text-secondary);">
-                            ${t('dashboard.noData')}
-                        </td>
-                    </tr>
-                `;
-                cardsContainer.innerHTML = `
-                    <div class="dashboard-empty-message">${t('dashboard.noData')}</div>
-                `;
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">${t('dashboard.noData')}</td></tr>`;
+                cardsContainer.innerHTML = `<div class="dashboard-empty-message">${t('dashboard.noData')}</div>`;
                 return;
             }
-
-            // Renderizar tabla (desktop)
-            tbody.innerHTML = productos.map(p => `
-                <tr>
-                    <td class="product-code">${p.codigo}</td>
-                    <td>${truncate(p.descripcion, 30)}</td>
-                    <td class="product-qty">${formatNumber(p.total_solicitado)}</td>
-                    <td class="product-times">${p.veces_solicitado}x</td>
-                </tr>
-            `).join('');
-
-            // Renderizar tarjetas (movil)
-            cardsContainer.innerHTML = productos.map(p => `
-                <div class="top-product-card">
-                    <div class="top-product-card-header">
-                        <span class="top-product-code">${p.codigo}</span>
-                        <span class="top-product-times">${p.veces_solicitado}x</span>
-                    </div>
-                    <div class="top-product-desc">${truncate(p.descripcion, 50)}</div>
-                    <div class="top-product-qty">${t('dashboard.quantity')}: <strong>${formatNumber(p.total_solicitado)}</strong></div>
-                </div>
-            `).join('');
+            tbody.innerHTML = productos.map(p => `<tr><td class="product-code">${p.codigo}</td><td>${truncate(p.descripcion, 30)}</td><td class="product-qty">${formatNumber(p.total_solicitado)}</td><td class="product-times">${p.veces_solicitado}x</td></tr>`).join('');
+            cardsContainer.innerHTML = productos.map(p => `<div class="top-product-card"><div class="top-product-card-header"><span class="top-product-code">${p.codigo}</span><span class="top-product-times">${p.veces_solicitado}x</span></div><div class="top-product-desc">${truncate(p.descripcion, 50)}</div><div class="top-product-qty">${t('dashboard.quantity')}: <strong>${formatNumber(p.total_solicitado)}</strong></div></div>`).join('');
         }
 
-        // ==================== LISTA USUARIOS MAS ACTIVOS ====================
         function renderTopUsers(usuarios) {
             const container = document.getElementById('top-users-container');
             const cardsContainer = document.getElementById('top-users-cards');
-
             if (usuarios.length === 0) {
-                container.innerHTML = `
-                    <div class="chart-empty">
-                        <div class="chart-empty-icon">👥</div>
-                        <span>${t('dashboard.noData')}</span>
-                    </div>
-                `;
-                cardsContainer.innerHTML = `
-                    <div class="dashboard-empty-message">${t('dashboard.noData')}</div>
-                `;
+                container.innerHTML = `<div class="chart-empty"><div class="chart-empty-icon">👥</div><span>${t('dashboard.noData')}</span></div>`;
+                cardsContainer.innerHTML = `<div class="dashboard-empty-message">${t('dashboard.noData')}</div>`;
                 return;
             }
-
-            // Renderizar lista (desktop)
-            container.innerHTML = usuarios.map(u => `
-                <div class="user-item">
-                    <div class="user-avatar">${getInitials(u.full_name || u.username)}</div>
-                    <div class="user-info">
-                        <div class="user-name">${u.full_name || u.username}</div>
-                        <div class="user-username">@${u.username}</div>
-                    </div>
-                    <div class="user-stats">
-                        <div class="user-proposals">${u.total_propuestas} ${t('dashboard.proposals')}</div>
-                        <div class="user-last">${formatDateShort(u.ultima_propuesta)}</div>
-                    </div>
-                </div>
-            `).join('');
-
-            // Renderizar tarjetas (movil)
-            cardsContainer.innerHTML = usuarios.map(u => `
-                <div class="top-user-card">
-                    <div class="top-user-card-header">
-                        <div class="top-user-avatar">${getInitials(u.full_name || u.username)}</div>
-                        <div class="top-user-info">
-                            <div class="top-user-name">${u.full_name || u.username}</div>
-                            <div class="top-user-username">@${u.username}</div>
-                        </div>
-                    </div>
-                    <div class="top-user-card-stats">
-                        <div class="top-user-stat">
-                            <span class="top-user-stat-value">${u.total_propuestas}</span>
-                            <span class="top-user-stat-label">${t('dashboard.proposals')}</span>
-                        </div>
-                        <div class="top-user-stat">
-                            <span class="top-user-stat-value">${formatDateShort(u.ultima_propuesta)}</span>
-                            <span class="top-user-stat-label">Última</span>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+            container.innerHTML = usuarios.map(u => `<div class="user-item"><div class="user-avatar">${getInitials(u.full_name || u.username)}</div><div class="user-info"><div class="user-name">${u.full_name || u.username}</div><div class="user-username">@${u.username}</div></div><div class="user-stats"><div class="user-proposals">${u.total_propuestas} ${t('dashboard.proposals')}</div><div class="user-last">${formatDateShort(u.ultima_propuesta)}</div></div></div>`).join('');
+            cardsContainer.innerHTML = usuarios.map(u => `<div class="top-user-card"><div class="top-user-card-header"><div class="top-user-avatar">${getInitials(u.full_name || u.username)}</div><div class="top-user-info"><div class="top-user-name">${u.full_name || u.username}</div><div class="top-user-username">@${u.username}</div></div></div><div class="top-user-card-stats"><div class="top-user-stat"><span class="top-user-stat-value">${u.total_propuestas}</span><span class="top-user-stat-label">${t('dashboard.proposals')}</span></div><div class="top-user-stat"><span class="top-user-stat-value">${formatDateShort(u.ultima_propuesta)}</span><span class="top-user-stat-label">Ultima</span></div></div></div>`).join('');
         }
 
-        // ==================== GRAFICO PROPUESTAS POR MES ====================
         function renderProposalsByMonthChart(data) {
             const ctx = document.getElementById('proposalsByMonthChart').getContext('2d');
-
-            if (proposalsByMonthChart) {
-                proposalsByMonthChart.destroy();
-            }
-
+            if (proposalsByMonthChart) proposalsByMonthChart.destroy();
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             const textColor = isDark ? '#e0e0e0' : '#666';
             const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-
             const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-
             const primaryColorBar = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#FF4338';
-
             proposalsByMonthChart = new Chart(ctx, {
                 type: 'bar',
-                data: {
-                    labels: data.map(d => `${monthNames[d.mes - 1]} ${d.anio}`),
-                    datasets: [{
-                        label: t('dashboard.proposals'),
-                        data: data.map(d => d.cantidad),
-                        backgroundColor: primaryColorBar + 'CC',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { color: textColor },
-                            grid: { color: gridColor }
-                        },
-                        x: {
-                            ticks: { color: textColor },
-                            grid: { display: false }
-                        }
-                    }
-                }
+                data: { labels: data.map(d => `${monthNames[d.mes - 1]} ${d.anio}`), datasets: [{ label: t('dashboard.proposals'), data: data.map(d => d.cantidad), backgroundColor: primaryColorBar + 'CC', borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: textColor }, grid: { color: gridColor } }, x: { ticks: { color: textColor }, grid: { display: false } } } }
             });
         }
 
-        // ==================== CAMBIAR PERIODO ====================
         async function changePeriod(dias, btn) {
-            // Actualizar boton activo
             document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-
             currentPeriod = dias;
-
             try {
                 const data = await fetchAPI(`/api/estadisticas/propuestas-por-dia?dias=${dias}`);
                 renderProposalsByDayChart(data);
-            } catch (error) {
-                console.error('Error changing period:', error);
-            }
+            } catch (error) {}
         }
 
-        // ==================== UTILIDADES ====================
         function formatNumber(num) {
-            if (num >= 1000000) {
-                return (num / 1000000).toFixed(1) + 'M';
-            }
-            if (num >= 1000) {
-                return (num / 1000).toFixed(1) + 'K';
-            }
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
             return Math.round(num).toLocaleString();
         }
 
         function formatDateShort(dateString) {
             if (!dateString) return 'N/A';
             const date = new Date(dateString);
-            return date.toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: 'short'
-            });
+            return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
         }
 
         function truncate(str, length) {
@@ -803,9 +759,7 @@
         function getInitials(name) {
             if (!name) return '??';
             const parts = name.split(' ');
-            if (parts.length >= 2) {
-                return (parts[0][0] + parts[1][0]).toUpperCase();
-            }
+            if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
             return name.substring(0, 2).toUpperCase();
         }
 
@@ -814,7 +768,6 @@
             window.location.href = `index.html?empresa=${empresaId}`;
         }
 
-        // Helper para traducciones
         function t(key) {
             return typeof I18n !== 'undefined' && I18n.t ? I18n.t(key) : key;
         }
@@ -823,126 +776,51 @@
         async function loadSessions() {
             try {
                 const empresaId = localStorage.getItem('empresa_id');
-                const response = await fetch(`${API_URL}/api/sesiones?empresa_id=${empresaId}`, {
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error al cargar sesiones');
-                }
-
+                const response = await fetch(`${API_URL}/api/sesiones?empresa_id=${empresaId}`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Error al cargar sesiones');
                 const data = await response.json();
                 const sessions = data.sesiones || [];
-
                 document.getElementById('sessions-count').textContent = sessions.length;
-
                 const tbody = document.getElementById('sessions-body');
                 const cardsContainer = document.getElementById('sessions-cards');
                 const emptyMsg = document.getElementById('sessions-empty');
-
                 if (sessions.length === 0) {
                     tbody.innerHTML = '';
                     cardsContainer.innerHTML = '';
                     emptyMsg.style.display = 'block';
                     return;
                 }
-
                 emptyMsg.style.display = 'none';
-
-                // Renderizar tabla (desktop)
-                tbody.innerHTML = sessions.map(s => `
-                    <tr>
-                        <td><strong>${s.username}</strong></td>
-                        <td>${s.full_name || '-'}</td>
-                        <td><span class="role-badge role-${s.rol}">${s.rol}</span></td>
-                        <td>${s.ip_address || '-'}</td>
-                        <td>${formatDateTime(s.created_at)}</td>
-                        <td>${formatDateTime(s.last_activity)}</td>
-                        <td>
-                            <button class="btn-action btn-deactivate" onclick="killSession(${s.id}, '${s.username}')" title="Terminar sesion">
-                                ✕
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
-
-                // Renderizar tarjetas (movil)
-                cardsContainer.innerHTML = sessions.map(s => `
-                    <div class="session-card">
-                        <div class="session-card-header">
-                            <div class="session-user-info">
-                                <span class="session-username">${s.username}</span>
-                                <span class="role-badge role-${s.rol}">${s.rol}</span>
-                            </div>
-                            <button class="btn-action btn-deactivate" onclick="killSession(${s.id}, '${s.username}')" title="Terminar sesion">
-                                ✕
-                            </button>
-                        </div>
-                        <div class="session-card-body">
-                            <div class="session-detail"><strong>Nombre:</strong> ${s.full_name || '-'}</div>
-                            <div class="session-detail"><strong>IP:</strong> ${s.ip_address || '-'}</div>
-                            <div class="session-detail"><strong>Inicio:</strong> ${formatDateTime(s.created_at)}</div>
-                            <div class="session-detail"><strong>Actividad:</strong> ${formatDateTime(s.last_activity)}</div>
-                        </div>
-                    </div>
-                `).join('');
-
-            } catch (error) {
-                console.error('Error loading sessions:', error);
-            }
+                tbody.innerHTML = sessions.map(s => `<tr><td><strong>${s.username}</strong></td><td>${s.full_name || '-'}</td><td><span class="role-badge role-${s.rol}">${s.rol}</span></td><td>${s.ip_address || '-'}</td><td>${formatDateTime(s.created_at)}</td><td>${formatDateTime(s.last_activity)}</td><td><button class="btn-action btn-deactivate" onclick="killSession(${s.id}, '${s.username}')" title="Terminar sesion">✕</button></td></tr>`).join('');
+                cardsContainer.innerHTML = sessions.map(s => `<div class="session-card"><div class="session-card-header"><div class="session-user-info"><span class="session-username">${s.username}</span><span class="role-badge role-${s.rol}">${s.rol}</span></div><button class="btn-action btn-deactivate" onclick="killSession(${s.id}, '${s.username}')" title="Terminar sesion">✕</button></div><div class="session-card-body"><div class="session-detail"><strong>Nombre:</strong> ${s.full_name || '-'}</div><div class="session-detail"><strong>IP:</strong> ${s.ip_address || '-'}</div><div class="session-detail"><strong>Inicio:</strong> ${formatDateTime(s.created_at)}</div><div class="session-detail"><strong>Actividad:</strong> ${formatDateTime(s.last_activity)}</div></div></div>`).join('');
+            } catch (error) {}
         }
 
         async function killSession(sessionId, username) {
-            if (!confirm(`¿Terminar la sesion de ${username}?`)) {
-                return;
-            }
-
+            if (!confirm(`¿Terminar la sesion de ${username}?`)) return;
             try {
-                const response = await fetch(`${API_URL}/api/sesiones/${sessionId}`, {
-                    method: 'DELETE',
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error al terminar sesion');
-                }
-
+                const response = await fetch(`${API_URL}/api/sesiones/${sessionId}`, { method: 'DELETE', credentials: 'include' });
+                if (!response.ok) throw new Error('Error al terminar sesion');
                 await loadSessions();
-
             } catch (error) {
-                console.error('Error killing session:', error);
                 alert('Error al terminar la sesion');
             }
         }
 
         async function killAllSessionsExceptCurrent() {
-            if (!confirm('¿Cerrar todas las sesiones excepto la tuya?\n\nEsto desconectará a todos los usuarios actualmente conectados.')) {
-                return;
-            }
-
+            if (!confirm('¿Cerrar todas las sesiones excepto la tuya?\n\nEsto desconectara a todos los usuarios actualmente conectados.')) return;
             try {
                 const empresaId = localStorage.getItem('empresa_id');
                 const csrfToken = localStorage.getItem('csrf_token');
-
-                const response = await fetch(`${API_URL}/api/sesiones/todas-excepto-actual?empresa_id=${empresaId}`, {
-                    method: 'DELETE',
-                    credentials: 'include',
-                    headers: {
-                        'X-CSRF-Token': csrfToken
-                    }
-                });
-
+                const response = await fetch(`${API_URL}/api/sesiones/todas-excepto-actual?empresa_id=${empresaId}`, { method: 'DELETE', credentials: 'include', headers: { 'X-CSRF-Token': csrfToken } });
                 if (!response.ok) {
                     const error = await response.json();
                     throw new Error(error.message || 'Error al cerrar sesiones');
                 }
-
                 const data = await response.json();
-                alert(`${data.deleted_count} sesión(es) cerrada(s)`);
+                alert(`${data.deleted_count} sesion(es) cerrada(s)`);
                 await loadSessions();
-
             } catch (error) {
-                console.error('Error killing all sessions:', error);
                 alert('Error al cerrar las sesiones: ' + error.message);
             }
         }
@@ -950,13 +828,7 @@
         function formatDateTime(dateString) {
             if (!dateString) return '-';
             const date = new Date(dateString);
-            return date.toLocaleString('es-ES', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+            return date.toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         }
 
         // ==================== AUDITORIA ====================
@@ -966,29 +838,17 @@
         let auditSortColumn = 'fecha';
         let auditSortDirection = 'desc';
         let auditFilterTimeout = null;
-        let auditAllLogs = []; // Cache de logs para ordenación local
+        let auditAllLogs = [];
 
         async function loadAuditActions() {
             try {
-                const response = await fetch(`${API_URL}/api/audit-logs/actions`, {
-                    credentials: 'include'
-                });
+                const response = await fetch(`${API_URL}/api/audit-logs/actions`, { credentials: 'include' });
                 if (!response.ok) return;
-
                 const data = await response.json();
-
-                // Poblar ambos selectores (filtro panel y filtro inline)
-                const selects = [
-                    document.getElementById('audit-accion'),
-                    document.getElementById('filter-accion')
-                ];
-
+                const selects = [document.getElementById('audit-accion'), document.getElementById('filter-accion')];
                 selects.forEach(select => {
                     if (!select) return;
-                    // Mantener la opción "Todas"
                     select.innerHTML = '<option value="">Todas</option>';
-
-                    // Añadir las acciones disponibles
                     data.actions.forEach(action => {
                         const option = document.createElement('option');
                         option.value = action;
@@ -996,178 +856,95 @@
                         select.appendChild(option);
                     });
                 });
-            } catch (error) {
-                console.error('Error loading audit actions:', error);
-            }
+            } catch (error) {}
         }
 
         async function loadAuditLogs(page = 0) {
             try {
-                console.log('loadAuditLogs: Iniciando carga...');
                 auditCurrentPage = page;
                 const offset = page * auditPageSize;
-
-                // Construir query params
                 const params = new URLSearchParams();
-                params.append('limit', 200); // Cargar más para permitir filtrado local
+                params.append('limit', 200);
                 params.append('offset', 0);
-
-                // Obtener filtros del panel superior (filtros principales)
                 const fechaDesde = document.getElementById('audit-fecha-desde')?.value;
                 const fechaHasta = document.getElementById('audit-fecha-hasta')?.value;
                 const accionPanel = document.getElementById('audit-accion')?.value;
                 const resultadoPanel = document.getElementById('audit-resultado')?.value;
                 const usuarioPanel = document.getElementById('audit-usuario')?.value;
-
                 if (fechaDesde) params.append('fecha_desde', fechaDesde);
                 if (fechaHasta) params.append('fecha_hasta', fechaHasta);
                 if (accionPanel) params.append('accion', accionPanel);
                 if (resultadoPanel) params.append('resultado', resultadoPanel);
                 if (usuarioPanel) params.append('username', usuarioPanel);
-
-                console.log('loadAuditLogs: URL:', `${API_URL}/api/audit-logs?${params.toString()}`);
-
-                const response = await fetch(`${API_URL}/api/audit-logs?${params.toString()}`, {
-                    credentials: 'include'
-                });
-
-                console.log('loadAuditLogs: Response status:', response.status);
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('loadAuditLogs: Error response:', errorText);
-                    throw new Error('Error al cargar logs de auditoría');
-                }
-
+                const response = await fetch(`${API_URL}/api/audit-logs?${params.toString()}`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Error al cargar logs de auditoria');
                 const data = await response.json();
-                console.log('loadAuditLogs: Data recibida:', data);
                 auditAllLogs = data.logs || [];
                 auditTotalLogs = data.total || 0;
-
-                console.log('loadAuditLogs: Logs count:', auditAllLogs.length, 'Total:', auditTotalLogs);
-
-                // Aplicar filtros inline y ordenación local
                 const filteredLogs = applyLocalFiltersAndSort(auditAllLogs);
-
-                // Paginar localmente
                 const paginatedLogs = filteredLogs.slice(offset, offset + auditPageSize);
                 auditTotalLogs = filteredLogs.length;
-
                 renderAuditLogs(paginatedLogs);
                 renderAuditPagination();
-
             } catch (error) {
-                console.error('loadAuditLogs: Error:', error);
-                // Mostrar mensaje de error al usuario
                 const emptyMsg = document.getElementById('audit-empty');
-                if (emptyMsg) {
-                    emptyMsg.textContent = 'Error al cargar los registros de auditoría';
-                    emptyMsg.style.display = 'block';
-                }
+                if (emptyMsg) { emptyMsg.textContent = 'Error al cargar los registros de auditoria'; emptyMsg.style.display = 'block'; }
             }
         }
 
         function applyLocalFiltersAndSort(logs) {
             let filtered = [...logs];
-
-            // Obtener filtros inline de columnas
             const filterFecha = document.getElementById('filter-fecha')?.value;
             const filterUsername = document.getElementById('filter-username')?.value?.toLowerCase();
             const filterAccion = document.getElementById('filter-accion')?.value;
             const filterRecurso = document.getElementById('filter-recurso')?.value?.toLowerCase();
             const filterIp = document.getElementById('filter-ip')?.value?.toLowerCase();
             const filterResultado = document.getElementById('filter-resultado')?.value;
-
-            // Aplicar filtros inline
-            if (filterFecha) {
-                filtered = filtered.filter(log => log.fecha && log.fecha.startsWith(filterFecha));
-            }
-            if (filterUsername) {
-                filtered = filtered.filter(log => log.username?.toLowerCase().includes(filterUsername));
-            }
-            if (filterAccion) {
-                filtered = filtered.filter(log => log.accion === filterAccion);
-            }
-            if (filterRecurso) {
-                filtered = filtered.filter(log =>
-                    log.recurso?.toLowerCase().includes(filterRecurso) ||
-                    log.recurso_id?.toLowerCase().includes(filterRecurso)
-                );
-            }
-            if (filterIp) {
-                filtered = filtered.filter(log => log.ip_address?.toLowerCase().includes(filterIp));
-            }
-            if (filterResultado) {
-                filtered = filtered.filter(log => log.resultado === filterResultado);
-            }
-
-            // Aplicar ordenación
+            if (filterFecha) filtered = filtered.filter(log => log.fecha && log.fecha.startsWith(filterFecha));
+            if (filterUsername) filtered = filtered.filter(log => log.username?.toLowerCase().includes(filterUsername));
+            if (filterAccion) filtered = filtered.filter(log => log.accion === filterAccion);
+            if (filterRecurso) filtered = filtered.filter(log => log.recurso?.toLowerCase().includes(filterRecurso) || log.recurso_id?.toLowerCase().includes(filterRecurso));
+            if (filterIp) filtered = filtered.filter(log => log.ip_address?.toLowerCase().includes(filterIp));
+            if (filterResultado) filtered = filtered.filter(log => log.resultado === filterResultado);
             filtered.sort((a, b) => {
                 let valA = a[auditSortColumn];
                 let valB = b[auditSortColumn];
-
-                // Manejar valores nulos
                 if (valA === null || valA === undefined) valA = '';
                 if (valB === null || valB === undefined) valB = '';
-
-                // Comparar
                 let comparison = 0;
-                if (typeof valA === 'string') {
-                    comparison = valA.localeCompare(valB);
-                } else {
-                    comparison = valA < valB ? -1 : valA > valB ? 1 : 0;
-                }
-
+                if (typeof valA === 'string') comparison = valA.localeCompare(valB);
+                else comparison = valA < valB ? -1 : valA > valB ? 1 : 0;
                 return auditSortDirection === 'asc' ? comparison : -comparison;
             });
-
             return filtered;
         }
 
         function sortAuditColumn(column) {
-            // Si es la misma columna, cambiar dirección
-            if (auditSortColumn === column) {
-                auditSortDirection = auditSortDirection === 'asc' ? 'desc' : 'asc';
-            } else {
-                auditSortColumn = column;
-                auditSortDirection = 'asc';
-            }
-
-            // Actualizar iconos de ordenación
+            if (auditSortColumn === column) auditSortDirection = auditSortDirection === 'asc' ? 'desc' : 'asc';
+            else { auditSortColumn = column; auditSortDirection = 'asc'; }
             updateSortIcons();
-
-            // Aplicar filtros y ordenación sin recargar de servidor
             const filteredLogs = applyLocalFiltersAndSort(auditAllLogs);
             const offset = auditCurrentPage * auditPageSize;
             const paginatedLogs = filteredLogs.slice(offset, offset + auditPageSize);
             auditTotalLogs = filteredLogs.length;
-
             renderAuditLogs(paginatedLogs);
             renderAuditPagination();
         }
 
         function updateSortIcons() {
-            // Reset all icons
             const columns = ['fecha', 'username', 'accion', 'recurso', 'ip_address', 'resultado'];
             columns.forEach(col => {
                 const icon = document.getElementById(`sort-${col}`);
                 if (icon) {
-                    if (col === auditSortColumn) {
-                        icon.textContent = auditSortDirection === 'asc' ? '↑' : '↓';
-                        icon.classList.add('active');
-                    } else {
-                        icon.textContent = '↕';
-                        icon.classList.remove('active');
-                    }
+                    if (col === auditSortColumn) { icon.textContent = auditSortDirection === 'asc' ? '↑' : '↓'; icon.classList.add('active'); }
+                    else { icon.textContent = '↕'; icon.classList.remove('active'); }
                 }
             });
         }
 
         function debounceFilter() {
             if (auditFilterTimeout) clearTimeout(auditFilterTimeout);
-            auditFilterTimeout = setTimeout(() => {
-                applyColumnFilters();
-            }, 300);
+            auditFilterTimeout = setTimeout(() => applyColumnFilters(), 300);
         }
 
         function applyColumnFilters() {
@@ -1175,7 +952,6 @@
             const filteredLogs = applyLocalFiltersAndSort(auditAllLogs);
             const paginatedLogs = filteredLogs.slice(0, auditPageSize);
             auditTotalLogs = filteredLogs.length;
-
             renderAuditLogs(paginatedLogs);
             renderAuditPagination();
         }
@@ -1184,72 +960,23 @@
             const tbody = document.getElementById('audit-body');
             const cardsContainer = document.getElementById('audit-cards');
             const emptyMsg = document.getElementById('audit-empty');
-
-            if (logs.length === 0) {
-                tbody.innerHTML = '';
-                cardsContainer.innerHTML = '';
-                emptyMsg.style.display = 'block';
-                return;
-            }
-
+            if (logs.length === 0) { tbody.innerHTML = ''; cardsContainer.innerHTML = ''; emptyMsg.style.display = 'block'; return; }
             emptyMsg.style.display = 'none';
-
-            // Renderizar tabla (desktop)
-            tbody.innerHTML = logs.map(log => `
-                <tr>
-                    <td>${formatDateTime(log.fecha)}</td>
-                    <td><strong>${log.username || '-'}</strong></td>
-                    <td><span class="action-badge action-${getActionCategory(log.accion)}">${formatActionName(log.accion)}</span></td>
-                    <td>${log.recurso ? `${log.recurso}${log.recurso_id ? ` #${log.recurso_id}` : ''}` : '-'}</td>
-                    <td>${log.ip_address || '-'}</td>
-                    <td><span class="result-badge result-${log.resultado.toLowerCase()}">${formatResultName(log.resultado)}</span></td>
-                </tr>
-            `).join('');
-
-            // Renderizar tarjetas (movil)
-            cardsContainer.innerHTML = logs.map(log => `
-                <div class="audit-card">
-                    <div class="audit-card-header">
-                        <span class="action-badge action-${getActionCategory(log.accion)}">${formatActionName(log.accion)}</span>
-                        <span class="result-badge result-${log.resultado.toLowerCase()}">${formatResultName(log.resultado)}</span>
-                    </div>
-                    <div class="audit-card-body">
-                        <div class="audit-detail"><strong>Usuario:</strong> ${log.username || '-'}</div>
-                        <div class="audit-detail"><strong>Fecha:</strong> ${formatDateTime(log.fecha)}</div>
-                        <div class="audit-detail"><strong>Recurso:</strong> ${log.recurso ? `${log.recurso}${log.recurso_id ? ` #${log.recurso_id}` : ''}` : '-'}</div>
-                        <div class="audit-detail"><strong>IP:</strong> ${log.ip_address || '-'}</div>
-                    </div>
-                </div>
-            `).join('');
+            tbody.innerHTML = logs.map(log => `<tr><td>${formatDateTime(log.fecha)}</td><td><strong>${log.username || '-'}</strong></td><td><span class="action-badge action-${getActionCategory(log.accion)}">${formatActionName(log.accion)}</span></td><td>${log.recurso ? `${log.recurso}${log.recurso_id ? ` #${log.recurso_id}` : ''}` : '-'}</td><td>${log.ip_address || '-'}</td><td><span class="result-badge result-${log.resultado.toLowerCase()}">${formatResultName(log.resultado)}</span></td></tr>`).join('');
+            cardsContainer.innerHTML = logs.map(log => `<div class="audit-card"><div class="audit-card-header"><span class="action-badge action-${getActionCategory(log.accion)}">${formatActionName(log.accion)}</span><span class="result-badge result-${log.resultado.toLowerCase()}">${formatResultName(log.resultado)}</span></div><div class="audit-card-body"><div class="audit-detail"><strong>Usuario:</strong> ${log.username || '-'}</div><div class="audit-detail"><strong>Fecha:</strong> ${formatDateTime(log.fecha)}</div><div class="audit-detail"><strong>Recurso:</strong> ${log.recurso ? `${log.recurso}${log.recurso_id ? ` #${log.recurso_id}` : ''}` : '-'}</div><div class="audit-detail"><strong>IP:</strong> ${log.ip_address || '-'}</div></div></div>`).join('');
         }
 
         function renderAuditPagination() {
             const container = document.getElementById('audit-pagination');
             const totalPages = Math.ceil(auditTotalLogs / auditPageSize);
-
-            if (totalPages <= 1) {
-                container.innerHTML = '';
-                return;
-            }
-
-            let html = '';
-
-            // Boton anterior
-            html += `<button class="pagination-btn" ${auditCurrentPage === 0 ? 'disabled' : ''} onclick="loadAuditLogs(${auditCurrentPage - 1})">← Anterior</button>`;
-
-            // Indicador de pagina
-            html += `<span class="pagination-info">Página ${auditCurrentPage + 1} de ${totalPages}</span>`;
-
-            // Boton siguiente
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+            let html = `<button class="pagination-btn" ${auditCurrentPage === 0 ? 'disabled' : ''} onclick="loadAuditLogs(${auditCurrentPage - 1})">← Anterior</button>`;
+            html += `<span class="pagination-info">Pagina ${auditCurrentPage + 1} de ${totalPages}</span>`;
             html += `<button class="pagination-btn" ${auditCurrentPage >= totalPages - 1 ? 'disabled' : ''} onclick="loadAuditLogs(${auditCurrentPage + 1})">Siguiente →</button>`;
-
             container.innerHTML = html;
         }
 
-        function applyAuditFilters() {
-            loadAuditLogs(0);
-        }
-
+        function applyAuditFilters() { loadAuditLogs(0); }
         function clearAuditFilters() {
             document.getElementById('audit-fecha-desde').value = '';
             document.getElementById('audit-fecha-hasta').value = '';
@@ -1260,35 +987,12 @@
         }
 
         function formatActionName(action) {
-            const actionNames = {
-                'LOGIN': 'Inicio sesión',
-                'LOGIN_FAILED': 'Login fallido',
-                'LOGOUT': 'Cerrar sesión',
-                'PASSWORD_CHANGE': 'Cambio contraseña',
-                'SESSION_KILL': 'Sesión cerrada',
-                'SESSION_KILL_ALL': 'Cerrar todas sesiones',
-                'USER_CREATE': 'Usuario creado',
-                'USER_ACTIVATE': 'Usuario activado',
-                'USER_DEACTIVATE': 'Usuario desactivado',
-                'USER_ROLE_CHANGE': 'Cambio de rol',
-                'API_KEY_CREATE': 'API Key creada',
-                'API_KEY_DELETE': 'API Key eliminada',
-                'CONFIG_CHANGE': 'Config. modificada',
-                'EMAIL_CONFIG_CHANGE': 'Config. email',
-                'PROPUESTA_SEND': 'Propuesta enviada',
-                'PROPUESTA_STATUS_CHANGE': 'Estado propuesta',
-                'CONSULTA_SEND': 'Consulta enviada',
-                'CONSULTA_RESPOND': 'Consulta respondida'
-            };
+            const actionNames = { 'LOGIN': 'Inicio sesion', 'LOGIN_FAILED': 'Login fallido', 'LOGOUT': 'Cerrar sesion', 'PASSWORD_CHANGE': 'Cambio contrasena', 'SESSION_KILL': 'Sesion cerrada', 'SESSION_KILL_ALL': 'Cerrar todas sesiones', 'USER_CREATE': 'Usuario creado', 'USER_ACTIVATE': 'Usuario activado', 'USER_DEACTIVATE': 'Usuario desactivado', 'USER_ROLE_CHANGE': 'Cambio de rol', 'API_KEY_CREATE': 'API Key creada', 'API_KEY_DELETE': 'API Key eliminada', 'CONFIG_CHANGE': 'Config. modificada', 'EMAIL_CONFIG_CHANGE': 'Config. email', 'PROPUESTA_SEND': 'Propuesta enviada', 'PROPUESTA_STATUS_CHANGE': 'Estado propuesta', 'CONSULTA_SEND': 'Consulta enviada', 'CONSULTA_RESPOND': 'Consulta respondida' };
             return actionNames[action] || action;
         }
 
         function formatResultName(result) {
-            const resultNames = {
-                'SUCCESS': 'Éxito',
-                'FAILED': 'Fallido',
-                'BLOCKED': 'Bloqueado'
-            };
+            const resultNames = { 'SUCCESS': 'Exito', 'FAILED': 'Fallido', 'BLOCKED': 'Bloqueado' };
             return resultNames[result] || result;
         }
 
@@ -1303,14 +1007,8 @@
             return 'other';
         }
 
-        // Cargar acciones disponibles y logs al iniciar
         document.addEventListener('DOMContentLoaded', async function() {
-            // Las otras funciones ya se ejecutan...
-            // Añadir carga de auditoria despues de un pequeño delay
-            setTimeout(async () => {
-                await loadAuditActions();
-                await loadAuditLogs();
-            }, 500);
+            setTimeout(async () => { await loadAuditActions(); await loadAuditLogs(); }, 500);
         });
     </script>
 </body>
