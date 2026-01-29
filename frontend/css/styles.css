@@ -656,6 +656,25 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+/* Botón menú móvil - oculto por defecto, visible en móvil */
+.mobile-menu-btn {
+    display: none;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius);
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-menu-btn svg {
+    width: 24px;
+    height: 24px;
+    stroke: white;
+}
+
 .top-header-left {
     display: flex;
     align-items: center;
