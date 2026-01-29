@@ -6,12 +6,12 @@
 }
 
 :root {
-    /* Colores principales */
-    --primary: #FF4338;
-    --primary-dark: #D32F2F;
-    --primary-light: #FF6B6B;
-    --secondary: #FF5252;
-    --accent: #ffd7d7;
+    /* Colores principales - neutros por defecto (se sobrescriben con data-color-theme) */
+    --primary: #6b7280;
+    --primary-dark: #4b5563;
+    --primary-light: #9ca3af;
+    --secondary: #6b7280;
+    --accent: #e5e7eb;
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
@@ -413,7 +413,9 @@
 }
 
 /* Icono hamburguesa - siempre blanco sobre fondo del tema */
-.sidebar-toggle svg path {
+.sidebar-toggle svg path,
+.sidebar-toggle svg rect {
+    fill: white !important;
     stroke: white !important;
     stroke-width: 2.5px !important;
     stroke-linecap: round !important;
@@ -1087,7 +1089,9 @@
     background: rgba(255, 255, 255, 0.25) !important;
 }
 
-.sidebar-toggle svg path {
+.sidebar-toggle svg path,
+.sidebar-toggle svg rect {
+    fill: white !important;
     stroke: white !important;
 }
 
@@ -11384,7 +11388,7 @@ tbody tr:hover {
     width: 50px;
     height: 50px;
     border: 4px solid #f3f3f3;
-    border-top: 4px solid var(--primary, #FF4338);
+    border-top: 4px solid var(--primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto 20px;
@@ -11442,7 +11446,7 @@ tbody tr:hover {
     width: 50px;
     height: 50px;
     border: 4px solid #f3f3f3;
-    border-top: 4px solid var(--primary, #FF4338);
+    border-top: 4px solid var(--primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto 20px;
@@ -11509,7 +11513,7 @@ data-grid {
     width: 40px;
     height: 40px;
     border: 3px solid #f3f3f3;
-    border-top: 3px solid var(--primary, #FF4338);
+    border-top: 3px solid var(--primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 15px;
@@ -11554,7 +11558,7 @@ data-grid {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: linear-gradient(135deg, var(--primary, #FF4338) 0%, var(--primary-dark, #D32F2F) 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
     padding: 6px 12px;
     border-radius: 20px;
@@ -11593,8 +11597,8 @@ data-grid {
 
 .dg-clear-all-filters {
     background: transparent;
-    border: 1px solid var(--primary, #FF4338);
-    color: var(--primary, #FF4338);
+    border: 1px solid var(--primary);
+    color: var(--primary);
     padding: 6px 12px;
     border-radius: 20px;
     font-size: 13px;
@@ -11603,7 +11607,7 @@ data-grid {
 }
 
 .dg-clear-all-filters:hover {
-    background: var(--primary, #FF4338);
+    background: var(--primary);
     color: white;
 }
 
@@ -11623,7 +11627,7 @@ data-grid {
 }
 
 .dg-table thead {
-    background: linear-gradient(135deg, var(--primary, #FF4338) 0%, var(--primary-dark, #D32F2F) 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
     position: sticky;
     top: 0;
@@ -11712,7 +11716,7 @@ data-grid {
 }
 
 .dg-action-btn {
-    background: linear-gradient(135deg, var(--primary, #FF4338) 0%, var(--primary-dark, #D32F2F) 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
     border: none;
     padding: 6px 12px;
@@ -11760,7 +11764,7 @@ data-grid {
 }
 
 .dg-card:hover {
-    border-color: var(--primary, #FF4338);
+    border-color: var(--primary);
     box-shadow: 0 4px 12px rgba(255, 67, 56, 0.15);
 }
 
@@ -11775,7 +11779,7 @@ data-grid {
 
 .dg-card-title {
     font-weight: 600;
-    color: var(--primary, #FF4338);
+    color: var(--primary);
     font-size: 15px;
 }
 
@@ -11875,13 +11879,13 @@ data-grid {
 }
 
 .dg-page-btn:hover:not([disabled]) {
-    border-color: var(--primary, #FF4338);
-    color: var(--primary, #FF4338);
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
 .dg-page-btn.active {
-    background: var(--primary, #FF4338);
-    border-color: var(--primary, #FF4338);
+    background: var(--primary);
+    border-color: var(--primary);
     color: white;
 }
 
@@ -11917,7 +11921,7 @@ data-grid {
     justify-content: space-between;
     align-items: center;
     padding: 15px 20px;
-    background: linear-gradient(135deg, var(--primary, #FF4338) 0%, var(--primary-dark, #D32F2F) 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
 }
 
@@ -11970,12 +11974,12 @@ data-grid {
 }
 
 .dg-filter-operator-label:hover {
-    border-color: var(--primary, #FF4338);
+    border-color: var(--primary);
 }
 
 .dg-filter-operator-label.active {
-    background: linear-gradient(135deg, var(--primary, #FF4338) 0%, var(--primary-dark, #D32F2F) 100%);
-    border-color: var(--primary, #FF4338);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-color: var(--primary);
     color: white;
 }
 
@@ -12000,7 +12004,7 @@ data-grid {
 
 .dg-filter-input:focus {
     outline: none;
-    border-color: var(--primary, #FF4338);
+    border-color: var(--primary);
 }
 
 .dg-filter-range-label {
@@ -12040,7 +12044,7 @@ data-grid {
 }
 
 .dg-filter-btn-apply {
-    background: linear-gradient(135deg, var(--primary, #FF4338) 0%, var(--primary-dark, #D32F2F) 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     border: none;
     color: white;
 }
