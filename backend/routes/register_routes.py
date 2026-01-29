@@ -71,6 +71,19 @@ def get_empresa_id_from_connection(connection):
 
 def get_empresa_id():
     """Obtiene el empresa_id (para uso en parámetros y registro)"""
+    # Primero intentar obtener empresa_id directamente del body o query
+    empresa_id = request.args.get('empresa_id') or request.args.get('empresa')
+    if empresa_id:
+        return empresa_id
+
+    if request.is_json:
+        data = request.get_json(silent=True)
+        if data:
+            empresa_id = data.get('empresa_id') or data.get('empresa')
+            if empresa_id:
+                return empresa_id
+
+    # Si no hay empresa_id directo, usar connection y convertir
     connection = get_connection()
     return get_empresa_id_from_connection(connection)
 
