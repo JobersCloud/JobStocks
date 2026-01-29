@@ -409,20 +409,22 @@
     width: 18px;
     height: 18px;
     transition: transform 0.3s;
-    stroke: var(--text-primary, #1f2937);
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    display: block;
 }
 
-/* Asegurar visibilidad de las líneas del icono */
+/* Líneas del icono hamburguesa - color explícito para máxima visibilidad */
 .sidebar-toggle svg line {
-    stroke: inherit;
+    stroke: #1f2937 !important;
+    stroke-width: 2.5px !important;
+    stroke-linecap: round !important;
 }
 
-.sidebar-toggle:hover svg {
-    stroke: white;
+[data-theme="dark"] .sidebar-toggle svg line {
+    stroke: #f1f5f9 !important;
+}
+
+.sidebar-toggle:hover svg line {
+    stroke: white !important;
 }
 
 .sidebar.collapsed .sidebar-toggle svg {
@@ -1016,76 +1018,151 @@
     }
 }
 
-/* ==================== ESTILOS DE TEMA CON PRESENCIA ==================== */
+/* ==================== ESTILOS DE TEMA CON ALTA PRESENCIA ==================== */
 
-/* Header con barra de color del tema en la parte superior */
+/* HEADER - Fondo con gradiente del tema */
 .top-header {
-    border-top: 3px solid var(--primary) !important;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+    color: white !important;
+    border-bottom: none !important;
 }
 
-/* Items activos del sidebar con color del tema */
-.sidebar-item.active {
-    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+.top-header-title {
     color: white !important;
+    -webkit-text-fill-color: white !important;
+}
+
+.header-logo-text {
+    color: white !important;
+}
+
+.header-divider {
+    background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.top-header .theme-toggle-btn,
+.top-header .lang-selector-header,
+.top-header .menu-btn {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+}
+
+.top-header .theme-toggle-btn:hover,
+.top-header .lang-selector-header:hover,
+.top-header .menu-btn:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+}
+
+.top-header .menu-icon {
+    stroke: white !important;
+}
+
+.top-header .user-name-display {
+    color: white !important;
+}
+
+.top-header .mobile-menu-btn {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.top-header .mobile-menu-btn svg {
+    stroke: white !important;
+}
+
+/* Logo en header - invertir para que se vea en fondo oscuro */
+.header-logo img {
+    filter: brightness(0) invert(1);
+}
+
+/* SIDEBAR - Fondo con tinte del tema */
+.sidebar {
+    background: linear-gradient(180deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-dark) 100%) !important;
+    border-right: none !important;
+}
+
+.sidebar-toggle-container {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.sidebar-toggle {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+}
+
+.sidebar-toggle svg line {
+    stroke: white !important;
+}
+
+/* Items del sidebar - texto blanco */
+.sidebar-item {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.sidebar-item svg {
+    stroke: rgba(255, 255, 255, 0.9) !important;
+}
+
+.sidebar-item:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+}
+
+.sidebar-item:hover svg {
+    stroke: white !important;
+}
+
+/* Item activo del sidebar */
+.sidebar-item.active {
+    background: rgba(255, 255, 255, 0.25) !important;
+    color: white !important;
+    border-left: 3px solid white;
 }
 
 .sidebar-item.active svg {
     stroke: white !important;
 }
 
-.sidebar-item.active .sidebar-item-text {
-    color: white !important;
+/* Títulos de sección del sidebar */
+.sidebar-section-title {
+    color: rgba(255, 255, 255, 0.6) !important;
 }
 
-/* Hover de items del sidebar con tinte del tema */
-.sidebar-item:hover:not(.active) {
-    background: var(--accent);
-}
-
-/* Acordeón headers con borde lateral del tema */
+/* Acordeones del sidebar */
 .sidebar-accordion-header {
-    border-left: 3px solid transparent;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.sidebar-accordion-header svg {
+    stroke: rgba(255, 255, 255, 0.9) !important;
 }
 
 .sidebar-accordion-header:hover {
-    border-left-color: var(--primary);
-    background: var(--accent);
+    background: rgba(255, 255, 255, 0.15) !important;
 }
 
 .sidebar-accordion.expanded > .sidebar-accordion-header {
-    border-left-color: var(--primary);
-    background: var(--accent);
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
 }
 
-/* Iconos del acordeón con color del tema cuando expandido */
 .sidebar-accordion.expanded > .sidebar-accordion-header svg {
-    stroke: var(--primary);
+    stroke: white !important;
 }
 
-/* Logo text con color del tema */
-.header-logo-text {
-    color: var(--primary) !important;
+.sidebar-accordion-title span {
+    color: rgba(255, 255, 255, 0.9) !important;
 }
 
-/* Botón menú usuario con hover del tema */
-.menu-btn:hover {
-    border-color: var(--primary);
-    background: var(--accent);
-}
-
-/* Footer del sidebar con línea del tema */
+/* Footer del sidebar */
 .sidebar-footer {
-    border-top: 1px solid var(--primary);
-    background: var(--accent);
-}
-
-.sidebar-footer .sidebar-item:hover {
-    background: var(--primary);
-    color: white;
-}
-
-.sidebar-footer .sidebar-item:hover svg {
-    stroke: white;
+    border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+    background: rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Cards y paneles con borde superior del tema */
@@ -1096,7 +1173,7 @@
 .proposal-card,
 .user-card,
 .inquiry-card {
-    border-top: 3px solid var(--primary);
+    border-top: 4px solid var(--primary);
 }
 
 /* Headers de tablas con gradiente del tema */
@@ -1104,8 +1181,16 @@
 .proposals-table thead,
 .inquiries-table thead,
 .config-list thead,
-.audit-table thead {
+.audit-table thead,
+table thead {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+}
+
+.users-table th,
+.proposals-table th,
+.inquiries-table th,
+table th {
+    color: white !important;
 }
 
 /* Selectores e inputs con focus del tema */
