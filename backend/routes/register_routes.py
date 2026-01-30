@@ -556,7 +556,7 @@ def get_base_url():
 
 def enviar_email_verificacion(email, nombre, token, empresa_id="1", connection=None):
     """Envía el email de verificación"""
-    email_config = EmailConfigModel.get_active_config(empresa_id)
+    email_config = EmailConfigModel.get_active_config(empresa_id, connection)
 
     if not email_config:
         raise Exception("No hay configuración de email activa")

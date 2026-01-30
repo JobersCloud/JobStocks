@@ -20,16 +20,16 @@ import traceback
 
 class EmailConfigModel:
     @staticmethod
-    def get_active_config(empresa_id):
+    def get_active_config(empresa_id, connection=None):
         """Obtiene la configuración de email activa para una empresa"""
         try:
             print("\n" + "=" * 60)
-            print(f"🔍 OBTENIENDO CONFIGURACIÓN DE EMAIL (Empresa: {empresa_id})")
+            print(f"🔍 OBTENIENDO CONFIGURACIÓN DE EMAIL (Empresa: {empresa_id}, Connection: {connection})")
             print("=" * 60)
 
             # Establecer conexión
             print("📡 Conectando a la base de datos...")
-            conn = Database.get_connection()
+            conn = Database.get_connection(connection)
             print("✅ Conexión establecida correctamente")
 
             cursor = conn.cursor()
