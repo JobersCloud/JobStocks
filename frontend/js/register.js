@@ -26,6 +26,43 @@ function getEmpresaFromURL() {
     }
 }
 
+// ==================== MODO OSCURO ====================
+
+// Cargar tema guardado
+function loadTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    applyTheme(savedTheme);
+}
+
+// Aplicar tema oscuro/claro
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+
+    // Actualizar switch y icono
+    const themeSwitch = document.getElementById('theme-switch');
+    const themeIcon = document.getElementById('theme-icon');
+
+    if (themeSwitch) {
+        themeSwitch.checked = theme === 'dark';
+    }
+    if (themeIcon) {
+        themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+}
+
+// Alternar tema
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme(newTheme);
+}
+
+// Exponer función globalmente
+window.toggleTheme = toggleTheme;
+
+// ==================== TEMA DE COLOR ====================
+
 // Aplicar tema de color
 function applyColorTheme(tema) {
     const themes = {
@@ -92,6 +129,9 @@ async function cargarLogoEmpresa(empresaId) {
 
 // Inicializar después de que i18n esté listo
 async function initRegister() {
+    // Cargar tema oscuro/claro inmediatamente
+    loadTheme();
+
     // Capturar empresa de la URL
     const empresaId = getEmpresaFromURL();
     console.log(`Registro con empresa_id: ${empresaId}`);
