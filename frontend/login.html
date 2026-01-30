@@ -31,14 +31,13 @@
             document.documentElement.setAttribute('data-theme', theme);
             document.documentElement.setAttribute('data-color-theme', colorTheme);
 
-            // Inyectar colores como CSS inline con !important para ganar especificidad
-            const style = document.createElement('style');
-            style.id = 'theme-colors-inline';
-            style.textContent = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
-            document.head.appendChild(style);
+            // Aplicar colores como estilos INLINE en el elemento HTML (máxima prioridad)
+            document.documentElement.style.setProperty('--primary', colors.primary, 'important');
+            document.documentElement.style.setProperty('--primary-dark', colors.primaryDark, 'important');
+            document.documentElement.style.setProperty('--primary-light', colors.primaryLight, 'important');
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.12.28">
+    <link rel="stylesheet" href="css/styles.css?v=1.12.32">
 </head>
 <body>
     <!-- Selector de idioma y tema fijo -->
