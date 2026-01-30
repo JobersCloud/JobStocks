@@ -916,6 +916,80 @@ function navigateTo(section) {
     }
 }
 
+// Mostrar información de contexto (debug)
+async function showContextInfo() {
+    try {
+        const response = await fetch(`${API_URL}/api/context-info`, {
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('No se pudo obtener la información de contexto');
+        }
+
+        const info = await response.json();
+
+        // Formatear la información para mostrar
+        let html = `
+            <div style="font-family: monospace; font-size: 0.85rem; line-height: 1.6;">
+                <h4 style="margin-bottom: 10px; color: var(--primary);">👤 Usuario</h4>
+                <div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                    <div><strong>ID:</strong> ${info.user.id}</div>
+                    <div><strong>Username:</strong> ${info.user.username}</div>
+                    <div><strong>Nombre:</strong> ${info.user.full_name}</div>
+                    <div><strong>Rol:</strong> ${info.user.rol}</div>
+                    <div><strong>Cliente ID:</strong> ${info.user.cliente_id || 'N/A'}</div>
+                </div>
+
+                <h4 style="margin-bottom: 10px; color: var(--primary);">🔗 Sesión</h4>
+                <div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                    <div><strong>Connection:</strong> ${info.session.connection}</div>
+                    <div><strong>Empresa ID:</strong> ${info.session.empresa_id}</div>
+                    <div><strong>Empresa Nombre:</strong> ${info.session.empresa_nombre}</div>
+                    <div><strong>User ID:</strong> ${info.session.user_id}</div>
+                </div>
+
+                <h4 style="margin-bottom: 10px; color: var(--primary);">🗄️ DB Config (Sesión)</h4>
+                <div style="background: ${info.has_db_config ? '#e8f5e9' : '#ffebee'}; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                    <div><strong>Cacheado en sesión:</strong> ${info.has_db_config ? '✅ Sí' : '❌ No'}</div>
+                    ${info.has_db_config ? `
+                        <div><strong>Server:</strong> ${info.db_config.dbserver}</div>
+                        <div><strong>Port:</strong> ${info.db_config.dbport || '1433'}</div>
+                        <div><strong>Database:</strong> ${info.db_config.dbname}</div>
+                        <div><strong>Login:</strong> ${info.db_config.dblogin}</div>
+                        <div><strong>Password:</strong> ${info.db_config.dbpass}</div>
+                    ` : '<div style="color: #c62828;">⚠️ Sin db_config - buscará en BD Central</div>'}
+                </div>
+
+                <h4 style="margin-bottom: 10px; color: var(--primary);">💾 LocalStorage</h4>
+                <div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px;">
+                    <div><strong>connection:</strong> ${localStorage.getItem('connection') || 'N/A'}</div>
+                    <div><strong>empresa_id:</strong> ${localStorage.getItem('empresa_id') || 'N/A'}</div>
+                </div>
+            </div>
+        `;
+
+        // Mostrar en un alert o modal
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+        modal.innerHTML = `
+            <div style="background:var(--bg-primary, white);padding:20px;border-radius:12px;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.3);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                    <h3 style="margin:0;">ℹ️ Info de Contexto</h3>
+                    <button onclick="this.closest('div').parentElement.remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+                </div>
+                ${html}
+            </div>
+        `;
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        document.body.appendChild(modal);
+
+    } catch (error) {
+        console.error('Error al obtener info de contexto:', error);
+        alert('Error: ' + error.message);
+    }
+}
+
 // Cerrar sesión
 async function logout() {
     if (confirm(t('auth.logoutConfirm'))) {

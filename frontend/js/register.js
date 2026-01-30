@@ -13,18 +13,49 @@ if (hostname === 'localhost' || hostname === '127.0.0.1') {
     API_URL = `${protocol}//${hostname}${port ? ':' + port : ''}`;
 }
 
-// Capturar connection de la URL (y empresa para compatibilidad)
+// Capturar connection de la URL (ID de conexión a BD del cliente)
 function getConnectionFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
-    // Aceptar tanto 'connection' como 'empresa' para compatibilidad
-    const connection = urlParams.get('connection') || urlParams.get('empresa');
+
+    // Si viene 'empresa' en lugar de 'connection', mostrar error
+    const empresaParam = urlParams.get('empresa');
+    if (empresaParam && !urlParams.get('connection')) {
+        return 'INVALID_PARAM'; // Parámetro incorrecto
+    }
+
+    const connection = urlParams.get('connection');
 
     if (connection) {
         localStorage.setItem('connection', connection);
         return connection;
     } else {
-        return localStorage.getItem('connection') || localStorage.getItem('empresa_id') || '1';
+        return localStorage.getItem('connection') || null;
     }
+}
+
+// Mostrar error cuando se usa parámetro 'empresa' en lugar de 'connection'
+function showInvalidParamError() {
+    document.body.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div style="background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 500px; text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">🚫</div>
+                <h1 style="color: #333; margin-bottom: 1rem; font-size: 1.5rem;">Parámetro Incorrecto</h1>
+                <p style="color: #666; margin-bottom: 1.5rem; line-height: 1.6;">
+                    El parámetro <strong style="color: #e74c3c;">empresa</strong> no es válido.
+                    Debe usar <strong style="color: #27ae60;">connection</strong> en su lugar.
+                </p>
+                <div style="background: #ffebee; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; font-family: 'Courier New', monospace; color: #c0392b; text-decoration: line-through;">
+                    ?empresa=XXXXX
+                </div>
+                <div style="background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-family: 'Courier New', monospace; color: #27ae60;">
+                    ?connection=XXXXX
+                </div>
+                <p style="color: #999; font-size: 0.9rem;">
+                    Por favor, actualice el enlace o contacte con el administrador.
+                </p>
+            </div>
+        </div>
+    `;
 }
 
 // ==================== MODO OSCURO ====================
@@ -135,6 +166,19 @@ async function initRegister() {
 
     // Capturar connection de la URL
     const connection = getConnectionFromURL();
+
+    if (connection === 'INVALID_PARAM') {
+        // ERROR: Se usó 'empresa' en lugar de 'connection'
+        showInvalidParamError();
+        return;
+    }
+
+    if (!connection) {
+        // ERROR: No hay connection
+        showInvalidParamError();
+        return;
+    }
+
     console.log(`Registro con connection: ${connection}`);
 
     // Cargar tema de color y logo de la empresa (usan connection para la API)
@@ -168,8 +212,8 @@ async function cargarPaises() {
 // Verificar si el registro está habilitado
 async function verificarRegistroHabilitado() {
     try {
-        const empresaId = localStorage.getItem('empresa_id') || '1';
-        const response = await fetch(`${API_URL}/api/registro-habilitado?empresa_id=${empresaId}`);
+        const connection = localStorage.getItem('connection') || localStorage.getItem('empresa_id') || '1';
+        const response = await fetch(`${API_URL}/api/registro-habilitado?connection=${connection}`);
         const data = await response.json();
 
         if (!data.habilitado) {
@@ -202,7 +246,6 @@ function setupRegisterForm() {
         const originalText = btn.innerHTML;
 
         // Obtener datos del formulario
-        const empresaId = localStorage.getItem('empresa_id') || '1';
         const connection = localStorage.getItem('connection') || localStorage.getItem('empresa_id') || '1';
         const formData = {
             full_name: document.getElementById('full_name').value.trim(),
@@ -210,7 +253,6 @@ function setupRegisterForm() {
             email: document.getElementById('email').value.trim(),
             pais: document.getElementById('pais').value,
             password: document.getElementById('password').value,
-            empresa_id: empresaId,
             connection: connection
         };
 
@@ -247,10 +289,10 @@ function setupRegisterForm() {
                 showAlert(data.message, 'success');
                 document.getElementById('register-form').reset();
 
-                // Redirigir al login después de 3 segundos (manteniendo empresa_id)
+                // Redirigir al login después de 3 segundos (manteniendo connection)
                 setTimeout(() => {
-                    const empresaId = localStorage.getItem('empresa_id') || '1';
-                    window.location.href = `/login.html?empresa=${empresaId}`;
+                    const connection = localStorage.getItem('connection') || localStorage.getItem('empresa_id') || '1';
+                    window.location.href = `/login.html?connection=${connection}`;
                 }, 3000);
             } else {
                 showAlert(data.message || t('auth.registerError'), 'error');

@@ -20,8 +20,14 @@ let loginForm, btnLogin, alertContainer;
 // empresa_id = empresa_erp para filtros (ej: '1') - se obtiene después del login
 function getConnectionFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
-    // Aceptar tanto 'connection' como 'empresa' para compatibilidad
-    const connection = urlParams.get('connection') || urlParams.get('empresa');
+
+    // Si viene 'empresa' en lugar de 'connection', mostrar error
+    const empresaParam = urlParams.get('empresa');
+    if (empresaParam && !urlParams.get('connection')) {
+        return 'INVALID_PARAM'; // Parámetro incorrecto
+    }
+
+    const connection = urlParams.get('connection');
 
     if (connection) {
         // Guardar connection en localStorage (ID para conexión BD)
@@ -105,15 +111,55 @@ window.toggleTheme = toggleTheme;
 
 // Cargar tema de color desde la API
 // Usa connection (empresa_cli_id) porque el endpoint necesita conectar a la BD del cliente
+// Retorna true si la conexión fue exitosa, false si falló
 async function cargarTemaColor(connection) {
     try {
         const response = await fetch(`${API_URL}/api/empresa/${connection}/config`);
-        const config = await response.json();
-        applyColorTheme(config.tema || 'rubi');
+        const data = await response.json().catch(() => ({}));
+
+        // Si el servidor responde con error 500/503, es problema de conexión a BD
+        if (!response.ok || data.error === 'connection_error') {
+            console.error('Error de conexión a BD Central:', data);
+            applyColorTheme(data.tema || 'rubi');
+            return false;
+        }
+
+        applyColorTheme(data.tema || 'rubi');
+        return true;
     } catch (error) {
-        console.log('Error cargando tema:', error);
+        console.error('Error cargando tema (posible problema de conexión):', error);
         applyColorTheme('rubi');
+        return false;
     }
+}
+
+// Mostrar error de conexión a BD Central
+function showConnectionError(connection) {
+    document.body.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #c0392b 0%, #8e2424 100%); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div style="background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 500px; text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">🔌</div>
+                <h1 style="color: #c0392b; margin-bottom: 1rem; font-size: 1.5rem;">Error de Conexión</h1>
+                <p style="color: #666; margin-bottom: 1.5rem; line-height: 1.6;">
+                    No se pudo conectar con el servidor central.<br>
+                    El servicio no está disponible en este momento.
+                </p>
+                <div style="background: #fff3e0; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; color: #e65100; font-size: 0.85rem; font-family: monospace;">
+                    <strong>Connection ID:</strong> ${connection || 'N/A'}
+                </div>
+                <div style="background: #ffebee; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; color: #c0392b; font-size: 0.9rem; text-align: left;">
+                    <strong>Posibles causas:</strong><br>
+                    • Base de datos central no disponible<br>
+                    • Empresa no configurada en BD Central<br>
+                    • Configuración de conexión incorrecta<br>
+                    • Problemas de red
+                </div>
+                <button onclick="location.reload()" style="background: #c0392b; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-right: 10px;">
+                    🔄 Reintentar
+                </button>
+            </div>
+        </div>
+    `;
 }
 
 // Mostrar error crítico cuando falta el parámetro connection
@@ -127,10 +173,35 @@ function showCriticalError() {
                     Esta aplicación requiere el parámetro <strong>connection</strong> en la URL para funcionar.
                 </p>
                 <div style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-family: 'Courier New', monospace; color: #333;">
-                    ${window.location.origin}${window.location.pathname}<strong style="color: #e74c3c;">?connection=10049</strong>
+                    ${window.location.origin}${window.location.pathname}<strong style="color: #e74c3c;">?connection=XXXXX</strong>
                 </div>
                 <p style="color: #999; font-size: 0.9rem;">
                     Por favor, contacte con el administrador del sistema para obtener la URL correcta.
+                </p>
+            </div>
+        </div>
+    `;
+}
+
+// Mostrar error cuando se usa parámetro 'empresa' en lugar de 'connection'
+function showInvalidParamError() {
+    document.body.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div style="background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 500px; text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">🚫</div>
+                <h1 style="color: #333; margin-bottom: 1rem; font-size: 1.5rem;">Parámetro Incorrecto</h1>
+                <p style="color: #666; margin-bottom: 1.5rem; line-height: 1.6;">
+                    El parámetro <strong style="color: #e74c3c;">empresa</strong> no es válido.
+                    Debe usar <strong style="color: #27ae60;">connection</strong> en su lugar.
+                </p>
+                <div style="background: #ffebee; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; font-family: 'Courier New', monospace; color: #c0392b; text-decoration: line-through;">
+                    ?empresa=XXXXX
+                </div>
+                <div style="background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-family: 'Courier New', monospace; color: #27ae60;">
+                    ?connection=XXXXX
+                </div>
+                <p style="color: #999; font-size: 0.9rem;">
+                    Por favor, actualice el enlace o contacte con el administrador.
                 </p>
             </div>
         </div>
@@ -174,6 +245,13 @@ async function initLogin() {
     // Capturar connection de la URL (OBLIGATORIO) - hacer esto primero
     const connection = getConnectionFromURL();
 
+    if (connection === 'INVALID_PARAM') {
+        // ERROR: Se usó 'empresa' en lugar de 'connection'
+        console.error('ERROR: Parámetro "empresa" no válido. Use "connection" en su lugar.');
+        showInvalidParamError();
+        return; // Detener la inicialización
+    }
+
     if (!connection) {
         // ERROR CRÍTICO: No hay parámetro connection
         console.error('ERROR: Parámetro connection obligatorio no encontrado en URL ni en localStorage');
@@ -182,7 +260,13 @@ async function initLogin() {
     }
 
     // Cargar tema de color (usa connection para conectar a BD del cliente)
-    await cargarTemaColor(connection);
+    // También verifica si la conexión a BD Central funciona
+    const conexionOk = await cargarTemaColor(connection);
+    if (!conexionOk) {
+        console.error('ERROR: No se pudo conectar con la BD Central');
+        showConnectionError(connection);
+        return; // Detener la inicialización
+    }
 
     // Inicializar i18n (necesario para mensajes)
     await I18n.init();

@@ -48,9 +48,9 @@ USER appuser
 # Puerto de la aplicacion
 EXPOSE 5000
 
-# Healthcheck
+# Healthcheck (usa /api/version que no requiere connection)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/api/registro-habilitado || exit 1
+    CMD curl -f http://localhost:5000/api/version || exit 1
 
 # Comando para ejecutar la aplicacion (gunicorn para produccion)
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--threads", "2", "--timeout", "120", "app:app"]

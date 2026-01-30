@@ -18,25 +18,43 @@ except ImportError:
 
 
 class DatabaseCentral:
-    """Conexión a la BD central que contiene la tabla empresa_cliente"""
+    """
+    Conexión a la BD central que contiene la tabla empresa_cliente.
 
-    DB_CONFIG = {
-        'server': os.environ.get('DB_CENTRAL_SERVER', '192.168.63.36,1434'),
-        'database': os.environ.get('DB_CENTRAL_NAME', 'jobers_control_usuarios'),
-        'username': os.environ.get('DB_CENTRAL_USER', 'sa'),
-        'password': os.environ.get('DB_CENTRAL_PASSWORD', 'Desa1'),
-        'driver': os.environ.get('DB_DRIVER', '{ODBC Driver 18 for SQL Server}'),
-    }
+    IMPORTANTE: Las variables de entorno son OBLIGATORIAS:
+    - DB_CENTRAL_SERVER: Servidor de BD central (ej: 127.0.0.1,1433)
+    - DB_CENTRAL_NAME: Nombre de la BD central
+    - DB_CENTRAL_USER: Usuario de BD
+    - DB_CENTRAL_PASSWORD: Contraseña de BD
+    - DB_DRIVER: Driver ODBC (opcional, default: ODBC Driver 18)
+    """
 
     @staticmethod
     def get_connection():
         """Crea y retorna una conexión a la BD central"""
+        # Leer variables de entorno (OBLIGATORIAS, sin valores por defecto)
+        server = os.environ.get('DB_CENTRAL_SERVER')
+        database = os.environ.get('DB_CENTRAL_NAME')
+        username = os.environ.get('DB_CENTRAL_USER')
+        password = os.environ.get('DB_CENTRAL_PASSWORD')
+        driver = os.environ.get('DB_DRIVER', '{ODBC Driver 18 for SQL Server}')
+
+        # Validar que las variables obligatorias estén definidas
+        if not server:
+            raise ValueError("DB_CENTRAL_SERVER no está configurado. Defina la variable de entorno.")
+        if not database:
+            raise ValueError("DB_CENTRAL_NAME no está configurado. Defina la variable de entorno.")
+        if not username:
+            raise ValueError("DB_CENTRAL_USER no está configurado. Defina la variable de entorno.")
+        if not password:
+            raise ValueError("DB_CENTRAL_PASSWORD no está configurado. Defina la variable de entorno.")
+
         conn_str = (
-            f"DRIVER={DatabaseCentral.DB_CONFIG['driver']};"
-            f"SERVER={DatabaseCentral.DB_CONFIG['server']};"
-            f"DATABASE={DatabaseCentral.DB_CONFIG['database']};"
-            f"UID={DatabaseCentral.DB_CONFIG['username']};"
-            f"PWD={DatabaseCentral.DB_CONFIG['password']};"
+            f"DRIVER={driver};"
+            f"SERVER={server};"
+            f"DATABASE={database};"
+            f"UID={username};"
+            f"PWD={password};"
             f"TrustServerCertificate=yes;"
             f"Encrypt=yes;"
         )

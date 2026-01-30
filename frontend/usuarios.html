@@ -1238,7 +1238,7 @@
             if (!confirm(t('users.confirmResendVerification'))) return;
 
             try {
-                const empresaId = localStorage.getItem('empresa_id');
+                const connection = localStorage.getItem('connection') || localStorage.getItem('empresa_id');
                 const response = await fetch(`${API_URL}/api/resend-verification`, {
                     method: 'POST',
                     credentials: 'include',
@@ -1246,7 +1246,7 @@
                         'Content-Type': 'application/json',
                         'X-CSRF-Token': csrfToken
                     },
-                    body: JSON.stringify({ email, empresa_id: empresaId })
+                    body: JSON.stringify({ email, connection: connection })
                 });
 
                 const data = await response.json();

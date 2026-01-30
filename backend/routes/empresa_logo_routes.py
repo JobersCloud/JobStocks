@@ -167,18 +167,40 @@ def get_config(empresa_id):
       200:
         description: Configuración de logo
     """
-    connection = empresa_id
-    empresa_id_val = get_empresa_id_from_connection(connection)
-    config = EmpresaLogoModel.get_config(empresa_id_val, connection)
-    if config:
-        return jsonify(config)
-    return jsonify({
-        'empresa_id': empresa_id_val,
-        'invertir_logo': False,
-        'tiene_logo': False,
-        'tiene_favicon': False,
-        'tema': 'rubi'
-    })
+    try:
+        connection = empresa_id
+        empresa_id_val = get_empresa_id_from_connection(connection)
+        config = EmpresaLogoModel.get_config(empresa_id_val, connection)
+        if config:
+            return jsonify(config)
+        return jsonify({
+            'empresa_id': empresa_id_val,
+            'invertir_logo': False,
+            'tiene_logo': False,
+            'tiene_favicon': False,
+            'tema': 'rubi'
+        })
+    except ValueError as e:
+        # Error de empresa no encontrada o conexión
+        return jsonify({
+            'error': 'connection_error',
+            'message': str(e),
+            'tema': 'rubi'
+        }), 503
+    except Exception as e:
+        # Error genérico de conexión
+        error_msg = str(e).lower()
+        if 'timeout' in error_msg or 'connection' in error_msg or 'network' in error_msg:
+            return jsonify({
+                'error': 'connection_error',
+                'message': 'Error de conexión con el servidor de base de datos',
+                'tema': 'rubi'
+            }), 503
+        return jsonify({
+            'error': 'server_error',
+            'message': str(e),
+            'tema': 'rubi'
+        }), 500
 
 
 @empresa_logo_bp.route('/<empresa_id>/invertir', methods=['GET'])

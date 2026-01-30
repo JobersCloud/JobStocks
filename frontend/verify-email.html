@@ -70,19 +70,49 @@
         // Usar el host completo de la URL actual (incluye puerto si existe)
         const API_URL = window.location.origin;
 
+        // Mostrar error cuando se usa parámetro 'empresa' en lugar de 'connection'
+        function showInvalidParamError() {
+            document.body.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                    <div style="background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 500px; text-align: center;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">🚫</div>
+                        <h1 style="color: #333; margin-bottom: 1rem; font-size: 1.5rem;">Parámetro Incorrecto</h1>
+                        <p style="color: #666; margin-bottom: 1.5rem; line-height: 1.6;">
+                            El parámetro <strong style="color: #e74c3c;">empresa</strong> no es válido.
+                            Debe usar <strong style="color: #27ae60;">connection</strong> en su lugar.
+                        </p>
+                        <p style="color: #999; font-size: 0.9rem;">
+                            Por favor, contacte con el administrador para obtener el enlace correcto.
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
         // Capturar connection de la URL y guardarlo en localStorage
         function capturarConnection() {
             const urlParams = new URLSearchParams(window.location.search);
-            // Aceptar tanto 'connection' como 'empresa' para compatibilidad
-            const connection = urlParams.get('connection') || urlParams.get('empresa');
+
+            // Si viene 'empresa' en lugar de 'connection', mostrar error
+            const empresaParam = urlParams.get('empresa');
+            if (empresaParam && !urlParams.get('connection')) {
+                return 'INVALID_PARAM';
+            }
+
+            const connection = urlParams.get('connection');
             if (connection) {
                 localStorage.setItem('connection', connection);
                 console.log(`📍 Connection capturada desde verificación: ${connection}`);
             }
-            return connection || localStorage.getItem('connection') || '1';
+            return connection || localStorage.getItem('connection') || null;
         }
 
         const connection = capturarConnection();
+
+        // Verificar si hay error de parámetro
+        if (connection === 'INVALID_PARAM' || !connection) {
+            showInvalidParamError();
+        }
 
         // Aplicar tema de color
         function applyColorTheme(tema) {
@@ -153,7 +183,7 @@
             }
 
             try {
-                const response = await fetch(`${API_URL}/api/verify-email?token=${token}`);
+                const response = await fetch(`${API_URL}/api/verify-email?token=${token}&connection=${connection}`);
                 const data = await response.json();
 
                 if (response.ok && data.success) {
@@ -190,11 +220,14 @@
         }
 
         // Inicializar: cargar tema, logo, i18n y luego verificar email
-        Promise.all([cargarTemaColor(), cargarLogoEmpresa()]).then(() => {
-            I18n.init().then(() => {
-                verificarEmail();
+        // Solo ejecutar si hay connection válido
+        if (connection && connection !== 'INVALID_PARAM') {
+            Promise.all([cargarTemaColor(), cargarLogoEmpresa()]).then(() => {
+                I18n.init().then(() => {
+                    verificarEmail();
+                });
             });
-        });
+        }
     </script>
 </body>
 </html>

@@ -72,7 +72,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.12.38'
+APP_VERSION = 'v1.12.56'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -378,6 +378,15 @@ def login():
         session['carrito'] = []
         session['user_id'] = user_data['id']
 
+        # ⭐ Guardar datos de conexión BD cliente en sesión (para no buscar en BD Central cada vez)
+        session['db_config'] = {
+            'dbserver': empresa_info.get('dbserver'),
+            'dbport': empresa_info.get('dbport'),
+            'dbname': empresa_info.get('dbname'),
+            'dblogin': empresa_info.get('dblogin'),
+            'dbpass': empresa_info.get('dbpass')
+        }
+
         # Eliminar sesiones anteriores del usuario (solo 1 sesión activa por usuario)
         try:
             UserSessionModel.delete_by_user_id(user_data['id'], connection)
@@ -549,6 +558,45 @@ def get_current_user():
         'empresa_nombre': session.get('empresa_nombre'),
         'cliente_id': getattr(current_user, 'cliente_id', None)
     })
+
+@app.route('/api/context-info')
+@login_required
+def get_context_info():
+    """
+    Obtener información de contexto/debug
+    ---
+    tags:
+      - Debug
+    security:
+      - cookieAuth: []
+    responses:
+      200:
+        description: Variables de contexto de la sesión
+    """
+    db_config = session.get('db_config', {})
+    # Ocultar password por seguridad
+    db_config_safe = {k: ('***' if k == 'dbpass' else v) for k, v in db_config.items()} if db_config else {}
+
+    return jsonify({
+        'user': {
+            'id': getattr(current_user, 'id', None),
+            'username': current_user.username,
+            'full_name': current_user.full_name,
+            'email': current_user.email,
+            'rol': current_user.rol,
+            'cliente_id': getattr(current_user, 'cliente_id', None)
+        },
+        'session': {
+            'connection': session.get('connection'),
+            'empresa_id': session.get('empresa_id'),
+            'empresa_nombre': session.get('empresa_nombre'),
+            'user_id': session.get('user_id'),
+            'session_token': session.get('session_token', '')[:20] + '...' if session.get('session_token') else None
+        },
+        'db_config': db_config_safe,
+        'has_db_config': bool(db_config and db_config.get('dbserver'))
+    })
+
 
 @app.route('/api/version')
 def get_version():

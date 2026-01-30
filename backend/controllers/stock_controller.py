@@ -15,7 +15,7 @@
 # ============================================
 # ARCHIVO: controllers/stock_controller.py
 # ============================================
-from flask import jsonify, request
+from flask import jsonify, request, session
 from models.stock_model import StockModel
 
 
@@ -27,7 +27,14 @@ class StockController:
             stocks = StockModel.get_all()
             return jsonify(stocks), 200
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            # Incluir info de debug en el error
+            db_config = session.get('db_config', {})
+            server = db_config.get('dbserver', 'NO DEFINIDO')
+            dbname = db_config.get('dbname', 'NO DEFINIDO')
+            empresa_id = session.get('empresa_id', 'NO DEFINIDO')
+            error_msg = f"{str(e)} [Server: {server}, DB: {dbname}, Empresa: {empresa_id}]"
+            print(f"[ERROR] get_all: {error_msg}")
+            return jsonify({"error": error_msg}), 500
 
     @staticmethod
     def get_by_codigo(codigo):
@@ -82,7 +89,14 @@ class StockController:
                                        order_by=order_by, order_dir=order_dir)
             return jsonify(result), 200
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            # Incluir info de debug en el error
+            db_config = session.get('db_config', {})
+            server = db_config.get('dbserver', 'NO DEFINIDO')
+            dbname = db_config.get('dbname', 'NO DEFINIDO')
+            empresa_id = session.get('empresa_id', 'NO DEFINIDO')
+            error_msg = f"{str(e)} [Server: {server}, DB: {dbname}, Empresa: {empresa_id}]"
+            print(f"[ERROR] search: {error_msg}")
+            return jsonify({"error": error_msg}), 500
 
     @staticmethod
     def get_resumen():

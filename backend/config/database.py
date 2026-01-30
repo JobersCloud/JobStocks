@@ -59,14 +59,35 @@ class Database:
         Raises:
             ValueError: Si no hay empresa en contexto o no existe
         """
-        # Si no se pasa, obtener de la sesión de Flask
+        from flask import session, has_request_context
+
+        # ⭐ PRIMERO: Intentar usar datos de conexión ya cacheados en sesión
+        if has_request_context():
+            db_config = session.get('db_config')
+            if db_config and db_config.get('dbserver'):
+                # Ya tenemos los datos de conexión en sesión, usarlos directamente
+                server = db_config['dbserver']
+                if db_config.get('dbport') and db_config['dbport'] != 1433:
+                    server = f"{server},{db_config['dbport']}"
+
+                conn_str = (
+                    f"DRIVER={Database.DEFAULT_DRIVER};"
+                    f"SERVER={server};"
+                    f"DATABASE={db_config['dbname']};"
+                    f"UID={db_config['dblogin']};"
+                    f"PWD={db_config['dbpass']};"
+                    f"TrustServerCertificate=yes;"
+                    f"Encrypt=yes;"
+                )
+                return pyodbc.connect(conn_str)
+
+        # Si no hay datos en sesión, obtener empresa_cli_id
         if empresa_cli_id is None:
-            from flask import session, has_request_context
             if has_request_context():
                 empresa_cli_id = session.get('connection')
 
         if empresa_cli_id is None:
-            raise ValueError("No hay empresa en contexto. Accede con ?empresa=X primero.")
+            raise ValueError("No hay empresa en contexto. Accede con ?connection=X primero.")
 
         # Importar aquí para evitar imports circulares
         from models.empresa_cliente_model import EmpresaClienteModel

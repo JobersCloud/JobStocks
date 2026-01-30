@@ -15,10 +15,11 @@
 # ============================================
 # ARCHIVO: routes/register_routes.py
 # ============================================
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from werkzeug.security import generate_password_hash
 from models.parametros_model import ParametrosModel
 from models.email_config_model import EmailConfigModel
+from models.audit_model import AuditModel, AuditAction, AuditResult
 from config.database import Database
 from datetime import datetime, timedelta
 import secrets
@@ -37,8 +38,8 @@ with open(PAISES_FILE, 'r', encoding='utf-8') as f:
     PAISES = json.load(f)
 
 def get_connection():
-    """Obtiene el connection del request (ID de conexión)"""
-    # Aceptar 'connection', 'empresa_cli_id', 'empresa_id' o 'empresa' para compatibilidad
+    """Obtiene el connection del request o de la sesión (ID de conexión)"""
+    # 1. Buscar en query params
     connection = (request.args.get('connection') or
                   request.args.get('empresa_cli_id') or
                   request.args.get('empresa_id') or
@@ -46,7 +47,7 @@ def get_connection():
     if connection:
         return connection
 
-    # Buscar en el body si es JSON
+    # 2. Buscar en el body si es JSON
     if request.is_json:
         data = request.get_json(silent=True)
         if data:
@@ -57,8 +58,12 @@ def get_connection():
             if connection:
                 return connection
 
-    # Default
-    return '10049'
+    # 3. Buscar en la sesión (si el usuario está logueado)
+    if 'connection' in session:
+        return session['connection']
+
+    # Sin connection definido - devolver None (el llamador debe manejarlo)
+    return None
 
 def get_empresa_id_from_connection(connection):
     """Obtiene el empresa_id desde el connection"""
@@ -179,8 +184,8 @@ def register():
       409:
         description: Usuario o email ya existe
     """
-    empresa_id = get_empresa_id()
     connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
 
     # Verificar si el registro está habilitado
     if not ParametrosModel.permitir_registro(empresa_id, connection):
@@ -227,8 +232,6 @@ def register():
             'message': 'País inválido'
         }), 400
 
-    print(f"[DEBUG] Registro - connection: {connection}, empresa_id: {empresa_id}")
-    # Conectar a la BD del cliente donde está la tabla users
     conn = Database.get_connection(connection)
     cursor = conn.cursor()
 
@@ -271,6 +274,21 @@ def register():
 
         conn.commit()
         print(f"✅ Usuario {username} (id: {user_id}) registrado y asignado a empresa {empresa_id}")
+
+        # Log de auditoría - registro exitoso
+        AuditModel.log(
+            accion=AuditAction.USER_REGISTER,
+            user_id=user_id,
+            username=username,
+            empresa_id=empresa_id,
+            connection_id=connection,
+            recurso='user',
+            recurso_id=str(user_id),
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get('User-Agent'),
+            detalles={'email': email, 'full_name': full_name, 'pais': pais},
+            resultado=AuditResult.SUCCESS
+        )
 
         # Enviar email de verificación
         try:
@@ -327,8 +345,8 @@ def resend_verification():
       429:
         description: Demasiados intentos
     """
-    empresa_id = get_empresa_id()
     connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
     data = request.get_json()
     email = data.get('email', '').strip().lower()
 
@@ -337,16 +355,6 @@ def resend_verification():
             'success': False,
             'message': 'Email requerido'
         }), 400
-
-    print(f"[DEBUG] Resend verification - connection: {connection}, empresa_id: {empresa_id}")
-
-    # Debug: ver a qué BD se conecta
-    from models.empresa_cliente_model import EmpresaClienteModel
-    empresa_info = EmpresaClienteModel.get_by_id(connection)
-    if empresa_info:
-        print(f"[DEBUG] Conectando a: {empresa_info.get('dbserver')}:{empresa_info.get('dbport')} / {empresa_info.get('dbname')}")
-    else:
-        print(f"[DEBUG] ERROR: No se encontró empresa con connection={connection}")
 
     conn = Database.get_connection(connection)
     cursor = conn.cursor()
@@ -384,6 +392,22 @@ def resend_verification():
         # Reenviar email
         try:
             enviar_email_verificacion(email, full_name, new_token, empresa_id, connection)
+
+            # Log de auditoría - reenvío exitoso
+            AuditModel.log(
+                accion=AuditAction.USER_RESEND_VERIFICATION,
+                user_id=user_id,
+                username=email,
+                empresa_id=empresa_id,
+                connection_id=connection,
+                recurso='user',
+                recurso_id=str(user_id),
+                ip_address=request.remote_addr,
+                user_agent=request.headers.get('User-Agent'),
+                detalles={'email': email, 'full_name': full_name},
+                resultado=AuditResult.SUCCESS
+            )
+
             return jsonify({
                 'success': True,
                 'message': 'Email de verificación reenviado. Revisa tu bandeja de entrada.'
@@ -422,8 +446,8 @@ def verify_email():
       - name: connection
         in: query
         type: string
-        required: true
-        description: ID de conexión (empresa_cli_id)
+        required: false
+        description: ID de conexión a BD del cliente
     responses:
       200:
         description: Email verificado
@@ -431,16 +455,7 @@ def verify_email():
         description: Token inválido o expirado
     """
     token = request.args.get('token')
-    # Obtener connection (empresa_cli_id) - aceptar varios nombres para compatibilidad
-    connection = (request.args.get('connection') or
-                  request.args.get('empresa') or
-                  request.args.get('empresa_id'))
-
-    if not token:
-        return jsonify({
-            'success': False,
-            'message': 'Token requerido'
-        }), 400
+    connection = request.args.get('connection') or request.args.get('empresa') or request.args.get('empresa_id')
 
     if not connection:
         return jsonify({
@@ -448,44 +463,33 @@ def verify_email():
             'message': 'Connection requerido'
         }), 400
 
-    # Obtener empresa_erp desde el connection
     empresa_id = get_empresa_id_from_connection(connection)
-    print(f"[DEBUG] verify_email - connection: {connection}, empresa_id (erp): {empresa_id}")
 
-    # Conectar a la BD usando el connection
+    if not token:
+        return jsonify({
+            'success': False,
+            'message': 'Token requerido'
+        }), 400
+
     conn = Database.get_connection(connection)
     cursor = conn.cursor()
 
     try:
         # Buscar usuario con el token
-        print(f"[DEBUG] Buscando token: {token[:20]}...")
         cursor.execute("""
-            SELECT id, email, token_expiracion, email_verificado FROM users
-            WHERE token_verificacion = ?
+            SELECT id, email, full_name, token_expiracion FROM users
+            WHERE token_verificacion = ? AND email_verificado = 0
         """, (token,))
 
         row = cursor.fetchone()
 
         if not row:
-            # Buscar si el token existe pero ya fue usado
-            cursor.execute("SELECT id, email, email_verificado FROM users WHERE email LIKE '%@%'")
-            total_users = len(cursor.fetchall())
-            print(f"[DEBUG] Token no encontrado. Total usuarios en BD: {total_users}")
             return jsonify({
                 'success': False,
                 'message': 'Token inválido o ya utilizado'
             }), 400
 
-        user_id, email, token_expiracion, email_verificado = row
-        print(f"[DEBUG] Usuario encontrado: id={user_id}, email={email}, verificado={email_verificado}")
-
-        if email_verificado:
-            return jsonify({
-                'success': False,
-                'message': 'Este email ya ha sido verificado anteriormente'
-            }), 400
-
-        user_id, email, token_expiracion = row
+        user_id, email, full_name, token_expiracion = row
 
         # Verificar si el token ha expirado
         if token_expiracion and datetime.now() > token_expiracion:
@@ -515,6 +519,29 @@ def verify_email():
             print(f"✅ Usuario {user_id} asignado a empresa {empresa_id}")
 
         conn.commit()
+
+        # Log de auditoría - verificación exitosa
+        AuditModel.log(
+            accion=AuditAction.USER_EMAIL_VERIFY,
+            user_id=user_id,
+            username=email,
+            empresa_id=empresa_id,
+            connection_id=connection,
+            recurso='user',
+            recurso_id=str(user_id),
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get('User-Agent'),
+            detalles={'email': email, 'full_name': full_name},
+            resultado=AuditResult.SUCCESS
+        )
+
+        # Enviar email de bienvenida
+        try:
+            enviar_email_bienvenida(email, full_name, empresa_id, connection)
+            print(f"✅ Email de bienvenida enviado a {email}")
+        except Exception as e:
+            print(f"⚠️ Error al enviar email de bienvenida: {e}")
+            # No fallar la verificación si el email de bienvenida no se envía
 
         return jsonify({
             'success': True,
@@ -572,7 +599,7 @@ def enviar_email_verificacion(email, nombre, token, empresa_id="1", connection=N
     print(f"   Base URL final: {base_url}")
     print(f"   Connection: {connection}")
 
-    # Usar connection en la URL (es el ID para conectar a la BD correcta)
+    # Usar connection en la URL de verificación
     verify_url = f"{base_url}/verificar-email?token={token}&connection={connection}"
 
     msg = MIMEMultipart()
@@ -663,4 +690,81 @@ def enviar_email_verificacion(email, nombre, token, empresa_id="1", connection=N
         raise Exception(f"Error SMTP: {e}")
     except Exception as e:
         print(f"❌ Error general al enviar email: {e}")
+        raise
+
+
+def enviar_email_bienvenida(email, nombre, empresa_id="1", connection=None):
+    """Envía el email de bienvenida tras verificar la cuenta"""
+    email_config = EmailConfigModel.get_active_config(empresa_id, connection)
+
+    if not email_config:
+        raise Exception("No hay configuración de email activa")
+
+    # Construir URL del login
+    base_url = get_base_url()
+    login_url = f"{base_url}/login?connection={connection}"
+
+    msg = MIMEMultipart()
+    msg['From'] = f"Sistema de Stocks <{email_config['email_from']}>"
+    msg['To'] = email
+    msg['Subject'] = "¡Cuenta activada! - Sistema de Gestión de Stocks"
+    msg['Date'] = formatdate(localtime=True)
+    msg['Message-ID'] = f"<{secrets.token_urlsafe(16)}@jobers.net>"
+    msg['Reply-To'] = email_config['email_from']
+    msg['X-Mailer'] = 'Sistema de Gestión de Stocks v1.0'
+
+    body = f"""
+    <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+                          padding: 30px; text-align: center; color: white; border-radius: 10px 10px 0 0; }}
+                .content {{ background-color: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+                .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
+                .check-icon {{ font-size: 48px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div class="check-icon">✓</div>
+                    <h1>¡Cuenta Activada!</h1>
+                </div>
+                <div class="content">
+                    <p>Hola <strong>{nombre}</strong>,</p>
+                    <p>Tu cuenta ha sido verificada y activada correctamente.</p>
+                    <p>Ya puedes acceder al Sistema de Gestión de Stocks con tus credenciales.</p>
+                    <p style="text-align: center;">
+                        <a href="{login_url}" style="display: inline-block; background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); color: #ffffff !important; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold;">Iniciar Sesión</a>
+                    </p>
+                    <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+                </div>
+                <div class="footer">
+                    <p>© {datetime.now().year} - Sistema de Gestión de Stocks</p>
+                </div>
+            </div>
+        </body>
+    </html>
+    """
+
+    msg.attach(MIMEText(body, 'html'))
+
+    # Enviar email
+    try:
+        print(f"📧 Enviando email de bienvenida a: {email}")
+
+        if email_config['smtp_port'] == 465:
+            server = smtplib.SMTP_SSL(email_config['smtp_server'], email_config['smtp_port'])
+        else:
+            server = smtplib.SMTP(email_config['smtp_server'], email_config['smtp_port'])
+            server.starttls()
+
+        server.login(email_config['email_from'], email_config['email_password'])
+        server.send_message(msg)
+        print(f"✅ Email de bienvenida enviado a {email}")
+        server.quit()
+    except Exception as e:
+        print(f"❌ Error al enviar email de bienvenida: {e}")
         raise
