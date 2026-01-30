@@ -183,7 +183,7 @@ def register():
     connection = get_connection()
 
     # Verificar si el registro está habilitado
-    if not ParametrosModel.permitir_registro(empresa_id):
+    if not ParametrosModel.permitir_registro(empresa_id, connection):
         return jsonify({
             'success': False,
             'message': 'El registro de usuarios no está habilitado'
