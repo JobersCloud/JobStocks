@@ -228,6 +228,7 @@ def register():
         }), 400
 
     print(f"[DEBUG] Registro - connection: {connection}, empresa_id: {empresa_id}")
+    # Conectar a la BD del cliente donde está la tabla users
     conn = Database.get_connection(connection)
     cursor = conn.cursor()
 
@@ -338,6 +339,15 @@ def resend_verification():
         }), 400
 
     print(f"[DEBUG] Resend verification - connection: {connection}, empresa_id: {empresa_id}")
+
+    # Debug: ver a qué BD se conecta
+    from models.empresa_cliente_model import EmpresaClienteModel
+    empresa_info = EmpresaClienteModel.get_by_id(connection)
+    if empresa_info:
+        print(f"[DEBUG] Conectando a: {empresa_info.get('dbserver')}:{empresa_info.get('dbport')} / {empresa_info.get('dbname')}")
+    else:
+        print(f"[DEBUG] ERROR: No se encontró empresa con connection={connection}")
+
     conn = Database.get_connection(connection)
     cursor = conn.cursor()
 
