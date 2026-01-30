@@ -13,16 +13,17 @@ if (hostname === 'localhost' || hostname === '127.0.0.1') {
     API_URL = `${protocol}//${hostname}${port ? ':' + port : ''}`;
 }
 
-// Capturar empresa_id de la URL
-function getEmpresaFromURL() {
+// Capturar connection de la URL (y empresa para compatibilidad)
+function getConnectionFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
-    const empresa = urlParams.get('empresa');
+    // Aceptar tanto 'connection' como 'empresa' para compatibilidad
+    const connection = urlParams.get('connection') || urlParams.get('empresa');
 
-    if (empresa) {
-        localStorage.setItem('empresa_id', empresa);
-        return empresa;
+    if (connection) {
+        localStorage.setItem('connection', connection);
+        return connection;
     } else {
-        return localStorage.getItem('empresa_id') || '1';
+        return localStorage.getItem('connection') || localStorage.getItem('empresa_id') || '1';
     }
 }
 
@@ -132,13 +133,13 @@ async function initRegister() {
     // Cargar tema oscuro/claro inmediatamente
     loadTheme();
 
-    // Capturar empresa de la URL
-    const empresaId = getEmpresaFromURL();
-    console.log(`Registro con empresa_id: ${empresaId}`);
+    // Capturar connection de la URL
+    const connection = getConnectionFromURL();
+    console.log(`Registro con connection: ${connection}`);
 
-    // Cargar tema de color y logo de la empresa
-    await cargarTemaColor(empresaId);
-    await cargarLogoEmpresa(empresaId);
+    // Cargar tema de color y logo de la empresa (usan connection para la API)
+    await cargarTemaColor(connection);
+    await cargarLogoEmpresa(connection);
 
     await I18n.init();
     verificarRegistroHabilitado();
@@ -202,13 +203,15 @@ function setupRegisterForm() {
 
         // Obtener datos del formulario
         const empresaId = localStorage.getItem('empresa_id') || '1';
+        const connection = localStorage.getItem('connection') || localStorage.getItem('empresa_id') || '1';
         const formData = {
             full_name: document.getElementById('full_name').value.trim(),
             username: document.getElementById('username').value.trim(),
             email: document.getElementById('email').value.trim(),
             pais: document.getElementById('pais').value,
             password: document.getElementById('password').value,
-            empresa_id: empresaId
+            empresa_id: empresaId,
+            connection: connection
         };
 
         const passwordConfirm = document.getElementById('password_confirm').value;

@@ -70,18 +70,19 @@
         // Usar el host completo de la URL actual (incluye puerto si existe)
         const API_URL = window.location.origin;
 
-        // Capturar empresa_id de la URL y guardarlo en localStorage
-        function capturarEmpresaId() {
+        // Capturar connection de la URL y guardarlo en localStorage
+        function capturarConnection() {
             const urlParams = new URLSearchParams(window.location.search);
-            const empresaId = urlParams.get('empresa');
-            if (empresaId) {
-                localStorage.setItem('empresa_id', empresaId);
-                console.log(`📍 Empresa capturada desde verificación: ${empresaId}`);
+            // Aceptar tanto 'connection' como 'empresa' para compatibilidad
+            const connection = urlParams.get('connection') || urlParams.get('empresa');
+            if (connection) {
+                localStorage.setItem('connection', connection);
+                console.log(`📍 Connection capturada desde verificación: ${connection}`);
             }
-            return empresaId || localStorage.getItem('empresa_id') || '1';
+            return connection || localStorage.getItem('connection') || '1';
         }
 
-        const empresaId = capturarEmpresaId();
+        const connection = capturarConnection();
 
         // Aplicar tema de color
         function applyColorTheme(tema) {
@@ -113,7 +114,7 @@
         // Cargar tema de color desde la API
         async function cargarTemaColor() {
             try {
-                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/config`);
+                const response = await fetch(`${API_URL}/api/empresa/${connection}/config`);
                 const config = await response.json();
                 applyColorTheme(config.tema || 'rubi');
             } catch (error) {
@@ -125,11 +126,11 @@
         // Cargar logo de la empresa desde la BD
         async function cargarLogoEmpresa() {
             try {
-                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/logo/exists`);
+                const response = await fetch(`${API_URL}/api/empresa/${connection}/logo/exists`);
                 const data = await response.json();
 
                 if (data.exists) {
-                    const logoUrl = `${API_URL}/api/empresa/${empresaId}/logo`;
+                    const logoUrl = `${API_URL}/api/empresa/${connection}/logo`;
                     const sidebarLogo = document.getElementById('sidebar-logo');
                     const mobileLogo = document.getElementById('mobile-logo');
 
@@ -168,7 +169,7 @@
 
         function mostrarExito(mensaje) {
             const content = document.getElementById('verify-content');
-            const loginUrl = `/login?empresa=${empresaId}`;
+            const loginUrl = `/login?connection=${connection}`;
             content.innerHTML = `
                 <div class="verify-icon success">✓</div>
                 <h1 class="verify-title">${t('verification.verified')}</h1>
@@ -179,7 +180,7 @@
 
         function mostrarError(titulo, mensaje) {
             const content = document.getElementById('verify-content');
-            const loginUrl = `/login?empresa=${empresaId}`;
+            const loginUrl = `/login?connection=${connection}`;
             content.innerHTML = `
                 <div class="verify-icon error">✗</div>
                 <h1 class="verify-title">${titulo}</h1>

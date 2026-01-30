@@ -180,6 +180,7 @@ def register():
         description: Usuario o email ya existe
     """
     empresa_id = get_empresa_id()
+    connection = get_connection()
 
     # Verificar si el registro está habilitado
     if not ParametrosModel.permitir_registro(empresa_id):
@@ -271,7 +272,7 @@ def register():
 
         # Enviar email de verificación
         try:
-            enviar_email_verificacion(email, full_name, token, empresa_id)
+            enviar_email_verificacion(email, full_name, token, empresa_id, connection)
         except Exception as e:
             print(f"Error al enviar email de verificación: {e}")
             # No fallar el registro si el email no se envía
@@ -325,6 +326,7 @@ def resend_verification():
         description: Demasiados intentos
     """
     empresa_id = get_empresa_id()
+    connection = get_connection()
     data = request.get_json()
     email = data.get('email', '').strip().lower()
 
@@ -369,7 +371,7 @@ def resend_verification():
 
         # Reenviar email
         try:
-            enviar_email_verificacion(email, full_name, new_token, empresa_id)
+            enviar_email_verificacion(email, full_name, new_token, empresa_id, connection)
             return jsonify({
                 'success': True,
                 'message': 'Email de verificación reenviado. Revisa tu bandeja de entrada.'
@@ -512,7 +514,7 @@ def get_base_url():
     return f"{proto}://{host}"
 
 
-def enviar_email_verificacion(email, nombre, token, empresa_id="1"):
+def enviar_email_verificacion(email, nombre, token, empresa_id="1", connection=None):
     """Envía el email de verificación"""
     email_config = EmailConfigModel.get_active_config(empresa_id)
 
@@ -528,8 +530,10 @@ def enviar_email_verificacion(email, nombre, token, empresa_id="1"):
     print(f"   request.scheme: {request.scheme}")
     print(f"   request.host: {request.host}")
     print(f"   Base URL final: {base_url}")
+    print(f"   Connection: {connection}")
 
-    verify_url = f"{base_url}/verificar-email?token={token}&empresa={empresa_id}"
+    # Usar connection en la URL (es el ID para conectar a la BD correcta)
+    verify_url = f"{base_url}/verificar-email?token={token}&connection={connection}"
 
     msg = MIMEMultipart()
     msg['From'] = f"Sistema de Stocks <{email_config['email_from']}>"
