@@ -227,7 +227,8 @@ def register():
             'message': 'País inválido'
         }), 400
 
-    conn = Database.get_connection()
+    print(f"[DEBUG] Registro - connection: {connection}, empresa_id: {empresa_id}")
+    conn = Database.get_connection(connection)
     cursor = conn.cursor()
 
     try:
@@ -336,7 +337,8 @@ def resend_verification():
             'message': 'Email requerido'
         }), 400
 
-    conn = Database.get_connection()
+    print(f"[DEBUG] Resend verification - connection: {connection}, empresa_id: {empresa_id}")
+    conn = Database.get_connection(connection)
     cursor = conn.cursor()
 
     try:
@@ -407,11 +409,11 @@ def verify_email():
         type: string
         required: true
         description: Token de verificación
-      - name: empresa
+      - name: connection
         in: query
         type: string
-        required: false
-        description: ID de la empresa
+        required: true
+        description: ID de conexión (empresa_cli_id)
     responses:
       200:
         description: Email verificado
@@ -419,7 +421,10 @@ def verify_email():
         description: Token inválido o expirado
     """
     token = request.args.get('token')
-    empresa_id = request.args.get('empresa') or request.args.get('empresa_id') or '1'
+    # Obtener connection (empresa_cli_id) - aceptar varios nombres para compatibilidad
+    connection = (request.args.get('connection') or
+                  request.args.get('empresa') or
+                  request.args.get('empresa_id'))
 
     if not token:
         return jsonify({
@@ -427,22 +432,47 @@ def verify_email():
             'message': 'Token requerido'
         }), 400
 
-    conn = Database.get_connection()
+    if not connection:
+        return jsonify({
+            'success': False,
+            'message': 'Connection requerido'
+        }), 400
+
+    # Obtener empresa_erp desde el connection
+    empresa_id = get_empresa_id_from_connection(connection)
+    print(f"[DEBUG] verify_email - connection: {connection}, empresa_id (erp): {empresa_id}")
+
+    # Conectar a la BD usando el connection
+    conn = Database.get_connection(connection)
     cursor = conn.cursor()
 
     try:
         # Buscar usuario con el token
+        print(f"[DEBUG] Buscando token: {token[:20]}...")
         cursor.execute("""
-            SELECT id, email, token_expiracion FROM users
-            WHERE token_verificacion = ? AND email_verificado = 0
+            SELECT id, email, token_expiracion, email_verificado FROM users
+            WHERE token_verificacion = ?
         """, (token,))
 
         row = cursor.fetchone()
 
         if not row:
+            # Buscar si el token existe pero ya fue usado
+            cursor.execute("SELECT id, email, email_verificado FROM users WHERE email LIKE '%@%'")
+            total_users = len(cursor.fetchall())
+            print(f"[DEBUG] Token no encontrado. Total usuarios en BD: {total_users}")
             return jsonify({
                 'success': False,
                 'message': 'Token inválido o ya utilizado'
+            }), 400
+
+        user_id, email, token_expiracion, email_verificado = row
+        print(f"[DEBUG] Usuario encontrado: id={user_id}, email={email}, verificado={email_verificado}")
+
+        if email_verificado:
+            return jsonify({
+                'success': False,
+                'message': 'Este email ya ha sido verificado anteriormente'
             }), 400
 
         user_id, email, token_expiracion = row
