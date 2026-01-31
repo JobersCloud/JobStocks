@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoría - Administración</title>
+    <script>
+        // Inyectar colores del tema ANTES del CSS para evitar flash
+        (function () {
+            const themes = {
+                'rubi': { primary: '#FF4338', primaryDark: '#D32F2F', primaryLight: '#FF6B6B' },
+                'zafiro': { primary: '#2196F3', primaryDark: '#1565C0', primaryLight: '#64B5F6' },
+                'esmeralda': { primary: '#4CAF50', primaryDark: '#2E7D32', primaryLight: '#81C784' },
+                'amatista': { primary: '#9C27B0', primaryDark: '#6A1B9A', primaryLight: '#BA68C8' },
+                'ambar': { primary: '#FF9800', primaryDark: '#E65100', primaryLight: '#FFB74D' },
+                'grafito': { primary: '#607D8B', primaryDark: '#37474F', primaryLight: '#90A4AE' },
+                'corporativo': { primary: '#1a365d', primaryDark: '#0d1b2a', primaryLight: '#2c5282' },
+                'ejecutivo': { primary: '#2d3748', primaryDark: '#1a202c', primaryLight: '#4a5568' },
+                'oceano': { primary: '#0077b6', primaryDark: '#023e8a', primaryLight: '#0096c7' },
+                'bosque': { primary: '#2d6a4f', primaryDark: '#1b4332', primaryLight: '#40916c' },
+                'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
+                'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
+                'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
+                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' }
+            };
+            const theme = localStorage.getItem('theme') || 'dark';
+            const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
+            const colors = themes[colorTheme] || themes['rubi'];
+
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-color-theme', colorTheme);
+
+            const style = document.createElement('style');
+            style.id = 'theme-colors-inline';
+            style.textContent = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
+            document.head.appendChild(style);
+
+            const faviconUrl = localStorage.getItem('faviconUrl');
+            if (faviconUrl) {
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                link.href = faviconUrl;
+                document.head.appendChild(link);
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="css/styles.css?v=1.12.28">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Header Superior FIJO -->
+        <header class="top-header">
+            <div class="top-header-left">
+                <button class="mobile-menu-btn" onclick="toggleSidebarMobile()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="header-logo">
+                    <img src="" alt="Logo" id="header-logo">
+                    <span class="header-logo-text" id="header-company-name">Stocks</span>
+                </div>
+                <div class="header-divider"></div>
+                <div>
+                    <h1 class="top-header-title" data-i18n="menu.audit">Auditoría</h1>
+                </div>
+            </div>
+            <div class="top-header-right">
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">
+                    <span id="theme-icon">🌙</span>
+                </button>
+                <div class="menu-container">
+                    <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
+                        <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span class="user-name-display" id="user-name-display">Usuario</span>
+                    </button>
+                    <div class="menu-dropdown" id="menu-dropdown">
+                        <div class="menu-header">
+                            <div class="user-name" id="menu-user-name">Usuario</div>
+                            <div class="user-rol" id="menu-user-rol">usuario</div>
+                        </div>
+                        <div class="menu-divider"></div>
+                        <div class="menu-item menu-item-lang">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                            <select id="lang-selector" class="lang-selector-menu" onchange="I18n.setLanguage(this.value)">
+                                <option value="es">Español</option>
+                                <option value="en">English</option>
+                                <option value="fr">Français</option>
+                            </select>
+                        </div>
+                        <div class="menu-divider"></div>
+                        <a class="menu-item menu-item-logout" onclick="logout()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            <span data-i18n="menu.logout">Cerrar Sesión</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-toggle-container">
+                <button class="sidebar-toggle" title="Ctrl+B">☰</button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="sidebar-section">
+                    <a class="sidebar-item" data-page="index.html" data-tooltip="Stocks" onclick="SidebarNav.navigateTo('index.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.stocks">Stocks</span>
+                    </a>
+                    <a class="sidebar-item" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.myProposals">Mis Propuestas</span>
+                    </a>
+                </div>
+
+                <!-- Acordeón Administración -->
+                <div class="sidebar-accordion expanded" id="sidebar-admin-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                            <span data-i18n="menu.administration">Administración</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="dashboard.html" data-tooltip="Dashboard" onclick="SidebarNav.navigateTo('dashboard.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.dashboard">Dashboard</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allProposals">Propuestas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-consultas.html" data-tooltip="Consultas" onclick="SidebarNav.navigateTo('todas-consultas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allInquiries">Consultas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="usuarios.html" data-tooltip="Usuarios" onclick="SidebarNav.navigateTo('usuarios.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.users">Usuarios</span>
+                        </a>
+                        <a class="sidebar-item active" data-page="auditoria.html" data-tooltip="Auditoría" onclick="SidebarNav.navigateTo('auditoria.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.audit">Auditoría</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Acordeón Configuración -->
+                <div class="sidebar-accordion" id="sidebar-config-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                            <span data-i18n="menu.settings">Configuración</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="email-config.html" data-tooltip="Email" onclick="SidebarNav.navigateTo('email-config.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.emailConfig">Email</span>
+                        </a>
+                        <a class="sidebar-item" data-page="parametros.html" data-tooltip="Parámetros" onclick="SidebarNav.navigateTo('parametros.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.parameters">Parámetros</span>
+                        </a>
+                        <a class="sidebar-item" data-page="empresa-logo.html" data-tooltip="Logo" onclick="SidebarNav.navigateTo('empresa-logo.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.companyLogo">Logo</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Footer del Sidebar -->
+            <div class="sidebar-footer">
+                <a class="sidebar-item" data-tooltip="Cerrar Sesión" onclick="logout()">
+                    <span class="sidebar-item-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </span>
+                    <span class="sidebar-item-text" data-i18n="menu.logout">Cerrar Sesión</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Overlay para móvil -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebarMobile()"></div>
+
+        <!-- Main Content -->
+        <div class="main-wrapper">
+            <main class="main-content-area">
+                <div class="audit-page-container">
+                    <!-- Sección: Sesiones Activas -->
+                    <section class="audit-section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                Sesiones Activas (<span id="sessions-count">0</span>)
+                            </h2>
+                            <div class="section-actions">
+                                <button class="btn btn-secondary" onclick="loadSessions()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <polyline points="23 4 23 10 17 10"></polyline>
+                                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                                    </svg>
+                                    Actualizar
+                                </button>
+                                <button class="btn btn-danger" onclick="killAllSessionsExceptCurrent()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                                    </svg>
+                                    Cerrar Todas
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="audit-table" id="sessions-table">
+                                <thead>
+                                    <tr>
+                                        <th>Usuario</th>
+                                        <th>Nombre</th>
+                                        <th>Rol</th>
+                                        <th>IP</th>
+                                        <th>Inicio</th>
+                                        <th>Última Actividad</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sessions-body"></tbody>
+                            </table>
+                            <div class="cards-container" id="sessions-cards"></div>
+                            <div id="sessions-empty" class="empty-message" style="display: none;">No hay sesiones activas</div>
+                        </div>
+                    </section>
+
+                    <!-- Sección: Logs de Auditoría -->
+                    <section class="audit-section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                                Logs de Auditoría
+                            </h2>
+                            <div class="section-actions">
+                                <button class="btn btn-secondary" onclick="loadAuditLogs()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <polyline points="23 4 23 10 17 10"></polyline>
+                                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                                    </svg>
+                                    Actualizar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Filtros -->
+                        <div class="filters-container">
+                            <div class="filter-group">
+                                <label>Desde</label>
+                                <input type="date" id="audit-fecha-desde">
+                            </div>
+                            <div class="filter-group">
+                                <label>Hasta</label>
+                                <input type="date" id="audit-fecha-hasta">
+                            </div>
+                            <div class="filter-group">
+                                <label>Acción</label>
+                                <select id="audit-accion"><option value="">Todas</option></select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Resultado</label>
+                                <select id="audit-resultado">
+                                    <option value="">Todos</option>
+                                    <option value="SUCCESS">Éxito</option>
+                                    <option value="FAILED">Fallido</option>
+                                    <option value="BLOCKED">Bloqueado</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Usuario</label>
+                                <input type="text" id="audit-usuario" placeholder="Buscar...">
+                            </div>
+                            <div class="filter-buttons">
+                                <button class="btn btn-primary" onclick="applyAuditFilters()">Filtrar</button>
+                                <button class="btn btn-secondary" onclick="clearAuditFilters()">Limpiar</button>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="audit-table" id="audit-table">
+                                <thead>
+                                    <tr class="audit-header-row">
+                                        <th class="sortable" data-sort="fecha" onclick="sortAuditColumn('fecha')">
+                                            <div class="th-content"><span>Fecha</span><span class="sort-icon" id="sort-fecha">↕</span></div>
+                                        </th>
+                                        <th class="sortable" data-sort="username" onclick="sortAuditColumn('username')">
+                                            <div class="th-content"><span>Usuario</span><span class="sort-icon" id="sort-username">↕</span></div>
+                                        </th>
+                                        <th class="sortable" data-sort="accion" onclick="sortAuditColumn('accion')">
+                                            <div class="th-content"><span>Acción</span><span class="sort-icon" id="sort-accion">↕</span></div>
+                                        </th>
+                                        <th class="sortable" data-sort="recurso" onclick="sortAuditColumn('recurso')">
+                                            <div class="th-content"><span>Recurso</span><span class="sort-icon" id="sort-recurso">↕</span></div>
+                                        </th>
+                                        <th class="sortable" data-sort="ip_address" onclick="sortAuditColumn('ip_address')">
+                                            <div class="th-content"><span>IP</span><span class="sort-icon" id="sort-ip_address">↕</span></div>
+                                        </th>
+                                        <th class="sortable" data-sort="resultado" onclick="sortAuditColumn('resultado')">
+                                            <div class="th-content"><span>Resultado</span><span class="sort-icon" id="sort-resultado">↕</span></div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="audit-body"></tbody>
+                            </table>
+                            <div class="cards-container" id="audit-cards"></div>
+                            <div class="pagination-container" id="audit-pagination"></div>
+                            <div id="audit-empty" class="empty-message" style="display: none;">No hay registros de auditoría</div>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="js/i18n/i18n.js"></script>
+    <script src="js/sidebar.js?v=20260143"></script>
+    <script>
+        // ==================== CONFIGURACION ====================
+        const hostname = window.location.hostname;
+        const API_URL = (hostname === 'localhost' || hostname === '127.0.0.1')
+            ? `${window.location.protocol}//${hostname}:5000`
+            : window.location.origin;
+
+        // ==================== FUNCIONES GLOBALES ====================
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('menu-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            document.getElementById('theme-icon').textContent = newTheme === 'dark' ? '🌙' : '☀️';
+        }
+
+        function toggleAccordion(header) {
+            const accordion = header.parentElement;
+            accordion.classList.toggle('expanded');
+        }
+
+        async function logout() {
+            try {
+                await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
+            } catch (e) {}
+            const empresaId = localStorage.getItem('empresa_id');
+            window.location.href = `login.html?empresa=${empresaId}`;
+        }
+
+        function goBack() {
+            const empresaId = localStorage.getItem('empresa_id');
+            window.location.href = `index.html?empresa=${empresaId}`;
+        }
+
+        function formatDateTime(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        // ==================== SESIONES ACTIVAS ====================
+        async function loadSessions() {
+            try {
+                const empresaId = localStorage.getItem('empresa_id');
+                const response = await fetch(`${API_URL}/api/sesiones?empresa_id=${empresaId}`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Error al cargar sesiones');
+                const data = await response.json();
+                const sessions = data.sesiones || [];
+                document.getElementById('sessions-count').textContent = sessions.length;
+                const tbody = document.getElementById('sessions-body');
+                const cardsContainer = document.getElementById('sessions-cards');
+                const emptyMsg = document.getElementById('sessions-empty');
+                if (sessions.length === 0) {
+                    tbody.innerHTML = '';
+                    cardsContainer.innerHTML = '';
+                    emptyMsg.style.display = 'block';
+                    return;
+                }
+                emptyMsg.style.display = 'none';
+                tbody.innerHTML = sessions.map(s => `
+                    <tr>
+                        <td><strong>${s.username}</strong></td>
+                        <td>${s.full_name || '-'}</td>
+                        <td><span class="role-badge role-${s.rol}">${s.rol}</span></td>
+                        <td>${s.ip_address || '-'}</td>
+                        <td>${formatDateTime(s.created_at)}</td>
+                        <td>${formatDateTime(s.last_activity)}</td>
+                        <td><button class="btn-action btn-danger-small" onclick="killSession(${s.id}, '${s.username}')" title="Terminar sesión">✕</button></td>
+                    </tr>
+                `).join('');
+                cardsContainer.innerHTML = sessions.map(s => `
+                    <div class="audit-card">
+                        <div class="card-header">
+                            <div class="card-user">
+                                <span class="card-username">${s.username}</span>
+                                <span class="role-badge role-${s.rol}">${s.rol}</span>
+                            </div>
+                            <button class="btn-action btn-danger-small" onclick="killSession(${s.id}, '${s.username}')" title="Terminar sesión">✕</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-detail"><strong>Nombre:</strong> ${s.full_name || '-'}</div>
+                            <div class="card-detail"><strong>IP:</strong> ${s.ip_address || '-'}</div>
+                            <div class="card-detail"><strong>Inicio:</strong> ${formatDateTime(s.created_at)}</div>
+                            <div class="card-detail"><strong>Actividad:</strong> ${formatDateTime(s.last_activity)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function killSession(sessionId, username) {
+            if (!confirm(`¿Terminar la sesión de ${username}?`)) return;
+            try {
+                const response = await fetch(`${API_URL}/api/sesiones/${sessionId}`, { method: 'DELETE', credentials: 'include' });
+                if (!response.ok) throw new Error('Error al terminar sesión');
+                await loadSessions();
+            } catch (error) {
+                alert('Error al terminar la sesión');
+            }
+        }
+
+        async function killAllSessionsExceptCurrent() {
+            if (!confirm('¿Cerrar todas las sesiones excepto la tuya?\n\nEsto desconectará a todos los usuarios actualmente conectados.')) return;
+            try {
+                const empresaId = localStorage.getItem('empresa_id');
+                const csrfToken = localStorage.getItem('csrf_token');
+                const response = await fetch(`${API_URL}/api/sesiones/todas-excepto-actual?empresa_id=${empresaId}`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: { 'X-CSRF-Token': csrfToken }
+                });
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Error al cerrar sesiones');
+                }
+                const data = await response.json();
+                alert(`${data.deleted_count} sesión(es) cerrada(s)`);
+                await loadSessions();
+            } catch (error) {
+                alert('Error al cerrar las sesiones: ' + error.message);
+            }
+        }
+
+        // ==================== AUDITORIA ====================
+        let auditCurrentPage = 0;
+        const auditPageSize = 20;
+        let auditTotalLogs = 0;
+        let auditSortColumn = 'fecha';
+        let auditSortDirection = 'desc';
+        let auditAllLogs = [];
+
+        async function loadAuditActions() {
+            try {
+                const response = await fetch(`${API_URL}/api/audit-logs/actions`, { credentials: 'include' });
+                if (!response.ok) return;
+                const data = await response.json();
+                const select = document.getElementById('audit-accion');
+                if (!select) return;
+                select.innerHTML = '<option value="">Todas</option>';
+                data.actions.forEach(action => {
+                    const option = document.createElement('option');
+                    option.value = action;
+                    option.textContent = formatActionName(action);
+                    select.appendChild(option);
+                });
+            } catch (error) {}
+        }
+
+        async function loadAuditLogs(page = 0) {
+            try {
+                auditCurrentPage = page;
+                const offset = page * auditPageSize;
+                const params = new URLSearchParams();
+                params.append('limit', 200);
+                params.append('offset', 0);
+                const fechaDesde = document.getElementById('audit-fecha-desde')?.value;
+                const fechaHasta = document.getElementById('audit-fecha-hasta')?.value;
+                const accionPanel = document.getElementById('audit-accion')?.value;
+                const resultadoPanel = document.getElementById('audit-resultado')?.value;
+                const usuarioPanel = document.getElementById('audit-usuario')?.value;
+                if (fechaDesde) params.append('fecha_desde', fechaDesde);
+                if (fechaHasta) params.append('fecha_hasta', fechaHasta);
+                if (accionPanel) params.append('accion', accionPanel);
+                if (resultadoPanel) params.append('resultado', resultadoPanel);
+                if (usuarioPanel) params.append('username', usuarioPanel);
+                const response = await fetch(`${API_URL}/api/audit-logs?${params.toString()}`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Error al cargar logs de auditoría');
+                const data = await response.json();
+                auditAllLogs = data.logs || [];
+                auditTotalLogs = data.total || 0;
+                const filteredLogs = applyLocalFiltersAndSort(auditAllLogs);
+                const paginatedLogs = filteredLogs.slice(offset, offset + auditPageSize);
+                auditTotalLogs = filteredLogs.length;
+                renderAuditLogs(paginatedLogs);
+                renderAuditPagination();
+            } catch (error) {
+                const emptyMsg = document.getElementById('audit-empty');
+                if (emptyMsg) {
+                    emptyMsg.textContent = 'Error al cargar los registros de auditoría';
+                    emptyMsg.style.display = 'block';
+                }
+            }
+        }
+
+        function applyLocalFiltersAndSort(logs) {
+            let filtered = [...logs];
+            filtered.sort((a, b) => {
+                let valA = a[auditSortColumn];
+                let valB = b[auditSortColumn];
+                if (valA === null || valA === undefined) valA = '';
+                if (valB === null || valB === undefined) valB = '';
+                let comparison = 0;
+                if (typeof valA === 'string') comparison = valA.localeCompare(valB);
+                else comparison = valA < valB ? -1 : valA > valB ? 1 : 0;
+                return auditSortDirection === 'asc' ? comparison : -comparison;
+            });
+            return filtered;
+        }
+
+        function sortAuditColumn(column) {
+            if (auditSortColumn === column) auditSortDirection = auditSortDirection === 'asc' ? 'desc' : 'asc';
+            else { auditSortColumn = column; auditSortDirection = 'asc'; }
+            updateSortIcons();
+            const filteredLogs = applyLocalFiltersAndSort(auditAllLogs);
+            const offset = auditCurrentPage * auditPageSize;
+            const paginatedLogs = filteredLogs.slice(offset, offset + auditPageSize);
+            auditTotalLogs = filteredLogs.length;
+            renderAuditLogs(paginatedLogs);
+            renderAuditPagination();
+        }
+
+        function updateSortIcons() {
+            const columns = ['fecha', 'username', 'accion', 'recurso', 'ip_address', 'resultado'];
+            columns.forEach(col => {
+                const icon = document.getElementById(`sort-${col}`);
+                if (icon) {
+                    if (col === auditSortColumn) {
+                        icon.textContent = auditSortDirection === 'asc' ? '↑' : '↓';
+                        icon.classList.add('active');
+                    } else {
+                        icon.textContent = '↕';
+                        icon.classList.remove('active');
+                    }
+                }
+            });
+        }
+
+        function truncateText(text, maxLength) {
+            if (!text) return '-';
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
+
+        function formatRecurso(log, truncate = false) {
+            if (!log.recurso) return '-';
+            let text = log.recurso;
+            if (log.recurso_id) {
+                text += ` #${truncate ? truncateText(log.recurso_id, 12) : log.recurso_id}`;
+            }
+            return text;
+        }
+
+        function renderAuditLogs(logs) {
+            const tbody = document.getElementById('audit-body');
+            const cardsContainer = document.getElementById('audit-cards');
+            const emptyMsg = document.getElementById('audit-empty');
+            if (logs.length === 0) {
+                tbody.innerHTML = '';
+                cardsContainer.innerHTML = '';
+                emptyMsg.style.display = 'block';
+                return;
+            }
+            emptyMsg.style.display = 'none';
+            tbody.innerHTML = logs.map(log => `
+                <tr>
+                    <td>${formatDateTime(log.fecha)}</td>
+                    <td><strong>${log.username || '-'}</strong></td>
+                    <td><span class="action-badge action-${getActionCategory(log.accion)}">${formatActionName(log.accion)}</span></td>
+                    <td>${formatRecurso(log, false)}</td>
+                    <td>${log.ip_address || '-'}</td>
+                    <td><span class="result-badge result-${log.resultado.toLowerCase()}">${formatResultName(log.resultado)}</span></td>
+                </tr>
+            `).join('');
+            cardsContainer.innerHTML = logs.map(log => `
+                <div class="audit-card">
+                    <div class="card-header">
+                        <span class="action-badge action-${getActionCategory(log.accion)}">${formatActionName(log.accion)}</span>
+                        <span class="result-badge result-${log.resultado.toLowerCase()}">${formatResultName(log.resultado)}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-detail"><strong>Usuario:</strong> ${log.username || '-'}</div>
+                        <div class="card-detail"><strong>Fecha:</strong> ${formatDateTime(log.fecha)}</div>
+                        <div class="card-detail"><strong>Recurso:</strong> ${formatRecurso(log, true)}</div>
+                        <div class="card-detail"><strong>IP:</strong> ${log.ip_address || '-'}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderAuditPagination() {
+            const container = document.getElementById('audit-pagination');
+            const totalPages = Math.ceil(auditTotalLogs / auditPageSize);
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+            let html = `<button class="btn btn-secondary" ${auditCurrentPage === 0 ? 'disabled' : ''} onclick="loadAuditLogs(${auditCurrentPage - 1})">← Anterior</button>`;
+            html += `<span class="pagination-info">Página ${auditCurrentPage + 1} de ${totalPages}</span>`;
+            html += `<button class="btn btn-secondary" ${auditCurrentPage >= totalPages - 1 ? 'disabled' : ''} onclick="loadAuditLogs(${auditCurrentPage + 1})">Siguiente →</button>`;
+            container.innerHTML = html;
+        }
+
+        function applyAuditFilters() { loadAuditLogs(0); }
+
+        function clearAuditFilters() {
+            document.getElementById('audit-fecha-desde').value = '';
+            document.getElementById('audit-fecha-hasta').value = '';
+            document.getElementById('audit-accion').value = '';
+            document.getElementById('audit-resultado').value = '';
+            document.getElementById('audit-usuario').value = '';
+            loadAuditLogs(0);
+        }
+
+        function formatActionName(action) {
+            const actionNames = {
+                'LOGIN': 'Inicio sesión',
+                'LOGIN_FAILED': 'Login fallido',
+                'LOGOUT': 'Cerrar sesión',
+                'PASSWORD_CHANGE': 'Cambio contraseña',
+                'SESSION_KILL': 'Sesión cerrada',
+                'SESSION_KILL_ALL': 'Cerrar todas sesiones',
+                'USER_CREATE': 'Usuario creado',
+                'USER_ACTIVATE': 'Usuario activado',
+                'USER_DEACTIVATE': 'Usuario desactivado',
+                'USER_ROLE_CHANGE': 'Cambio de rol',
+                'API_KEY_CREATE': 'API Key creada',
+                'API_KEY_DELETE': 'API Key eliminada',
+                'CONFIG_CHANGE': 'Config. modificada',
+                'EMAIL_CONFIG_CHANGE': 'Config. email',
+                'PROPUESTA_SEND': 'Propuesta enviada',
+                'PROPUESTA_STATUS_CHANGE': 'Estado propuesta',
+                'CONSULTA_SEND': 'Consulta enviada',
+                'CONSULTA_RESPOND': 'Consulta respondida'
+            };
+            return actionNames[action] || action;
+        }
+
+        function formatResultName(result) {
+            const resultNames = { 'SUCCESS': 'Éxito', 'FAILED': 'Fallido', 'BLOCKED': 'Bloqueado' };
+            return resultNames[result] || result;
+        }
+
+        function getActionCategory(action) {
+            if (action.startsWith('LOGIN') || action === 'LOGOUT' || action === 'PASSWORD_CHANGE') return 'auth';
+            if (action.startsWith('SESSION')) return 'session';
+            if (action.startsWith('USER')) return 'user';
+            if (action.startsWith('API_KEY')) return 'apikey';
+            if (action.startsWith('CONFIG') || action.startsWith('EMAIL')) return 'config';
+            if (action.startsWith('PROPUESTA')) return 'propuesta';
+            if (action.startsWith('CONSULTA')) return 'consulta';
+            return 'other';
+        }
+
+        // ==================== INICIALIZACION ====================
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Cargar tema
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.getElementById('theme-icon').textContent = theme === 'dark' ? '🌙' : '☀️';
+
+            // Verificar sesión
+            try {
+                const response = await fetch(`${API_URL}/api/current-user`, { credentials: 'include' });
+                if (!response.ok) {
+                    const empresaId = localStorage.getItem('empresa_id');
+                    window.location.href = `login.html?empresa=${empresaId}`;
+                    return;
+                }
+                const user = await response.json();
+                document.getElementById('user-name-display').textContent = user.username;
+                document.getElementById('menu-user-name').textContent = user.full_name || user.username;
+                document.getElementById('menu-user-rol').textContent = user.rol;
+
+                // Verificar rol admin
+                if (user.rol !== 'administrador' && user.rol !== 'superusuario') {
+                    const empresaId = localStorage.getItem('empresa_id');
+                    window.location.href = `index.html?empresa=${empresaId}`;
+                    return;
+                }
+
+                // Mostrar secciones admin
+                document.getElementById('sidebar-admin-section').style.display = 'block';
+                document.getElementById('sidebar-config-section').style.display = 'block';
+
+                // Cargar logo
+                const empresaId = localStorage.getItem('empresa_id');
+                if (empresaId) {
+                    try {
+                        const logoResponse = await fetch(`${API_URL}/api/empresa/${empresaId}/logo`, { credentials: 'include' });
+                        if (logoResponse.ok) {
+                            const blob = await logoResponse.blob();
+                            document.getElementById('header-logo').src = URL.createObjectURL(blob);
+                        }
+                        const configResponse = await fetch(`${API_URL}/api/empresa/${empresaId}/config`, { credentials: 'include' });
+                        if (configResponse.ok) {
+                            const config = await configResponse.json();
+                            document.getElementById('header-company-name').textContent = config.nombre || 'Stocks';
+                        }
+                    } catch (e) {}
+                }
+
+                // Cargar datos
+                await loadSessions();
+                await loadAuditActions();
+                await loadAuditLogs();
+
+            } catch (error) {
+                const empresaId = localStorage.getItem('empresa_id');
+                window.location.href = `login.html?empresa=${empresaId}`;
+            }
+
+            // Cerrar menú al hacer clic fuera
+            document.addEventListener('click', function(e) {
+                const menuContainer = document.querySelector('.menu-container');
+                const dropdown = document.getElementById('menu-dropdown');
+                if (menuContainer && !menuContainer.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+
+            // Configurar selector de idioma
+            const langSelector = document.getElementById('lang-selector');
+            if (langSelector && typeof I18n !== 'undefined') {
+                langSelector.value = I18n.currentLang || 'es';
+            }
+        });
+    </script>
+</body>
+</html>

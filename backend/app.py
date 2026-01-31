@@ -72,7 +72,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.12.64'
+APP_VERSION = 'v1.12.66'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -268,6 +268,11 @@ def dashboard_page():
 @login_required
 def empresa_logo_page():
     return send_from_directory(FRONTEND_DIR, 'empresa-logo.html')
+
+@app.route('/auditoria.html')
+@login_required
+def auditoria_page():
+    return send_from_directory(FRONTEND_DIR, 'auditoria.html')
 
 @app.route('/api/login', methods=['POST'])
 @limiter.limit("5 per minute")  # Máximo 5 intentos por minuto por IP

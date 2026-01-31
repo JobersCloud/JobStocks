@@ -246,6 +246,7 @@
     "appearance": "Appearance",
     "darkMode": "Dark Mode",
     "language": "Language",
+    "audit": "Audit",
     "logout": "Logout"
   },
   "empresaLogo": {
