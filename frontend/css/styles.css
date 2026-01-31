@@ -1018,21 +1018,41 @@
         pointer-events: none;
     }
 
-    /* Título más pequeño en móvil */
-    .top-header-title {
-        font-size: var(--font-size-base) !important;
+    /* Logo y nombre empresa en columna en móvil */
+    .header-logo {
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .header-logo img {
+        max-height: 28px;
+    }
+
+    /* Nombre empresa más pequeño debajo del logo */
+    .header-logo-text {
+        font-size: 0.65rem !important;
+        font-weight: 500;
+        opacity: 0.9;
+        text-align: center;
+        max-width: 80px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 150px;
+    }
+
+    /* Ocultar título "Gestión de Stocks" en móvil - va en sidebar */
+    .top-header-title {
+        display: none !important;
+    }
+
+    /* Texto vertical en sidebar - oculto en móvil */
+    .sidebar-vertical-text {
+        display: none !important;
     }
 
     .top-header-subtitle {
         display: none;
-    }
-
-    .header-logo img {
-        max-height: 30px;
     }
 
     .header-divider {
@@ -1108,6 +1128,24 @@
 /* Logo en header - invertir para que se vea en fondo oscuro */
 .header-logo img {
     filter: brightness(0) invert(1);
+}
+
+/* Texto vertical en sidebar (solo móvil) */
+.sidebar-vertical-text {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) rotate(180deg);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 10px 8px;
+    white-space: nowrap;
 }
 
 /* SIDEBAR - Fondo con tinte del tema */
@@ -6844,17 +6882,58 @@ tbody tr:hover {
     background: rgba(220, 53, 69, 0.15) !important;
 }
 
+/* Selector de idioma en menú de usuario */
+.menu-item-lang {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 20px;
+    cursor: default;
+}
+
+.lang-selector-menu {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    outline: none;
+}
+
+.lang-selector-menu:hover {
+    border-color: var(--primary);
+}
+
+.lang-selector-menu:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(var(--primary), 0.1);
+}
+
+[data-theme="dark"] .lang-selector-menu {
+    background: var(--bg-tertiary);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .lang-selector-menu:hover,
+[data-theme="dark"] .lang-selector-menu:focus {
+    border-color: var(--primary-light);
+}
+
 /* Responsive para menú */
 @media (max-width: 768px) {
     .menu-dropdown {
-        position: fixed;
-        top: auto;
-        bottom: 0;
-        left: 0;
+        position: absolute;
+        top: calc(100% + 8px);
+        bottom: auto;
+        left: auto;
         right: 0;
-        border-radius: 20px 20px 0 0;
-        max-height: 70vh;
+        border-radius: 12px;
+        max-height: calc(100vh - 90px);
         overflow-y: auto;
+        min-width: 200px;
     }
 
     .menu-btn .user-name-display {

@@ -72,11 +72,6 @@
                 </div>
             </div>
             <div class="top-header-right">
-                <select id="lang-selector" class="lang-selector-header" onchange="I18n.setLanguage(this.value)">
-                    <option value="es">ES</option>
-                    <option value="en">EN</option>
-                    <option value="fr">FR</option>
-                </select>
                 <button class="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">
                     <span id="theme-icon">🌙</span>
                 </button>
@@ -102,6 +97,20 @@
                             </svg>
                             <span data-i18n="menu.contextInfo">Info de Contexto</span>
                         </a>
+                        <div class="menu-divider"></div>
+                        <div class="menu-item menu-item-lang">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                            <select id="lang-selector" class="lang-selector-menu" onchange="I18n.setLanguage(this.value)">
+                                <option value="es">Español</option>
+                                <option value="en">English</option>
+                                <option value="fr">Français</option>
+                            </select>
+                        </div>
+                        <div class="menu-divider"></div>
                         <a class="menu-item menu-item-logout" onclick="logout()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -117,6 +126,9 @@
 
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
+            <!-- Texto vertical en móvil -->
+            <div class="sidebar-vertical-text" data-i18n="header.title">Gestión de Stocks</div>
+
             <div class="sidebar-toggle-container">
                 <button class="sidebar-toggle" title="Ctrl+B">☰</button>
             </div>
