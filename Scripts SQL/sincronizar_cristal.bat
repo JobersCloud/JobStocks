@@ -5,8 +5,8 @@ REM ============================================
 REM Script: sincronizar_cristal.bat
 REM Sincronizacion con BCP
 REM
-REM Tablas normales: TRUNCATE + BCP
-REM Tablas con blobs: Compara conteo, si difiere sync completa
+REM Tablas normales: Compara CHECKSUM (detecta inserts/updates/deletes)
+REM Tablas con blobs: Compara COUNT (mas rapido, evita leer blobs)
 REM
 REM ORIGEN:  192.168.100.5 (cristal)
 REM DESTINO: 10.1.99.4 (cristal)
@@ -117,33 +117,37 @@ pause
 exit /b 0
 
 REM ============================================
-REM FUNCION: sync_tabla (compara count)
+REM FUNCION: sync_tabla (compara CHECKSUM)
 REM ============================================
 :sync_tabla
 set TABLA=%~1
 <nul set /p="     %TABLA%... "
 
-REM Obtener count ORIGEN
+REM Obtener checksum ORIGEN
+sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT ISNULL(CHECKSUM_AGG(BINARY_CHECKSUM(*)),0) FROM dbo.%TABLA%" > "%DATOS%\chk_o.txt" 2>nul
+set /p CHK_O=<"%DATOS%\chk_o.txt"
+
+REM Obtener checksum DESTINO
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT ISNULL(CHECKSUM_AGG(BINARY_CHECKSUM(*)),0) FROM dbo.%TABLA%" > "%DATOS%\chk_d.txt" 2>nul
+set /p CHK_D=<"%DATOS%\chk_d.txt"
+
+REM Obtener count para mostrar
 sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.%TABLA%" > "%DATOS%\cnt_o.txt" 2>nul
 set /p CNT_O=<"%DATOS%\cnt_o.txt"
 
-REM Obtener count DESTINO
-sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.%TABLA%" > "%DATOS%\cnt_d.txt" 2>nul
-set /p CNT_D=<"%DATOS%\cnt_d.txt"
-
-REM Comparar
-if "!CNT_O!"=="!CNT_D!" (
-    echo !CNT_D! registros
+REM Comparar checksums
+if "!CHK_O!"=="!CHK_D!" (
+    echo !CNT_O! registros [=]
 ) else (
     bcp %BD%.dbo.%TABLA% out "%DATOS%\%TABLA%.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
     sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.%TABLA%" > nul 2>&1
     bcp %BD%.dbo.%TABLA% in "%DATOS%\%TABLA%.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1
-    echo !CNT_D! -^> !CNT_O! registros [sync]
+    echo !CNT_O! registros [sync]
 )
 goto :eof
 
 REM ============================================
-REM FUNCION: sync_imagenes (compara count)
+REM FUNCION: sync_imagenes (compara COUNT - evita leer blobs)
 REM ============================================
 :sync_imagenes
 <nul set /p="     ps_articulo_imagen... "
@@ -156,23 +160,23 @@ REM Obtener count DESTINO
 sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.ps_articulo_imagen" > "%DATOS%\cnt_d.txt" 2>nul
 set /p CNT_D=<"%DATOS%\cnt_d.txt"
 
-REM Comparar
+REM Comparar counts
 if "!CNT_O!"=="!CNT_D!" (
-    echo !CNT_D! registros
+    echo !CNT_O! registros [=]
 ) else (
-    echo !CNT_O! vs !CNT_D! - sincronizando...
+    echo sincronizando...
     <nul set /p="                              exportando... "
     bcp %BD%.dbo.ps_articulo_imagen out "%DATOS%\ps_articulo_imagen.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
     echo OK
     <nul set /p="                              importando... "
     sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.ps_articulo_imagen" > nul 2>&1
     bcp %BD%.dbo.ps_articulo_imagen in "%DATOS%\ps_articulo_imagen.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1
-    echo OK [!CNT_O! registros]
+    echo OK [!CNT_O! registros] [sync]
 )
 goto :eof
 
 REM ============================================
-REM FUNCION: sync_fichas (compara count)
+REM FUNCION: sync_fichas (compara COUNT - evita leer blobs)
 REM ============================================
 :sync_fichas
 <nul set /p="     articulo_ficha_tecnica... "
@@ -185,17 +189,17 @@ REM Obtener count DESTINO
 sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.articulo_ficha_tecnica" > "%DATOS%\cnt_d.txt" 2>nul
 set /p CNT_D=<"%DATOS%\cnt_d.txt"
 
-REM Comparar
+REM Comparar counts
 if "!CNT_O!"=="!CNT_D!" (
-    echo !CNT_D! registros
+    echo !CNT_O! registros [=]
 ) else (
-    echo !CNT_O! vs !CNT_D! - sincronizando...
+    echo sincronizando...
     <nul set /p="                              exportando... "
     bcp %BD%.dbo.articulo_ficha_tecnica out "%DATOS%\articulo_ficha_tecnica.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
     echo OK
     <nul set /p="                              importando... "
     sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.articulo_ficha_tecnica" > nul 2>&1
     bcp %BD%.dbo.articulo_ficha_tecnica in "%DATOS%\articulo_ficha_tecnica.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1
-    echo OK [!CNT_O! registros]
+    echo OK [!CNT_O! registros] [sync]
 )
 goto :eof

@@ -614,43 +614,108 @@ def enviar_email_verificacion(email, nombre, token, empresa_id="1", connection=N
     msg['X-Mailer'] = 'Sistema de Gestión de Stocks v1.0'
 
     body = f"""
-    <html>
+    <!DOCTYPE html>
+    <html lang="es">
         <head>
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                          padding: 30px; text-align: center; color: white; border-radius: 10px 10px 0 0; }}
-                .content {{ background-color: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-                .button {{ display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                          color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px;
-                          margin: 20px 0; }}
-                .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
-            </style>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>¡Bienvenido!</h1>
-                </div>
-                <div class="content">
-                    <p>Hola <strong>{nombre}</strong>,</p>
-                    <p>Gracias por registrarte en el Sistema de Gestión de Stocks.</p>
-                    <p>Para completar tu registro y activar tu cuenta, haz clic en el siguiente botón:</p>
-                    <p style="text-align: center;">
-                        <a href="{verify_url}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff !important; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold;">Verificar mi cuenta</a>
-                    </p>
-                    <p>O copia y pega este enlace en tu navegador:</p>
-                    <p style="word-break: break-all; background-color: #eee; padding: 10px; border-radius: 5px;">
-                        {verify_url}
-                    </p>
-                    <p><strong>Este enlace expira en 24 horas.</strong></p>
-                </div>
-                <div class="footer">
-                    <p>Si no solicitaste este registro, ignora este mensaje.</p>
-                    <p>© {datetime.now().year} - Sistema de Gestión de Stocks</p>
-                </div>
-            </div>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding: 40px 20px;">
+                <tr>
+                    <td align="center">
+                        <!-- Logo/Branding superior -->
+                        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px; margin-bottom: 20px;">
+                            <tr>
+                                <td align="center" style="padding: 20px;">
+                                    <span style="font-size: 32px; font-weight: 700; color: #ffffff; letter-spacing: 2px;">STOCKS</span>
+                                    <span style="display: block; font-size: 11px; color: #FF4338; letter-spacing: 4px; margin-top: 5px;">MANAGEMENT SYSTEM</span>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- Tarjeta principal -->
+                        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.3);">
+                            <!-- Header con icono animado -->
+                            <tr>
+                                <td style="background: linear-gradient(135deg, #FF4338 0%, #FF6B5B 50%, #D32F2F 100%); padding: 60px 40px; text-align: center; position: relative;">
+                                    <!-- Circulos decorativos -->
+                                    <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                                    <div style="position: absolute; bottom: -40px; left: -40px; width: 150px; height: 150px; background: rgba(255,255,255,0.05); border-radius: 50%;"></div>
+                                    <!-- Icono principal -->
+                                    <div style="width: 100px; height: 100px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 25px; display: inline-block; line-height: 100px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.3);">
+                                        <span style="font-size: 50px; color: #ffffff;">&#9993;</span>
+                                    </div>
+                                    <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">Verifica tu Email</h1>
+                                    <p style="color: rgba(255,255,255,0.95); margin: 15px 0 0; font-size: 17px; font-weight: 300;">Estas a un solo clic de comenzar</p>
+                                </td>
+                            </tr>
+                            <!-- Contenido principal -->
+                            <tr>
+                                <td style="padding: 50px 45px;">
+                                    <p style="color: #1a1a2e; font-size: 20px; margin: 0 0 25px; line-height: 1.5;">
+                                        Hola <strong style="color: #FF4338; background: linear-gradient(90deg, #FF4338, #FF6B5B); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{nombre}</strong> &#128075;
+                                    </p>
+                                    <p style="color: #4a4a68; font-size: 16px; margin: 0 0 35px; line-height: 1.8;">
+                                        Gracias por unirte a nuestro <strong style="color: #1a1a2e;">Sistema de Gestion de Stocks</strong>.
+                                        Estamos encantados de tenerte con nosotros. Para activar tu cuenta y comenzar a disfrutar
+                                        de todas las funcionalidades, simplemente haz clic en el boton de abajo.
+                                    </p>
+                                    <!-- Boton CTA con efecto -->
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td align="center" style="padding: 15px 0 40px;">
+                                                <a href="{verify_url}" style="display: inline-block; background: linear-gradient(135deg, #FF4338 0%, #D32F2F 100%); color: #ffffff; padding: 20px 60px; text-decoration: none; border-radius: 50px; font-size: 17px; font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 8px 25px rgba(255,67,56,0.4), 0 3px 10px rgba(0,0,0,0.1); border: none;">
+                                                    &#10003; &nbsp; Verificar mi cuenta
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <!-- Separador decorativo -->
+                                    <div style="height: 1px; background: linear-gradient(90deg, transparent, #e5e7eb, transparent); margin: 10px 0 30px;"></div>
+                                    <!-- Info adicional -->
+                                    <div style="background: linear-gradient(135deg, #f8f9fc 0%, #eef1f5 100%); border-radius: 16px; padding: 25px 30px; border: 1px solid #e5e7eb;">
+                                        <p style="color: #6b7280; font-size: 14px; margin: 0 0 15px; line-height: 1.6;">
+                                            <strong style="color: #4a4a68;">&#128279; Link alternativo</strong><br>
+                                            Si el boton no funciona, copia y pega este enlace:
+                                        </p>
+                                        <p style="color: #FF4338; font-size: 12px; margin: 0; word-break: break-all; background-color: #ffffff; padding: 15px; border-radius: 10px; border: 1px dashed #FF4338; font-family: monospace;">
+                                            {verify_url}
+                                        </p>
+                                    </div>
+                                    <!-- Aviso de expiracion con icono -->
+                                    <div style="margin-top: 30px; padding: 20px 25px; border-radius: 12px; background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%); border-left: 5px solid #FF4338;">
+                                        <p style="color: #991b1b; font-size: 14px; margin: 0; font-weight: 500;">
+                                            &#9200; <strong>Importante:</strong> Este enlace expira en <strong>24 horas</strong>. Verifica tu cuenta cuanto antes.
+                                        </p>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Footer con estilo -->
+                            <tr>
+                                <td style="background: linear-gradient(180deg, #f8f9fc 0%, #eef1f5 100%); padding: 35px 40px; border-top: 1px solid #e5e7eb;">
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td align="center">
+                                                <p style="color: #9ca3af; font-size: 13px; margin: 0 0 15px;">
+                                                    &#128274; Si no solicitaste esta cuenta, ignora este mensaje.
+                                                </p>
+                                                <div style="height: 1px; background: linear-gradient(90deg, transparent, #d1d5db, transparent); margin: 15px 0;"></div>
+                                                <p style="color: #b0b0b0; font-size: 11px; margin: 0;">
+                                                    &copy; {datetime.now().year} Sistema de Gestion de Stocks &bull; Todos los derechos reservados
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- Texto legal exterior -->
+                        <p style="color: rgba(255,255,255,0.5); font-size: 11px; margin: 30px 0 0; text-align: center; max-width: 450px;">
+                            Este es un mensaje automatico generado por el sistema.<br>Por favor, no respondas directamente a este correo.
+                        </p>
+                    </td>
+                </tr>
+            </table>
         </body>
     </html>
     """
@@ -715,37 +780,131 @@ def enviar_email_bienvenida(email, nombre, empresa_id="1", connection=None):
     msg['X-Mailer'] = 'Sistema de Gestión de Stocks v1.0'
 
     body = f"""
-    <html>
+    <!DOCTYPE html>
+    <html lang="es">
         <head>
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                .header {{ background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
-                          padding: 30px; text-align: center; color: white; border-radius: 10px 10px 0 0; }}
-                .content {{ background-color: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-                .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
-                .check-icon {{ font-size: 48px; }}
-            </style>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <div class="check-icon">✓</div>
-                    <h1>¡Cuenta Activada!</h1>
-                </div>
-                <div class="content">
-                    <p>Hola <strong>{nombre}</strong>,</p>
-                    <p>Tu cuenta ha sido verificada y activada correctamente.</p>
-                    <p>Ya puedes acceder al Sistema de Gestión de Stocks con tus credenciales.</p>
-                    <p style="text-align: center;">
-                        <a href="{login_url}" style="display: inline-block; background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); color: #ffffff !important; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold;">Iniciar Sesión</a>
-                    </p>
-                    <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
-                </div>
-                <div class="footer">
-                    <p>© {datetime.now().year} - Sistema de Gestión de Stocks</p>
-                </div>
-            </div>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); min-height: 100vh;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding: 40px 20px;">
+                <tr>
+                    <td align="center">
+                        <!-- Logo/Branding superior -->
+                        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px; margin-bottom: 20px;">
+                            <tr>
+                                <td align="center" style="padding: 20px;">
+                                    <span style="font-size: 32px; font-weight: 700; color: #ffffff; letter-spacing: 2px;">STOCKS</span>
+                                    <span style="display: block; font-size: 11px; color: #10B981; letter-spacing: 4px; margin-top: 5px;">MANAGEMENT SYSTEM</span>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- Tarjeta principal -->
+                        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.3);">
+                            <!-- Header con celebracion -->
+                            <tr>
+                                <td style="background: linear-gradient(135deg, #10B981 0%, #34D399 50%, #059669 100%); padding: 60px 40px; text-align: center; position: relative;">
+                                    <!-- Confetti decorativo -->
+                                    <div style="position: absolute; top: 20px; left: 30px; font-size: 24px;">&#127881;</div>
+                                    <div style="position: absolute; top: 40px; right: 40px; font-size: 20px;">&#10024;</div>
+                                    <div style="position: absolute; bottom: 30px; left: 50px; font-size: 18px;">&#127882;</div>
+                                    <div style="position: absolute; bottom: 25px; right: 60px; font-size: 22px;">&#127880;</div>
+                                    <!-- Icono principal con check -->
+                                    <div style="width: 100px; height: 100px; background: rgba(255,255,255,0.25); border-radius: 50%; margin: 0 auto 25px; display: inline-block; line-height: 100px; backdrop-filter: blur(10px); border: 3px solid rgba(255,255,255,0.4);">
+                                        <span style="font-size: 55px; color: #ffffff;">&#10003;</span>
+                                    </div>
+                                    <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; text-shadow: 0 2px 10px rgba(0,0,0,0.15);">&#127881; Cuenta Activada!</h1>
+                                    <p style="color: rgba(255,255,255,0.95); margin: 15px 0 0; font-size: 17px; font-weight: 300;">Tu verificacion se ha completado con exito</p>
+                                </td>
+                            </tr>
+                            <!-- Contenido principal -->
+                            <tr>
+                                <td style="padding: 50px 45px;">
+                                    <p style="color: #1a1a2e; font-size: 20px; margin: 0 0 25px; line-height: 1.5;">
+                                        Hola <strong style="color: #10B981;">{nombre}</strong> &#128079;
+                                    </p>
+                                    <p style="color: #4a4a68; font-size: 16px; margin: 0 0 15px; line-height: 1.8;">
+                                        <strong style="color: #1a1a2e;">&#127881; Enhorabuena!</strong> Tu cuenta ha sido verificada y activada correctamente.
+                                        Ya formas parte de nuestra comunidad.
+                                    </p>
+                                    <p style="color: #4a4a68; font-size: 16px; margin: 0 0 35px; line-height: 1.8;">
+                                        Ahora puedes acceder al <strong style="color: #1a1a2e;">Sistema de Gestion de Stocks</strong> con tus credenciales
+                                        y comenzar a explorar todas las funcionalidades que tenemos para ti.
+                                    </p>
+                                    <!-- Boton CTA con efecto -->
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td align="center" style="padding: 15px 0 40px;">
+                                                <a href="{login_url}" style="display: inline-block; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #ffffff; padding: 20px 60px; text-decoration: none; border-radius: 50px; font-size: 17px; font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 8px 25px rgba(16,185,129,0.4), 0 3px 10px rgba(0,0,0,0.1);">
+                                                    &#128640; &nbsp; Acceder al Sistema
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <!-- Separador decorativo -->
+                                    <div style="height: 1px; background: linear-gradient(90deg, transparent, #e5e7eb, transparent); margin: 10px 0 30px;"></div>
+                                    <!-- Que puedes hacer - Cards -->
+                                    <p style="color: #1a1a2e; font-size: 16px; font-weight: 600; margin: 0 0 20px; text-align: center;">
+                                        &#128161; Que puedes hacer ahora
+                                    </p>
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td width="50%" style="padding: 8px;">
+                                                <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #bbf7d0;">
+                                                    <span style="font-size: 28px; display: block; margin-bottom: 10px;">&#128230;</span>
+                                                    <span style="color: #166534; font-size: 13px; font-weight: 600;">Consultar Inventario</span>
+                                                </div>
+                                            </td>
+                                            <td width="50%" style="padding: 8px;">
+                                                <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #bfdbfe;">
+                                                    <span style="font-size: 28px; display: block; margin-bottom: 10px;">&#128203;</span>
+                                                    <span style="color: #1e40af; font-size: 13px; font-weight: 600;">Crear Solicitudes</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td width="50%" style="padding: 8px;">
+                                                <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #fcd34d;">
+                                                    <span style="font-size: 28px; display: block; margin-bottom: 10px;">&#128196;</span>
+                                                    <span style="color: #92400e; font-size: 13px; font-weight: 600;">Fichas Tecnicas</span>
+                                                </div>
+                                            </td>
+                                            <td width="50%" style="padding: 8px;">
+                                                <div style="background: linear-gradient(135deg, #fae8ff 0%, #f5d0fe 100%); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #e9d5ff;">
+                                                    <span style="font-size: 28px; display: block; margin-bottom: 10px;">&#128100;</span>
+                                                    <span style="color: #7c3aed; font-size: 13px; font-weight: 600;">Gestionar Perfil</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <!-- Footer con estilo -->
+                            <tr>
+                                <td style="background: linear-gradient(180deg, #f8f9fc 0%, #eef1f5 100%); padding: 35px 40px; border-top: 1px solid #e5e7eb;">
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td align="center">
+                                                <p style="color: #6b7280; font-size: 14px; margin: 0 0 15px;">
+                                                    &#128172; Tienes alguna pregunta? No dudes en contactarnos.
+                                                </p>
+                                                <div style="height: 1px; background: linear-gradient(90deg, transparent, #d1d5db, transparent); margin: 15px 0;"></div>
+                                                <p style="color: #b0b0b0; font-size: 11px; margin: 0;">
+                                                    &copy; {datetime.now().year} Sistema de Gestion de Stocks &bull; Todos los derechos reservados
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- Texto legal exterior -->
+                        <p style="color: rgba(255,255,255,0.5); font-size: 11px; margin: 30px 0 0; text-align: center; max-width: 450px;">
+                            Este es un mensaje automatico generado por el sistema.<br>Por favor, no respondas directamente a este correo.
+                        </p>
+                    </td>
+                </tr>
+            </table>
         </body>
     </html>
     """
