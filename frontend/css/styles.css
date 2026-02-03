@@ -5840,7 +5840,11 @@ tbody tr:hover {
 }
 
 .quantity-btn-cancel svg {
-    stroke: white;
+    stroke: white !important;
+    fill: none;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
 }
 
 .quantity-btn-cancel:hover {
@@ -5871,7 +5875,11 @@ tbody tr:hover {
 }
 
 .quantity-btn-confirm svg {
-    stroke: white;
+    stroke: white !important;
+    fill: none;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
 }
 
 .quantity-btn-confirm:hover {
@@ -5935,6 +5943,14 @@ tbody tr:hover {
     .quantity-btn-confirm {
         width: 50px;
         height: 50px;
+        padding: 0;
+        min-width: 50px;
+    }
+
+    .quantity-btn-cancel svg,
+    .quantity-btn-confirm svg {
+        width: 24px;
+        height: 24px;
     }
 }
 
@@ -13732,4 +13748,289 @@ input.flatpickr-input[readonly] {
 
 [data-theme="dark"] .btn-icon-ghost:hover {
     background: var(--bg-tertiary);
+}
+
+/* ==================== MODAL INFO DE CONTEXTO ==================== */
+
+.context-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: contextFadeIn 0.2s ease-out;
+}
+
+@keyframes contextFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes contextSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.context-modal {
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    max-width: 520px;
+    width: 90%;
+    max-height: 85vh;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: contextSlideIn 0.3s ease-out;
+}
+
+.context-modal-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.context-modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.context-modal-header h3 svg {
+    width: 22px;
+    height: 22px;
+}
+
+.context-modal-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.context-modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.context-modal-close svg {
+    width: 18px;
+    height: 18px;
+}
+
+.context-modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    max-height: calc(85vh - 70px);
+}
+
+.context-section {
+    margin-bottom: 20px;
+}
+
+.context-section:last-child {
+    margin-bottom: 0;
+}
+
+.context-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+}
+
+.context-section-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.context-section-icon.user { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+.context-section-icon.session { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
+.context-section-icon.database { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+.context-section-icon.storage { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+
+.context-section-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.context-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+}
+
+.context-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.context-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.context-row:first-child {
+    padding-top: 0;
+}
+
+.context-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.context-value {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    background: var(--bg-tertiary);
+    padding: 4px 10px;
+    border-radius: 6px;
+    max-width: 60%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.context-value.success {
+    background: rgba(16, 185, 129, 0.15);
+    color: #059669;
+}
+
+.context-value.error {
+    background: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+}
+
+.context-value.na {
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.context-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.context-status-badge.cached {
+    background: rgba(16, 185, 129, 0.15);
+    color: #059669;
+}
+
+.context-status-badge.not-cached {
+    background: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+}
+
+/* Dark mode para modal de contexto */
+[data-theme="dark"] .context-modal {
+    background: var(--bg-primary);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .context-section-title {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .context-card {
+    background: var(--bg-secondary);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .context-row {
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .context-value {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .context-value.success {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+[data-theme="dark"] .context-value.error {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+[data-theme="dark"] .context-status-badge.cached {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+[data-theme="dark"] .context-status-badge.not-cached {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+/* Responsive para modal de contexto */
+@media (max-width: 480px) {
+    .context-modal {
+        width: 95%;
+        max-height: 90vh;
+    }
+
+    .context-modal-header {
+        padding: 16px 18px;
+    }
+
+    .context-modal-body {
+        padding: 16px 18px;
+    }
+
+    .context-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .context-value {
+        max-width: 100%;
+    }
 }

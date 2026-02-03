@@ -942,56 +942,140 @@ async function showContextInfo() {
 
         const info = await response.json();
 
-        // Formatear la información para mostrar
-        let html = `
-            <div style="font-family: monospace; font-size: 0.85rem; line-height: 1.6;">
-                <h4 style="margin-bottom: 10px; color: var(--primary);">👤 Usuario</h4>
-                <div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
-                    <div><strong>ID:</strong> ${info.user.id}</div>
-                    <div><strong>Username:</strong> ${info.user.username}</div>
-                    <div><strong>Nombre:</strong> ${info.user.full_name}</div>
-                    <div><strong>Rol:</strong> ${info.user.rol}</div>
-                    <div><strong>Cliente ID:</strong> ${info.user.cliente_id || 'N/A'}</div>
-                </div>
-
-                <h4 style="margin-bottom: 10px; color: var(--primary);">🔗 Sesión</h4>
-                <div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
-                    <div><strong>Connection:</strong> ${info.session.connection}</div>
-                    <div><strong>Empresa ID:</strong> ${info.session.empresa_id}</div>
-                    <div><strong>Empresa Nombre:</strong> ${info.session.empresa_nombre}</div>
-                    <div><strong>User ID:</strong> ${info.session.user_id}</div>
-                </div>
-
-                <h4 style="margin-bottom: 10px; color: var(--primary);">🗄️ DB Config (Sesión)</h4>
-                <div style="background: ${info.has_db_config ? '#e8f5e9' : '#ffebee'}; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
-                    <div><strong>Cacheado en sesión:</strong> ${info.has_db_config ? '✅ Sí' : '❌ No'}</div>
-                    ${info.has_db_config ? `
-                        <div><strong>Server:</strong> ${info.db_config.dbserver}</div>
-                        <div><strong>Port:</strong> ${info.db_config.dbport || '1433'}</div>
-                        <div><strong>Database:</strong> ${info.db_config.dbname}</div>
-                        <div><strong>Login:</strong> ${info.db_config.dblogin}</div>
-                        <div><strong>Password:</strong> ${info.db_config.dbpass}</div>
-                    ` : '<div style="color: #c62828;">⚠️ Sin db_config - buscará en BD Central</div>'}
-                </div>
-
-                <h4 style="margin-bottom: 10px; color: var(--primary);">💾 LocalStorage</h4>
-                <div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px;">
-                    <div><strong>connection:</strong> ${localStorage.getItem('connection') || 'N/A'}</div>
-                    <div><strong>empresa_id:</strong> ${localStorage.getItem('empresa_id') || 'N/A'}</div>
-                </div>
-            </div>
-        `;
-
-        // Mostrar en un alert o modal
         const modal = document.createElement('div');
-        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+        modal.className = 'context-modal-overlay';
         modal.innerHTML = `
-            <div style="background:var(--bg-primary, white);padding:20px;border-radius:12px;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.3);">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-                    <h3 style="margin:0;">ℹ️ Info de Contexto</h3>
-                    <button onclick="this.closest('div').parentElement.remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+            <div class="context-modal">
+                <div class="context-modal-header">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        Info de Contexto
+                    </h3>
+                    <button class="context-modal-close" onclick="this.closest('.context-modal-overlay').remove()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
                 </div>
-                ${html}
+                <div class="context-modal-body">
+                    <!-- Usuario -->
+                    <div class="context-section">
+                        <div class="context-section-header">
+                            <div class="context-section-icon user">👤</div>
+                            <span class="context-section-title">Usuario</span>
+                        </div>
+                        <div class="context-card">
+                            <div class="context-row">
+                                <span class="context-label">ID</span>
+                                <span class="context-value">${info.user.id}</span>
+                            </div>
+                            <div class="context-row">
+                                <span class="context-label">Username</span>
+                                <span class="context-value">${info.user.username}</span>
+                            </div>
+                            <div class="context-row">
+                                <span class="context-label">Nombre</span>
+                                <span class="context-value">${info.user.full_name || 'N/A'}</span>
+                            </div>
+                            <div class="context-row">
+                                <span class="context-label">Rol</span>
+                                <span class="context-value">${info.user.rol}</span>
+                            </div>
+                            <div class="context-row">
+                                <span class="context-label">Cliente ID</span>
+                                <span class="context-value ${info.user.cliente_id ? '' : 'na'}">${info.user.cliente_id || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sesión -->
+                    <div class="context-section">
+                        <div class="context-section-header">
+                            <div class="context-section-icon session">🔗</div>
+                            <span class="context-section-title">Sesión</span>
+                        </div>
+                        <div class="context-card">
+                            <div class="context-row">
+                                <span class="context-label">Connection</span>
+                                <span class="context-value">${info.session.connection}</span>
+                            </div>
+                            <div class="context-row">
+                                <span class="context-label">Empresa ID</span>
+                                <span class="context-value">${info.session.empresa_id}</span>
+                            </div>
+                            <div class="context-row">
+                                <span class="context-label">Empresa</span>
+                                <span class="context-value">${info.session.empresa_nombre || 'N/A'}</span>
+                            </div>
+                            <div class="context-row">
+                                <span class="context-label">User ID</span>
+                                <span class="context-value">${info.session.user_id}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DB Config -->
+                    <div class="context-section">
+                        <div class="context-section-header">
+                            <div class="context-section-icon database">🗄️</div>
+                            <span class="context-section-title">DB Config</span>
+                        </div>
+                        <div class="context-card">
+                            <div class="context-row">
+                                <span class="context-label">Estado</span>
+                                <span class="context-status-badge ${info.has_db_config ? 'cached' : 'not-cached'}">
+                                    ${info.has_db_config ? '✓ Cacheado' : '✗ Sin cache'}
+                                </span>
+                            </div>
+                            ${info.has_db_config ? `
+                                <div class="context-row">
+                                    <span class="context-label">Server</span>
+                                    <span class="context-value">${info.db_config.dbserver}</span>
+                                </div>
+                                <div class="context-row">
+                                    <span class="context-label">Port</span>
+                                    <span class="context-value">${info.db_config.dbport || '1433'}</span>
+                                </div>
+                                <div class="context-row">
+                                    <span class="context-label">Database</span>
+                                    <span class="context-value">${info.db_config.dbname}</span>
+                                </div>
+                                <div class="context-row">
+                                    <span class="context-label">Login</span>
+                                    <span class="context-value">${info.db_config.dblogin}</span>
+                                </div>
+                            ` : `
+                                <div class="context-row">
+                                    <span class="context-label">Info</span>
+                                    <span class="context-value error">Buscará en BD Central</span>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+
+                    <!-- LocalStorage -->
+                    <div class="context-section">
+                        <div class="context-section-header">
+                            <div class="context-section-icon storage">💾</div>
+                            <span class="context-section-title">LocalStorage</span>
+                        </div>
+                        <div class="context-card">
+                            <div class="context-row">
+                                <span class="context-label">connection</span>
+                                <span class="context-value ${localStorage.getItem('connection') ? '' : 'na'}">${localStorage.getItem('connection') || 'N/A'}</span>
+                            </div>
+                            <div class="context-row">
+                                <span class="context-label">empresa_id</span>
+                                <span class="context-value ${localStorage.getItem('empresa_id') ? '' : 'na'}">${localStorage.getItem('empresa_id') || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
         modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
