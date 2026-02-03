@@ -296,18 +296,19 @@ def enviar_carrito():
     empresa_id = data.get('empresa_id', '1')  # Multi-empresa support
     enviar_copia = data.get('enviar_copia', False)
     cliente_id = data.get('cliente_id', '')
+    company_name = data.get('company_name', '')  # Nombre de empresa del usuario
     firma_base64 = data.get('firma', None)  # Firma digital en base64
     usuario = current_user.full_name or current_user.username
     email_usuario = current_user.email if enviar_copia else None
 
-    # Validar cliente_id obligatorio
-    if not cliente_id:
-        return jsonify({"error": "Debe seleccionar un cliente"}), 400
+    # Obtener datos del cliente (opcional)
+    cliente_info = None
+    if cliente_id:
+        cliente_info = ClienteModel.get_by_codigo(cliente_id, empresa_id)
 
-    # Obtener datos del cliente
-    cliente_info = ClienteModel.get_by_codigo(cliente_id, empresa_id)
-    if not cliente_info:
-        return jsonify({"error": f"Cliente no encontrado: {cliente_id}"}), 400
+    # Si no hay cliente pero hay company_name, crear info básica
+    if not cliente_info and company_name:
+        cliente_info = {'codigo': '', 'razon': company_name, 'is_company_name': True}
 
     try:
         # Generar PDF (con datos del cliente y firma si existe)
@@ -380,8 +381,13 @@ def generar_pdf_carrito(carrito, usuario, comentarios, referencia="", cliente_in
     story.append(Paragraph(f"<b>Usuario:</b> {usuario}", info_style))
     story.append(Paragraph(f"<b>Fecha:</b> {datetime.now().strftime('%d/%m/%Y %H:%M')}", info_style))
     if cliente_info:
-        cliente_texto = f"{cliente_info.get('codigo', '')} - {cliente_info.get('razon', '')}"
-        story.append(Paragraph(f"<b>Cliente:</b> {cliente_texto}", info_style))
+        if cliente_info.get('is_company_name'):
+            # Es el nombre de empresa del usuario, no un cliente del ERP
+            story.append(Paragraph(f"<b>Empresa:</b> {cliente_info.get('razon', '')}", info_style))
+        else:
+            # Es un cliente del ERP
+            cliente_texto = f"{cliente_info.get('codigo', '')} - {cliente_info.get('razon', '')}"
+            story.append(Paragraph(f"<b>Cliente:</b> {cliente_texto}", info_style))
     if referencia:
         story.append(Paragraph(f"<b>Referencia:</b> {referencia}", info_style))
     story.append(Paragraph(f"<b>Total de items:</b> {len(carrito)}", info_style))
@@ -681,7 +687,7 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
             <div class="info-box">
                 <p><strong>👤 Usuario:</strong> {usuario}</p>
                 <p><strong>📅 Fecha:</strong> {datetime.now().strftime('%d/%m/%Y %H:%M')}</p>
-                {'<p><strong>🏢 Cliente:</strong> ' + cliente_info.get('codigo', '') + ' - ' + cliente_info.get('razon', '') + '</p>' if cliente_info else ''}
+                {'<p><strong>🏢 Empresa:</strong> ' + cliente_info.get('razon', '') + '</p>' if cliente_info and cliente_info.get('is_company_name') else ('<p><strong>🏢 Cliente:</strong> ' + cliente_info.get('codigo', '') + ' - ' + cliente_info.get('razon', '') + '</p>' if cliente_info else '')}
                 {'<p><strong>🏷️ Referencia:</strong> ' + referencia + '</p>' if referencia else ''}
                 <p><strong>📊 Total de productos:</strong> {len(carrito)}</p>
             </div>

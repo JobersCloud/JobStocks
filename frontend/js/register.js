@@ -249,6 +249,7 @@ function setupRegisterForm() {
         const connection = localStorage.getItem('connection') || localStorage.getItem('empresa_id') || '1';
         const formData = {
             full_name: document.getElementById('full_name').value.trim(),
+            company_name: document.getElementById('company_name').value.trim(),
             username: document.getElementById('username').value.trim(),
             email: document.getElementById('email').value.trim(),
             pais: document.getElementById('pais').value,

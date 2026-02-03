@@ -35,7 +35,7 @@ def verify_user(username, password, empresa_cli_id, empresa_erp=None):
 
         # Obtener usuario básico
         cursor.execute("""
-            SELECT id, username, password_hash, email, full_name, active, debe_cambiar_password
+            SELECT id, username, password_hash, email, full_name, active, debe_cambiar_password, company_name
             FROM users
             WHERE username = ? AND active = 1
         """, (username,))
@@ -53,6 +53,7 @@ def verify_user(username, password, empresa_cli_id, empresa_erp=None):
             'full_name': row[4],
             'active': row[5],
             'debe_cambiar_password': bool(row[6]) if row[6] is not None else False,
+            'company_name': row[7],
             'rol': 'usuario',
             'empresa_cli_id': empresa_cli_id,
             'empresa_erp': empresa_erp,
@@ -101,7 +102,7 @@ def get_user_by_id(user_id, empresa_cli_id, empresa_erp=None):
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT id, username, email, full_name, active, debe_cambiar_password
+            SELECT id, username, email, full_name, active, debe_cambiar_password, company_name
             FROM users
             WHERE id = ? AND active = 1
         """, (user_id,))
@@ -118,6 +119,7 @@ def get_user_by_id(user_id, empresa_cli_id, empresa_erp=None):
             'full_name': row[3],
             'active': row[4],
             'debe_cambiar_password': bool(row[5]) if row[5] is not None else False,
+            'company_name': row[6],
             'rol': 'usuario',
             'empresa_cli_id': empresa_cli_id,
             'empresa_erp': empresa_erp,
@@ -193,7 +195,7 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
                 u.id, u.username, u.email, u.full_name, u.pais,
                 ue.rol, u.active, u.email_verificado,
                 u.created_at, u.updated_at,
-                ue.empresa_id, ue.cliente_id
+                ue.empresa_id, ue.cliente_id, u.company_name
             FROM users u
             INNER JOIN users_empresas ue ON u.id = ue.user_id
             WHERE ue.empresa_id = ?
@@ -214,7 +216,8 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
                 'created_at': row[8].isoformat() if row[8] else None,
                 'updated_at': row[9].isoformat() if row[9] else None,
                 'empresa_id': row[10],
-                'cliente_id': row[11]
+                'cliente_id': row[11],
+                'company_name': row[12]
             })
 
         return users
@@ -239,16 +242,17 @@ def create_user_admin(data, empresa_cli_id):
         # 1. Insertar en tabla users
         cursor.execute("""
             INSERT INTO users (username, password_hash, email, full_name, pais,
-                              active, email_verificado, debe_cambiar_password)
+                              active, email_verificado, debe_cambiar_password, company_name)
             OUTPUT INSERTED.id
-            VALUES (?, ?, ?, ?, ?, 1, 1, ?)
+            VALUES (?, ?, ?, ?, ?, 1, 1, ?, ?)
         """, (
             data['username'],
             password_hash,
             data.get('email'),
             data.get('full_name'),
             data.get('pais'),
-            debe_cambiar
+            debe_cambiar,
+            data.get('company_name')
         ))
 
         user_id = cursor.fetchone()[0]
@@ -406,6 +410,10 @@ def update_user_full(user_id, data, empresa_cli_id, empresa_erp):
             user_updates.append("password_hash = ?")
             user_params.append(generate_password_hash(data['password']))
 
+        if 'company_name' in data:
+            user_updates.append("company_name = ?")
+            user_params.append(data['company_name'])
+
         if user_updates:
             user_params.append(user_id)
             query = f"UPDATE users SET {', '.join(user_updates)} WHERE id = ?"
@@ -449,7 +457,7 @@ def get_user_by_id_and_empresa(user_id, empresa_cli_id, empresa_erp):
             SELECT
                 u.id, u.username, u.email, u.full_name, u.pais,
                 ue.rol, u.active, u.email_verificado,
-                ue.empresa_id, ue.cliente_id
+                ue.empresa_id, ue.cliente_id, u.company_name
             FROM users u
             INNER JOIN users_empresas ue ON u.id = ue.user_id
             WHERE u.id = ? AND ue.empresa_id = ?
@@ -468,7 +476,8 @@ def get_user_by_id_and_empresa(user_id, empresa_cli_id, empresa_erp):
                 'active': row[6],
                 'email_verificado': row[7],
                 'empresa_id': row[8],
-                'cliente_id': row[9]
+                'cliente_id': row[9],
+                'company_name': row[10]
             }
 
         return None

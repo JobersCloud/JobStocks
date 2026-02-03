@@ -3359,20 +3359,36 @@ function mostrarFormularioEnvio() {
     // Pre-llenar cliente si el usuario tiene uno asignado
     const clientePreseleccionado = currentUser?.cliente_id || '';
     const clienteNombrePreseleccionado = currentUser?.cliente_razon || '';
+    const companyName = currentUser?.company_name || '';
+
+    // Determinar si mostrar el buscador de clientes o el cliente preseleccionado
+    const tieneClienteAsignado = !!clientePreseleccionado;
+
+    // HTML para el campo de empresa del usuario (solo si no tiene cliente asignado)
+    const companyNameHtml = (!tieneClienteAsignado && companyName) ? `
+        <div class="form-group">
+            <label>${t('shipping.companyLabel') || 'Empresa'}:</label>
+            <div class="company-info-display">
+                <span class="company-name-value">${companyName}</span>
+            </div>
+            <p class="form-help form-help-info">${t('shipping.companyInfo') || 'Nombre de tu empresa (informativo)'}</p>
+        </div>
+    ` : '';
 
     content.innerHTML = `
         <div class="envio-form">
             <h3>${t('shipping.title')}</h3>
             <p>${t('shipping.description')}</p>
+            ${companyNameHtml}
             <div class="form-group">
-                <label>${t('shipping.clientLabel') || 'Cliente'}: <span class="required">*</span></label>
+                <label>${t('shipping.clientLabel') || 'Cliente'}:</label>
                 <div class="client-search-container">
-                    <div class="client-search-input-wrapper" id="client-search-wrapper-envio" style="${clientePreseleccionado ? 'display:none' : ''}">
+                    <div class="client-search-input-wrapper" id="client-search-wrapper-envio" style="${tieneClienteAsignado ? 'display:none' : ''}">
                         <input type="text" id="client-search-envio" placeholder="${t('shipping.clientPlaceholder') || 'Buscar cliente...'}" autocomplete="off">
                         <span class="client-search-icon">🔍</span>
                     </div>
                     <div class="client-suggestions" id="client-suggestions-envio"></div>
-                    <div class="client-selected" id="client-selected-envio" style="${clientePreseleccionado ? '' : 'display:none'}">
+                    <div class="client-selected" id="client-selected-envio" style="${tieneClienteAsignado ? '' : 'display:none'}">
                         <div class="client-selected-info">
                             <span class="client-selected-code" id="selected-client-code-envio">${clientePreseleccionado}</span>
                             <span class="client-selected-name" id="selected-client-name-envio">${clienteNombrePreseleccionado}</span>
@@ -3381,7 +3397,8 @@ function mostrarFormularioEnvio() {
                     </div>
                 </div>
                 <input type="hidden" id="cliente-id-envio" value="${clientePreseleccionado}">
-                <p class="form-help">${t('shipping.clientHelp') || 'Escribe al menos 3 caracteres para buscar'}</p>
+                <input type="hidden" id="company-name-envio" value="${companyName}">
+                <p class="form-help">${tieneClienteAsignado ? (t('shipping.clientAssigned') || 'Cliente asignado a tu usuario') : (t('shipping.clientHelp') || 'Escribe al menos 3 caracteres para buscar')}</p>
             </div>
             <div class="form-group">
                 <label>${t('shipping.referenceLabel')}:</label>
@@ -3407,7 +3424,7 @@ function mostrarFormularioEnvio() {
             <div class="signature-panel" id="signature-panel" style="display: none;">
                 <label>${t('shipping.signatureLabel') || 'Panel de firma'}:</label>
                 <div class="signature-canvas-container">
-                    <canvas id="signature-canvas" width="400" height="150"></canvas>
+                    <canvas id="signature-canvas" width="600" height="250"></canvas>
                 </div>
                 <div class="signature-actions">
                     <button type="button" class="btn-secondary btn-sm" onclick="limpiarFirma()">
@@ -3433,15 +3450,10 @@ async function enviarSolicitud() {
     const comentarios = document.getElementById('comentarios-envio').value;
     const enviarCopia = document.getElementById('enviar-copia').checked;
     const cliente_id = document.getElementById('cliente-id-envio').value;
+    const company_name = document.getElementById('company-name-envio')?.value || '';
     const empresa_id = getEmpresaId(); // Multi-empresa support
     const firmarPropuesta = document.getElementById('firmar-propuesta')?.checked || false;
     const firmaData = firmarPropuesta ? getSignatureData() : null;
-
-    // Validar cliente obligatorio
-    if (!cliente_id) {
-        alert(t('shipping.clientRequired') || 'Debe seleccionar un cliente');
-        return;
-    }
 
     // Validar firma si está marcado el checkbox
     if (firmarPropuesta && !firmaData) {
@@ -3467,6 +3479,7 @@ async function enviarSolicitud() {
                 empresa_id,
                 enviar_copia: enviarCopia,
                 cliente_id,
+                company_name,
                 firma: firmaData
             })
         });
@@ -3652,7 +3665,7 @@ function initSignatureCanvas() {
     // Ajustar tamaño del canvas al contenedor
     const container = signatureCanvas.parentElement;
     signatureCanvas.width = container.offsetWidth - 4; // -4 por bordes
-    signatureCanvas.height = 150;
+    signatureCanvas.height = 250;
 
     // Fondo blanco
     signatureCtx.fillStyle = '#ffffff';

@@ -364,6 +364,17 @@
                                                 </button>
                                             </div>
                                         </th>
+                                        <th data-column="company_name">
+                                            <div class="column-header-wrapper">
+                                                <span class="sortable-header" onclick="ordenarPor('company_name')">
+                                                    Empresa
+                                                    <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
+                                                </span>
+                                                <button class="column-filter-btn" onclick="abrirPopupFiltro('company_name', this)" title="Filtrar">
+                                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                                                </button>
+                                            </div>
+                                        </th>
                                         <th data-column="pais">
                                             <div class="column-header-wrapper">
                                                 <span class="sortable-header" onclick="ordenarPor('pais')">
@@ -480,6 +491,12 @@
                     <div class="form-group">
                         <label data-i18n="users.email">Email</label>
                         <input type="email" id="user-email">
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="users.companyName">Nombre de Empresa</label>
+                        <input type="text" id="user-company-name" placeholder="Nombre de la empresa (opcional)">
+                        <p class="form-help" data-i18n="users.companyNameHelp">Se mostrará en las propuestas si no tiene cliente asignado</p>
                     </div>
 
                     <div class="form-group">
@@ -670,6 +687,7 @@
             { key: 'username', label: 'Usuario', tipo: 'texto' },
             { key: 'full_name', label: 'Nombre', tipo: 'texto' },
             { key: 'email', label: 'Email', tipo: 'texto' },
+            { key: 'company_name', label: 'Empresa', tipo: 'texto' },
             { key: 'pais', label: 'País', tipo: 'texto' },
             { key: 'rol', label: 'Rol', tipo: 'texto' },
             { key: 'active', label: 'Estado', tipo: 'texto' }
@@ -1088,6 +1106,7 @@
                                 '<span class="email-not-verified" title="Email no verificado">✗</span>') : ''}
                         </div>
                     </td>
+                    <td>${user.company_name || '-'}</td>
                     <td>${user.pais || '-'}</td>
                     <td>${getRoleBadge(user.rol)}</td>
                     <td>${getStatusBadge(user.active)}</td>
@@ -1112,6 +1131,9 @@
                     <div class="user-card-info">
                         <div class="user-card-info-item">
                             <label>Email:</label> ${user.email || '-'}
+                        </div>
+                        <div class="user-card-info-item">
+                            <label>${t('users.companyName')}:</label> ${user.company_name || '-'}
                         </div>
                         <div class="user-card-info-item">
                             <label>${t('users.role')}:</label> ${getRoleBadge(user.rol)}
@@ -1433,6 +1455,7 @@
                 document.getElementById('password-help').textContent = t('users.passwordHelpEdit');
                 document.getElementById('user-fullname').value = user.full_name || '';
                 document.getElementById('user-email').value = user.email || '';
+                document.getElementById('user-company-name').value = user.company_name || '';
                 document.getElementById('user-pais').value = user.pais || '';
                 document.getElementById('user-rol').value = user.rol || 'usuario';
 
@@ -1515,6 +1538,7 @@
                 username: document.getElementById('user-username').value,
                 full_name: document.getElementById('user-fullname').value || null,
                 email: document.getElementById('user-email').value || null,
+                company_name: document.getElementById('user-company-name').value || null,
                 pais: document.getElementById('user-pais').value || null,
                 cliente_id: document.getElementById('user-cliente-id').value || null,
                 empresa_id: empresaId

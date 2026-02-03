@@ -39,6 +39,7 @@ from database.users_db import verify_user, get_user_by_id
 from models.user import User
 from models.user_session_model import UserSessionModel
 from models.audit_model import AuditModel, AuditAction, AuditResult
+from models.cliente_model import ClienteModel
 
 import os
 import secrets
@@ -72,7 +73,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.12.66'
+APP_VERSION = 'v1.12.69'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -180,7 +181,8 @@ def load_user(user_id):
             rol=rol,
             empresa_id=user_data.get('empresa_id', empresa_id),
             cliente_id=user_data.get('cliente_id'),
-            debe_cambiar_password=user_data.get('debe_cambiar_password', False)
+            debe_cambiar_password=user_data.get('debe_cambiar_password', False),
+            company_name=user_data.get('company_name')
         )
     print(f"[DEBUG] load_user - Usuario NO encontrado para id: {user_id}", flush=True)
     return None
@@ -363,7 +365,8 @@ def login():
             full_name=user_data.get('full_name'),
             rol=user_data.get('rol', 'usuario'),
             empresa_id=empresa_id,
-            cliente_id=user_data.get('cliente_id')
+            cliente_id=user_data.get('cliente_id'),
+            company_name=user_data.get('company_name')
         )
         login_user(user)
 
@@ -552,6 +555,17 @@ def get_current_user():
       401:
         description: No autenticado
     """
+    # Obtener nombre del cliente si el usuario tiene cliente_id
+    cliente_id = getattr(current_user, 'cliente_id', None)
+    cliente_razon = None
+    if cliente_id:
+        try:
+            cliente = ClienteModel.get_by_codigo(cliente_id, session.get('empresa_id'))
+            if cliente:
+                cliente_razon = cliente.get('razon')
+        except Exception:
+            pass  # Si falla, simplemente no incluimos el nombre
+
     return jsonify({
         'username': current_user.username,
         'full_name': current_user.full_name,
@@ -561,7 +575,9 @@ def get_current_user():
         'empresa_id': session.get('empresa_id'),
         'connection': session.get('connection'),
         'empresa_nombre': session.get('empresa_nombre'),
-        'cliente_id': getattr(current_user, 'cliente_id', None)
+        'cliente_id': cliente_id,
+        'cliente_razon': cliente_razon,
+        'company_name': getattr(current_user, 'company_name', None)
     })
 
 @app.route('/api/context-info')
