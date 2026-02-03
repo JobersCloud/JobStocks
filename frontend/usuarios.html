@@ -46,7 +46,7 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.12.28">
+    <link rel="stylesheet" href="css/styles.css?v=1.12.73">
 </head>
 <body>
     <!-- ==================== MASTERPAGE LAYOUT ==================== -->
@@ -55,7 +55,7 @@
         <header class="top-header">
             <div class="top-header-left">
                 <button class="mobile-menu-btn" onclick="toggleSidebarMobile()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                         <line x1="3" y1="12" x2="21" y2="12"></line>
                         <line x1="3" y1="6" x2="21" y2="6"></line>
                         <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -71,9 +71,6 @@
                 </div>
             </div>
             <div class="top-header-right">
-                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">
-                    <span id="theme-icon">🌙</span>
-                </button>
                 <div class="menu-container">
                     <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
                         <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -87,7 +84,24 @@
                             <div class="user-name" id="menu-user-name">Usuario</div>
                             <div class="user-rol" id="menu-user-rol">usuario</div>
                         </div>
+                        <div class="menu-divider" id="menu-divider-context" style="display: none;"></div>
+                        <a class="menu-item" id="menu-item-context" onclick="showContextInfo()" style="display: none;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <span data-i18n="menu.contextInfo">Info de Contexto</span>
+                        </a>
                         <div class="menu-divider"></div>
+                        <div class="menu-section-title" data-i18n="menu.appearance">Apariencia</div>
+                        <a class="menu-item" onclick="toggleTheme()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                            <span data-i18n="menu.darkMode">Modo oscuro</span>
+                            <span class="menu-theme-icon" id="theme-icon">🌙</span>
+                        </a>
                         <div class="menu-item menu-item-lang">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"></circle>
@@ -125,7 +139,7 @@
                 <div class="sidebar-section">
                     <a class="sidebar-item" data-page="index.html" data-tooltip="Stocks" onclick="SidebarNav.navigateTo('index.html')">
                         <span class="sidebar-item-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
                             </svg>
@@ -134,7 +148,7 @@
                     </a>
                     <a class="sidebar-item" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')">
                         <span class="sidebar-item-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                 <polyline points="14 2 14 8 20 8"></polyline>
                                 <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -149,7 +163,7 @@
                 <div class="sidebar-accordion expanded" id="sidebar-admin-section" style="display: none;">
                     <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
                         <div class="sidebar-accordion-title">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                 <rect x="3" y="3" width="7" height="7"></rect>
                                 <rect x="14" y="3" width="7" height="7"></rect>
                                 <rect x="14" y="14" width="7" height="7"></rect>
@@ -164,7 +178,7 @@
                     <div class="sidebar-accordion-content">
                         <a class="sidebar-item" data-page="dashboard.html" data-tooltip="Dashboard" onclick="SidebarNav.navigateTo('dashboard.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <line x1="18" y1="20" x2="18" y2="10"></line>
                                     <line x1="12" y1="20" x2="12" y2="4"></line>
                                     <line x1="6" y1="20" x2="6" y2="14"></line>
@@ -174,7 +188,7 @@
                         </a>
                         <a class="sidebar-item" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
                                     <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
                                 </svg>
@@ -183,7 +197,7 @@
                         </a>
                         <a class="sidebar-item" data-page="todas-consultas.html" data-tooltip="Consultas" onclick="SidebarNav.navigateTo('todas-consultas.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"></circle>
                                     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                                     <line x1="12" y1="17" x2="12.01" y2="17"></line>
@@ -193,7 +207,7 @@
                         </a>
                         <a class="sidebar-item active" data-page="usuarios.html" data-tooltip="Usuarios" onclick="SidebarNav.navigateTo('usuarios.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                                     <circle cx="9" cy="7" r="4"></circle>
                                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -204,7 +218,7 @@
                         </a>
                         <a class="sidebar-item" data-page="auditoria.html" data-tooltip="Auditoría" onclick="SidebarNav.navigateTo('auditoria.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                                 </svg>
                             </span>
@@ -217,7 +231,7 @@
                 <div class="sidebar-accordion" id="sidebar-config-section" style="display: none;">
                     <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
                         <div class="sidebar-accordion-title">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                 <circle cx="12" cy="12" r="3"></circle>
                                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                             </svg>
@@ -230,7 +244,7 @@
                     <div class="sidebar-accordion-content">
                         <a class="sidebar-item" data-page="email-config.html" data-tooltip="Email" onclick="SidebarNav.navigateTo('email-config.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                                     <polyline points="22,6 12,13 2,6"></polyline>
                                 </svg>
@@ -239,7 +253,7 @@
                         </a>
                         <a class="sidebar-item" data-page="parametros.html" data-tooltip="Parámetros" onclick="SidebarNav.navigateTo('parametros.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <line x1="4" y1="21" x2="4" y2="14"></line>
                                     <line x1="4" y1="10" x2="4" y2="3"></line>
                                     <line x1="12" y1="21" x2="12" y2="12"></line>
@@ -255,7 +269,7 @@
                         </a>
                         <a class="sidebar-item" data-page="empresa-logo.html" data-tooltip="Logo" onclick="SidebarNav.navigateTo('empresa-logo.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                                     <circle cx="8.5" cy="8.5" r="1.5"></circle>
                                     <polyline points="21 15 16 10 5 21"></polyline>
@@ -271,7 +285,7 @@
             <div class="sidebar-footer">
                 <a class="sidebar-item" data-tooltip="Cerrar Sesión" onclick="logout()">
                     <span class="sidebar-item-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                             <polyline points="16 17 21 12 16 7"></polyline>
                             <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -293,9 +307,8 @@
                     <div class="users-content">
                         <!-- Toolbar -->
                         <div class="users-toolbar" id="users-toolbar" style="display: none;">
-                            <button class="btn-new-user" onclick="openCreateUserModal()">
-                                <span class="btn-icon">➕</span>
-                                <span data-i18n="users.newUser">Nuevo Usuario</span>
+                            <button class="btn-icon btn-icon-primary" onclick="openCreateUserModal()" title="Nuevo Usuario">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
                             </button>
                         </div>
 
@@ -312,9 +325,8 @@
                         <div class="users-empty" id="users-empty" style="display: none;">
                             <div class="users-empty-icon">👥</div>
                             <h3 data-i18n="users.noUsers">No hay usuarios</h3>
-                            <button class="btn-new-user btn-new-empty" onclick="openCreateUserModal()">
-                                <span class="btn-icon">➕</span>
-                                <span data-i18n="users.newUser">Nuevo Usuario</span>
+                            <button class="btn-icon btn-icon-primary btn-icon-lg" onclick="openCreateUserModal()" title="Nuevo Usuario">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
                             </button>
                         </div>
 
@@ -445,9 +457,13 @@
                         <option value="superusuario" data-i18n="roles.superuser">Superusuario</option>
                     </select>
                 </div>
-                <div class="role-modal-actions">
-                    <button class="btn-cancel" onclick="closeRoleModal()" data-i18n="common.cancel">Cancelar</button>
-                    <button class="btn-save" onclick="saveRole()" data-i18n="common.save">Guardar</button>
+                <div class="role-modal-actions btn-icon-group">
+                    <button class="btn-icon btn-icon-ghost" onclick="closeRoleModal()" title="Cancelar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                    <button class="btn-icon btn-icon-success" onclick="saveRole()" title="Guardar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -535,9 +551,13 @@
                         </select>
                     </div>
 
-                    <div class="user-modal-actions">
-                        <button type="button" class="btn-cancel" onclick="closeUserModal()" data-i18n="common.cancel">Cancelar</button>
-                        <button type="submit" class="btn-save" id="btn-save-user" data-i18n="common.save">Guardar</button>
+                    <div class="user-modal-actions btn-icon-group">
+                        <button type="button" class="btn-icon btn-icon-ghost" onclick="closeUserModal()" title="Cancelar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                        <button type="submit" class="btn-icon btn-icon-success" id="btn-save-user" title="Guardar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        </button>
                     </div>
                 </form>
             </div>
@@ -956,6 +976,12 @@
                 document.getElementById('menu-user-name').textContent = currentUser.full_name || currentUser.username;
                 document.getElementById('menu-user-rol').textContent = currentUser.rol;
 
+                // Mostrar opción de contexto solo para superusuarios
+                if (currentUser.rol === 'superusuario') {
+                    document.getElementById('menu-item-context').style.display = 'flex';
+                    document.getElementById('menu-divider-context').style.display = 'block';
+                }
+
                 // Verificar que sea administrador o superusuario
                 if (currentUser.rol !== 'administrador' && currentUser.rol !== 'superusuario') {
                     alert('No tienes permisos para acceder a esta página');
@@ -978,6 +1004,20 @@
             } catch (e) {}
             localStorage.removeItem('csrf_token');
             window.location.href = 'login.html';
+        }
+
+        async function showContextInfo() {
+            try {
+                const response = await fetch(`${API_URL}/api/context-info`, { credentials: 'include' });
+                if (!response.ok) throw new Error('No se pudo obtener la información de contexto');
+                const info = await response.json();
+                let html = `<div style="font-family: monospace; font-size: 0.85rem; line-height: 1.6;"><h4 style="margin-bottom: 10px; color: var(--primary);">👤 Usuario</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>ID:</strong> ${info.user.id}</div><div><strong>Username:</strong> ${info.user.username}</div><div><strong>Nombre:</strong> ${info.user.full_name}</div><div><strong>Rol:</strong> ${info.user.rol}</div><div><strong>Cliente ID:</strong> ${info.user.cliente_id || 'N/A'}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🔗 Sesión</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Connection:</strong> ${info.session.connection}</div><div><strong>Empresa ID:</strong> ${info.session.empresa_id}</div><div><strong>Empresa Nombre:</strong> ${info.session.empresa_nombre}</div><div><strong>User ID:</strong> ${info.session.user_id}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🗄️ DB Config</h4><div style="background: ${info.has_db_config ? '#e8f5e9' : '#ffebee'}; padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Cacheado:</strong> ${info.has_db_config ? '✅ Sí' : '❌ No'}</div>${info.has_db_config ? `<div><strong>Server:</strong> ${info.db_config.dbserver}</div><div><strong>Database:</strong> ${info.db_config.dbname}</div>` : ''}</div><h4 style="margin-bottom: 10px; color: var(--primary);">💾 LocalStorage</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px;"><div><strong>connection:</strong> ${localStorage.getItem('connection') || 'N/A'}</div><div><strong>empresa_id:</strong> ${localStorage.getItem('empresa_id') || 'N/A'}</div></div></div>`;
+                const modal = document.createElement('div');
+                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+                modal.innerHTML = `<div style="background:var(--bg-primary, white);padding:20px;border-radius:12px;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.3);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><h3 style="margin:0;">ℹ️ Info de Contexto</h3><button onclick="this.closest('div').parentElement.remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button></div>${html}</div>`;
+                modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+                document.body.appendChild(modal);
+            } catch (error) { console.error('Error:', error); alert('Error: ' + error.message); }
         }
 
         async function obtenerCsrfToken() {

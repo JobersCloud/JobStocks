@@ -44,7 +44,10 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.12.28">
+    <link rel="stylesheet" href="css/styles.css?v=1.12.73">
+    <!-- Flatpickr - Calendario moderno -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
 </head>
 <body>
     <div class="app-layout">
@@ -68,9 +71,6 @@
                 </div>
             </div>
             <div class="top-header-right">
-                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">
-                    <span id="theme-icon">🌙</span>
-                </button>
                 <div class="menu-container">
                     <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
                         <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -84,7 +84,24 @@
                             <div class="user-name" id="menu-user-name">Usuario</div>
                             <div class="user-rol" id="menu-user-rol">usuario</div>
                         </div>
+                        <div class="menu-divider" id="menu-divider-context" style="display: none;"></div>
+                        <a class="menu-item" id="menu-item-context" onclick="showContextInfo()" style="display: none;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <span data-i18n="menu.contextInfo">Info de Contexto</span>
+                        </a>
                         <div class="menu-divider"></div>
+                        <div class="menu-section-title" data-i18n="menu.appearance">Apariencia</div>
+                        <a class="menu-item" onclick="toggleTheme()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                            <span data-i18n="menu.darkMode">Modo oscuro</span>
+                            <span class="menu-theme-icon" id="theme-icon">🌙</span>
+                        </a>
                         <div class="menu-item menu-item-lang">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"></circle>
@@ -297,21 +314,12 @@
                                 </svg>
                                 Sesiones Activas (<span id="sessions-count">0</span>)
                             </h2>
-                            <div class="section-actions">
-                                <button class="btn btn-secondary" onclick="loadSessions()">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                                        <polyline points="23 4 23 10 17 10"></polyline>
-                                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                                    </svg>
-                                    Actualizar
+                            <div class="section-actions btn-icon-group">
+                                <button class="btn-icon btn-icon-secondary" onclick="loadSessions()" title="Actualizar">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
                                 </button>
-                                <button class="btn btn-danger" onclick="killAllSessionsExceptCurrent()">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <line x1="15" y1="9" x2="9" y2="15"></line>
-                                        <line x1="9" y1="9" x2="15" y2="15"></line>
-                                    </svg>
-                                    Cerrar Todas
+                                <button class="btn-icon btn-icon-danger" onclick="killAllSessionsExceptCurrent()" title="Cerrar Todas">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
                                 </button>
                             </div>
                         </div>
@@ -344,13 +352,9 @@
                                 </svg>
                                 Logs de Auditoría
                             </h2>
-                            <div class="section-actions">
-                                <button class="btn btn-secondary" onclick="loadAuditLogs()">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                                        <polyline points="23 4 23 10 17 10"></polyline>
-                                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                                    </svg>
-                                    Actualizar
+                            <div class="section-actions btn-icon-group">
+                                <button class="btn-icon btn-icon-secondary" onclick="loadAuditLogs()" title="Actualizar">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
                                 </button>
                             </div>
                         </div>
@@ -382,9 +386,13 @@
                                 <label>Usuario</label>
                                 <input type="text" id="audit-usuario" placeholder="Buscar...">
                             </div>
-                            <div class="filter-buttons">
-                                <button class="btn btn-primary" onclick="applyAuditFilters()">Filtrar</button>
-                                <button class="btn btn-secondary" onclick="clearAuditFilters()">Limpiar</button>
+                            <div class="filter-buttons btn-icon-group">
+                                <button class="btn-icon btn-icon-primary" onclick="applyAuditFilters()" title="Filtrar">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                                </button>
+                                <button class="btn-icon btn-icon-ghost" onclick="clearAuditFilters()" title="Limpiar">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                </button>
                             </div>
                         </div>
 
@@ -426,6 +434,10 @@
 
     <script src="js/i18n/i18n.js"></script>
     <script src="js/sidebar.js?v=20260143"></script>
+    <!-- Flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
     <script>
         // ==================== CONFIGURACION ====================
         const hostname = window.location.hostname;
@@ -458,6 +470,20 @@
             } catch (e) {}
             const empresaId = localStorage.getItem('empresa_id');
             window.location.href = `login.html?empresa=${empresaId}`;
+        }
+
+        async function showContextInfo() {
+            try {
+                const response = await fetch(`${API_URL}/api/context-info`, { credentials: 'include' });
+                if (!response.ok) throw new Error('No se pudo obtener la información de contexto');
+                const info = await response.json();
+                let html = `<div style="font-family: monospace; font-size: 0.85rem; line-height: 1.6;"><h4 style="margin-bottom: 10px; color: var(--primary);">👤 Usuario</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>ID:</strong> ${info.user.id}</div><div><strong>Username:</strong> ${info.user.username}</div><div><strong>Nombre:</strong> ${info.user.full_name}</div><div><strong>Rol:</strong> ${info.user.rol}</div><div><strong>Cliente ID:</strong> ${info.user.cliente_id || 'N/A'}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🔗 Sesión</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Connection:</strong> ${info.session.connection}</div><div><strong>Empresa ID:</strong> ${info.session.empresa_id}</div><div><strong>Empresa Nombre:</strong> ${info.session.empresa_nombre}</div><div><strong>User ID:</strong> ${info.session.user_id}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🗄️ DB Config</h4><div style="background: ${info.has_db_config ? '#e8f5e9' : '#ffebee'}; padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Cacheado:</strong> ${info.has_db_config ? '✅ Sí' : '❌ No'}</div>${info.has_db_config ? `<div><strong>Server:</strong> ${info.db_config.dbserver}</div><div><strong>Database:</strong> ${info.db_config.dbname}</div>` : ''}</div><h4 style="margin-bottom: 10px; color: var(--primary);">💾 LocalStorage</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px;"><div><strong>connection:</strong> ${localStorage.getItem('connection') || 'N/A'}</div><div><strong>empresa_id:</strong> ${localStorage.getItem('empresa_id') || 'N/A'}</div></div></div>`;
+                const modal = document.createElement('div');
+                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+                modal.innerHTML = `<div style="background:var(--bg-primary, white);padding:20px;border-radius:12px;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.3);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><h3 style="margin:0;">ℹ️ Info de Contexto</h3><button onclick="this.closest('div').parentElement.remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button></div>${html}</div>`;
+                modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+                document.body.appendChild(modal);
+            } catch (error) { console.error('Error:', error); alert('Error: ' + error.message); }
         }
 
         function goBack() {
@@ -716,9 +742,9 @@
             const container = document.getElementById('audit-pagination');
             const totalPages = Math.ceil(auditTotalLogs / auditPageSize);
             if (totalPages <= 1) { container.innerHTML = ''; return; }
-            let html = `<button class="btn btn-secondary" ${auditCurrentPage === 0 ? 'disabled' : ''} onclick="loadAuditLogs(${auditCurrentPage - 1})">← Anterior</button>`;
+            let html = `<button class="btn-icon btn-icon-secondary btn-icon-sm" ${auditCurrentPage === 0 ? 'disabled' : ''} onclick="loadAuditLogs(${auditCurrentPage - 1})" title="Anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>`;
             html += `<span class="pagination-info">Página ${auditCurrentPage + 1} de ${totalPages}</span>`;
-            html += `<button class="btn btn-secondary" ${auditCurrentPage >= totalPages - 1 ? 'disabled' : ''} onclick="loadAuditLogs(${auditCurrentPage + 1})">Siguiente →</button>`;
+            html += `<button class="btn-icon btn-icon-secondary btn-icon-sm" ${auditCurrentPage >= totalPages - 1 ? 'disabled' : ''} onclick="loadAuditLogs(${auditCurrentPage + 1})" title="Siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button>`;
             container.innerHTML = html;
         }
 
@@ -779,6 +805,20 @@
             const theme = localStorage.getItem('theme') || 'dark';
             document.getElementById('theme-icon').textContent = theme === 'dark' ? '🌙' : '☀️';
 
+            // Inicializar Flatpickr en campos de fecha
+            const locale = localStorage.getItem('language') || 'es';
+            const fpLocale = locale === 'es' ? 'es' : (locale === 'fr' ? 'fr' : 'default');
+            flatpickr('input[type="date"]', {
+                locale: fpLocale,
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'd M Y',
+                allowInput: true,
+                disableMobile: true,
+                animate: true,
+                theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'material_blue'
+            });
+
             // Verificar sesión
             try {
                 const response = await fetch(`${API_URL}/api/current-user`, { credentials: 'include' });
@@ -791,6 +831,12 @@
                 document.getElementById('user-name-display').textContent = user.username;
                 document.getElementById('menu-user-name').textContent = user.full_name || user.username;
                 document.getElementById('menu-user-rol').textContent = user.rol;
+
+                // Mostrar opción de contexto solo para superusuarios
+                if (user.rol === 'superusuario') {
+                    document.getElementById('menu-item-context').style.display = 'flex';
+                    document.getElementById('menu-divider-context').style.display = 'block';
+                }
 
                 // Verificar rol admin
                 if (user.rol !== 'administrador' && user.rol !== 'superusuario') {

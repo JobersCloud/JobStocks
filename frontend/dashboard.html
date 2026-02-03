@@ -46,7 +46,7 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.12.28">
+    <link rel="stylesheet" href="css/styles.css?v=1.12.73">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -72,9 +72,6 @@
                 </div>
             </div>
             <div class="top-header-right">
-                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">
-                    <span id="theme-icon">🌙</span>
-                </button>
                 <div class="menu-container">
                     <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
                         <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -88,7 +85,24 @@
                             <div class="user-name" id="menu-user-name">Usuario</div>
                             <div class="user-rol" id="menu-user-rol">usuario</div>
                         </div>
+                        <div class="menu-divider" id="menu-divider-context" style="display: none;"></div>
+                        <a class="menu-item" id="menu-item-context" onclick="showContextInfo()" style="display: none;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <span data-i18n="menu.contextInfo">Info de Contexto</span>
+                        </a>
                         <div class="menu-divider"></div>
+                        <div class="menu-section-title" data-i18n="menu.appearance">Apariencia</div>
+                        <a class="menu-item" onclick="toggleTheme()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                            <span data-i18n="menu.darkMode">Modo oscuro</span>
+                            <span class="menu-theme-icon" id="theme-icon">🌙</span>
+                        </a>
                         <div class="menu-item menu-item-lang">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"></circle>
@@ -544,6 +558,13 @@
                 document.getElementById('user-name-display').textContent = currentUser.full_name || currentUser.username;
                 document.getElementById('menu-user-name').textContent = currentUser.full_name || currentUser.username;
                 document.getElementById('menu-user-rol').textContent = currentUser.rol;
+
+                // Mostrar opción de contexto solo para superusuarios
+                if (currentUser.rol === 'superusuario') {
+                    document.getElementById('menu-item-context').style.display = 'flex';
+                    document.getElementById('menu-divider-context').style.display = 'block';
+                }
+
                 if (currentUser.rol !== 'administrador' && currentUser.rol !== 'superusuario') {
                     alert('No tienes permisos para acceder a esta pagina');
                     window.location.href = 'index.html';
@@ -562,6 +583,50 @@
             } catch (e) {}
             localStorage.removeItem('csrf_token');
             window.location.href = 'login.html';
+        }
+
+        async function showContextInfo() {
+            try {
+                const response = await fetch(`${API_URL}/api/context-info`, { credentials: 'include' });
+                if (!response.ok) throw new Error('No se pudo obtener la información de contexto');
+                const info = await response.json();
+                let html = `
+                    <div style="font-family: monospace; font-size: 0.85rem; line-height: 1.6;">
+                        <h4 style="margin-bottom: 10px; color: var(--primary);">👤 Usuario</h4>
+                        <div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                            <div><strong>ID:</strong> ${info.user.id}</div>
+                            <div><strong>Username:</strong> ${info.user.username}</div>
+                            <div><strong>Nombre:</strong> ${info.user.full_name}</div>
+                            <div><strong>Rol:</strong> ${info.user.rol}</div>
+                            <div><strong>Cliente ID:</strong> ${info.user.cliente_id || 'N/A'}</div>
+                        </div>
+                        <h4 style="margin-bottom: 10px; color: var(--primary);">🔗 Sesión</h4>
+                        <div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                            <div><strong>Connection:</strong> ${info.session.connection}</div>
+                            <div><strong>Empresa ID:</strong> ${info.session.empresa_id}</div>
+                            <div><strong>Empresa Nombre:</strong> ${info.session.empresa_nombre}</div>
+                            <div><strong>User ID:</strong> ${info.session.user_id}</div>
+                        </div>
+                        <h4 style="margin-bottom: 10px; color: var(--primary);">🗄️ DB Config</h4>
+                        <div style="background: ${info.has_db_config ? '#e8f5e9' : '#ffebee'}; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                            <div><strong>Cacheado:</strong> ${info.has_db_config ? '✅ Sí' : '❌ No'}</div>
+                            ${info.has_db_config ? `<div><strong>Server:</strong> ${info.db_config.dbserver}</div><div><strong>Database:</strong> ${info.db_config.dbname}</div>` : ''}
+                        </div>
+                        <h4 style="margin-bottom: 10px; color: var(--primary);">💾 LocalStorage</h4>
+                        <div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px;">
+                            <div><strong>connection:</strong> ${localStorage.getItem('connection') || 'N/A'}</div>
+                            <div><strong>empresa_id:</strong> ${localStorage.getItem('empresa_id') || 'N/A'}</div>
+                        </div>
+                    </div>`;
+                const modal = document.createElement('div');
+                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+                modal.innerHTML = `<div style="background:var(--bg-primary, white);padding:20px;border-radius:12px;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.3);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><h3 style="margin:0;">ℹ️ Info de Contexto</h3><button onclick="this.closest('div').parentElement.remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button></div>${html}</div>`;
+                modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+                document.body.appendChild(modal);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            }
         }
 
         // ==================== CARGAR DASHBOARD ====================

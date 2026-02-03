@@ -46,7 +46,7 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.12.28">
+    <link rel="stylesheet" href="css/styles.css?v=1.12.73">
 </head>
 <body>
     <!-- ==================== MASTERPAGE LAYOUT ==================== -->
@@ -71,9 +71,6 @@
                 </div>
             </div>
             <div class="top-header-right">
-                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">
-                    <span id="theme-icon">🌙</span>
-                </button>
                 <div class="menu-container">
                     <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
                         <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -87,7 +84,24 @@
                             <div class="user-name" id="menu-user-name">Usuario</div>
                             <div class="user-rol" id="menu-user-rol">usuario</div>
                         </div>
+                        <div class="menu-divider" id="menu-divider-context" style="display: none;"></div>
+                        <a class="menu-item" id="menu-item-context" onclick="showContextInfo()" style="display: none;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <span data-i18n="menu.contextInfo">Info de Contexto</span>
+                        </a>
                         <div class="menu-divider"></div>
+                        <div class="menu-section-title" data-i18n="menu.appearance">Apariencia</div>
+                        <a class="menu-item" onclick="toggleTheme()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                            <span data-i18n="menu.darkMode">Modo oscuro</span>
+                            <span class="menu-theme-icon" id="theme-icon">🌙</span>
+                        </a>
                         <div class="menu-item menu-item-lang">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"></circle>
@@ -311,24 +325,15 @@
                             <img id="logo-preview" src="" alt="Logo" class="logo-preview" style="display: none;">
                             <span id="no-logo" class="no-image" data-i18n="empresaLogo.noLogo">No hay logo configurado</span>
                         </div>
-                        <div class="upload-section">
+                        <div class="upload-section btn-icon-group">
                             <div class="file-input-wrapper">
-                                <button class="btn-upload">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                        <polyline points="17 8 12 3 7 8" />
-                                        <line x1="12" y1="3" x2="12" y2="15" />
-                                    </svg>
-                                    <span data-i18n="empresaLogo.uploadLogo">Subir Logo</span>
+                                <button class="btn-icon btn-icon-primary" title="Subir Logo">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                                 </button>
                                 <input type="file" id="logo-input" accept="image/*,.svg,image/svg+xml" onchange="handleLogoUpload(this)">
                             </div>
-                            <button class="btn-delete" id="btn-delete-logo" onclick="deleteLogo()" disabled>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="3 6 5 6 21 6" />
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                </svg>
-                                <span data-i18n="empresaLogo.deleteLogo">Eliminar Logo</span>
+                            <button class="btn-icon btn-icon-danger" id="btn-delete-logo" onclick="deleteLogo()" disabled title="Eliminar Logo">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                             </button>
                         </div>
                         <p class="info-text" data-i18n="empresaLogo.logoInfo">Formatos recomendados: PNG, SVG. Tamano maximo: 2MB</p>
@@ -436,24 +441,15 @@
                             <img id="favicon-preview" src="" alt="Favicon" class="favicon-preview" style="display: none;">
                             <span id="no-favicon" class="no-image" data-i18n="empresaLogo.noFavicon">No hay favicon configurado</span>
                         </div>
-                        <div class="upload-section">
+                        <div class="upload-section btn-icon-group">
                             <div class="file-input-wrapper">
-                                <button class="btn-upload">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                        <polyline points="17 8 12 3 7 8" />
-                                        <line x1="12" y1="3" x2="12" y2="15" />
-                                    </svg>
-                                    <span data-i18n="empresaLogo.uploadFavicon">Subir Favicon</span>
+                                <button class="btn-icon btn-icon-primary" title="Subir Favicon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                                 </button>
                                 <input type="file" id="favicon-input" accept="image/*,.ico" onchange="handleFaviconUpload(this)">
                             </div>
-                            <button class="btn-delete" id="btn-delete-favicon" onclick="deleteFavicon()" disabled>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="3 6 5 6 21 6" />
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                </svg>
-                                <span data-i18n="empresaLogo.deleteFavicon">Eliminar Favicon</span>
+                            <button class="btn-icon btn-icon-danger" id="btn-delete-favicon" onclick="deleteFavicon()" disabled title="Eliminar Favicon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                             </button>
                         </div>
                         <p class="info-text" data-i18n="empresaLogo.faviconInfo">Formatos recomendados: ICO, PNG 32x32 o 64x64</p>
@@ -549,6 +545,12 @@
                 document.getElementById('menu-user-name').textContent = user.full_name || user.username;
                 document.getElementById('menu-user-rol').textContent = user.rol;
 
+                // Mostrar opción de contexto solo para superusuarios
+                if (user.rol === 'superusuario') {
+                    document.getElementById('menu-item-context').style.display = 'flex';
+                    document.getElementById('menu-divider-context').style.display = 'block';
+                }
+
                 if (user.empresa_nombre) {
                     document.getElementById('header-company-name').textContent = user.empresa_nombre;
                 }
@@ -606,6 +608,20 @@
             } catch (e) {}
             localStorage.removeItem('csrf_token');
             window.location.href = 'login.html';
+        }
+
+        async function showContextInfo() {
+            try {
+                const response = await fetch(`${API_URL}/api/context-info`, { credentials: 'include' });
+                if (!response.ok) throw new Error('No se pudo obtener la información de contexto');
+                const info = await response.json();
+                let html = `<div style="font-family: monospace; font-size: 0.85rem; line-height: 1.6;"><h4 style="margin-bottom: 10px; color: var(--primary);">👤 Usuario</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>ID:</strong> ${info.user.id}</div><div><strong>Username:</strong> ${info.user.username}</div><div><strong>Nombre:</strong> ${info.user.full_name}</div><div><strong>Rol:</strong> ${info.user.rol}</div><div><strong>Cliente ID:</strong> ${info.user.cliente_id || 'N/A'}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🔗 Sesión</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Connection:</strong> ${info.session.connection}</div><div><strong>Empresa ID:</strong> ${info.session.empresa_id}</div><div><strong>Empresa Nombre:</strong> ${info.session.empresa_nombre}</div><div><strong>User ID:</strong> ${info.session.user_id}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🗄️ DB Config</h4><div style="background: ${info.has_db_config ? '#e8f5e9' : '#ffebee'}; padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Cacheado:</strong> ${info.has_db_config ? '✅ Sí' : '❌ No'}</div>${info.has_db_config ? `<div><strong>Server:</strong> ${info.db_config.dbserver}</div><div><strong>Database:</strong> ${info.db_config.dbname}</div>` : ''}</div><h4 style="margin-bottom: 10px; color: var(--primary);">💾 LocalStorage</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px;"><div><strong>connection:</strong> ${localStorage.getItem('connection') || 'N/A'}</div><div><strong>empresa_id:</strong> ${localStorage.getItem('empresa_id') || 'N/A'}</div></div></div>`;
+                const modal = document.createElement('div');
+                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+                modal.innerHTML = `<div style="background:var(--bg-primary, white);padding:20px;border-radius:12px;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.3);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><h3 style="margin:0;">ℹ️ Info de Contexto</h3><button onclick="this.closest('div').parentElement.remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button></div>${html}</div>`;
+                modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+                document.body.appendChild(modal);
+            } catch (error) { console.error('Error:', error); alert('Error: ' + error.message); }
         }
 
         // ==================== ALERTAS ====================

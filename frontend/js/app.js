@@ -838,6 +838,19 @@ function displayUserInfo(user) {
         sidebarConfigSection.style.display = (user.rol === 'administrador' || user.rol === 'superusuario') ? 'block' : 'none';
     }
 
+    // Mostrar opción de contexto solo para superusuarios
+    const menuItemContext = document.getElementById('menu-item-context');
+    const menuDividerContext = document.getElementById('menu-divider-context');
+    if (menuItemContext && menuDividerContext) {
+        if (user.rol === 'superusuario') {
+            menuItemContext.style.display = 'flex';
+            menuDividerContext.style.display = 'block';
+        } else {
+            menuItemContext.style.display = 'none';
+            menuDividerContext.style.display = 'none';
+        }
+    }
+
     // Cargar logo en el header
     const headerLogo = document.getElementById('header-logo');
     if (headerLogo) {
@@ -1594,9 +1607,8 @@ async function mostrarPopupFiltro(columna, elemento) {
                 <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/></svg>
             </button>
             ` : ''}
-            <button class="btn-filter-apply" onclick="aplicarFiltroColumna('${columna}')">
+            <button class="btn-filter-apply" onclick="aplicarFiltroColumna('${columna}')" title="Aplicar">
                 <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
-                Aplicar
             </button>
         </div>
     `;
@@ -1913,7 +1925,9 @@ function renderizarChipsFiltrosColumna() {
     }).join('');
 
     container.innerHTML = chipsHTML + `
-        <button class="btn-clear-filters" onclick="limpiarTodosFiltrosColumna()">Limpiar todo</button>
+        <button class="btn-icon btn-icon-ghost btn-icon-sm" onclick="limpiarTodosFiltrosColumna()" title="Limpiar todo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
     `;
 }
 
@@ -3277,7 +3291,9 @@ function verCarrito() {
                     <div class="cantidad-value">${cantidadFormatted} ${item.unidad || ''}</div>
                 </div>
                 <div class="carrito-item-actions">
-                    <button class="btn-danger" onclick="eliminarDelCarrito(${index})">${t('cart.remove')}</button>
+                    <button class="btn-icon btn-icon-danger btn-icon-sm" onclick="eliminarDelCarrito(${index})" title="${t('cart.remove')}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    </button>
                 </div>
             </div>
         `;
@@ -3286,8 +3302,12 @@ function verCarrito() {
     html += '</div>';
     html += `
         <div class="carrito-footer">
-            <button class="btn-danger" onclick="vaciarCarrito()">${t('cart.clearCart')}</button>
-            <button class="btn-primary" onclick="mostrarFormularioEnvio()">${t('cart.sendRequest')}</button>
+            <button class="btn-icon btn-icon-danger" onclick="vaciarCarrito()" title="${t('cart.clearCart')}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            </button>
+            <button class="btn-icon btn-icon-primary" onclick="mostrarFormularioEnvio()" title="${t('cart.sendRequest')}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
         </div>
     `;
 
@@ -3427,15 +3447,19 @@ function mostrarFormularioEnvio() {
                     <canvas id="signature-canvas" width="600" height="250"></canvas>
                 </div>
                 <div class="signature-actions">
-                    <button type="button" class="btn-secondary btn-sm" onclick="limpiarFirma()">
-                        ${t('shipping.clearSignature') || 'Limpiar'}
+                    <button type="button" class="btn-icon btn-icon-secondary btn-icon-sm" onclick="limpiarFirma()" title="${t('shipping.clearSignature') || 'Limpiar'}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                     </button>
                 </div>
             </div>
             ` : ''}
             <div class="carrito-footer">
-                <button class="btn-secondary" onclick="verCarrito()">${t('shipping.back')}</button>
-                <button class="btn-primary" onclick="enviarSolicitud()">${t('shipping.send')}</button>
+                <button class="btn-icon btn-icon-secondary" onclick="verCarrito()" title="${t('shipping.back')}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <button class="btn-icon btn-icon-primary" onclick="enviarSolicitud()" title="${t('shipping.send')}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
             </div>
         </div>
     `;
