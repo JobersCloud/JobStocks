@@ -17,9 +17,10 @@
 # ============================================
 from flask import Blueprint, request, jsonify, session
 from flask_login import login_required, current_user
-from utils.auth import csrf_required
+from utils.auth import csrf_required, api_key_or_login_required
 from models.parametros_model import ParametrosModel
 from utils.auth import administrador_required
+from datetime import datetime
 
 parametros_bp = Blueprint('parametros', __name__)
 
@@ -338,3 +339,97 @@ def update_parametro(clave):
         })
     else:
         return jsonify({'error': 'Error al actualizar el parámetro'}), 500
+
+
+# ============================================
+# ENDPOINTS MODO ESPEJO
+# ============================================
+
+@parametros_bp.route('/modo-espejo', methods=['GET'])
+def get_modo_espejo():
+    """
+    Obtener configuración de modo espejo y fecha de sincronización
+    ---
+    tags:
+      - Parámetros
+    parameters:
+      - name: empresa_id
+        in: query
+        type: string
+        required: false
+    responses:
+      200:
+        description: Configuración de modo espejo
+        schema:
+          type: object
+          properties:
+            modo_espejo:
+              type: boolean
+              description: Si la BD trabaja en modo espejo
+            fecha_sincronizacion:
+              type: string
+              description: Fecha de la última sincronización (formato YYYY-MM-DD HH:MM:SS)
+    """
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+
+    modo_espejo = ParametrosModel.get('MODO_ESPEJO', empresa_id, connection)
+    fecha_sync = ParametrosModel.get('FECHA_ULTIMA_SINCRONIZACION', empresa_id, connection)
+
+    return jsonify({
+        'modo_espejo': modo_espejo == '1' if modo_espejo else False,
+        'fecha_sincronizacion': fecha_sync or None
+    }), 200
+
+
+@parametros_bp.route('/sincronizacion', methods=['POST'])
+@api_key_or_login_required
+def actualizar_sincronizacion():
+    """
+    Actualizar fecha de última sincronización (para scripts externos)
+    ---
+    tags:
+      - Parámetros
+    security:
+      - api_key: []
+      - session: []
+    parameters:
+      - name: body
+        in: body
+        required: false
+        schema:
+          type: object
+          properties:
+            fecha:
+              type: string
+              description: Fecha de sincronización (formato YYYY-MM-DD HH:MM:SS). Si no se proporciona, usa la fecha actual.
+            empresa_id:
+              type: string
+    responses:
+      200:
+        description: Fecha actualizada correctamente
+      500:
+        description: Error al actualizar
+    """
+    data = request.get_json() or {}
+    connection = get_connection()
+    empresa_id = data.get('empresa_id') or get_empresa_id_from_connection(connection) or '1'
+
+    # Si no se proporciona fecha, usar la actual
+    fecha = data.get('fecha')
+    if not fecha:
+        fecha = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    success = ParametrosModel.set('FECHA_ULTIMA_SINCRONIZACION', fecha, empresa_id, connection)
+
+    if success:
+        return jsonify({
+            'success': True,
+            'message': 'Fecha de sincronización actualizada',
+            'fecha': fecha
+        }), 200
+    else:
+        return jsonify({
+            'success': False,
+            'error': 'Error al actualizar la fecha de sincronización'
+        }), 500

@@ -381,14 +381,17 @@
                     </div>
 
                     <div class="edit-modal-actions">
-                        <button type="button" class="btn-icon btn-icon-warning" onclick="testConnection()" id="btn-test-connection" title="Probar Conexión">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+                        <button type="button" class="btn btn-warning" onclick="testConnection()" id="btn-test-connection">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+                            <span>Probar Conexion</span>
                         </button>
-                        <button type="button" class="btn-icon btn-icon-ghost" onclick="closeEditModal()" title="Cancelar">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <button type="button" class="btn btn-ghost" onclick="closeEditModal()">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            <span>Cancelar</span>
                         </button>
-                        <button type="submit" class="btn-icon btn-icon-success" title="Guardar">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        <button type="submit" class="btn btn-success">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            <span>Guardar</span>
                         </button>
                     </div>
                 </form>
@@ -760,7 +763,8 @@
                     method: method,
                     credentials: 'include',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
                     },
                     body: JSON.stringify(data)
                 });
@@ -781,8 +785,6 @@
         // ==================== PROBAR CONEXION ====================
         async function testConnection() {
             const btn = document.getElementById('btn-test-connection');
-            const originalText = btn.innerHTML;
-
             const configId = document.getElementById('config-id').value;
             const empresaId = localStorage.getItem('empresa_id') || '1';
             const data = {
@@ -804,7 +806,9 @@
                 return;
             }
 
-            btn.innerHTML = '⏳ Probando...';
+            const btnText = btn.querySelector('span');
+            const originalBtnText = btnText.textContent;
+            btnText.textContent = 'Probando...';
             btn.disabled = true;
 
             try {
@@ -821,19 +825,21 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    btn.innerHTML = '✅ Conexion exitosa';
-                    btn.style.background = '#28a745';
+                    btnText.textContent = 'Conexion OK';
+                    btn.classList.remove('btn-warning');
+                    btn.classList.add('btn-success');
                     setTimeout(() => {
-                        btn.innerHTML = originalText;
-                        btn.style.background = '';
+                        btnText.textContent = originalBtnText;
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-warning');
                     }, 3000);
                 } else {
-                    alert('❌ Error: ' + (result.error || result.message || 'Error desconocido'));
-                    btn.innerHTML = originalText;
+                    alert('Error: ' + (result.error || result.message || 'Error desconocido'));
+                    btnText.textContent = originalBtnText;
                 }
             } catch (error) {
                 alert('Error al probar la conexion: ' + error.message);
-                btn.innerHTML = originalText;
+                btnText.textContent = originalBtnText;
             } finally {
                 btn.disabled = false;
             }

@@ -19,7 +19,8 @@
   },
   "header": {
     "title": "Gestión de Stocks",
-    "subtitle": "Sistema de consulta de inventario en tiempo real"
+    "subtitle": "Sistema de consulta de inventario en tiempo real",
+    "mirrorMode": "Espejo"
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -480,7 +481,12 @@
     "sectionOtherDesc": "Parámetros adicionales del sistema",
     "lastModified": "Última modificación",
     "active": "Activo",
-    "inactive": "Inactivo"
+    "inactive": "Inactivo",
+    "mirrorMode": "Modo Espejo",
+    "mirrorModeDesc": "Indica que esta base de datos es una réplica sincronizada",
+    "lastSync": "Última Sincronización",
+    "lastSyncDesc": "Fecha y hora de la última sincronización de datos",
+    "notSynced": "Sin sincronizar"
   },
   "dataGrid": {
     "loading": "Cargando datos...",

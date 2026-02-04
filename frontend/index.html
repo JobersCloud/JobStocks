@@ -72,6 +72,16 @@
                 </div>
             </div>
             <div class="top-header-right">
+                <!-- Indicador modo espejo (solo visible cuando MODO_ESPEJO=1) -->
+                <div class="mirror-indicator" id="mirror-indicator" style="display: none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6"></path>
+                        <path d="M1 20v-6h6"></path>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    <span class="mirror-text" data-i18n="header.mirrorMode">Espejo</span>
+                    <span class="mirror-date" id="mirror-date"></span>
+                </div>
                 <div class="menu-container">
                     <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
                         <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

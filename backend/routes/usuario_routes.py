@@ -394,7 +394,7 @@ def enviar_email_bienvenida(email, username, password, full_name, empresa_id):
                                 <table role="presentation" style="width: 100%; border-collapse: collapse;">
                                     <tr>
                                         <td style="text-align: center; padding: 8px 0 32px 0;">
-                                            <a href="{login_url}" style="display: inline-block; background: linear-gradient(135deg, #FF4338 0%, #C62828 100%); color: white !important; text-decoration: none; padding: 16px 48px; border-radius: 50px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 16px rgba(255,67,56,0.4);">
+                                            <a href="{login_url}" style="display: inline-block; background-color: #FF4338; color: white !important; text-decoration: none; padding: 16px 48px; border-radius: 50px; font-size: 16px; font-weight: 600;">
                                                 🚀 Acceder al Sistema
                                             </a>
                                         </td>

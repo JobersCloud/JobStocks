@@ -636,6 +636,7 @@
         function renderParamCard(param) {
             const isBoolean = param.valor === '0' || param.valor === '1';
             const isTrue = param.valor === '1';
+            const isReadOnly = param.clave === 'FECHA_ULTIMA_SINCRONIZACION';
 
             return `
                 <div class="param-card" data-key="${param.clave}">
@@ -655,6 +656,8 @@
                             <span class="param-value-display ${isTrue ? 'value-true' : 'value-false'}">
                                 ${isTrue ? 'Activo' : 'Inactivo'}
                             </span>
+                        ` : isReadOnly ? `
+                            <span class="param-value-readonly">${param.valor || 'Sin sincronizar'}</span>
                         ` : `
                             <input type="text" class="param-input" id="input-${param.clave}" value="${param.valor}" />
                             <button class="btn-icon btn-icon-success" onclick="saveTextParam('${param.clave}')" title="Guardar">

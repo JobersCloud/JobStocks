@@ -580,6 +580,40 @@ async function cargarConfigWhatsApp() {
     }
 }
 
+// Verificar si está en modo espejo y mostrar indicador
+async function verificarModoEspejo() {
+    try {
+        const empresaId = localStorage.getItem('empresa_id') || '1';
+        const response = await fetch(`${API_URL}/api/parametros/modo-espejo?empresa_id=${empresaId}`, {
+            credentials: 'include'
+        });
+        const data = await response.json();
+
+        const indicator = document.getElementById('mirror-indicator');
+        if (indicator) {
+            if (data.modo_espejo) {
+                indicator.style.display = 'flex';
+                const dateSpan = document.getElementById('mirror-date');
+                if (dateSpan && data.fecha_sincronizacion) {
+                    // Formatear fecha
+                    const fecha = new Date(data.fecha_sincronizacion);
+                    dateSpan.textContent = fecha.toLocaleString('es-ES', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+                console.log(`🔄 Modo espejo activo - Última sincronización: ${data.fecha_sincronizacion}`);
+            } else {
+                indicator.style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Error al verificar modo espejo:', error);
+    }
+}
+
 // Aplicar estado de propuestas a los elementos de la UI
 function aplicarEstadoPropuestas() {
     // Botón flotante del carrito
@@ -3918,6 +3952,7 @@ window.onload = async function () {
         await cargarConfigPaginacion();
         await cargarConfigWhatsApp();
         await cargarOpcionesFiltros();
+        await verificarModoEspejo();
         // NO cargar datos automáticamente - mostrar estado inicial
         mostrarEstadoInicial();
         // Solo cargar carrito si las propuestas están habilitadas

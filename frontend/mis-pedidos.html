@@ -843,29 +843,56 @@
                         <div class="proposal-info-item"><label>${t('orders.total')}</label><span style="font-weight:600;color:var(--primary);">${formatCurrency(order.total)} ${order.divisa || 'EUR'}</span></div>
                     </div>
                     <h3 class="proposal-lines-title">${t('orders.lines')}</h3>
-                    <div class="table-scroll-container">
-                        <table class="proposals-table" style="min-width: auto;">
-                            <thead>
-                                <tr>
-                                    <th>${t('orders.article')}</th>
-                                    <th>${t('orders.description')}</th>
-                                    <th class="text-right">${t('orders.quantity')}</th>
-                                    <th class="text-right">${t('orders.price')}</th>
-                                    <th class="text-right">${t('orders.amount')}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${lines.map(line => `
+
+                    <!-- Tabla para desktop -->
+                    <div class="order-lines-table">
+                        <div class="table-scroll-container">
+                            <table class="proposals-table" style="min-width: auto;">
+                                <thead>
                                     <tr>
-                                        <td><strong>${line.articulo}</strong></td>
-                                        <td>${line.descripcion}</td>
-                                        <td class="text-right">${line.cantidad}</td>
-                                        <td class="text-right">${formatCurrency(line.precio)}</td>
-                                        <td class="text-right">${formatCurrency(line.importe)}</td>
+                                        <th>${t('orders.article')}</th>
+                                        <th>${t('orders.description')}</th>
+                                        <th class="text-right">${t('orders.quantity')}</th>
+                                        <th class="text-right">${t('orders.price')}</th>
+                                        <th class="text-right">${t('orders.amount')}</th>
                                     </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    ${lines.map(line => `
+                                        <tr>
+                                            <td><strong>${line.articulo}</strong></td>
+                                            <td>${line.descripcion}</td>
+                                            <td class="text-right">${line.cantidad}</td>
+                                            <td class="text-right">${formatCurrency(line.precio)}</td>
+                                            <td class="text-right">${formatCurrency(line.importe)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tarjetas para movil -->
+                    <div class="order-lines-cards">
+                        ${lines.map(line => `
+                            <div class="order-line-card">
+                                <div class="order-line-card-header">
+                                    <span class="order-line-card-code">${line.articulo}</span>
+                                    <span class="order-line-card-amount">${formatCurrency(line.importe)}</span>
+                                </div>
+                                <div class="order-line-card-desc">${line.descripcion}</div>
+                                <div class="order-line-card-details">
+                                    <div class="order-line-card-detail">
+                                        <span class="detail-label">${t('orders.quantity')}</span>
+                                        <span class="detail-value">${line.cantidad}</span>
+                                    </div>
+                                    <div class="order-line-card-detail">
+                                        <span class="detail-label">${t('orders.price')}</span>
+                                        <span class="detail-value">${formatCurrency(line.precio)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
                 `;
             } catch (error) {

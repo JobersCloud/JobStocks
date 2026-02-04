@@ -63,7 +63,7 @@ echo.
 REM ============================================
 REM SINCRONIZAR TABLAS NORMALES
 REM ============================================
-echo [2/4] Sincronizando tablas normales...
+echo [2/5] Sincronizando tablas normales...
 echo.
 
 call :sync_tabla empresas
@@ -89,7 +89,7 @@ echo.
 REM ============================================
 REM SINCRONIZAR TABLAS CON BLOBS
 REM ============================================
-echo [3/4] Sincronizando tablas con blobs...
+echo [3/5] Sincronizando tablas con blobs...
 echo.
 
 call :sync_imagenes
@@ -100,12 +100,25 @@ echo.
 REM ============================================
 REM VACIAR LOG DE TRANSACCIONES EN DESTINO
 REM ============================================
-echo [4/4] Vaciando log de transacciones en destino...
+echo [4/5] Vaciando log de transacciones en destino...
 sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "DECLARE @logName NVARCHAR(128); SELECT @logName = name FROM sys.master_files WHERE database_id = DB_ID('%BD%') AND type_desc = 'LOG'; ALTER DATABASE %BD% SET RECOVERY SIMPLE; DBCC SHRINKFILE (@logName, 1); ALTER DATABASE %BD% SET RECOVERY FULL;" > nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     echo     OK
 ) else (
     echo     No se pudo vaciar - puede requerir permisos
+)
+
+echo.
+
+REM ============================================
+REM ACTUALIZAR FECHA DE SINCRONIZACION
+REM ============================================
+echo [5/5] Registrando fecha de sincronizacion...
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d ApiRestStocks -Q "UPDATE parametros SET valor = CONVERT(VARCHAR(19), GETDATE(), 120), fecha_modificacion = GETDATE() WHERE clave = 'FECHA_ULTIMA_SINCRONIZACION'" > nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo     OK
+) else (
+    echo     No se pudo actualizar - verificar que existe el parametro
 )
 
 echo.

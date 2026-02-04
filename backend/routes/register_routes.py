@@ -664,7 +664,7 @@ def enviar_email_verificacion(email, nombre, token, empresa_id="1", connection=N
                                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                                         <tr>
                                             <td align="center" style="padding: 15px 0 40px;">
-                                                <a href="{verify_url}" style="display: inline-block; background: linear-gradient(135deg, #FF4338 0%, #D32F2F 100%); color: #ffffff; padding: 20px 60px; text-decoration: none; border-radius: 50px; font-size: 17px; font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 8px 25px rgba(255,67,56,0.4), 0 3px 10px rgba(0,0,0,0.1); border: none;">
+                                                <a href="{verify_url}" style="display: inline-block; background-color: #FF4338; color: #ffffff; padding: 20px 60px; text-decoration: none; border-radius: 50px; font-size: 17px; font-weight: 600; letter-spacing: 0.5px; border: none;">
                                                     &#10003; &nbsp; Verificar mi cuenta
                                                 </a>
                                             </td>
@@ -835,7 +835,7 @@ def enviar_email_bienvenida(email, nombre, empresa_id="1", connection=None):
                                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                                         <tr>
                                             <td align="center" style="padding: 15px 0 40px;">
-                                                <a href="{login_url}" style="display: inline-block; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #ffffff; padding: 20px 60px; text-decoration: none; border-radius: 50px; font-size: 17px; font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 8px 25px rgba(16,185,129,0.4), 0 3px 10px rgba(0,0,0,0.1);">
+                                                <a href="{login_url}" style="display: inline-block; background-color: #10B981; color: #ffffff; padding: 20px 60px; text-decoration: none; border-radius: 50px; font-size: 17px; font-weight: 600; letter-spacing: 0.5px;">
                                                     &#128640; &nbsp; Acceder al Sistema
                                                 </a>
                                             </td>

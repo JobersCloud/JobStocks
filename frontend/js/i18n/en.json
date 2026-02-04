@@ -19,7 +19,8 @@
   },
   "header": {
     "title": "Stock Management",
-    "subtitle": "Real-time inventory query system"
+    "subtitle": "Real-time inventory query system",
+    "mirrorMode": "Mirror"
   },
   "auth": {
     "login": "Login",
@@ -480,7 +481,12 @@
     "sectionOtherDesc": "Additional system parameters",
     "lastModified": "Last modified",
     "active": "Active",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "mirrorMode": "Mirror Mode",
+    "mirrorModeDesc": "Indicates this database is a synchronized replica",
+    "lastSync": "Last Sync",
+    "lastSyncDesc": "Date and time of last data synchronization",
+    "notSynced": "Not synced"
   },
   "dataGrid": {
     "loading": "Loading data...",
