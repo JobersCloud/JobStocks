@@ -514,10 +514,14 @@ async function handlePasswordChange(e) {
     btnChange.innerHTML = `<span class="loading-spinner"></span>${t('changePassword.changing')}`;
 
     try {
+        // Obtener CSRF token guardado en el login
+        const csrfToken = localStorage.getItem('csrf_token');
+
         const response = await fetch(`${API_URL}/api/usuarios/cambiar-password`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken || ''
             },
             credentials: 'include',
             body: JSON.stringify({ new_password: newPassword })
