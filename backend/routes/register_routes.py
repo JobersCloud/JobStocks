@@ -211,6 +211,7 @@ def register():
     pais = data['pais']
     full_name = data['full_name'].strip()
     company_name = data.get('company_name', '').strip()  # Campo opcional
+    cif_nif = data.get('cif_nif', '').strip()  # Campo opcional
 
     # Validar longitud de password
     if len(password) < 6:
@@ -260,10 +261,10 @@ def register():
         # Crear usuario (inactivo hasta verificar email)
         password_hash = generate_password_hash(password)
         cursor.execute("""
-            INSERT INTO users (username, password_hash, email, full_name, company_name, pais, active, email_verificado, token_verificacion, token_expiracion)
+            INSERT INTO users (username, password_hash, email, full_name, company_name, cif_nif, pais, active, email_verificado, token_verificacion, token_expiracion)
             OUTPUT INSERTED.id
-            VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?)
-        """, (username, password_hash, email, full_name, company_name, pais, token, token_expiracion))
+            VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?)
+        """, (username, password_hash, email, full_name, company_name, cif_nif, pais, token, token_expiracion))
 
         user_id = cursor.fetchone()[0]
 

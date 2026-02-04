@@ -21,7 +21,8 @@
                 'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
                 'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
                 'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
-                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' }
+                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
+                'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
             };
             const theme = localStorage.getItem('theme') || 'dark';
             const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
@@ -156,6 +157,17 @@
                             </svg>
                         </span>
                         <span class="sidebar-item-text" data-i18n="menu.myProposals">Mis Propuestas</span>
+                    </a>
+                    <a class="sidebar-item" data-page="mis-pedidos.html" data-tooltip="Mis Pedidos" onclick="SidebarNav.navigateTo('mis-pedidos.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="3" width="15" height="13"></rect>
+                                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.myOrders">Mis Pedidos</span>
                     </a>
                 </div>
 
@@ -482,7 +494,8 @@
                 'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
                 'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
                 'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
-                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' }
+                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
+                'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
             };
             if (!themes[tema]) tema = 'rubi';
             const colors = themes[tema];

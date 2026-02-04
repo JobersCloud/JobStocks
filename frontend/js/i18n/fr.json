@@ -15,7 +15,8 @@
     "clear": "Effacer",
     "viewAll": "Voir Tout",
     "showing": "Affichage",
-    "of": "sur"
+    "of": "sur",
+    "optional": "(optionnel)"
   },
   "header": {
     "title": "Gestion des Stocks",
@@ -32,6 +33,7 @@
     "email": "Email",
     "fullName": "Nom Complet",
     "companyName": "Entreprise",
+    "cifNif": "N° TVA/SIRET",
     "country": "Pays",
     "loginTitle": "Connexion",
     "loginSubtitle": "Accédez à votre compte pour continuer",
@@ -68,7 +70,8 @@
     "password": "Entrez votre mot de passe",
     "usernameRegister": "Nom d'utilisateur",
     "fullName": "Votre nom complet",
-    "companyName": "Nom de l'entreprise (optionnel)",
+    "companyName": "Nom de l'entreprise",
+    "cifNif": "Numéro d'identification fiscale",
     "email": "vous@email.com",
     "passwordRegister": "Minimum 6 caractères",
     "passwordConfirm": "Répétez le mot de passe",
@@ -396,7 +399,11 @@
     "markAsUnverified": "Marquer non vérifié",
     "confirmMarkVerified": "Marquer l'email de cet utilisateur comme vérifié ?",
     "confirmMarkUnverified": "Marquer l'email de cet utilisateur comme NON vérifié ?",
-    "verificationChangeError": "Erreur lors du changement du statut de vérification"
+    "verificationChangeError": "Erreur lors du changement du statut de vérification",
+    "deleteCascade": "Supprimer l'utilisateur et ses dépendances",
+    "confirmDeleteCascade": "Êtes-vous sûr de vouloir supprimer cet utilisateur et TOUTES ses données ?\n\nLes éléments suivants seront supprimés :\n- Toutes ses propositions et lignes\n- Toutes ses demandes\n- Toutes ses clés API\n- Toutes ses sessions\n- Tout son historique d'audit\n\n⚠️ Cette action est IRRÉVERSIBLE.",
+    "typeUsernameToConfirm": "Pour confirmer, tapez le nom d'utilisateur :",
+    "usernameNotMatch": "Le nom d'utilisateur ne correspond pas. Suppression annulée."
   },
   "changePassword": {
     "title": "Changer le Mot de Passe",

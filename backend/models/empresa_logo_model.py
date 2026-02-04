@@ -326,7 +326,7 @@ class EmpresaLogoModel:
         # Validar que el tema sea válido
         temas_validos = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito',
                          'corporativo', 'ejecutivo', 'oceano', 'bosque', 'vino',
-                         'medianoche', 'titanio', 'bronce']
+                         'medianoche', 'titanio', 'bronce', 'elegante']
         if tema not in temas_validos:
             return False
 

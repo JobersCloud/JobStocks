@@ -22,7 +22,8 @@
                 'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
                 'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
                 'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
-                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' }
+                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
+                'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
             };
             const theme = localStorage.getItem('theme') || 'dark';
             const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
@@ -101,19 +102,6 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="company_name" data-i18n="auth.companyName">Empresa</label>
-                            <input
-                                type="text"
-                                id="company_name"
-                                name="company_name"
-                                data-i18n-placeholder="authPlaceholders.companyName"
-                                placeholder="Nombre de la empresa (opcional)"
-                            >
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
                             <label for="username" data-i18n="auth.username">Usuario</label>
                             <input
                                 type="text"
@@ -125,6 +113,51 @@
                                 autocomplete="username"
                             >
                         </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="company_name">
+                                <span data-i18n="auth.companyName">Empresa</span>
+                                <span class="optional-badge" data-i18n="common.optional">(opcional)</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="company_name"
+                                name="company_name"
+                                data-i18n-placeholder="authPlaceholders.companyName"
+                                placeholder="Nombre de la empresa"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cif_nif">
+                                <span data-i18n="auth.cifNif">CIF/VAT/NIF</span>
+                                <span class="optional-badge" data-i18n="common.optional">(opcional)</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="cif_nif"
+                                name="cif_nif"
+                                data-i18n-placeholder="authPlaceholders.cifNif"
+                                placeholder="Identificador fiscal"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email" data-i18n="auth.email">Email</label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                data-i18n-placeholder="authPlaceholders.email"
+                                placeholder="tu@email.com"
+                                required
+                                autocomplete="email"
+                            >
+                        </div>
 
                         <div class="form-group">
                             <label for="pais" data-i18n="auth.country">País</label>
@@ -132,19 +165,6 @@
                                 <option value="" data-i18n="authPlaceholders.selectCountry">Selecciona...</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email" data-i18n="auth.email">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            data-i18n-placeholder="authPlaceholders.email"
-                            placeholder="tu@email.com"
-                            required
-                            autocomplete="email"
-                        >
                     </div>
 
                     <div class="form-row">

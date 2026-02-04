@@ -972,3 +972,145 @@ def cambiar_password():
             'success': False,
             'error': str(e)
         }), 500
+
+
+@usuario_bp.route('/<int:user_id>', methods=['DELETE'])
+@login_required
+@csrf_required
+@superusuario_required
+def eliminar_usuario_cascada(user_id):
+    """
+    Eliminar un usuario y todas sus dependencias en cascada (solo superusuarios)
+    Elimina: propuestas (y lineas), consultas, api_keys, user_sessions, audit_log
+    ---
+    tags:
+      - Usuarios
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: user_id
+        in: path
+        type: integer
+        required: true
+        description: ID del usuario a eliminar
+    responses:
+      200:
+        description: Usuario eliminado correctamente
+      400:
+        description: No se puede eliminar al propio usuario
+      404:
+        description: Usuario no encontrado
+      401:
+        description: No autenticado
+      403:
+        description: No autorizado (requiere rol superusuario)
+    """
+    from config.database import Database
+
+    # Evitar que el usuario se elimine a sí mismo
+    if user_id == current_user.id:
+        return jsonify({
+            'success': False,
+            'error': 'No puedes eliminarte a ti mismo'
+        }), 400
+
+    try:
+        connection = session.get('connection')
+        empresa_id = session.get('empresa_id', '1')
+
+        # Verificar que el usuario existe
+        usuario = get_user_by_id_and_empresa(user_id, connection, empresa_id)
+        if not usuario:
+            return jsonify({
+                'success': False,
+                'error': 'Usuario no encontrado en esta empresa'
+            }), 404
+
+        username_eliminado = usuario.get('username', 'desconocido')
+
+        conn = Database.get_connection(connection)
+        cursor = conn.cursor()
+
+        eliminados = {
+            'propuestas_lineas': 0,
+            'propuestas': 0,
+            'consultas': 0,
+            'api_keys': 0,
+            'user_sessions': 0,
+            'audit_log': 0
+        }
+
+        try:
+            # 1. Eliminar líneas de propuestas (las propuestas del usuario)
+            cursor.execute("""
+                DELETE FROM propuestas_lineas
+                WHERE propuesta_id IN (SELECT id FROM propuestas WHERE user_id = ?)
+            """, (user_id,))
+            eliminados['propuestas_lineas'] = cursor.rowcount
+
+            # 2. Eliminar propuestas del usuario
+            cursor.execute("DELETE FROM propuestas WHERE user_id = ?", (user_id,))
+            eliminados['propuestas'] = cursor.rowcount
+
+            # 3. Eliminar consultas del usuario
+            cursor.execute("DELETE FROM consultas WHERE user_id = ?", (user_id,))
+            eliminados['consultas'] = cursor.rowcount
+
+            # 4. Eliminar API keys del usuario
+            cursor.execute("DELETE FROM api_keys WHERE user_id = ?", (user_id,))
+            eliminados['api_keys'] = cursor.rowcount
+
+            # 5. Eliminar sesiones activas del usuario
+            cursor.execute("DELETE FROM user_sessions WHERE user_id = ?", (user_id,))
+            eliminados['user_sessions'] = cursor.rowcount
+
+            # 6. Eliminar registros de auditoría del usuario
+            cursor.execute("DELETE FROM audit_log WHERE user_id = ?", (user_id,))
+            eliminados['audit_log'] = cursor.rowcount
+
+            # 7. Finalmente, eliminar el usuario
+            cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+
+            conn.commit()
+
+            # Registrar audit log de la eliminación (con el usuario actual, no el eliminado)
+            try:
+                AuditModel.log(
+                    accion=AuditAction.USER_DELETE,
+                    user_id=current_user.id,
+                    username=current_user.username,
+                    empresa_id=empresa_id,
+                    recurso='user',
+                    recurso_id=str(user_id),
+                    ip_address=get_client_ip(),
+                    user_agent=request.headers.get('User-Agent'),
+                    detalles={
+                        'usuario_eliminado': username_eliminado,
+                        'registros_eliminados': eliminados
+                    },
+                    resultado=AuditResult.SUCCESS
+                )
+            except Exception as e:
+                print(f"Warning: No se pudo registrar audit log: {e}")
+
+            return jsonify({
+                'success': True,
+                'message': f'Usuario "{username_eliminado}" eliminado correctamente junto con todas sus dependencias',
+                'eliminados': eliminados
+            }), 200
+
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            cursor.close()
+            conn.close()
+
+    except Exception as e:
+        import traceback
+        print(f"[ERROR] eliminar_usuario_cascada: {e}")
+        print(f"[ERROR] Traceback: {traceback.format_exc()}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500

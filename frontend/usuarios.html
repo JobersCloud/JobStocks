@@ -21,7 +21,8 @@
                 'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
                 'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
                 'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
-                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' }
+                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
+                'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
             };
             const theme = localStorage.getItem('theme') || 'dark';
             const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
@@ -156,6 +157,17 @@
                             </svg>
                         </span>
                         <span class="sidebar-item-text" data-i18n="menu.myProposals">Mis Propuestas</span>
+                    </a>
+                    <a class="sidebar-item" data-page="mis-pedidos.html" data-tooltip="Mis Pedidos" onclick="SidebarNav.navigateTo('mis-pedidos.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="3" width="15" height="13"></rect>
+                                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.myOrders">Mis Pedidos</span>
                     </a>
                 </div>
 
@@ -638,7 +650,8 @@
                 'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
                 'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
                 'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
-                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' }
+                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
+                'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
             };
             if (!themes[tema]) tema = 'rubi';
             const colors = themes[tema];
@@ -1248,6 +1261,13 @@
                 }
             }
 
+            // Botón eliminar en cascada (solo para superusuarios)
+            if (currentUser.rol === 'superusuario') {
+                buttons.push(`
+                    <button class="btn-action btn-delete-cascade" onclick="deleteUserCascade(${user.id}, '${escapeHtml(user.username)}')" title="${t('users.deleteCascade') || 'Eliminar usuario y dependencias'}" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);">🗑️</button>
+                `);
+            }
+
             return buttons.join('');
         }
 
@@ -1308,6 +1328,57 @@
             } catch (error) {
                 console.error('Error deactivating user:', error);
                 alert('Error al desactivar el usuario');
+            }
+        }
+
+        // ==================== ELIMINAR USUARIO EN CASCADA ====================
+        async function deleteUserCascade(userId, username) {
+            // Confirmación especial para eliminación en cascada
+            const confirmMsg = t('users.confirmDeleteCascade') ||
+                `¿Estás seguro de eliminar al usuario "${username}" y TODOS sus datos?\n\nSe eliminarán:\n- Todas sus propuestas y líneas\n- Todas sus consultas\n- Todas sus API keys\n- Todas sus sesiones\n- Todo su historial de auditoría\n\n⚠️ Esta acción NO se puede deshacer.`;
+
+            if (!confirm(confirmMsg)) return;
+
+            // Segunda confirmación
+            const secondConfirm = prompt(t('users.typeUsernameToConfirm') || `Para confirmar, escribe el nombre de usuario: ${username}`);
+            if (secondConfirm !== username) {
+                alert(t('users.usernameNotMatch') || 'El nombre de usuario no coincide. Eliminación cancelada.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRF-Token': csrfToken
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error eliminando usuario');
+                }
+
+                // Mostrar resumen de lo eliminado
+                let resumen = `Usuario "${username}" eliminado correctamente.\n\nRegistros eliminados:`;
+                if (data.eliminados) {
+                    resumen += `\n- Líneas de propuestas: ${data.eliminados.propuestas_lineas}`;
+                    resumen += `\n- Propuestas: ${data.eliminados.propuestas}`;
+                    resumen += `\n- Consultas: ${data.eliminados.consultas}`;
+                    resumen += `\n- API Keys: ${data.eliminados.api_keys}`;
+                    resumen += `\n- Sesiones: ${data.eliminados.user_sessions}`;
+                    resumen += `\n- Registros de auditoría: ${data.eliminados.audit_log}`;
+                }
+                alert(resumen);
+
+                // Eliminar usuario de la lista local
+                users = users.filter(u => u.id !== userId);
+                renderUsers();
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert('Error al eliminar el usuario: ' + error.message);
             }
         }
 

@@ -457,7 +457,7 @@ def set_tema(empresa_id):
         # Validar tema antes de intentar guardar
         temas_validos = ['rubi', 'zafiro', 'esmeralda', 'amatista', 'ambar', 'grafito',
                          'corporativo', 'ejecutivo', 'oceano', 'bosque', 'vino',
-                         'medianoche', 'titanio', 'bronce']
+                         'medianoche', 'titanio', 'bronce', 'elegante']
         if tema not in temas_validos:
             return jsonify({"error": f"Tema '{tema}' no válido. Valores permitidos: {', '.join(temas_validos)}"}), 400
 

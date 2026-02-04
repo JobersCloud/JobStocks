@@ -111,7 +111,8 @@ function applyColorTheme(tema) {
         'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
         'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
         'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
-        'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' }
+        'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
+        'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
     };
     if (!themes[tema]) tema = 'rubi';
     const colors = themes[tema];
@@ -250,6 +251,7 @@ function setupRegisterForm() {
         const formData = {
             full_name: document.getElementById('full_name').value.trim(),
             company_name: document.getElementById('company_name').value.trim(),
+            cif_nif: document.getElementById('cif_nif').value.trim(),
             username: document.getElementById('username').value.trim(),
             email: document.getElementById('email').value.trim(),
             pais: document.getElementById('pais').value,
@@ -286,25 +288,32 @@ function setupRegisterForm() {
 
             const data = await response.json();
 
-            if (response.ok && data.success) {
-                showAlert(data.message, 'success');
-                document.getElementById('register-form').reset();
-
-                // Redirigir al login después de 3 segundos (manteniendo connection)
-                setTimeout(() => {
-                    const connection = localStorage.getItem('connection') || localStorage.getItem('empresa_id') || '1';
-                    window.location.href = `/login.html?connection=${connection}`;
-                }, 3000);
-            } else {
+            // Si hay error (usuario o email ya existe, validación fallida, etc.)
+            if (!response.ok || !data.success) {
                 showAlert(data.message || t('auth.registerError'), 'error');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
+                // NO resetear formulario, NO redirigir - el usuario debe corregir los datos
+                return;
             }
+
+            // Solo si el registro fue exitoso
+            showAlert(data.message, 'success');
+            document.getElementById('register-form').reset();
+
+            // Redirigir al login después de 3 segundos (manteniendo connection)
+            setTimeout(() => {
+                const connection = localStorage.getItem('connection') || localStorage.getItem('empresa_id') || '1';
+                window.location.href = `/login.html?connection=${connection}`;
+            }, 3000);
+
         } catch (error) {
             console.error('Error:', error);
             showAlert(t('auth.registerConnectionError'), 'error');
             btn.disabled = false;
             btn.innerHTML = originalText;
+            // NO resetear formulario en caso de error de conexión
+            return;
         }
     });
 }

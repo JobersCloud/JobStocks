@@ -217,6 +217,17 @@
     --row-hover: #f8f0e6;
 }
 
+/* Tema Elegante (Rojo Cálido + Negro - Corporativo) */
+[data-color-theme="elegante"] {
+    --primary: #FF4438;
+    --primary-dark: #1a1a1a;
+    --primary-light: #FF6B5B;
+    --secondary: #000000;
+    --accent: #F8EFE0;
+    --row-odd: #fdfbf8;
+    --row-hover: #f8efe0;
+}
+
 /* Asegurar que los temas de color funcionen con dark mode */
 [data-theme="dark"][data-color-theme="rubi"] {
     --accent: #4a1e1e;
@@ -315,6 +326,13 @@
     --row-even: #1e293b;
     --row-odd: #1a1410;
     --row-hover: #6b4520;
+}
+
+[data-theme="dark"][data-color-theme="elegante"] {
+    --accent: #3d2a1a;
+    --row-even: #1e293b;
+    --row-odd: #1a1512;
+    --row-hover: #4a3020;
 }
 
 /* ==================== MODO OSCURO ==================== */
@@ -736,24 +754,20 @@
 .mirror-indicator {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
+    gap: 6px;
+    padding: 4px 10px;
     background: rgba(255, 193, 7, 0.15);
     border: 1px solid rgba(255, 193, 7, 0.4);
-    border-radius: 20px;
+    border-radius: 15px;
     color: #ffc107;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
 }
 
 .mirror-indicator svg {
-    animation: mirror-spin 2s linear infinite;
-    color: #ffc107;
-}
-
-@keyframes mirror-spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
 }
 
 .mirror-text {
@@ -763,24 +777,41 @@
 
 .mirror-date {
     color: rgba(255, 193, 7, 0.8);
-    font-size: 11px;
+    font-size: 10px;
     border-left: 1px solid rgba(255, 193, 7, 0.3);
-    padding-left: 8px;
-    margin-left: 4px;
+    padding-left: 6px;
+    margin-left: 2px;
 }
 
-/* Responsive - ocultar fecha en móvil */
+/* Responsive - compactar en móvil */
 @media (max-width: 768px) {
-    .mirror-date {
-        display: none;
+    .mirror-indicator {
+        padding: 3px 6px;
+        gap: 4px;
     }
 
-    .mirror-indicator {
-        padding: 4px 8px;
+    .mirror-indicator svg {
+        width: 12px;
+        height: 12px;
     }
 
     .mirror-text {
-        font-size: 10px;
+        font-size: 9px;
+    }
+
+    .mirror-date {
+        display: none;
+    }
+}
+
+/* Responsive - muy pequeño en móvil pequeño */
+@media (max-width: 480px) {
+    .mirror-indicator {
+        padding: 2px 5px;
+    }
+
+    .mirror-text {
+        display: none;
     }
 }
 
@@ -6734,6 +6765,20 @@ tbody tr:hover {
     }
 }
 
+/* Badge opcional para campos no requeridos */
+.optional-badge {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-secondary);
+    opacity: 0.7;
+    margin-left: 4px;
+}
+
+[data-theme="dark"] .optional-badge {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
 /* ==================== VERIFICACIÓN DE EMAIL ==================== */
 .verify-icon {
     font-size: 80px;
@@ -11412,6 +11457,96 @@ tbody tr:hover {
 [data-theme="dark"] .theme-card:hover,
 [data-theme="dark"] .theme-card.selected {
     border-color: var(--primary-light);
+}
+
+/* ==================== LOGO EMPRESA - RESPONSIVE MOVIL ==================== */
+@media (max-width: 768px) {
+    .logo-container {
+        padding: 10px;
+    }
+
+    .logo-card {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .logo-card h3 {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+    }
+
+    .logo-preview-container {
+        padding: 15px;
+        min-height: 120px;
+    }
+
+    .logo-preview {
+        max-width: 200px;
+        max-height: 100px;
+    }
+
+    .empresa-info {
+        padding: 12px 15px;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    /* Grid de temas: 3 columnas en movil */
+    .theme-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .theme-card {
+        padding: 8px;
+    }
+
+    .theme-preview {
+        height: 35px;
+        margin-bottom: 6px;
+    }
+
+    .theme-name {
+        font-size: 0.75rem;
+    }
+
+    .config-option {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .config-option-info {
+        width: 100%;
+    }
+
+    .config-option-label {
+        font-size: 0.9rem;
+    }
+
+    .config-option-desc {
+        font-size: 0.8rem;
+    }
+
+    .theme-selector-section {
+        margin-top: 15px !important;
+    }
+
+    .info-text {
+        font-size: 0.8rem;
+        margin-top: 10px;
+    }
+}
+
+/* Pantallas muy pequeñas: 2 columnas */
+@media (max-width: 400px) {
+    .theme-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .logo-preview {
+        max-width: 150px;
+    }
 }
 
 /* ==================== SESIONES ACTIVAS ==================== */

@@ -15,7 +15,8 @@
     "clear": "Clear",
     "viewAll": "View All",
     "showing": "Showing",
-    "of": "of"
+    "of": "of",
+    "optional": "(optional)"
   },
   "header": {
     "title": "Stock Management",
@@ -32,6 +33,7 @@
     "email": "Email",
     "fullName": "Full Name",
     "companyName": "Company",
+    "cifNif": "VAT/Tax ID",
     "country": "Country",
     "loginTitle": "Sign In",
     "loginSubtitle": "Access your account to continue",
@@ -68,7 +70,8 @@
     "password": "Enter your password",
     "usernameRegister": "Username",
     "fullName": "Your full name",
-    "companyName": "Company name (optional)",
+    "companyName": "Company name",
+    "cifNif": "Tax identification number",
     "email": "you@email.com",
     "passwordRegister": "Minimum 6 characters",
     "passwordConfirm": "Repeat password",
@@ -396,7 +399,11 @@
     "markAsUnverified": "Mark unverified",
     "confirmMarkVerified": "Mark this user's email as verified?",
     "confirmMarkUnverified": "Mark this user's email as NOT verified?",
-    "verificationChangeError": "Error changing verification status"
+    "verificationChangeError": "Error changing verification status",
+    "deleteCascade": "Delete user and dependencies",
+    "confirmDeleteCascade": "Are you sure you want to delete this user and ALL their data?\n\nThe following will be deleted:\n- All their proposals and lines\n- All their inquiries\n- All their API keys\n- All their sessions\n- All their audit history\n\n⚠️ This action CANNOT be undone.",
+    "typeUsernameToConfirm": "To confirm, type the username:",
+    "usernameNotMatch": "Username does not match. Deletion cancelled."
   },
   "changePassword": {
     "title": "Change Password",

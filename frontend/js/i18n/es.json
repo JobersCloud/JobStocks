@@ -15,7 +15,8 @@
     "clear": "Limpiar",
     "viewAll": "Ver Todos",
     "showing": "Mostrando",
-    "of": "de"
+    "of": "de",
+    "optional": "(opcional)"
   },
   "header": {
     "title": "Gestión de Stocks",
@@ -32,6 +33,7 @@
     "email": "Email",
     "fullName": "Nombre Completo",
     "companyName": "Empresa",
+    "cifNif": "CIF/VAT/NIF",
     "country": "País",
     "loginTitle": "Iniciar Sesión",
     "loginSubtitle": "Accede a tu cuenta para continuar",
@@ -68,7 +70,8 @@
     "password": "Ingresa tu contraseña",
     "usernameRegister": "Nombre de usuario",
     "fullName": "Tu nombre completo",
-    "companyName": "Nombre de la empresa (opcional)",
+    "companyName": "Nombre de la empresa",
+    "cifNif": "Identificador fiscal",
     "email": "tu@email.com",
     "passwordRegister": "Mínimo 6 caracteres",
     "passwordConfirm": "Repite la contraseña",
@@ -396,7 +399,11 @@
     "markAsUnverified": "Marcar no verificado",
     "confirmMarkVerified": "¿Marcar el email de este usuario como verificado?",
     "confirmMarkUnverified": "¿Marcar el email de este usuario como NO verificado?",
-    "verificationChangeError": "Error al cambiar el estado de verificación"
+    "verificationChangeError": "Error al cambiar el estado de verificación",
+    "deleteCascade": "Eliminar usuario y dependencias",
+    "confirmDeleteCascade": "¿Estás seguro de eliminar este usuario y TODOS sus datos?\n\nSe eliminarán:\n- Todas sus propuestas y líneas\n- Todas sus consultas\n- Todas sus API keys\n- Todas sus sesiones\n- Todo su historial de auditoría\n\n⚠️ Esta acción NO se puede deshacer.",
+    "typeUsernameToConfirm": "Para confirmar, escribe el nombre de usuario:",
+    "usernameNotMatch": "El nombre de usuario no coincide. Eliminación cancelada."
   },
   "changePassword": {
     "title": "Cambiar Contraseña",
