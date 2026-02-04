@@ -81,7 +81,7 @@ call :sync_tabla almcajas
 call :sync_tabla almartcal
 call :sync_tabla almarttonopeso
 call :sync_tabla venliped
-call :sync_tabla venped
+call :sync_venped
 call :sync_tabla genter
 
 echo.
@@ -215,4 +215,20 @@ if "!CNT_O!"=="!CNT_D!" (
     bcp %BD%.dbo.articulo_ficha_tecnica in "%DATOS%\articulo_ficha_tecnica.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1
     echo OK [!CNT_O! registros] [sync]
 )
+goto :eof
+
+REM ============================================
+REM FUNCION: sync_venped (siempre sincroniza - solo pedidos con lineas)
+REM ============================================
+:sync_venped
+<nul set /p="     venped (con lineas)... "
+
+REM Exportar solo venped que tienen lineas en venliped (todas las empresas)
+bcp "SELECT * FROM %BD%.dbo.venped WHERE pedido IN (SELECT venliped.pedido FROM %BD%.dbo.venliped WHERE venliped.empresa = venped.empresa AND venliped.anyo = venped.anyo)" queryout "%DATOS%\venped.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
+
+REM Truncar e importar
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.venped" > nul 2>&1
+bcp %BD%.dbo.venped in "%DATOS%\venped.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1
+
+echo [sync]
 goto :eof
