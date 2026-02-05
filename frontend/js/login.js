@@ -88,16 +88,16 @@ function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
 
-    // Actualizar switch y icono
-    const themeSwitch = document.getElementById('theme-switch');
-    const themeIcon = document.getElementById('theme-icon');
+    const isDark = theme === 'dark';
+    const iconText = isDark ? '☀️' : '🌙';
 
-    if (themeSwitch) {
-        themeSwitch.checked = theme === 'dark';
-    }
-    if (themeIcon) {
-        themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
-    }
+    // Actualizar switches e iconos (desktop + mobile)
+    ['', '-mobile'].forEach(suffix => {
+        const sw = document.getElementById('theme-switch' + suffix);
+        const ic = document.getElementById('theme-icon' + suffix);
+        if (sw) sw.checked = isDark;
+        if (ic) ic.textContent = iconText;
+    });
 }
 
 // Alternar tema
@@ -131,6 +131,33 @@ async function cargarTemaColor(connection) {
         console.error('Error cargando tema (posible problema de conexión):', error);
         applyColorTheme('rubi');
         return false;
+    }
+}
+
+// Cargar logo del cliente desde la API
+async function cargarLogoCliente(connection) {
+    try {
+        const existsResp = await fetch(`${API_URL}/api/empresa/${connection}/logo/exists`);
+        const existsData = await existsResp.json().catch(() => ({}));
+
+        if (existsData.exists) {
+            const logoUrl = `${API_URL}/api/empresa/${connection}/logo`;
+            const sidebarLogo = document.getElementById('sidebar-logo');
+            const mobileLogo = document.getElementById('mobile-logo');
+
+            if (sidebarLogo) sidebarLogo.src = logoUrl;
+            if (mobileLogo) mobileLogo.src = logoUrl;
+
+            // Mostrar el "Powered by" del desarrollador (sidebar desktop)
+            const devBadge = document.querySelector('.sidebar-developer');
+            if (devBadge) devBadge.style.display = 'flex';
+
+            // Mostrar el "Powered by" del desarrollador (mobile)
+            const mobileDevBadge = document.getElementById('mobile-developer');
+            if (mobileDevBadge) mobileDevBadge.style.display = 'flex';
+        }
+    } catch (error) {
+        console.log('No se pudo cargar logo del cliente, usando logo por defecto');
     }
 }
 
@@ -268,6 +295,9 @@ async function initLogin() {
         showConnectionError(connection);
         return; // Detener la inicialización
     }
+
+    // Cargar logo del cliente (si existe, reemplaza el logo estático)
+    await cargarLogoCliente(connection);
 
     // Inicializar i18n (necesario para mensajes)
     await I18n.init();

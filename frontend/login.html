@@ -65,6 +65,10 @@
                 <h2 data-i18n="header.title">Gestión de Stocks</h2>
                 <p><span data-i18n="header.subtitle">Sistema de consulta de inventario en tiempo real</span></p>
             </div>
+            <div class="sidebar-developer">
+                <span>Powered by</span>
+                <img src="assets/logojobers.png" alt="Jobers" class="developer-logo">
+            </div>
         </div>
 
         <div class="login-container">
@@ -143,6 +147,29 @@
                     </button>
                     <div id="resend-alert" style="margin-top: 15px;"></div>
                 </div>
+
+                <!-- Controles y logo desarrollador en móvil (sidebar oculto) -->
+                <div class="login-mobile-footer">
+                    <div class="login-mobile-controls">
+                        <div class="theme-toggle-login" onclick="toggleTheme()">
+                            <span class="theme-icon" id="theme-icon-mobile">☀️</span>
+                            <label class="switch">
+                                <input type="checkbox" id="theme-switch-mobile" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <select id="lang-selector-mobile" class="lang-selector" onchange="I18n.setLanguage(this.value)">
+                            <option value="es">ES</option>
+                            <option value="en">EN</option>
+                            <option value="fr">FR</option>
+                        </select>
+                        <span class="version-indicator-inline" id="version-indicator-mobile"></span>
+                    </div>
+                    <div class="mobile-developer" id="mobile-developer">
+                        <span>Powered by</span>
+                        <img src="assets/logojobers.png" alt="Jobers" class="developer-logo">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -206,15 +233,26 @@
     <script src="js/i18n/i18n.js?v=20260120"></script>
     <script src="js/login.js?v=20260120"></script>
     <script>
-        // Cargar versión desde API
+        // Cargar versión desde API (desktop + mobile)
         fetch('/api/version')
             .then(r => r.json())
             .then(data => {
                 document.getElementById('version-indicator').textContent = data.version;
+                var mv = document.getElementById('version-indicator-mobile');
+                if (mv) mv.textContent = data.version;
             })
             .catch(() => {
                 document.getElementById('version-indicator').style.display = 'none';
             });
+
+        // Sincronizar idioma en selector móvil
+        document.addEventListener('DOMContentLoaded', function() {
+            var lang = localStorage.getItem('lang') || 'es';
+            var s1 = document.getElementById('lang-selector');
+            var s2 = document.getElementById('lang-selector-mobile');
+            if (s1) s1.value = lang;
+            if (s2) s2.value = lang;
+        });
     </script>
 </body>
 </html>

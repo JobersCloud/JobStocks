@@ -417,9 +417,20 @@ def resend_verification():
         except Exception as e:
             error_msg = str(e)
             print(f"Error al reenviar email: {error_msg}")
+
+            # Mensajes de error más específicos
+            if "No hay configuración de email activa" in error_msg:
+                user_message = 'No hay servidor de correo configurado. Contacte con el administrador.'
+            elif "autenticación SMTP" in error_msg.lower() or "authentication" in error_msg.lower():
+                user_message = 'Error de autenticación del servidor de correo. Contacte con el administrador.'
+            elif "timeout" in error_msg.lower() or "timed out" in error_msg.lower():
+                user_message = 'El servidor de correo no responde. Inténtelo más tarde.'
+            else:
+                user_message = 'Error al enviar el email. Por favor, inténtelo más tarde.'
+
             return jsonify({
                 'success': False,
-                'message': f'Error al enviar el email: {error_msg}'
+                'message': user_message
             }), 500
 
     except Exception as e:

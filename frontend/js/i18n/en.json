@@ -351,7 +351,10 @@
     "filterDateTo": "To",
     "allStatuses": "All statuses",
     "downloadExcel": "Download Excel",
-    "downloadExcelError": "Error downloading Excel file"
+    "downloadExcelError": "Error downloading Excel file",
+    "changeStatus": "Change Status",
+    "selectStatus": "Select a status",
+    "proposal": "Proposal"
   },
   "users": {
     "title": "User Management",

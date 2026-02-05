@@ -15,6 +15,8 @@
 # ============================================
 # ARCHIVO: routes/email_config_routes.py
 # ============================================
+import socket
+import smtplib
 from flask import Blueprint, jsonify, request, session
 from flask_login import login_required, current_user
 from utils.auth import csrf_required
@@ -195,9 +197,6 @@ def test_config():
       - Configuración Email
     """
     try:
-        import smtplib
-        from email.mime.text import MIMEText
-
         data = request.json
         smtp_server = data.get('smtp_server')
         smtp_port = int(data.get('smtp_port', 587))
@@ -223,9 +222,16 @@ def test_config():
         # Intentar conexión SMTP
         print(f"🔧 Probando conexión SMTP: {smtp_server}:{smtp_port}")
 
-        server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
+        # Puerto 465 usa SSL directo, otros puertos usan STARTTLS
+        if smtp_port == 465:
+            print("   Usando SMTP_SSL (puerto 465)")
+            server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=10)
+        else:
+            print(f"   Usando SMTP con STARTTLS (puerto {smtp_port})")
+            server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
+            server.starttls()
+
         server.set_debuglevel(0)
-        server.starttls()
         server.login(email_from, email_password)
         server.quit()
 
@@ -234,13 +240,26 @@ def test_config():
 
     except smtplib.SMTPAuthenticationError as e:
         print(f"❌ Error de autenticación SMTP: {str(e)}")
-        return jsonify({"success": False, "error": "Error de autenticación. Verifica el email y contraseña."}), 200
+        # Gmail/Google requiere "Contraseña de aplicación" si tiene 2FA
+        error_msg = "Error de autenticación. Verifica el email y contraseña."
+        if "gmail" in smtp_server.lower() or "google" in smtp_server.lower():
+            error_msg += " Si usas Gmail con verificación en 2 pasos, necesitas una 'Contraseña de aplicación'."
+        return jsonify({"success": False, "error": error_msg}), 200
     except smtplib.SMTPConnectError as e:
         print(f"❌ Error de conexión SMTP: {str(e)}")
         return jsonify({"success": False, "error": f"No se pudo conectar al servidor SMTP: {smtp_server}:{smtp_port}"}), 200
+    except socket.timeout:
+        print(f"❌ Timeout al conectar a SMTP")
+        return jsonify({"success": False, "error": f"Timeout: El servidor {smtp_server}:{smtp_port} no responde. Verifica servidor y puerto."}), 200
     except Exception as e:
         print(f"❌ Error SMTP: {str(e)}")
-        return jsonify({"success": False, "error": str(e)}), 200
+        error_str = str(e)
+        # Mensajes más amigables para errores comunes
+        if "getaddrinfo failed" in error_str or "Name or service not known" in error_str:
+            return jsonify({"success": False, "error": f"Servidor '{smtp_server}' no encontrado. Verifica el nombre del servidor."}), 200
+        if "Connection refused" in error_str:
+            return jsonify({"success": False, "error": f"Conexión rechazada en {smtp_server}:{smtp_port}. Verifica el puerto."}), 200
+        return jsonify({"success": False, "error": error_str}), 200
 
 
 @email_config_bp.route('/<int:id>/activate', methods=['POST'])

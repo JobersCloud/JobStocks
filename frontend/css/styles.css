@@ -800,7 +800,8 @@
     }
 
     .mirror-date {
-        display: none;
+        font-size: 8px;
+        padding-left: 4px;
     }
 }
 
@@ -808,10 +809,22 @@
 @media (max-width: 480px) {
     .mirror-indicator {
         padding: 2px 5px;
+        flex-wrap: wrap;
+        justify-content: center;
+        max-width: 80px;
     }
 
     .mirror-text {
-        display: none;
+        font-size: 8px;
+    }
+
+    .mirror-date {
+        border-left: none;
+        padding-left: 0;
+        margin-left: 0;
+        width: 100%;
+        text-align: center;
+        font-size: 7px;
     }
 }
 
@@ -1414,6 +1427,10 @@ a:not(.sidebar-item):not(.btn):hover {
 #edit-modal .modal-header,
 #detail-modal .modal-header {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+}
+
+#detail-modal .modal-header h2 {
+    color: white;
 }
 
 [data-theme="dark"] select,
@@ -6175,6 +6192,7 @@ tbody tr:hover {
     flex: 1;
     background: linear-gradient(135deg, #ffffff 0%, #f0f4f0 100%);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 60px;
@@ -6235,6 +6253,43 @@ tbody tr:hover {
     line-height: 1.6;
 }
 
+/* Logo desarrollador en sidebar login */
+.sidebar-developer {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    opacity: 0.6;
+    transition: opacity 0.3s;
+}
+
+.sidebar-developer:hover {
+    opacity: 1;
+}
+
+.sidebar-developer span {
+    font-size: 0.7rem;
+    color: #999;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.developer-logo {
+    height: 24px;
+    filter: grayscale(0.5);
+    transition: filter 0.3s;
+}
+
+.sidebar-developer:hover .developer-logo {
+    filter: grayscale(0);
+}
+
 .login-container {
     flex: 1;
     display: flex;
@@ -6265,6 +6320,18 @@ tbody tr:hover {
 [data-theme="dark"] .login-sidebar h2,
 [data-theme="dark"] .login-sidebar p {
     color: #e0e0e0;
+}
+
+[data-theme="dark"] .sidebar-developer span {
+    color: #666;
+}
+
+[data-theme="dark"] .developer-logo {
+    filter: grayscale(0.5) brightness(0.8);
+}
+
+[data-theme="dark"] .sidebar-developer:hover .developer-logo {
+    filter: grayscale(0) brightness(1);
 }
 
 [data-theme="dark"] .login-container {
@@ -6501,6 +6568,70 @@ tbody tr:hover {
     margin-bottom: 20px;
 }
 
+/* Mobile footer inside login-box (controls + developer logo, visible when sidebar hidden) */
+.login-mobile-footer {
+    display: none;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+}
+
+.login-mobile-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.login-mobile-controls .lang-selector {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    min-width: 55px;
+}
+
+.version-indicator-inline {
+    font-size: 0.7rem;
+    color: var(--text-light);
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border);
+}
+
+[data-theme="dark"] .version-indicator-inline {
+    background: rgba(255, 255, 255, 0.05);
+    color: #9ca3af;
+    border-color: #3d3d5c;
+}
+
+.mobile-developer {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    opacity: 0.5;
+    margin-top: 10px;
+}
+
+.mobile-developer span {
+    font-size: 0.65rem;
+    color: #999;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+[data-theme="dark"] .mobile-developer span {
+    color: #666;
+}
+
+[data-theme="dark"] .login-mobile-footer {
+    border-top-color: var(--border, #444);
+}
+
 /* Login responsive */
 @media (max-width: 1024px) {
     .login-sidebar {
@@ -6510,6 +6641,19 @@ tbody tr:hover {
     .login-container {
         flex: 1;
         background: linear-gradient(135deg, #f8fafc 0%, #e5e7eb 100%);
+    }
+
+    /* Show controls inside login panel, hide floating ones */
+    .login-mobile-footer {
+        display: block;
+    }
+
+    .login-top-controls {
+        display: none !important;
+    }
+
+    .version-indicator {
+        display: none !important;
     }
 }
 
@@ -14377,4 +14521,186 @@ input.flatpickr-input[readonly] {
     .context-value {
         max-width: 100%;
     }
+}
+
+/* ==================== MODAL CAMBIO DE ESTADO ==================== */
+.status-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.status-modal-content {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 360px;
+    animation: modalSlideIn 0.2s ease;
+}
+
+.status-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+
+.status-modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.status-modal-header .modal-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.status-modal-header .modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.status-modal-body {
+    padding: 20px;
+}
+
+.status-modal-info {
+    text-align: center;
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.status-modal-info span {
+    font-weight: 500;
+}
+
+.status-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.status-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.status-option:hover {
+    border-color: var(--primary-light);
+    background: var(--bg-secondary);
+}
+
+.status-option input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.status-option input[type="radio"]:checked + .status-badge {
+    transform: scale(1.05);
+}
+
+.status-option:has(input:checked) {
+    border-color: var(--primary);
+    background: var(--accent);
+}
+
+.status-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+}
+
+.status-modal-footer .btn-secondary {
+    padding: 8px 16px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.status-modal-footer .btn-secondary:hover {
+    background: var(--bg-tertiary);
+}
+
+.status-modal-footer .btn-primary {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.status-modal-footer .btn-primary:hover {
+    filter: brightness(1.1);
+}
+
+/* Dark mode para modal de estado */
+[data-theme="dark"] .status-modal-content {
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .status-modal-body {
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .status-option {
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .status-option:hover {
+    background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .status-option:has(input:checked) {
+    background: rgba(var(--primary-rgb, 255, 67, 56), 0.15);
+}
+
+[data-theme="dark"] .status-modal-footer {
+    border-top-color: var(--border);
 }

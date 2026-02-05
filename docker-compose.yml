@@ -42,6 +42,9 @@ services:
       - FLASK_ENV=production
       - FLASK_DEBUG=0
       - PYTHONUNBUFFERED=1
+      # ==================== CONNECTION POR DEFECTO ====================
+      # ID de conexión cuando acceden sin ?connection= en la URL
+      - DEFAULT_CONNECTION=${DEFAULT_CONNECTION:-1}
       # ==================== SEGURIDAD ====================
       # Configurar en archivo .env (ver .env.example)
       - SECRET_KEY=${SECRET_KEY:-cambiar-esta-clave-en-produccion}

@@ -74,7 +74,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.17.0'
+APP_VERSION = 'v1.17.7'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -213,12 +213,22 @@ app.register_blueprint(pedido_bp)
 def home():
     if current_user.is_authenticated:
         return send_from_directory(FRONTEND_DIR, 'index.html')
-    return redirect(url_for('login_page'))
+    # Redirigir a login con connection por defecto si no viene en la URL
+    connection = request.args.get('connection')
+    if connection:
+        return redirect(f'/login?connection={connection}')
+    # Usar variable de entorno DEFAULT_CONNECTION o 1 si no está definida
+    default_conn = os.environ.get('DEFAULT_CONNECTION', '1')
+    return redirect(f'/login?connection={default_conn}')
 
 @app.route('/login')
 def login_page():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
+    # Si no hay connection en la URL, redirigir con el valor por defecto
+    if not request.args.get('connection'):
+        default_conn = os.environ.get('DEFAULT_CONNECTION', '1')
+        return redirect(f'/login?connection={default_conn}')
     return send_from_directory(FRONTEND_DIR, 'login.html')
 
 @app.route('/register')
