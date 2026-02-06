@@ -257,6 +257,8 @@
     "darkMode": "Modo Oscuro",
     "language": "Idioma",
     "audit": "Auditoría",
+    "changePassword": "Cambiar Contraseña",
+    "allOrders": "Pedidos",
     "logout": "Cerrar Sesión"
   },
   "orders": {
@@ -279,7 +281,10 @@
     "filterYear": "Ano",
     "filterDateFrom": "Desde",
     "filterDateTo": "Hasta",
-    "allYears": "Todos"
+    "allYears": "Todos",
+    "allTitle": "Todos los Pedidos",
+    "filterClient": "Cliente",
+    "noOrdersAdmin": "No hay pedidos"
   },
   "empresaLogo": {
     "title": "Logo de Empresa",
@@ -419,7 +424,9 @@
     "success": "Contraseña cambiada correctamente",
     "error": "Error al cambiar la contraseña",
     "mismatch": "Las contraseñas no coinciden",
-    "minLength": "La contraseña debe tener al menos 6 caracteres"
+    "minLength": "La contraseña debe tener al menos 6 caracteres",
+    "currentPasswordRequired": "La contraseña actual es obligatoria",
+    "currentPasswordWrong": "La contraseña actual es incorrecta"
   },
   "inquiry": {
     "title": "Consulta sobre Producto",

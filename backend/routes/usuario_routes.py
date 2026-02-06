@@ -938,6 +938,31 @@ def cambiar_password():
             'error': 'La contraseña debe tener al menos 6 caracteres'
         }), 400
 
+    # Si se envía current_password, verificar antes de cambiar (cambio voluntario)
+    if data.get('current_password'):
+        from werkzeug.security import check_password_hash
+        connection = session.get('connection')
+        conn = None
+        try:
+            from config.database import Database
+            conn = Database.get_connection(connection)
+            cursor = conn.cursor()
+            cursor.execute("SELECT password_hash FROM users WHERE id = ?", (current_user.id,))
+            row = cursor.fetchone()
+            if not row or not check_password_hash(row[0], data['current_password']):
+                return jsonify({
+                    'success': False,
+                    'error': 'La contraseña actual es incorrecta'
+                }), 400
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': 'Error al verificar la contraseña actual'
+            }), 500
+        finally:
+            if conn:
+                conn.close()
+
     try:
         connection = session.get('connection')
         result = change_password(current_user.id, new_password, connection)

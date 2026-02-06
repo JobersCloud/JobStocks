@@ -1162,6 +1162,79 @@ async function logout() {
     }
 }
 
+// ==================== CAMBIO DE CONTRASENA ====================
+
+function showChangePasswordModal() {
+    document.getElementById('change-password-modal').style.display = 'flex';
+    document.getElementById('current-password').value = '';
+    document.getElementById('new-password').value = '';
+    document.getElementById('confirm-password').value = '';
+    document.getElementById('change-password-error').style.display = 'none';
+    document.getElementById('change-password-success').style.display = 'none';
+    document.getElementById('change-password-btn').disabled = false;
+    document.getElementById('change-password-btn').textContent = t('changePassword.changeButton');
+}
+
+function hideChangePasswordModal() {
+    document.getElementById('change-password-modal').style.display = 'none';
+}
+
+async function handleVoluntaryPasswordChange() {
+    const currentPwd = document.getElementById('current-password').value;
+    const newPwd = document.getElementById('new-password').value;
+    const confirmPwd = document.getElementById('confirm-password').value;
+    const errorEl = document.getElementById('change-password-error');
+    const successEl = document.getElementById('change-password-success');
+    const btn = document.getElementById('change-password-btn');
+
+    errorEl.style.display = 'none';
+    successEl.style.display = 'none';
+
+    if (!currentPwd) {
+        errorEl.textContent = t('changePassword.currentPasswordRequired');
+        errorEl.style.display = 'block';
+        return;
+    }
+    if (newPwd.length < 6) {
+        errorEl.textContent = t('changePassword.minLength');
+        errorEl.style.display = 'block';
+        return;
+    }
+    if (newPwd !== confirmPwd) {
+        errorEl.textContent = t('changePassword.mismatch');
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = t('changePassword.changing');
+
+    try {
+        const response = await fetchWithCsrf(`${API_URL}/api/usuarios/cambiar-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ current_password: currentPwd, new_password: newPwd })
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+            successEl.textContent = t('changePassword.success');
+            successEl.style.display = 'block';
+            setTimeout(() => hideChangePasswordModal(), 2000);
+        } else {
+            errorEl.textContent = data.error || t('changePassword.error');
+            errorEl.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = t('changePassword.changeButton');
+        }
+    } catch (error) {
+        errorEl.textContent = t('changePassword.error');
+        errorEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = t('changePassword.changeButton');
+    }
+}
+
 // ==================== FUNCIONES DE STOCKS ====================
 
 // Cargar opciones de los filtros desplegables (usando endpoint valores-unicos)
@@ -4021,8 +4094,17 @@ document.addEventListener('DOMContentLoaded', function () {
             if (detailModal && detailModal.style.display === 'flex') {
                 cerrarModal();
             }
+            hideChangePasswordModal();
         }
     });
+
+    // Click fuera del modal de cambio de contrasena para cerrar
+    const cpModal = document.getElementById('change-password-modal');
+    if (cpModal) {
+        cpModal.addEventListener('click', function(e) {
+            if (e.target === this) hideChangePasswordModal();
+        });
+    }
 });
 
 // Re-renderizar tabla cuando cambie el idioma

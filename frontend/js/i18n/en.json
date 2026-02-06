@@ -257,6 +257,8 @@
     "darkMode": "Dark Mode",
     "language": "Language",
     "audit": "Audit",
+    "changePassword": "Change Password",
+    "allOrders": "Orders",
     "logout": "Logout"
   },
   "orders": {
@@ -279,7 +281,10 @@
     "filterYear": "Year",
     "filterDateFrom": "From",
     "filterDateTo": "To",
-    "allYears": "All"
+    "allYears": "All",
+    "allTitle": "All Orders",
+    "filterClient": "Customer",
+    "noOrdersAdmin": "No orders found"
   },
   "empresaLogo": {
     "title": "Company Logo",
@@ -419,7 +424,9 @@
     "success": "Password changed successfully",
     "error": "Error changing password",
     "mismatch": "Passwords do not match",
-    "minLength": "Password must be at least 6 characters"
+    "minLength": "Password must be at least 6 characters",
+    "currentPasswordRequired": "Current password is required",
+    "currentPasswordWrong": "Current password is incorrect"
   },
   "inquiry": {
     "title": "Product Inquiry",

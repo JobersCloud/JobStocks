@@ -75,7 +75,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.18.0'
+APP_VERSION = 'v1.19.0'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -248,6 +248,11 @@ def mis_pedidos_page():
 @login_required
 def todas_propuestas_page():
     return send_from_directory(FRONTEND_DIR, 'todas-propuestas.html')
+
+@app.route('/todos-pedidos.html')
+@login_required
+def todos_pedidos_page():
+    return send_from_directory(FRONTEND_DIR, 'todos-pedidos.html')
 
 @app.route('/usuarios.html')
 @login_required

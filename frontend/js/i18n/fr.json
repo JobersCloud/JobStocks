@@ -257,6 +257,8 @@
     "darkMode": "Mode Sombre",
     "language": "Langue",
     "audit": "Audit",
+    "changePassword": "Changer le Mot de Passe",
+    "allOrders": "Commandes",
     "logout": "Déconnexion"
   },
   "orders": {
@@ -279,7 +281,10 @@
     "filterYear": "Annee",
     "filterDateFrom": "Depuis",
     "filterDateTo": "Jusqu'a",
-    "allYears": "Toutes"
+    "allYears": "Toutes",
+    "allTitle": "Toutes les Commandes",
+    "filterClient": "Client",
+    "noOrdersAdmin": "Aucune commande"
   },
   "empresaLogo": {
     "title": "Logo d'Entreprise",
@@ -419,7 +424,9 @@
     "success": "Mot de passe changé avec succès",
     "error": "Erreur lors du changement de mot de passe",
     "mismatch": "Les mots de passe ne correspondent pas",
-    "minLength": "Le mot de passe doit contenir au moins 6 caractères"
+    "minLength": "Le mot de passe doit contenir au moins 6 caractères",
+    "currentPasswordRequired": "Le mot de passe actuel est obligatoire",
+    "currentPasswordWrong": "Le mot de passe actuel est incorrect"
   },
   "inquiry": {
     "title": "Demande de Renseignement",
