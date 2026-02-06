@@ -378,12 +378,37 @@ function applyColorTheme(tema) {
     console.log(`🎨 Tema de color aplicado: ${tema}`);
 }
 
+// Obtener connection (de localStorage o del servidor)
+async function obtenerConnection() {
+    let connection = localStorage.getItem('connection');
+    if (connection) {
+        return connection;
+    }
+
+    // No hay en localStorage, obtener del servidor (configuración por defecto)
+    try {
+        const response = await fetch(`${API_URL}/api/default-connection`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.connection) {
+                localStorage.setItem('connection', data.connection);
+                console.log(`Usando connection por defecto del servidor: ${data.connection}`);
+                return data.connection;
+            }
+        }
+    } catch (error) {
+        console.error('Error obteniendo connection por defecto:', error);
+    }
+
+    return null;
+}
+
 // Cargar logo y favicon de la empresa desde la BD
 // Usa 'connection' (empresa_cli_id) porque el endpoint necesita conectar a la BD del cliente
 async function cargarLogoEmpresa() {
-    const connection = localStorage.getItem('connection');
+    const connection = await obtenerConnection();
     if (!connection) {
-        console.warn('No hay connection en localStorage, usando valores por defecto');
+        console.warn('No hay connection disponible, usando valores por defecto');
         applyColorTheme('rubi');
         return;
     }
@@ -814,8 +839,7 @@ async function checkAuth() {
         // Si debe cambiar contraseña, redirigir al login
         if (user.debe_cambiar_password) {
             console.log('⚠️ Usuario debe cambiar contraseña, redirigiendo a login...');
-            const connection = localStorage.getItem('connection');
-            window.location.replace(`/login?connection=${connection}`);
+            window.location.replace('/login');
             return false;
         }
 

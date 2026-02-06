@@ -15,10 +15,10 @@ if (hostname === 'localhost' || hostname === '127.0.0.1') {
 
 let loginForm, btnLogin, alertContainer;
 
-// Capturar connection de la URL (OBLIGATORIO)
+// Capturar connection de la URL, localStorage o API por defecto
 // connection = ID para buscar en BD central (ej: 10049)
 // empresa_id = empresa_erp para filtros (ej: '1') - se obtiene después del login
-function getConnectionFromURL() {
+async function getConnectionFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
 
     // Si viene 'empresa' en lugar de 'connection', mostrar error
@@ -41,7 +41,21 @@ function getConnectionFromURL() {
             console.log(`Usando connection guardada: ${connectionGuardada}`);
             return connectionGuardada;
         } else {
-            // ERROR: No hay connection en URL ni en localStorage
+            // No hay en URL ni localStorage, obtener del servidor (configuración por defecto)
+            try {
+                const response = await fetch(`${API_URL}/api/default-connection`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.connection) {
+                        localStorage.setItem('connection', data.connection);
+                        console.log(`Usando connection por defecto del servidor: ${data.connection}`);
+                        return data.connection;
+                    }
+                }
+            } catch (error) {
+                console.error('Error obteniendo connection por defecto:', error);
+            }
+            // ERROR: No hay connection disponible
             return null;
         }
     }
@@ -270,8 +284,8 @@ async function initLogin() {
     // Cargar tema oscuro/claro inmediatamente
     loadTheme();
 
-    // Capturar connection de la URL (OBLIGATORIO) - hacer esto primero
-    const connection = getConnectionFromURL();
+    // Capturar connection de la URL, localStorage o API por defecto - hacer esto primero
+    const connection = await getConnectionFromURL();
 
     if (connection === 'INVALID_PARAM') {
         // ERROR: Se usó 'empresa' en lugar de 'connection'

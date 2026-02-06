@@ -41,6 +41,7 @@ from models.user import User
 from models.user_session_model import UserSessionModel
 from models.audit_model import AuditModel, AuditAction, AuditResult
 from models.cliente_model import ClienteModel
+from models.dominio_model import DominioModel
 
 import os
 import secrets
@@ -74,7 +75,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.17.7'
+APP_VERSION = 'v1.18.0'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -213,22 +214,12 @@ app.register_blueprint(pedido_bp)
 def home():
     if current_user.is_authenticated:
         return send_from_directory(FRONTEND_DIR, 'index.html')
-    # Redirigir a login con connection por defecto si no viene en la URL
-    connection = request.args.get('connection')
-    if connection:
-        return redirect(f'/login?connection={connection}')
-    # Usar variable de entorno DEFAULT_CONNECTION o 1 si no está definida
-    default_conn = os.environ.get('DEFAULT_CONNECTION', '1')
-    return redirect(f'/login?connection={default_conn}')
+    return redirect(url_for('login_page'))
 
 @app.route('/login')
 def login_page():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
-    # Si no hay connection en la URL, redirigir con el valor por defecto
-    if not request.args.get('connection'):
-        default_conn = os.environ.get('DEFAULT_CONNECTION', '1')
-        return redirect(f'/login?connection={default_conn}')
     return send_from_directory(FRONTEND_DIR, 'login.html')
 
 @app.route('/register')
@@ -655,6 +646,45 @@ def get_version():
     """
     return jsonify({'version': APP_VERSION})
 
+@app.route('/api/default-connection')
+def get_default_connection():
+    """
+    Obtener connection por defecto segun el dominio
+    ---
+    tags:
+      - Sistema
+    description: |
+      Busca en la tabla 'dominios' de la BD Central el connection_id
+      correspondiente al dominio de la peticion. Si no encuentra,
+      usa la variable de entorno DEFAULT_CONNECTION como fallback.
+    responses:
+      200:
+        description: Connection para este dominio
+        schema:
+          type: object
+          properties:
+            connection:
+              type: string
+              example: "1"
+            source:
+              type: string
+              example: "database"
+    """
+    # Obtener el dominio de la peticion (Host header)
+    host = request.host.split(':')[0]  # Quitar puerto si existe
+
+    # Buscar en BD Central
+    connection = DominioModel.get_connection_by_domain(host)
+
+    if connection:
+        print(f"🌐 Dominio '{host}' -> connection '{connection}' (desde BD)")
+        return jsonify({'connection': connection, 'source': 'database'})
+
+    # Fallback a variable de entorno
+    default_conn = os.environ.get('DEFAULT_CONNECTION', '1')
+    print(f"🌐 Dominio '{host}' no encontrado, usando DEFAULT_CONNECTION='{default_conn}'")
+    return jsonify({'connection': default_conn, 'source': 'environment'})
+
 @app.route('/api/csrf-token')
 @login_required
 def get_csrf_token():
@@ -763,7 +793,7 @@ def require_login():
         return None
 
     # Permitir rutas de registro, empresa y consultas sin autenticación
-    public_api_routes = ['/api/register', '/api/verify-email', '/api/resend-verification', '/api/paises', '/api/registro-habilitado', '/api/parametros/propuestas-habilitadas', '/api/consultas/whatsapp-config', '/api/empresa/validate', '/api/empresa/init', '/api/empresa/list']
+    public_api_routes = ['/api/register', '/api/verify-email', '/api/resend-verification', '/api/paises', '/api/registro-habilitado', '/api/parametros/propuestas-habilitadas', '/api/consultas/whatsapp-config', '/api/empresa/validate', '/api/empresa/init', '/api/empresa/list', '/api/default-connection', '/api/version']
     if any(request.path.startswith(route) for route in public_api_routes):
         return None
 

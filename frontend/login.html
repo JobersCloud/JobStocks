@@ -163,7 +163,7 @@
                             <option value="en">EN</option>
                             <option value="fr">FR</option>
                         </select>
-                        <span class="version-indicator-inline" id="version-indicator-mobile"></span>
+                        <span class="version-indicator-inline" id="version-indicator-mobile" onclick="openChangelogModal()" title="Ver historial de cambios"></span>
                     </div>
                     <div class="mobile-developer" id="mobile-developer">
                         <span>Powered by</span>
@@ -174,8 +174,25 @@
         </div>
     </div>
 
-    <!-- Indicador de versión -->
-    <div class="version-indicator" id="version-indicator"></div>
+    <!-- Indicador de versión (clicable para ver changelog) -->
+    <div class="version-indicator" id="version-indicator" onclick="openChangelogModal()" title="Ver historial de cambios"></div>
+
+    <!-- Modal de Changelog -->
+    <div id="changelog-modal" class="changelog-modal" style="display: none;">
+        <div class="changelog-modal-overlay" onclick="closeChangelogModal()"></div>
+        <div class="changelog-modal-content">
+            <div class="changelog-modal-header">
+                <h2>📋 Historial de Cambios</h2>
+                <button class="changelog-modal-close" onclick="closeChangelogModal()">&times;</button>
+            </div>
+            <div class="changelog-modal-body" id="changelog-content">
+                <!-- Contenido cargado dinámicamente -->
+            </div>
+            <div class="changelog-modal-footer">
+                <button class="btn-changelog-close" onclick="closeChangelogModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal de cambio de contraseña obligatorio -->
     <div id="change-password-modal" class="password-modal" style="display: none;">
@@ -252,6 +269,104 @@
             var s2 = document.getElementById('lang-selector-mobile');
             if (s1) s1.value = lang;
             if (s2) s2.value = lang;
+        });
+
+        // ==================== CHANGELOG ====================
+
+        const changelogData = [
+            {
+                version: 'v1.18.0',
+                date: '2026-02-06',
+                title: 'Changelog y mapeo por dominio',
+                items: [
+                    { type: 'new', text: 'Modal de changelog al hacer clic en versión' },
+                    { type: 'new', text: 'Mapeo de dominios a conexiones en BD Central' },
+                    { type: 'new', text: 'URLs sin parámetro ?connection visible' },
+                    { type: 'improve', text: 'Cada subdominio puede tener su propia conexión' }
+                ]
+            },
+            {
+                version: 'v1.17.7',
+                date: '2026-02-05',
+                title: 'Mejoras de login y propuestas',
+                items: [
+                    { type: 'new', text: 'Controles de tema e idioma en panel móvil' },
+                    { type: 'new', text: 'Logo "Powered by" en login móvil' },
+                    { type: 'new', text: 'Botón editar estado de propuestas (admin)' },
+                    { type: 'fix', text: 'Fecha de sincronización visible en móvil' },
+                    { type: 'fix', text: 'Test SMTP para puerto 465 (SSL)' }
+                ]
+            },
+            {
+                version: 'v1.17.0',
+                date: '2026-02-01',
+                title: 'Modo espejo y sincronización',
+                items: [
+                    { type: 'new', text: 'Modo espejo con indicador en header' },
+                    { type: 'new', text: 'Sincronización automática de tablas' },
+                    { type: 'improve', text: 'Optimización de consultas con CHECKSUM' }
+                ]
+            },
+            {
+                version: 'v1.16.0',
+                date: '2026-01-25',
+                title: 'Paginación y filtros avanzados',
+                items: [
+                    { type: 'new', text: 'Paginación en backend para mejor rendimiento' },
+                    { type: 'new', text: 'Filtros por columna estilo WorkWithPlus' },
+                    { type: 'new', text: 'Ordenación por columnas clicables' },
+                    { type: 'improve', text: 'Grid avanzada en páginas de administración' }
+                ]
+            },
+            {
+                version: 'v1.15.0',
+                date: '2026-01-20',
+                title: 'Seguridad y auditoría',
+                items: [
+                    { type: 'new', text: 'Sistema de auditoría de usuarios' },
+                    { type: 'new', text: 'Protección CSRF en formularios' },
+                    { type: 'new', text: 'Gestión de sesiones activas' },
+                    { type: 'fix', text: 'Conexión cifrada SSL a SQL Server' }
+                ]
+            }
+        ];
+
+        function openChangelogModal() {
+            const modal = document.getElementById('changelog-modal');
+            const content = document.getElementById('changelog-content');
+
+            content.innerHTML = changelogData.map(version => `
+                <div class="changelog-version">
+                    <div class="changelog-version-header">
+                        <span class="changelog-version-tag">${version.version}</span>
+                        <span class="changelog-version-date">${version.date}</span>
+                    </div>
+                    <div class="changelog-version-title">${version.title}</div>
+                    <ul class="changelog-items">
+                        ${version.items.map(item => `
+                            <li>
+                                <span class="changelog-badge changelog-badge-${item.type}">
+                                    ${item.type === 'new' ? 'Nuevo' : item.type === 'fix' ? 'Fix' : 'Mejora'}
+                                </span>
+                                ${item.text}
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `).join('');
+
+            modal.style.display = 'flex';
+        }
+
+        function closeChangelogModal() {
+            document.getElementById('changelog-modal').style.display = 'none';
+        }
+
+        // Cerrar con Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeChangelogModal();
+            }
         });
     </script>
 </body>
