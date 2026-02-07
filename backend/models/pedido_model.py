@@ -218,8 +218,9 @@ class PedidoModel:
             params.append(fecha_hasta)
 
         if cliente:
-            query += " AND cliente = ?"
-            params.append(cliente)
+            query += " AND (cliente_nombre LIKE ? OR cliente LIKE ?)"
+            params.append(f'%{cliente}%')
+            params.append(f'%{cliente}%')
 
         query += " ORDER BY fecha DESC, pedido DESC"
 

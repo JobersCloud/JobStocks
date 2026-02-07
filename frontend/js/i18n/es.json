@@ -63,7 +63,9 @@
     "resendVerificationTitle": "Reenviar email de verificación",
     "resendButton": "Reenviar",
     "resendSuccess": "Email de verificación reenviado. Revisa tu bandeja de entrada.",
-    "resendError": "No se encontró una cuenta pendiente de verificación con ese email"
+    "resendError": "No se encontró una cuenta pendiente de verificación con ese email",
+    "registerSuccessTitle": "Registro completado",
+    "registerSuccessHint": "Revisa tu bandeja de entrada y la carpeta de spam."
   },
   "authPlaceholders": {
     "username": "Ingresa tu usuario",

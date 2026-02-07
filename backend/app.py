@@ -44,7 +44,68 @@ from models.cliente_model import ClienteModel
 from models.dominio_model import DominioModel
 
 import os
+import re
 import secrets
+
+
+def parse_user_agent(ua_string):
+    """
+    Parsear User-Agent para extraer navegador, SO y tipo de dispositivo.
+    """
+    if not ua_string:
+        return {'browser': 'Desconocido', 'os': 'Desconocido', 'device_type': 'Desconocido'}
+
+    # Detectar navegador
+    browser = 'Otro'
+    if 'Edg/' in ua_string:
+        m = re.search(r'Edg/([\d.]+)', ua_string)
+        browser = f"Edge {m.group(1).split('.')[0]}" if m else 'Edge'
+    elif 'OPR/' in ua_string or 'Opera' in ua_string:
+        m = re.search(r'OPR/([\d.]+)', ua_string)
+        browser = f"Opera {m.group(1).split('.')[0]}" if m else 'Opera'
+    elif 'Chrome/' in ua_string and 'Safari/' in ua_string:
+        m = re.search(r'Chrome/([\d.]+)', ua_string)
+        browser = f"Chrome {m.group(1).split('.')[0]}" if m else 'Chrome'
+    elif 'Firefox/' in ua_string:
+        m = re.search(r'Firefox/([\d.]+)', ua_string)
+        browser = f"Firefox {m.group(1).split('.')[0]}" if m else 'Firefox'
+    elif 'Safari/' in ua_string and 'Chrome/' not in ua_string:
+        m = re.search(r'Version/([\d.]+)', ua_string)
+        browser = f"Safari {m.group(1).split('.')[0]}" if m else 'Safari'
+
+    # Detectar SO
+    os_name = 'Otro'
+    if 'Windows NT 10.0' in ua_string:
+        os_name = 'Windows 11' if 'Windows NT 10.0; Win64' in ua_string and ('rv:' in ua_string or int(re.search(r'Chrome/(\d+)', ua_string).group(1)) >= 108 if re.search(r'Chrome/(\d+)', ua_string) else False) else 'Windows 10'
+    elif 'Windows NT 6.3' in ua_string:
+        os_name = 'Windows 8.1'
+    elif 'Windows NT 6.1' in ua_string:
+        os_name = 'Windows 7'
+    elif 'Mac OS X' in ua_string:
+        m = re.search(r'Mac OS X ([\d_]+)', ua_string)
+        ver = m.group(1).replace('_', '.') if m else ''
+        os_name = f"macOS {ver}" if ver else 'macOS'
+    elif 'Android' in ua_string:
+        m = re.search(r'Android ([\d.]+)', ua_string)
+        os_name = f"Android {m.group(1)}" if m else 'Android'
+    elif 'iPhone OS' in ua_string or 'iPad' in ua_string:
+        m = re.search(r'OS ([\d_]+)', ua_string)
+        ver = m.group(1).replace('_', '.') if m else ''
+        os_name = f"iOS {ver}" if ver else 'iOS'
+    elif 'Linux' in ua_string:
+        os_name = 'Linux'
+
+    # Detectar tipo de dispositivo
+    device_type = 'Desktop'
+    ua_lower = ua_string.lower()
+    if 'ipad' in ua_lower or 'tablet' in ua_lower:
+        device_type = 'Tablet'
+    elif 'mobile' in ua_lower or 'iphone' in ua_lower or ('android' in ua_lower and 'mobile' in ua_lower):
+        device_type = 'Mobile'
+    elif 'android' in ua_lower:
+        device_type = 'Tablet'
+
+    return {'browser': browser, 'os': os_name, 'device_type': device_type}
 
 
 def get_client_ip():
@@ -75,7 +136,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.19.0'
+APP_VERSION = 'v1.22.0'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -430,8 +491,29 @@ def login():
         csrf_token = secrets.token_hex(32)
         session['csrf_token'] = csrf_token
 
-        # Registrar audit log de login exitoso
+        # Registrar audit log de login exitoso con info de dispositivo
         try:
+            ua_string = request.headers.get('User-Agent', '')
+            ua_parsed = parse_user_agent(ua_string)
+            device_info = data.get('device_info', {})
+            detalles_login = {
+                'metodo': 'password',
+                'dispositivo': {
+                    'tipo': ua_parsed['device_type'],
+                    'navegador': ua_parsed['browser'],
+                    'sistema_operativo': ua_parsed['os'],
+                    'user_agent': ua_string,
+                    'pantalla': device_info.get('screen'),
+                    'viewport': device_info.get('viewport'),
+                    'zona_horaria': device_info.get('timezone'),
+                    'idioma': device_info.get('language'),
+                    'plataforma': device_info.get('platform'),
+                    'cookies': device_info.get('cookiesEnabled'),
+                    'tactil': device_info.get('touchscreen'),
+                    'memoria_gb': device_info.get('deviceMemory'),
+                    'nucleos_cpu': device_info.get('hardwareConcurrency')
+                }
+            }
             AuditModel.log(
                 accion=AuditAction.LOGIN,
                 user_id=user_data['id'],
@@ -440,8 +522,8 @@ def login():
                 recurso='session',
                 recurso_id=session_token if session_token else None,
                 ip_address=ip_address,
-                user_agent=request.headers.get('User-Agent'),
-                detalles={'metodo': 'password'},
+                user_agent=ua_string,
+                detalles=detalles_login,
                 resultado=AuditResult.SUCCESS
             )
         except Exception as e:
@@ -748,6 +830,33 @@ def serve_register_js():
 @login_required
 def serve_sidebar_js():
     response = send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'sidebar.js', mimetype='application/javascript')
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
+@app.route('/js/grid-filters.js')
+@login_required
+def serve_grid_filters_js():
+    response = send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'grid-filters.js', mimetype='application/javascript')
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
+@app.route('/js/data-grid.js')
+@login_required
+def serve_data_grid_js():
+    response = send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'data-grid.js', mimetype='application/javascript')
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
+@app.route('/js/page-common.js')
+@login_required
+def serve_page_common_js():
+    response = send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'page-common.js', mimetype='application/javascript')
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'

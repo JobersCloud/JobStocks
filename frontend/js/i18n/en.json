@@ -63,7 +63,9 @@
     "resendVerificationTitle": "Resend verification email",
     "resendButton": "Resend",
     "resendSuccess": "Verification email resent. Check your inbox.",
-    "resendError": "No pending verification account found with that email"
+    "resendError": "No pending verification account found with that email",
+    "registerSuccessTitle": "Registration complete",
+    "registerSuccessHint": "Check your inbox and spam folder."
   },
   "authPlaceholders": {
     "username": "Enter your username",

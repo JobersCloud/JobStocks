@@ -298,14 +298,34 @@ function setupRegisterForm() {
             }
 
             // Solo si el registro fue exitoso
-            showAlert(data.message, 'success');
             document.getElementById('register-form').reset();
 
-            // Redirigir al login después de 3 segundos (manteniendo connection)
+            // Mostrar modal de éxito con mensaje de verificación
+            const connection = localStorage.getItem('connection') || localStorage.getItem('empresa_id') || '1';
+            const loginUrl = `/login.html?connection=${connection}`;
+
+            const modal = document.createElement('div');
+            modal.className = 'register-success-overlay';
+            modal.innerHTML = `
+                <div class="register-success-modal">
+                    <div class="register-success-icon">
+                        <svg viewBox="0 0 24 24" fill="none" width="48" height="48">
+                            <circle cx="12" cy="12" r="11" stroke="var(--primary, #4CAF50)" stroke-width="2"/>
+                            <path d="M7 12.5l3 3 7-7" stroke="var(--primary, #4CAF50)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h2 class="register-success-title">${t('auth.registerSuccessTitle') || 'Registro completado'}</h2>
+                    <p class="register-success-message">${data.message}</p>
+                    <p class="register-success-hint">${t('auth.registerSuccessHint') || 'Revisa tu bandeja de entrada y la carpeta de spam.'}</p>
+                    <button class="register-success-btn" onclick="window.location.href='${loginUrl}'">${t('auth.goToLogin') || 'Ir al Login'}</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Auto-redirigir tras 15 segundos si no pulsa el botón
             setTimeout(() => {
-                const connection = localStorage.getItem('connection') || localStorage.getItem('empresa_id') || '1';
-                window.location.href = `/login.html?connection=${connection}`;
-            }, 3000);
+                window.location.href = loginUrl;
+            }, 15000);
 
         } catch (error) {
             console.error('Error:', error);

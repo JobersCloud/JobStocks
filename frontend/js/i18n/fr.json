@@ -63,7 +63,9 @@
     "resendVerificationTitle": "Renvoyer l'email de vérification",
     "resendButton": "Renvoyer",
     "resendSuccess": "Email de vérification renvoyé. Vérifiez votre boîte de réception.",
-    "resendError": "Aucun compte en attente de vérification trouvé avec cet email"
+    "resendError": "Aucun compte en attente de vérification trouvé avec cet email",
+    "registerSuccessTitle": "Inscription terminée",
+    "registerSuccessHint": "Vérifiez votre boîte de réception et votre dossier spam."
   },
   "authPlaceholders": {
     "username": "Entrez votre utilisateur",

@@ -48,9 +48,6 @@
         })();
     </script>
     <link rel="stylesheet" href="css/styles.css?v=1.12.73">
-    <!-- Flatpickr - Calendario moderno -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
 </head>
 <body>
     <!-- ==================== MASTERPAGE LAYOUT ==================== -->
@@ -368,118 +365,8 @@
                     </div>
                 </div>
 
-                <!-- Contenedor de Propuestas -->
-                <div class="proposals-container">
-                    <div class="proposals-content">
-                        <!-- Loading state -->
-                        <div class="proposals-loading" id="proposals-loading">
-                            <div class="spinner"></div>
-                            <p data-i18n="proposals.loading">Cargando propuestas...</p>
-                        </div>
-
-                        <!-- Chips de filtros activos -->
-                        <div class="column-filters-chips" id="column-filters-chips" style="display: none;"></div>
-
-                        <!-- Empty state -->
-                        <div class="proposals-empty" id="proposals-empty" style="display: none;">
-                            <div class="proposals-empty-icon">📋</div>
-                            <h3 data-i18n="proposals.noProposals">No hay propuestas</h3>
-                        </div>
-
-                        <!-- No results from filter -->
-                        <div class="proposals-no-results" id="proposals-no-results" style="display: none;">
-                            <div class="proposals-empty-icon">🔍</div>
-                            <h3>No se encontraron resultados</h3>
-                            <p>Prueba con otros criterios de busqueda</p>
-                        </div>
-
-                        <!-- Table view (desktop) -->
-                        <div class="proposals-table-wrapper" id="proposals-table-wrapper" style="display: none;">
-                            <div class="table-scroll-container">
-                                <table class="proposals-table" id="proposals-table">
-                                    <thead>
-                                        <tr>
-                                            <th data-column="id">
-                                                <div class="column-header-wrapper">
-                                                    <span class="sortable-header" onclick="ordenarPor('id')">
-                                                        ID
-                                                        <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                                    </span>
-                                                    <button class="column-filter-btn" onclick="abrirPopupFiltro('id', this)" title="Filtrar">
-                                                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                                    </button>
-                                                </div>
-                                            </th>
-                                            <th data-column="usuario" data-i18n="proposals.user">
-                                                <div class="column-header-wrapper">
-                                                    <span class="sortable-header" onclick="ordenarPor('usuario')">
-                                                        Usuario
-                                                        <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                                    </span>
-                                                    <button class="column-filter-btn" onclick="abrirPopupFiltro('usuario', this)" title="Filtrar">
-                                                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                                    </button>
-                                                </div>
-                                            </th>
-                                            <th data-column="fecha" data-i18n="proposals.date">
-                                                <div class="column-header-wrapper">
-                                                    <span class="sortable-header" onclick="ordenarPor('fecha')">
-                                                        Fecha
-                                                        <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                                    </span>
-                                                    <button class="column-filter-btn" onclick="abrirPopupFiltro('fecha', this)" title="Filtrar">
-                                                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                                    </button>
-                                                </div>
-                                            </th>
-                                            <th data-column="total_items" data-i18n="proposals.items">
-                                                <div class="column-header-wrapper">
-                                                    <span class="sortable-header" onclick="ordenarPor('total_items')">
-                                                        Articulos
-                                                        <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                                    </span>
-                                                    <button class="column-filter-btn" onclick="abrirPopupFiltro('total_items', this)" title="Filtrar">
-                                                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                                    </button>
-                                                </div>
-                                            </th>
-                                            <th data-column="estado" data-i18n="proposals.status">
-                                                <div class="column-header-wrapper">
-                                                    <span class="sortable-header" onclick="ordenarPor('estado')">
-                                                        Estado
-                                                        <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                                    </span>
-                                                    <button class="column-filter-btn" onclick="abrirPopupFiltro('estado', this)" title="Filtrar">
-                                                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                                    </button>
-                                                </div>
-                                            </th>
-                                            <th data-column="referencia" data-i18n="proposals.reference">
-                                                <div class="column-header-wrapper">
-                                                    <span class="sortable-header" onclick="ordenarPor('referencia')">
-                                                        Referencia
-                                                        <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                                    </span>
-                                                    <button class="column-filter-btn" onclick="abrirPopupFiltro('referencia', this)" title="Filtrar">
-                                                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                                    </button>
-                                                </div>
-                                            </th>
-                                            <th data-i18n="users.actions">Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="proposals-table-body"></tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Cards view (mobile) -->
-                        <div class="proposals-cards" id="proposals-cards"></div>
-
-                        <!-- Footer con total de registros -->
-                        <div class="grid-footer" id="grid-footer"></div>
-                    </div>
-                </div>
+                <!-- Grid de Propuestas (generado por DataGrid) -->
+                <div id="proposals-grid"></div>
             </main>
         </div>
     </div>
@@ -531,280 +418,121 @@
 
     <script src="js/i18n/i18n.js?v=20260128"></script>
     <script src="js/sidebar.js?v=20260143"></script>
-    <!-- Flatpickr -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+    <script src="js/grid-filters.js?v=20260206"></script>
+    <script src="js/data-grid.js?v=20260206"></script>
+    <script src="js/page-common.js?v=20260206"></script>
     <script>
-        // ==================== CONFIGURACION ====================
-        const hostname = window.location.hostname;
-        const protocol = window.location.protocol;
-        const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
-        const API_URL = isLocalhost ? `${protocol}//${hostname}:5000` : `${protocol}//${hostname}`;
-
-        let currentUser = null;
+        // ==================== PAGE: TODAS LAS PROPUESTAS (Admin) ====================
+        const API_URL = PageCommon.API_URL;
         let allProposals = [];
         let filteredProposals = [];
-        let csrfToken = null;
-        let ordenActual = { columna: 'fecha', direccion: 'DESC' };
-        let filtrosColumna = [];
-        let popupFiltroAbierto = null;
-
-        const operadoresTexto = [
-            { key: 'contains', label: 'Contiene' },
-            { key: 'not_contains', label: 'No contiene', negativo: true },
-            { key: 'eq', label: 'Igual a' },
-            { key: 'neq', label: 'No igual a', negativo: true },
-            { key: 'starts', label: 'Empieza por' },
-            { key: 'not_starts', label: 'No empieza por', negativo: true },
-            { key: 'ends', label: 'Termina en' },
-            { key: 'not_ends', label: 'No termina en', negativo: true }
-        ];
-
-        const columnasFiltrables = [
-            { key: 'id', label: 'ID', tipo: 'numero' },
-            { key: 'usuario', label: 'Usuario', tipo: 'texto' },
-            { key: 'fecha', label: 'Fecha', tipo: 'fecha' },
-            { key: 'total_items', label: 'Articulos', tipo: 'numero' },
-            { key: 'estado', label: 'Estado', tipo: 'texto' },
-            { key: 'referencia', label: 'Referencia', tipo: 'texto' }
-        ];
-
-        // ==================== TEMA ====================
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            applyTheme(savedTheme);
-        }
-
-        function applyTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            const icon = document.getElementById('theme-icon');
-            if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
-        }
-
-        function toggleTheme() {
-            const current = document.documentElement.getAttribute('data-theme');
-            const newTheme = current === 'dark' ? 'light' : 'dark';
-            localStorage.setItem('theme', newTheme);
-            applyTheme(newTheme);
-        }
-
-        // ==================== ACORDEON ====================
-        function toggleAccordion(header) {
-            const accordion = header.closest('.sidebar-accordion');
-            accordion.classList.toggle('expanded');
-        }
-
-        // ==================== MENU USUARIO ====================
-        function toggleUserMenu() {
-            const dropdown = document.getElementById('menu-dropdown');
-            dropdown.classList.toggle('show');
-        }
-
-        document.addEventListener('click', (e) => {
-            const menuContainer = document.querySelector('.menu-container');
-            const dropdown = document.getElementById('menu-dropdown');
-            if (menuContainer && !menuContainer.contains(e.target) && dropdown) {
-                dropdown.classList.remove('show');
-            }
-        });
-
-        // ==================== LOGO DINAMICO ====================
-        function applyColorTheme(tema) {
-            const themes = {
-                'rubi': { primary: '#FF4338', primaryDark: '#D32F2F', primaryLight: '#FF6B6B' },
-                'zafiro': { primary: '#2196F3', primaryDark: '#1565C0', primaryLight: '#64B5F6' },
-                'esmeralda': { primary: '#4CAF50', primaryDark: '#2E7D32', primaryLight: '#81C784' },
-                'amatista': { primary: '#9C27B0', primaryDark: '#6A1B9A', primaryLight: '#BA68C8' },
-                'ambar': { primary: '#FF9800', primaryDark: '#E65100', primaryLight: '#FFB74D' },
-                'grafito': { primary: '#607D8B', primaryDark: '#37474F', primaryLight: '#90A4AE' },
-                'corporativo': { primary: '#1a365d', primaryDark: '#0d1b2a', primaryLight: '#2c5282' },
-                'ejecutivo': { primary: '#2d3748', primaryDark: '#1a202c', primaryLight: '#4a5568' },
-                'oceano': { primary: '#0077b6', primaryDark: '#023e8a', primaryLight: '#0096c7' },
-                'bosque': { primary: '#2d6a4f', primaryDark: '#1b4332', primaryLight: '#40916c' },
-                'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
-                'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
-                'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
-                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
-                'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
-            };
-            if (!themes[tema]) tema = 'rubi';
-            const colors = themes[tema];
-            document.documentElement.setAttribute('data-color-theme', tema);
-            localStorage.setItem('colorTheme', tema);
-            document.documentElement.style.setProperty('--primary', colors.primary, 'important');
-            document.documentElement.style.setProperty('--primary-dark', colors.primaryDark, 'important');
-            document.documentElement.style.setProperty('--primary-light', colors.primaryLight, 'important');
-        }
-
-        async function cargarLogoEmpresa() {
-            const connection = localStorage.getItem('connection');
-            if (!connection) {
-                applyColorTheme('rubi');
-                return;
-            }
-            const logoElements = document.querySelectorAll('.logo, #header-logo');
-            try {
-                const configResponse = await fetch(`${API_URL}/api/empresa/${connection}/config`);
-                const config = await configResponse.json();
-                applyColorTheme(config.tema || 'rubi');
-                const invertirFilter = config.invertir_logo ? 'brightness(0) invert(1)' : 'none';
-                if (config.tiene_logo) {
-                    const logoUrl = `${API_URL}/api/empresa/${connection}/logo?t=${Date.now()}`;
-                    logoElements.forEach(el => {
-                        el.src = logoUrl;
-                        el.style.filter = invertirFilter;
-                        el.style.visibility = 'visible';
-                    });
-                } else {
-                    logoElements.forEach(el => {
-                        el.src = 'assets/logo.svg';
-                        el.style.filter = 'brightness(0) invert(1)';
-                        el.style.visibility = 'visible';
-                    });
-                }
-            } catch (error) {
-                applyColorTheme('rubi');
-                logoElements.forEach(el => {
-                    el.src = 'assets/logo.svg';
-                    el.style.filter = 'brightness(0) invert(1)';
-                    el.style.visibility = 'visible';
-                });
-            }
-        }
-
-        // ==================== AUTENTICACION ====================
-        async function checkAuth() {
-            try {
-                const response = await fetch(`${API_URL}/api/current-user`, { credentials: 'include' });
-                if (!response.ok) {
-                    window.location.href = 'login.html';
-                    return null;
-                }
-                const data = await response.json();
-                currentUser = data;
-
-                document.getElementById('user-name-display').textContent = data.full_name || data.username;
-                document.getElementById('menu-user-name').textContent = data.full_name || data.username;
-                document.getElementById('menu-user-rol').textContent = data.rol;
-
-                // Mostrar opción de contexto solo para superusuarios
-                if (data.rol === 'superusuario') {
-                    document.getElementById('menu-item-context').style.display = 'flex';
-                    document.getElementById('menu-divider-context').style.display = 'block';
-                }
-
-                if (data.rol !== 'administrador' && data.rol !== 'superusuario') {
-                    alert('No tienes permisos para acceder a esta pagina');
-                    window.location.href = 'index.html';
-                    return null;
-                }
-
-                document.getElementById('sidebar-admin-section').style.display = 'block';
-                document.getElementById('sidebar-config-section').style.display = 'block';
-
-                return data;
-            } catch (error) {
-                console.error('Error checking auth:', error);
-                window.location.href = 'login.html';
-                return null;
-            }
-        }
-
-        async function logout() {
-            try {
-                await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
-            } catch (e) {}
-            localStorage.removeItem('csrf_token');
-            window.location.href = 'login.html';
-        }
-
-        async function showContextInfo() {
-            try {
-                const response = await fetch(`${API_URL}/api/context-info`, { credentials: 'include' });
-                if (!response.ok) throw new Error('No se pudo obtener la información de contexto');
-                const info = await response.json();
-                let html = `<div style="font-family: monospace; font-size: 0.85rem; line-height: 1.6;"><h4 style="margin-bottom: 10px; color: var(--primary);">👤 Usuario</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>ID:</strong> ${info.user.id}</div><div><strong>Username:</strong> ${info.user.username}</div><div><strong>Nombre:</strong> ${info.user.full_name}</div><div><strong>Rol:</strong> ${info.user.rol}</div><div><strong>Cliente ID:</strong> ${info.user.cliente_id || 'N/A'}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🔗 Sesión</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Connection:</strong> ${info.session.connection}</div><div><strong>Empresa ID:</strong> ${info.session.empresa_id}</div><div><strong>Empresa Nombre:</strong> ${info.session.empresa_nombre}</div><div><strong>User ID:</strong> ${info.session.user_id}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🗄️ DB Config</h4><div style="background: ${info.has_db_config ? '#e8f5e9' : '#ffebee'}; padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Cacheado:</strong> ${info.has_db_config ? '✅ Sí' : '❌ No'}</div>${info.has_db_config ? `<div><strong>Server:</strong> ${info.db_config.dbserver}</div><div><strong>Database:</strong> ${info.db_config.dbname}</div>` : ''}</div><h4 style="margin-bottom: 10px; color: var(--primary);">💾 LocalStorage</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px;"><div><strong>connection:</strong> ${localStorage.getItem('connection') || 'N/A'}</div><div><strong>empresa_id:</strong> ${localStorage.getItem('empresa_id') || 'N/A'}</div></div></div>`;
-                const modal = document.createElement('div');
-                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
-                modal.innerHTML = `<div style="background:var(--bg-primary, white);padding:20px;border-radius:12px;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.3);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><h3 style="margin:0;">ℹ️ Info de Contexto</h3><button onclick="this.closest('div').parentElement.remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button></div>${html}</div>`;
-                modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-                document.body.appendChild(modal);
-            } catch (error) { console.error('Error:', error); alert('Error: ' + error.message); }
-        }
-
-        async function obtenerCsrfToken() {
-            try {
-                csrfToken = localStorage.getItem('csrf_token');
-                const response = await fetch(`${API_URL}/api/csrf-token`, { credentials: 'include' });
-                if (response.ok) {
-                    const data = await response.json();
-                    csrfToken = data.csrf_token;
-                    localStorage.setItem('csrf_token', csrfToken);
-                }
-            } catch (e) {}
-        }
+        let grid;
+        let currentStatusProposalId = null;
 
         // ==================== INICIALIZACION ====================
         document.addEventListener('DOMContentLoaded', async function() {
-            loadTheme();
-            await cargarLogoEmpresa();
+            PageCommon.loadTheme();
+            await PageCommon.cargarLogoEmpresa();
             await I18n.init();
             document.getElementById('lang-selector').value = I18n.currentLang;
 
-            // Inicializar Flatpickr en campos de fecha
-            const fpLocale = I18n.currentLang === 'es' ? 'es' : (I18n.currentLang === 'fr' ? 'fr' : 'default');
-            flatpickr('input[type="date"]', {
-                locale: fpLocale,
-                dateFormat: 'Y-m-d',
-                altInput: true,
-                altFormat: 'd M Y',
-                allowInput: true,
-                disableMobile: true,
-                animate: true,
-                theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'material_blue'
+            await PageCommon.checkAuth('administrador');
+            await PageCommon.obtenerCsrfToken();
+
+            // Crear grid
+            grid = new DataGrid({
+                el: '#proposals-grid',
+                columns: [
+                    { key: 'id', label: 'ID', tipo: 'numero' },
+                    { key: 'usuario', label: t('proposals.user') || 'Usuario', tipo: 'texto' },
+                    { key: 'fecha', label: t('proposals.date') || 'Fecha', tipo: 'texto' },
+                    { key: 'total_items', label: t('proposals.items') || 'Items', tipo: 'numero' },
+                    { key: 'estado', label: t('proposals.status') || 'Estado', tipo: 'texto' },
+                    { key: 'referencia', label: t('proposals.reference') || 'Referencia', tipo: 'texto' },
+                    { key: '_actions', label: 'Acciones', sortable: false, filterable: false }
+                ],
+                renderCell(item, col) {
+                    switch (col.key) {
+                        case 'id': return `<strong>#${item.id}</strong>`;
+                        case 'usuario': return `<span class="user-badge"><span class="user-badge-icon">👤</span>${item.username || 'Usuario'}</span>`;
+                        case 'fecha': return formatDate(item.fecha);
+                        case 'total_items': return `${item.total_items} ${t('proposals.items').toLowerCase()}`;
+                        case 'estado': return getStatusBadge(item.estado);
+                        case 'referencia': return item.referencia || '-';
+                        case '_actions': return `
+                            <div class="action-buttons btn-icon-group">
+                                <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewProposalDetails(${item.id})" title="${t('proposals.viewDetails')}">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                                <button class="btn-icon btn-icon-success btn-icon-sm" onclick="downloadExcel(${item.id})" title="${t('proposals.downloadExcel')}">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                </button>
+                                <button class="btn-icon btn-icon-warning btn-icon-sm" onclick="openStatusModal(${item.id}, '${item.estado}')" title="${t('proposals.changeStatus')}">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                </button>
+                            </div>`;
+                        default: return null;
+                    }
+                },
+                renderCard(item) {
+                    return `
+                        <div class="proposal-card">
+                            <div class="proposal-card-header">
+                                <span class="proposal-card-id">#${item.id}</span>
+                                ${getStatusBadge(item.estado)}
+                            </div>
+                            <div class="proposal-card-user">
+                                <span class="user-badge"><span class="user-badge-icon">👤</span>${item.username || 'Usuario'}</span>
+                            </div>
+                            <div class="proposal-card-date">${formatDate(item.fecha)}</div>
+                            <div class="proposal-card-info">
+                                <div class="proposal-card-info-item">
+                                    <label>${t('proposals.items')}</label>
+                                    <span>${item.total_items}</span>
+                                </div>
+                                ${item.referencia ? `<div class="proposal-card-info-item"><label>${t('proposals.reference')}</label><span>${item.referencia}</span></div>` : ''}
+                            </div>
+                            <div class="proposal-card-actions">
+                                <div class="btn-icon-group" style="justify-content: center;">
+                                    <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewProposalDetails(${item.id})" title="${t('proposals.viewDetails')}">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                    <button class="btn-icon btn-icon-success btn-icon-sm" onclick="downloadExcel(${item.id})" title="${t('proposals.downloadExcel')}">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    </button>
+                                    <button class="btn-icon btn-icon-warning btn-icon-sm" onclick="openStatusModal(${item.id}, '${item.estado}')" title="${t('proposals.changeStatus')}">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>`;
+                },
+                defaultSort: { column: 'fecha', direction: 'DESC' },
+                storageKey: 'filtrosGuardados_propuestas',
+                emptyIcon: '📋',
+                emptyText: t('proposals.noProposals') || 'No hay propuestas',
+                loadingText: t('proposals.loading') || 'Cargando propuestas...'
             });
 
-            await checkAuth();
-            await obtenerCsrfToken();
             await loadProposals();
         });
 
         // ==================== CARGAR PROPUESTAS ====================
         async function loadProposals() {
-            const loadingEl = document.getElementById('proposals-loading');
-            const emptyEl = document.getElementById('proposals-empty');
-            const tableWrapper = document.getElementById('proposals-table-wrapper');
-
+            grid.showLoading();
             try {
                 const response = await fetch(`${API_URL}/api/propuestas`, { credentials: 'include' });
-
                 if (!response.ok) {
-                    if (response.status === 403) {
-                        alert('No tienes permisos para ver todas las propuestas');
-                        window.location.href = 'index.html';
-                        return;
-                    }
+                    if (response.status === 403) { alert('No tienes permisos para ver todas las propuestas'); window.location.href = 'index.html'; return; }
                     throw new Error('Error loading proposals');
                 }
-
                 const data = await response.json();
-                allProposals = data.propuestas || [];
+                allProposals = (data.propuestas || []).map(p => ({ ...p, usuario: p.username || 'Usuario' }));
                 filteredProposals = [...allProposals];
-
-                loadingEl.style.display = 'none';
-
-                if (allProposals.length === 0) {
-                    emptyEl.style.display = 'block';
-                    tableWrapper.style.display = 'none';
-                } else {
-                    emptyEl.style.display = 'none';
-                    tableWrapper.style.display = 'block';
-                    renderProposals();
-                }
+                grid.setData(allProposals);
             } catch (error) {
                 console.error('Error loading proposals:', error);
-                loadingEl.innerHTML = '<p style="color: #dc3545;">Error al cargar las propuestas</p>';
+                grid.setData([]);
             }
         }
 
@@ -813,19 +541,13 @@
             const estado = document.getElementById('filter-estado').value;
             const fechaDesde = document.getElementById('filter-fecha-desde').value;
             const fechaHasta = document.getElementById('filter-fecha-hasta').value;
-
-            filteredProposals = allProposals.filter(proposal => {
-                if (estado && proposal.estado !== estado) return false;
-                if (fechaDesde && new Date(proposal.fecha) < new Date(fechaDesde)) return false;
-                if (fechaHasta) {
-                    const filterDate = new Date(fechaHasta);
-                    filterDate.setHours(23, 59, 59, 999);
-                    if (new Date(proposal.fecha) > filterDate) return false;
-                }
+            filteredProposals = allProposals.filter(p => {
+                if (estado && p.estado !== estado) return false;
+                if (fechaDesde && new Date(p.fecha) < new Date(fechaDesde)) return false;
+                if (fechaHasta) { const d = new Date(fechaHasta); d.setHours(23,59,59,999); if (new Date(p.fecha) > d) return false; }
                 return true;
             });
-
-            renderProposals();
+            grid.setData(filteredProposals);
         }
 
         function clearFilters() {
@@ -833,117 +555,23 @@
             document.getElementById('filter-fecha-desde').value = '';
             document.getElementById('filter-fecha-hasta').value = '';
             filteredProposals = [...allProposals];
-            renderProposals();
+            grid.setData(allProposals);
         }
 
-        // ==================== RENDERIZAR PROPUESTAS ====================
-        function renderProposals(datos = null) {
-            const tableBody = document.getElementById('proposals-table-body');
-            const cardsEl = document.getElementById('proposals-cards');
-            const emptyEl = document.getElementById('proposals-empty');
-            const noResultsEl = document.getElementById('proposals-no-results');
-            const tableWrapper = document.getElementById('proposals-table-wrapper');
+        // ==================== UTILIDADES ====================
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+        }
 
-            const dataToRender = datos !== null ? datos : filteredProposals;
-
-            if (dataToRender.length === 0) {
-                if (filtrosColumna.length > 0) {
-                    if (noResultsEl) noResultsEl.style.display = 'block';
-                    emptyEl.style.display = 'none';
-                } else {
-                    emptyEl.style.display = 'block';
-                    if (noResultsEl) noResultsEl.style.display = 'none';
-                }
-                tableWrapper.style.display = 'none';
-                cardsEl.innerHTML = '';
-                return;
-            }
-
-            emptyEl.style.display = 'none';
-            if (noResultsEl) noResultsEl.style.display = 'none';
-            tableWrapper.style.display = 'block';
-
-            tableBody.innerHTML = dataToRender.map(proposal => `
-                <tr>
-                    <td><strong>#${proposal.id}</strong></td>
-                    <td>
-                        <span class="user-badge">
-                            <span class="user-badge-icon">👤</span>
-                            ${proposal.username || 'Usuario'}
-                        </span>
-                    </td>
-                    <td>${formatDate(proposal.fecha)}</td>
-                    <td>${proposal.total_items} ${t('proposals.items').toLowerCase()}</td>
-                    <td>${getStatusBadge(proposal.estado)}</td>
-                    <td>${proposal.referencia || '-'}</td>
-                    <td>
-                        <div class="action-buttons btn-icon-group">
-                            <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewProposalDetails(${proposal.id})" title="${t('proposals.viewDetails')}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                            </button>
-                            <button class="btn-icon btn-icon-success btn-icon-sm" onclick="downloadExcel(${proposal.id})" title="${t('proposals.downloadExcel')}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            </button>
-                            <button class="btn-icon btn-icon-warning btn-icon-sm" onclick="openStatusModal(${proposal.id}, '${proposal.estado}')" title="${t('proposals.changeStatus')}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-
-            cardsEl.innerHTML = dataToRender.map(proposal => `
-                <div class="proposal-card">
-                    <div class="proposal-card-header">
-                        <span class="proposal-card-id">#${proposal.id}</span>
-                        ${getStatusBadge(proposal.estado)}
-                    </div>
-                    <div class="proposal-card-user">
-                        <span class="user-badge">
-                            <span class="user-badge-icon">👤</span>
-                            ${proposal.username || 'Usuario'}
-                        </span>
-                    </div>
-                    <div class="proposal-card-date">${formatDate(proposal.fecha)}</div>
-                    <div class="proposal-card-info">
-                        <div class="proposal-card-info-item">
-                            <label>${t('proposals.items')}</label>
-                            <span>${proposal.total_items}</span>
-                        </div>
-                        ${proposal.referencia ? `
-                        <div class="proposal-card-info-item">
-                            <label>${t('proposals.reference')}</label>
-                            <span>${proposal.referencia}</span>
-                        </div>
-                        ` : ''}
-                    </div>
-                    <div class="proposal-card-actions">
-                        <div class="btn-icon-group" style="justify-content: center;">
-                            <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewProposalDetails(${proposal.id})" title="${t('proposals.viewDetails')}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                            </button>
-                            <button class="btn-icon btn-icon-success btn-icon-sm" onclick="downloadExcel(${proposal.id})" title="${t('proposals.downloadExcel')}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            </button>
-                            <button class="btn-icon btn-icon-warning btn-icon-sm" onclick="openStatusModal(${proposal.id}, '${proposal.estado}')" title="${t('proposals.changeStatus')}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            const footerEl = document.getElementById('grid-footer');
-            if (footerEl) {
-                const totalOriginal = allProposals.length;
-                const totalFiltrado = dataToRender.length;
-                const hayFiltros = filtrosColumna.length > 0;
-                if (hayFiltros && totalFiltrado !== totalOriginal) {
-                    footerEl.innerHTML = `${totalFiltrado} registros (filtrados de ${totalOriginal})`;
-                } else {
-                    footerEl.innerHTML = `${totalFiltrado} registros`;
-                }
-            }
+        function getStatusBadge(status) {
+            const statusMap = {
+                'Enviada': { class: 'status-enviada', key: 'proposals.statusSent' },
+                'Procesada': { class: 'status-procesada', key: 'proposals.statusProcessed' },
+                'Cancelada': { class: 'status-cancelada', key: 'proposals.statusCancelled' }
+            };
+            const statusInfo = statusMap[status] || { class: 'status-enviada', key: 'proposals.statusSent' };
+            return `<span class="status-badge ${statusInfo.class}">${t(statusInfo.key)}</span>`;
         }
 
         // ==================== DESCARGAR EXCEL ====================
@@ -960,25 +588,14 @@
                 a.click();
                 window.URL.revokeObjectURL(url);
                 a.remove();
-            } catch (error) {
-                console.error('Error downloading Excel:', error);
-                alert(t('proposals.downloadExcelError'));
-            }
+            } catch (error) { alert(t('proposals.downloadExcelError')); }
         }
 
         // ==================== CAMBIAR ESTADO ====================
-        let currentStatusProposalId = null;
-
         function openStatusModal(proposalId, currentStatus) {
             currentStatusProposalId = proposalId;
             document.getElementById('status-modal-id').textContent = proposalId;
-
-            // Marcar el radio button del estado actual
-            const radios = document.querySelectorAll('input[name="new-status"]');
-            radios.forEach(radio => {
-                radio.checked = radio.value === currentStatus;
-            });
-
+            document.querySelectorAll('input[name="new-status"]').forEach(r => { r.checked = r.value === currentStatus; });
             document.getElementById('status-change-modal').style.display = 'flex';
         }
 
@@ -988,39 +605,26 @@
         }
 
         async function confirmStatusChange() {
-            const selectedRadio = document.querySelector('input[name="new-status"]:checked');
-            if (!selectedRadio) {
-                alert(t('proposals.selectStatus') || 'Selecciona un estado');
-                return;
-            }
-
-            const newStatus = selectedRadio.value;
-            await changeStatus(currentStatusProposalId, newStatus);
+            const selected = document.querySelector('input[name="new-status"]:checked');
+            if (!selected) { alert(t('proposals.selectStatus') || 'Selecciona un estado'); return; }
+            await changeStatus(currentStatusProposalId, selected.value);
             closeStatusModal();
         }
 
         async function changeStatus(proposalId, newStatus) {
             try {
                 const response = await fetch(`${API_URL}/api/propuestas/${proposalId}/estado`, {
-                    method: 'PUT',
-                    credentials: 'include',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+                    method: 'PUT', credentials: 'include',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() },
                     body: JSON.stringify({ estado: newStatus })
                 });
-
                 if (!response.ok) throw new Error('Error changing status');
-
-                const index = allProposals.findIndex(p => p.id === proposalId);
-                if (index !== -1) allProposals[index].estado = newStatus;
-
-                const filteredIndex = filteredProposals.findIndex(p => p.id === proposalId);
-                if (filteredIndex !== -1) filteredProposals[filteredIndex].estado = newStatus;
-
-                renderProposals();
-            } catch (error) {
-                console.error('Error changing status:', error);
-                alert('Error al cambiar el estado');
-            }
+                const idx = allProposals.findIndex(p => p.id === proposalId);
+                if (idx !== -1) allProposals[idx].estado = newStatus;
+                const fIdx = filteredProposals.findIndex(p => p.id === proposalId);
+                if (fIdx !== -1) filteredProposals[fIdx].estado = newStatus;
+                grid.refresh();
+            } catch (error) { alert('Error al cambiar el estado'); }
         }
 
         // ==================== VER DETALLE ====================
@@ -1029,15 +633,12 @@
             const content = document.getElementById('proposal-detail-content');
             modal.style.display = 'flex';
             content.innerHTML = '<div class="proposals-loading"><div class="spinner"></div><p>Cargando...</p></div>';
-
             try {
                 const response = await fetch(`${API_URL}/api/propuestas/${proposalId}`, { credentials: 'include' });
                 if (!response.ok) throw new Error('Error loading proposal details');
-
                 const data = await response.json();
                 const proposal = data.propuesta;
                 const lines = proposal.lineas || [];
-
                 content.innerHTML = `
                     <div class="proposal-info">
                         <div class="proposal-info-item"><label>ID</label><span>#${proposal.id}</span></div>
@@ -1075,11 +676,8 @@
                         `).join('')}
                     </div>
                 `;
-
                 lines.forEach((line, index) => cargarImagenProducto(line.codigo, index));
-            } catch (error) {
-                content.innerHTML = '<p style="color: #dc3545; text-align: center;">Error al cargar los detalles</p>';
-            }
+            } catch (error) { content.innerHTML = '<p style="color: #dc3545; text-align: center;">Error al cargar los detalles</p>'; }
         }
 
         async function cargarImagenProducto(codigo, index) {
@@ -1092,22 +690,14 @@
                     if (imagenes.length > 0 && imagenes[0].imagen) {
                         const imgBase64 = imagenes[0].imagen;
                         const totalImgs = imagenes.length;
-                        container.innerHTML = `
-                            <img src="data:image/jpeg;base64,${imgBase64}" alt="${codigo}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;cursor:pointer;" onclick="ampliarImagen('${imgBase64}')">
-                            ${totalImgs > 1 ? `<span class="img-count">+${totalImgs - 1}</span>` : ''}
-                        `;
+                        container.innerHTML = `<img src="data:image/jpeg;base64,${imgBase64}" alt="${codigo}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;cursor:pointer;">
+                            ${totalImgs > 1 ? `<span class="img-count">+${totalImgs - 1}</span>` : ''}`;
                         container.dataset.imagenes = JSON.stringify(imagenes.map(i => i.imagen));
                         container.dataset.codigo = codigo;
                         container.onclick = () => abrirGaleria(container.dataset.imagenes, codigo);
-                    } else {
-                        container.innerHTML = '<div class="no-image">📦</div>';
-                    }
-                } else {
-                    container.innerHTML = '<div class="no-image">📦</div>';
-                }
-            } catch (e) {
-                container.innerHTML = '<div class="no-image">📦</div>';
-            }
+                    } else { container.innerHTML = '<div class="no-image">📦</div>'; }
+                } else { container.innerHTML = '<div class="no-image">📦</div>'; }
+            } catch (e) { container.innerHTML = '<div class="no-image">📦</div>'; }
         }
 
         function abrirGaleria(imagenesJson, codigo) {
@@ -1118,24 +708,12 @@
                 modal = document.createElement('div');
                 modal.id = 'galeria-modal';
                 modal.className = 'galeria-modal';
-                modal.innerHTML = `
-                    <div class="galeria-content">
-                        <button class="galeria-close" onclick="cerrarGaleria()">&times;</button>
-                        <div class="galeria-main"><img id="galeria-img-principal" src="" alt="Imagen"></div>
-                        <div class="galeria-thumbs" id="galeria-thumbs"></div>
-                    </div>
-                `;
+                modal.innerHTML = `<div class="galeria-content"><button class="galeria-close" onclick="cerrarGaleria()">&times;</button><div class="galeria-main"><img id="galeria-img-principal" src="" alt="Imagen"></div><div class="galeria-thumbs" id="galeria-thumbs"></div></div>`;
                 document.body.appendChild(modal);
                 modal.addEventListener('click', (e) => { if (e.target === modal) cerrarGaleria(); });
             }
-            const imgPrincipal = document.getElementById('galeria-img-principal');
-            const thumbsContainer = document.getElementById('galeria-thumbs');
-            imgPrincipal.src = `data:image/jpeg;base64,${imagenes[0]}`;
-            thumbsContainer.innerHTML = imagenes.map((img, i) => `
-                <div class="galeria-thumb ${i === 0 ? 'active' : ''}" onclick="seleccionarImagen('${img}', this)">
-                    <img src="data:image/jpeg;base64,${img}" alt="Thumb ${i + 1}">
-                </div>
-            `).join('');
+            document.getElementById('galeria-img-principal').src = `data:image/jpeg;base64,${imagenes[0]}`;
+            document.getElementById('galeria-thumbs').innerHTML = imagenes.map((img, i) => `<div class="galeria-thumb ${i === 0 ? 'active' : ''}" onclick="seleccionarImagen('${img}', this)"><img src="data:image/jpeg;base64,${img}" alt="Thumb ${i + 1}"></div>`).join('');
             modal.style.display = 'flex';
         }
 
@@ -1145,344 +723,22 @@
             thumbEl.classList.add('active');
         }
 
-        function cerrarGaleria() {
-            const modal = document.getElementById('galeria-modal');
-            if (modal) modal.style.display = 'none';
-        }
+        function cerrarGaleria() { const m = document.getElementById('galeria-modal'); if (m) m.style.display = 'none'; }
+        function ampliarImagen(imgBase64) { abrirGaleria(JSON.stringify([imgBase64]), ''); }
 
-        function ampliarImagen(imgBase64) {
-            abrirGaleria(JSON.stringify([imgBase64]), '');
-        }
-
-        function closeProposalModal() {
-            document.getElementById('proposal-detail-modal').style.display = 'none';
-        }
-
-        // ==================== UTILIDADES ====================
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-        }
-
-        function getStatusBadge(status) {
-            const statusMap = {
-                'Enviada': { class: 'status-enviada', key: 'proposals.statusSent' },
-                'Procesada': { class: 'status-procesada', key: 'proposals.statusProcessed' },
-                'Cancelada': { class: 'status-cancelada', key: 'proposals.statusCancelled' }
-            };
-            const statusInfo = statusMap[status] || { class: 'status-enviada', key: 'proposals.statusSent' };
-            return `<span class="status-badge ${statusInfo.class}">${t(statusInfo.key)}</span>`;
-        }
-
-        // ==================== ORDENACION ====================
-        function ordenarPor(columna) {
-            if (ordenActual.columna === columna) {
-                ordenActual.direccion = ordenActual.direccion === 'ASC' ? 'DESC' : 'ASC';
-            } else {
-                ordenActual.columna = columna;
-                ordenActual.direccion = 'ASC';
-            }
-            actualizarIconosOrdenacion();
-            aplicarFiltrosYOrdenacion();
-        }
-
-        function actualizarIconosOrdenacion() {
-            document.querySelectorAll('.proposals-table th .sort-icon').forEach(icon => {
-                icon.classList.remove('active', 'asc', 'desc');
-            });
-            const thActivo = document.querySelector(`.proposals-table th[data-column="${ordenActual.columna}"] .sort-icon`);
-            if (thActivo) thActivo.classList.add('active', ordenActual.direccion.toLowerCase());
-        }
-
-        // ==================== FILTROS POR COLUMNA ====================
-        function abrirPopupFiltro(columna, elemento) {
-            cerrarPopupFiltro();
-            const colConfig = columnasFiltrables.find(c => c.key === columna);
-            if (!colConfig) return;
-            const filtroExistente = filtrosColumna.find(f => f.columna === columna);
-            const valoresUnicos = obtenerValoresUnicos(columna);
-
-            const popup = document.createElement('div');
-            popup.className = 'filter-popup';
-            popup.innerHTML = `
-                <div class="filter-popup-header">
-                    <span class="filter-popup-title">${colConfig.label}</span>
-                    <button class="filter-popup-close" onclick="cerrarPopupFiltro()">&times;</button>
-                </div>
-                <div class="filter-popup-content">
-                    <div class="filter-condition-operators">
-                        ${operadoresTexto.map((op, idx) => `
-                            <label class="filter-condition-option ${op.negativo ? 'negativo' : ''}">
-                                <input type="radio" name="op-${columna}" value="${op.key}" ${(filtroExistente?.operador === op.key || (!filtroExistente && idx === 0)) ? 'checked' : ''}>
-                                <span class="filter-radio-dot"></span>
-                                ${op.label}
-                            </label>
-                        `).join('')}
-                    </div>
-                    <input type="text" class="filter-condition-input" id="filter-value-${columna}" placeholder="Valor..." value="${filtroExistente?.valor || ''}" onkeypress="if(event.key==='Enter') aplicarFiltroColumna('${columna}')">
-                    ${valoresUnicos.length > 0 && valoresUnicos.length <= 20 ? `
-                    <div class="filter-values-list" id="filter-values-list-${columna}">
-                        ${valoresUnicos.map(v => `
-                            <label class="filter-value-item">
-                                <input type="checkbox" value="${v}" ${filtroExistente?.valores?.includes(v) ? 'checked' : ''}>
-                                <span>${v || '(vacio)'}</span>
-                            </label>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-                </div>
-                <div class="filter-popup-footer">
-                    <button class="btn-icon btn-icon-ghost btn-icon-sm" onclick="limpiarFiltroColumna('${columna}')" title="Limpiar">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                    </button>
-                    <button class="btn-icon btn-icon-success btn-icon-sm" onclick="aplicarFiltroColumna('${columna}')" title="Aplicar">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                    </button>
-                </div>
-            `;
-
-            const rect = elemento.getBoundingClientRect();
-            popup.style.position = 'fixed';
-            popup.style.top = `${rect.bottom + 5}px`;
-            popup.style.left = `${Math.min(rect.left, window.innerWidth - 280)}px`;
-            popup.style.zIndex = '1000';
-            document.body.appendChild(popup);
-            popupFiltroAbierto = popup;
-            popup.addEventListener('click', (e) => e.stopPropagation());
-        }
-
-        function cerrarPopupFiltro() {
-            if (popupFiltroAbierto) {
-                popupFiltroAbierto.remove();
-                popupFiltroAbierto = null;
-            }
-        }
-
-        function obtenerValoresUnicos(columna) {
-            const valores = new Set();
-            allProposals.forEach(p => {
-                let valor = p[columna];
-                if (columna === 'usuario') valor = p.username;
-                if (valor !== undefined && valor !== null) valores.add(String(valor));
-            });
-            return Array.from(valores).sort();
-        }
-
-        function aplicarFiltroColumna(columna) {
-            const inputValor = document.getElementById(`filter-value-${columna}`);
-            const radioSeleccionado = document.querySelector(`input[name="op-${columna}"]:checked`);
-            const checkboxes = document.querySelectorAll(`#filter-values-list-${columna} input[type="checkbox"]:checked`);
-
-            const valorInput = inputValor?.value.trim();
-            const operador = radioSeleccionado?.value || 'contains';
-            const valoresSeleccionados = Array.from(checkboxes).map(cb => cb.value);
-
-            filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
-            if (valoresSeleccionados.length > 0) {
-                filtrosColumna.push({ columna, operador: 'in', valores: valoresSeleccionados });
-            } else if (valorInput) {
-                filtrosColumna.push({ columna, operador, valor: valorInput });
-            }
-
-            cerrarPopupFiltro();
-            renderizarChipsFiltros();
-            actualizarIconosFiltro();
-            aplicarFiltrosYOrdenacion();
-        }
-
-        function limpiarFiltroColumna(columna) {
-            filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
-            cerrarPopupFiltro();
-            renderizarChipsFiltros();
-            actualizarIconosFiltro();
-            aplicarFiltrosYOrdenacion();
-        }
-
-        function limpiarTodosFiltrosColumna() {
-            filtrosColumna = [];
-            renderizarChipsFiltros();
-            actualizarIconosFiltro();
-            aplicarFiltrosYOrdenacion();
-        }
-
-        function renderizarChipsFiltros() {
-            const container = document.getElementById('column-filters-chips');
-            if (!container) return;
-            if (filtrosColumna.length === 0) {
-                container.innerHTML = '';
-                container.style.display = 'none';
-                return;
-            }
-            container.style.display = 'flex';
-            container.innerHTML = filtrosColumna.map((filtro, idx) => {
-                const labelColumna = columnasFiltrables.find(c => c.key === filtro.columna)?.label || filtro.columna;
-                const esNegativo = filtro.operador?.startsWith('not_') || filtro.operador === 'neq';
-                const chipClass = esNegativo ? 'filter-chip filter-chip-negative' : 'filter-chip';
-                if (filtro.operador === 'in' && filtro.valores) {
-                    const valorMostrar = filtro.valores.length <= 2 ? filtro.valores.join(', ') : `${filtro.valores[0]}... (+${filtro.valores.length - 1})`;
-                    return `<span class="filter-chip filter-chip-multi"><span class="filter-chip-column">${labelColumna}:</span><span class="filter-chip-value">${valorMostrar}</span><span class="filter-chip-remove" onclick="quitarFiltroColumna(${idx})">✕</span></span>`;
-                } else {
-                    const opLabel = operadoresTexto.find(o => o.key === filtro.operador)?.label || filtro.operador;
-                    return `<span class="${chipClass}"><span class="filter-chip-column">${labelColumna}:</span><span class="filter-chip-operator">${opLabel.toLowerCase()}</span><span class="filter-chip-value">"${filtro.valor}"</span><span class="filter-chip-remove" onclick="quitarFiltroColumna(${idx})">✕</span></span>`;
-                }
-            }).join('') + '<button class="btn-icon btn-icon-ghost btn-icon-sm" onclick="limpiarTodosFiltrosColumna()" title="Limpiar todo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
-        }
-
-        function quitarFiltroColumna(index) {
-            filtrosColumna.splice(index, 1);
-            renderizarChipsFiltros();
-            actualizarIconosFiltro();
-            aplicarFiltrosYOrdenacion();
-        }
-
-        function actualizarIconosFiltro() {
-            columnasFiltrables.forEach(col => {
-                const btn = document.querySelector(`.proposals-table th[data-column="${col.key}"] .column-filter-btn`);
-                if (btn) {
-                    const tieneFiltro = filtrosColumna.some(f => f.columna === col.key);
-                    btn.classList.toggle('active', tieneFiltro);
-                }
-            });
-        }
-
-        function aplicarFiltrosYOrdenacion() {
-            let datos = [...allProposals];
-
-            filtrosColumna.forEach(filtro => {
-                datos = datos.filter(item => {
-                    let valorItem = item[filtro.columna];
-                    if (filtro.columna === 'usuario') valorItem = item.username;
-                    valorItem = String(valorItem || '').toLowerCase();
-
-                    if (filtro.operador === 'in') {
-                        return filtro.valores.some(v => valorItem === v.toLowerCase());
-                    }
-
-                    const valorBuscar = (filtro.valor || '').toLowerCase();
-                    switch (filtro.operador) {
-                        case 'eq': return valorItem === valorBuscar;
-                        case 'neq': return valorItem !== valorBuscar;
-                        case 'contains': return valorItem.includes(valorBuscar);
-                        case 'not_contains': return !valorItem.includes(valorBuscar);
-                        case 'starts': return valorItem.startsWith(valorBuscar);
-                        case 'not_starts': return !valorItem.startsWith(valorBuscar);
-                        case 'ends': return valorItem.endsWith(valorBuscar);
-                        case 'not_ends': return !valorItem.endsWith(valorBuscar);
-                        default: return valorItem.includes(valorBuscar);
-                    }
-                });
-            });
-
-            datos.sort((a, b) => {
-                let valA = a[ordenActual.columna];
-                let valB = b[ordenActual.columna];
-                if (ordenActual.columna === 'usuario') { valA = a.username; valB = b.username; }
-                if (ordenActual.columna === 'fecha') { valA = new Date(valA); valB = new Date(valB); }
-                if (valA < valB) return ordenActual.direccion === 'ASC' ? -1 : 1;
-                if (valA > valB) return ordenActual.direccion === 'ASC' ? 1 : -1;
-                return 0;
-            });
-
-            filteredProposals = datos;
-            renderProposals(filteredProposals);
-        }
+        function closeProposalModal() { document.getElementById('proposal-detail-modal').style.display = 'none'; }
 
         // ==================== EVENT LISTENERS ====================
-        document.getElementById('proposal-detail-modal').addEventListener('click', function(e) {
-            if (e.target === this) closeProposalModal();
-        });
+        document.getElementById('proposal-detail-modal').addEventListener('click', function(e) { if (e.target === this) closeProposalModal(); });
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeProposalModal();
-                cerrarPopupFiltro();
+                closeStatusModal();
                 hideChangePasswordModal();
+                const gf = grid?.getFilters();
+                if (gf) gf.cerrarPopupFiltro();
             }
-        });
-
-        document.addEventListener('click', (e) => {
-            if (popupFiltroAbierto && !popupFiltroAbierto.contains(e.target) && !e.target.classList.contains('column-filter-btn')) {
-                cerrarPopupFiltro();
-            }
-        });
-
-        // ==================== CAMBIO DE CONTRASENA ====================
-        function showChangePasswordModal() {
-            document.getElementById('change-password-modal').style.display = 'flex';
-            document.getElementById('current-password').value = '';
-            document.getElementById('new-password').value = '';
-            document.getElementById('confirm-password').value = '';
-            document.getElementById('change-password-error').style.display = 'none';
-            document.getElementById('change-password-success').style.display = 'none';
-            document.getElementById('change-password-btn').disabled = false;
-            document.getElementById('change-password-btn').textContent = t('changePassword.changeButton');
-        }
-
-        function hideChangePasswordModal() {
-            document.getElementById('change-password-modal').style.display = 'none';
-        }
-
-        async function handleVoluntaryPasswordChange() {
-            const currentPwd = document.getElementById('current-password').value;
-            const newPwd = document.getElementById('new-password').value;
-            const confirmPwd = document.getElementById('confirm-password').value;
-            const errorEl = document.getElementById('change-password-error');
-            const successEl = document.getElementById('change-password-success');
-            const btn = document.getElementById('change-password-btn');
-
-            errorEl.style.display = 'none';
-            successEl.style.display = 'none';
-
-            if (!currentPwd) {
-                errorEl.textContent = t('changePassword.currentPasswordRequired');
-                errorEl.style.display = 'block';
-                return;
-            }
-            if (newPwd.length < 6) {
-                errorEl.textContent = t('changePassword.minLength');
-                errorEl.style.display = 'block';
-                return;
-            }
-            if (newPwd !== confirmPwd) {
-                errorEl.textContent = t('changePassword.mismatch');
-                errorEl.style.display = 'block';
-                return;
-            }
-
-            btn.disabled = true;
-            btn.textContent = t('changePassword.changing');
-
-            try {
-                const response = await fetch(`${API_URL}/api/usuarios/cambiar-password`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken || localStorage.getItem('csrf_token')
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({ current_password: currentPwd, new_password: newPwd })
-                });
-                const data = await response.json();
-                if (response.ok && data.success) {
-                    successEl.textContent = t('changePassword.success');
-                    successEl.style.display = 'block';
-                    setTimeout(() => hideChangePasswordModal(), 2000);
-                } else {
-                    errorEl.textContent = data.error || t('changePassword.error');
-                    errorEl.style.display = 'block';
-                    btn.disabled = false;
-                    btn.textContent = t('changePassword.changeButton');
-                }
-            } catch (error) {
-                errorEl.textContent = t('changePassword.error');
-                errorEl.style.display = 'block';
-                btn.disabled = false;
-                btn.textContent = t('changePassword.changeButton');
-            }
-        }
-
-        document.getElementById('change-password-modal').addEventListener('click', function(e) {
-            if (e.target === this) hideChangePasswordModal();
         });
     </script>
 

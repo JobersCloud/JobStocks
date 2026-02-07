@@ -46,9 +46,6 @@
         })();
     </script>
     <link rel="stylesheet" href="css/styles.css?v=1.12.73">
-    <!-- Flatpickr - Calendario moderno -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
 </head>
 <body>
     <div class="app-layout">
@@ -449,6 +446,7 @@
                                         <th class="sortable" data-sort="resultado" onclick="sortAuditColumn('resultado')">
                                             <div class="th-content"><span>Resultado</span><span class="sort-icon" id="sort-resultado">↕</span></div>
                                         </th>
+                                        <th style="width: 70px; text-align: center;">Detalle</th>
                                     </tr>
                                 </thead>
                                 <tbody id="audit-body"></tbody>
@@ -490,12 +488,19 @@
         </div>
     </div>
 
+    <!-- Modal Detalle de Dispositivo -->
+    <div id="device-detail-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 520px;">
+            <div class="modal-header">
+                <h2>Detalle del Dispositivo</h2>
+                <button class="modal-close" onclick="hideDeviceDetailModal()">&times;</button>
+            </div>
+            <div id="device-detail-body" style="padding: 20px;"></div>
+        </div>
+    </div>
+
     <script src="js/i18n/i18n.js"></script>
     <script src="js/sidebar.js?v=20260143"></script>
-    <!-- Flatpickr -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
     <script>
         // ==================== CONFIGURACION ====================
         const hostname = window.location.hostname;
@@ -772,18 +777,27 @@
                 return;
             }
             emptyMsg.style.display = 'none';
-            tbody.innerHTML = logs.map(log => `
-                <tr>
+            tbody.innerHTML = logs.map(log => {
+                const hasDevice = log.accion === 'LOGIN' && log.detalles && log.detalles.dispositivo;
+                const detailBtn = hasDevice
+                    ? `<button class="btn-action btn-detail-device" onclick="showDeviceDetail(${log.id})" title="Ver dispositivo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></button>`
+                    : '';
+                return `<tr>
                     <td>${formatDateTime(log.fecha)}</td>
                     <td><strong>${log.username || '-'}</strong></td>
                     <td><span class="action-badge action-${getActionCategory(log.accion)}">${formatActionName(log.accion)}</span></td>
                     <td>${formatRecurso(log, false)}</td>
                     <td>${log.ip_address || '-'}</td>
                     <td><span class="result-badge result-${log.resultado.toLowerCase()}">${formatResultName(log.resultado)}</span></td>
-                </tr>
-            `).join('');
-            cardsContainer.innerHTML = logs.map(log => `
-                <div class="audit-card">
+                    <td style="text-align: center;">${detailBtn}</td>
+                </tr>`;
+            }).join('');
+            cardsContainer.innerHTML = logs.map(log => {
+                const hasDevice = log.accion === 'LOGIN' && log.detalles && log.detalles.dispositivo;
+                const detailBtn = hasDevice
+                    ? `<button class="btn-action btn-detail-device" onclick="showDeviceDetail(${log.id})" title="Ver dispositivo" style="margin-left: auto;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Dispositivo</button>`
+                    : '';
+                return `<div class="audit-card">
                     <div class="card-header">
                         <span class="action-badge action-${getActionCategory(log.accion)}">${formatActionName(log.accion)}</span>
                         <span class="result-badge result-${log.resultado.toLowerCase()}">${formatResultName(log.resultado)}</span>
@@ -794,8 +808,9 @@
                         <div class="card-detail"><strong>Recurso:</strong> ${formatRecurso(log, true)}</div>
                         <div class="card-detail"><strong>IP:</strong> ${log.ip_address || '-'}</div>
                     </div>
-                </div>
-            `).join('');
+                    ${hasDevice ? `<div class="card-footer" style="padding: 8px 12px; border-top: 1px solid var(--border-color, #eee);">${detailBtn}</div>` : ''}
+                </div>`;
+            }).join('');
         }
 
         function renderAuditPagination() {
@@ -864,20 +879,6 @@
             // Cargar tema
             const theme = localStorage.getItem('theme') || 'dark';
             document.getElementById('theme-icon').textContent = theme === 'dark' ? '🌙' : '☀️';
-
-            // Inicializar Flatpickr en campos de fecha
-            const locale = localStorage.getItem('language') || 'es';
-            const fpLocale = locale === 'es' ? 'es' : (locale === 'fr' ? 'fr' : 'default');
-            flatpickr('input[type="date"]', {
-                locale: fpLocale,
-                dateFormat: 'Y-m-d',
-                altInput: true,
-                altFormat: 'd M Y',
-                allowInput: true,
-                disableMobile: true,
-                animate: true,
-                theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'material_blue'
-            });
 
             // Verificar sesión
             try {
@@ -956,6 +957,84 @@
             return typeof I18n !== 'undefined' && I18n.t ? I18n.t(key) : key;
         }
 
+        // ==================== DETALLE DISPOSITIVO ====================
+        function showDeviceDetail(logId) {
+            const log = auditAllLogs.find(l => l.id === logId);
+            if (!log || !log.detalles || !log.detalles.dispositivo) return;
+            const d = log.detalles.dispositivo;
+            const tipoIcon = d.tipo === 'Mobile' ? '📱' : d.tipo === 'Tablet' ? '📱' : '💻';
+            const tactilText = d.tactil === true ? 'Sí' : d.tactil === false ? 'No' : '-';
+            const cookiesText = d.cookies === true ? 'Sí' : d.cookies === false ? 'No' : '-';
+
+            const html = `
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-secondary, #f5f5f5); border-radius: 10px;">
+                        <span style="font-size: 2rem;">${tipoIcon}</span>
+                        <div>
+                            <div style="font-weight: 600; font-size: 1.1rem;">${d.tipo || '-'}</div>
+                            <div style="color: var(--text-secondary, #666); font-size: 0.85rem;">${d.navegador || '-'} / ${d.sistema_operativo || '-'}</div>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="device-info-item">
+                            <div class="device-info-label">Navegador</div>
+                            <div class="device-info-value">${d.navegador || '-'}</div>
+                        </div>
+                        <div class="device-info-item">
+                            <div class="device-info-label">Sistema Operativo</div>
+                            <div class="device-info-value">${d.sistema_operativo || '-'}</div>
+                        </div>
+                        <div class="device-info-item">
+                            <div class="device-info-label">Pantalla</div>
+                            <div class="device-info-value">${d.pantalla || '-'}</div>
+                        </div>
+                        <div class="device-info-item">
+                            <div class="device-info-label">Viewport</div>
+                            <div class="device-info-value">${d.viewport || '-'}</div>
+                        </div>
+                        <div class="device-info-item">
+                            <div class="device-info-label">Zona Horaria</div>
+                            <div class="device-info-value">${d.zona_horaria || '-'}</div>
+                        </div>
+                        <div class="device-info-item">
+                            <div class="device-info-label">Idioma</div>
+                            <div class="device-info-value">${d.idioma || '-'}</div>
+                        </div>
+                        <div class="device-info-item">
+                            <div class="device-info-label">Plataforma</div>
+                            <div class="device-info-value">${d.plataforma || '-'}</div>
+                        </div>
+                        <div class="device-info-item">
+                            <div class="device-info-label">Pantalla Táctil</div>
+                            <div class="device-info-value">${tactilText}</div>
+                        </div>
+                        <div class="device-info-item">
+                            <div class="device-info-label">Cookies</div>
+                            <div class="device-info-value">${cookiesText}</div>
+                        </div>
+                        <div class="device-info-item">
+                            <div class="device-info-label">Memoria (GB)</div>
+                            <div class="device-info-value">${d.memoria_gb != null ? d.memoria_gb : '-'}</div>
+                        </div>
+                        <div class="device-info-item">
+                            <div class="device-info-label">Núcleos CPU</div>
+                            <div class="device-info-value">${d.nucleos_cpu != null ? d.nucleos_cpu : '-'}</div>
+                        </div>
+                    </div>
+                    <details style="margin-top: 4px;">
+                        <summary style="cursor: pointer; color: var(--text-secondary, #666); font-size: 0.8rem;">User-Agent completo</summary>
+                        <div style="margin-top: 8px; padding: 8px; background: var(--bg-secondary, #f5f5f5); border-radius: 6px; font-family: monospace; font-size: 0.75rem; word-break: break-all; color: var(--text-secondary, #666);">${d.user_agent || '-'}</div>
+                    </details>
+                </div>
+            `;
+            document.getElementById('device-detail-body').innerHTML = html;
+            document.getElementById('device-detail-modal').style.display = 'flex';
+        }
+
+        function hideDeviceDetailModal() {
+            document.getElementById('device-detail-modal').style.display = 'none';
+        }
+
         // ==================== CAMBIO DE CONTRASENA ====================
         function showChangePasswordModal() {
             document.getElementById('change-password-modal').style.display = 'flex';
@@ -1030,9 +1109,13 @@
                 btn.textContent = t('changePassword.changeButton');
             }
         }
-
+    </script>
+    <script>
         document.getElementById('change-password-modal').addEventListener('click', function(e) {
             if (e.target === this) hideChangePasswordModal();
+        });
+        document.getElementById('device-detail-modal').addEventListener('click', function(e) {
+            if (e.target === this) hideDeviceDetailModal();
         });
     </script>
 </body>

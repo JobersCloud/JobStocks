@@ -383,7 +383,22 @@ function setupLoginForm() {
                     'Content-Type': 'application/json'
                 },
                 credentials: 'include',
-                body: JSON.stringify({ username, password, empresa_cli_id: connection })
+                body: JSON.stringify({
+                    username,
+                    password,
+                    empresa_cli_id: connection,
+                    device_info: {
+                        screen: `${screen.width}x${screen.height}`,
+                        viewport: `${window.innerWidth}x${window.innerHeight}`,
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        language: navigator.language,
+                        platform: navigator.platform,
+                        cookiesEnabled: navigator.cookieEnabled,
+                        touchscreen: navigator.maxTouchPoints > 0,
+                        deviceMemory: navigator.deviceMemory || null,
+                        hardwareConcurrency: navigator.hardwareConcurrency || null
+                    }
+                })
             });
 
             const data = await response.json();

@@ -333,141 +333,12 @@
         <!-- Contenedor Principal -->
         <div class="main-wrapper">
             <main class="main-content-area">
-                <!-- Contenedor principal de usuarios -->
-                <div class="users-container">
-                    <div class="users-content">
-                        <!-- Toolbar -->
-                        <div class="users-toolbar" id="users-toolbar" style="display: none;">
-                            <button class="btn-icon btn-icon-primary" onclick="openCreateUserModal()" title="Nuevo Usuario">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-                            </button>
-                        </div>
-
-                        <!-- Loading state -->
-                        <div class="users-loading" id="users-loading">
-                            <div class="spinner"></div>
-                            <p data-i18n="users.loading">Cargando usuarios...</p>
-                        </div>
-
-                        <!-- Chips de filtros activos (ANTES del empty state para siempre verlos) -->
-                        <div class="column-filters-chips" id="column-filters-chips" style="display: none;"></div>
-
-                        <!-- Empty state (no hay usuarios en BD) -->
-                        <div class="users-empty" id="users-empty" style="display: none;">
-                            <div class="users-empty-icon">👥</div>
-                            <h3 data-i18n="users.noUsers">No hay usuarios</h3>
-                            <button class="btn-icon btn-icon-primary btn-icon-lg" onclick="openCreateUserModal()" title="Nuevo Usuario">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-                            </button>
-                        </div>
-
-                        <!-- No results from filter -->
-                        <div class="users-no-results" id="users-no-results" style="display: none;">
-                            <div class="users-empty-icon">🔍</div>
-                            <h3>No se encontraron resultados</h3>
-                            <p>Prueba con otros criterios de búsqueda</p>
-                        </div>
-
-                        <!-- Table view (desktop) -->
-                        <div class="users-table-wrapper" id="users-table-wrapper" style="display: none;">
-                            <div class="table-scroll-container">
-                                <table class="users-table">
-                                    <thead>
-                                        <tr>
-                                            <th data-column="username">
-                                            <div class="column-header-wrapper">
-                                                <span class="sortable-header" onclick="ordenarPor('username')">
-                                                    Usuario
-                                                    <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                                </span>
-                                                <button class="column-filter-btn" onclick="abrirPopupFiltro('username', this)" title="Filtrar">
-                                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                                </button>
-                                            </div>
-                                        </th>
-                                        <th data-column="full_name">
-                                            <div class="column-header-wrapper">
-                                                <span class="sortable-header" onclick="ordenarPor('full_name')">
-                                                    Nombre Completo
-                                                    <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                                </span>
-                                                <button class="column-filter-btn" onclick="abrirPopupFiltro('full_name', this)" title="Filtrar">
-                                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                                </button>
-                                            </div>
-                                        </th>
-                                        <th data-column="email">
-                                            <div class="column-header-wrapper">
-                                                <span class="sortable-header" onclick="ordenarPor('email')">
-                                                    Email
-                                                    <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                                </span>
-                                                <button class="column-filter-btn" onclick="abrirPopupFiltro('email', this)" title="Filtrar">
-                                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                                </button>
-                                            </div>
-                                        </th>
-                                        <th data-column="company_name">
-                                            <div class="column-header-wrapper">
-                                                <span class="sortable-header" onclick="ordenarPor('company_name')">
-                                                    Empresa
-                                                    <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                                </span>
-                                                <button class="column-filter-btn" onclick="abrirPopupFiltro('company_name', this)" title="Filtrar">
-                                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                                </button>
-                                            </div>
-                                        </th>
-                                        <th data-column="pais">
-                                            <div class="column-header-wrapper">
-                                                <span class="sortable-header" onclick="ordenarPor('pais')">
-                                                    País
-                                                    <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                                </span>
-                                                <button class="column-filter-btn" onclick="abrirPopupFiltro('pais', this)" title="Filtrar">
-                                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                                </button>
-                                            </div>
-                                        </th>
-                                        <th data-column="rol">
-                                            <div class="column-header-wrapper">
-                                                <span class="sortable-header" onclick="ordenarPor('rol')">
-                                                    Rol
-                                                    <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                                </span>
-                                                <button class="column-filter-btn" onclick="abrirPopupFiltro('rol', this)" title="Filtrar">
-                                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                                </button>
-                                            </div>
-                                        </th>
-                                        <th data-column="active">
-                                            <div class="column-header-wrapper">
-                                                <span class="sortable-header" onclick="ordenarPor('active')">
-                                                    Estado
-                                                    <svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>
-                                                </span>
-                                                <button class="column-filter-btn" onclick="abrirPopupFiltro('active', this)" title="Filtrar">
-                                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
-                                                </button>
-                                            </div>
-                                        </th>
-                                        <th data-i18n="users.actions">Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="users-table-body">
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Cards view (mobile) -->
-                        <div class="users-cards" id="users-cards">
-                        </div>
-
-                        <!-- Footer con total de registros (visible en ambas vistas) -->
-                        <div class="grid-footer" id="grid-footer"></div>
-                    </div>
+                <div id="users-toolbar" style="display: none; padding: 10px 20px;">
+                    <button class="btn-icon btn-icon-primary" onclick="openCreateUserModal()" title="Crear usuario">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                    </button>
                 </div>
+                <div id="users-grid"></div>
             </main>
         </div>
     </div>
@@ -597,1346 +468,369 @@
 
     <script src="js/i18n/i18n.js"></script>
     <script src="js/sidebar.js?v=20260143"></script>
+    <script src="js/grid-filters.js?v=20260206"></script>
+    <script src="js/data-grid.js?v=20260206"></script>
+    <script src="js/page-common.js?v=20260206"></script>
     <script>
-        // ==================== CONFIGURACIÓN ====================
-        const hostname = window.location.hostname;
-        const protocol = window.location.protocol;
-        const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
-        const API_URL = isLocalhost ? `${protocol}//${hostname}:5000` : `${protocol}//${hostname}`;
-
+        // ==================== PAGE: USUARIOS (Admin) ====================
+        const API_URL = PageCommon.API_URL;
         let users = [];
         let filteredUsers = [];
-        let currentUser = null;
         let selectedUserId = null;
         let editingUserId = null;
         let clientSearchTimeout = null;
         let paises = [];
-        let csrfToken = null;
-
-        // ==================== TEMA ====================
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            applyTheme(savedTheme);
-        }
-
-        function applyTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            const icon = document.getElementById('theme-icon');
-            if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
-        }
-
-        function toggleTheme() {
-            const current = document.documentElement.getAttribute('data-theme');
-            const newTheme = current === 'dark' ? 'light' : 'dark';
-            localStorage.setItem('theme', newTheme);
-            applyTheme(newTheme);
-        }
-
-        // ==================== ACORDEÓN ====================
-        function toggleAccordion(header) {
-            const accordion = header.closest('.sidebar-accordion');
-            accordion.classList.toggle('expanded');
-        }
-
-        // ==================== MENÚ USUARIO ====================
-        function toggleUserMenu() {
-            const dropdown = document.getElementById('menu-dropdown');
-            dropdown.classList.toggle('show');
-        }
-
-        // Cerrar menú al hacer clic fuera
-        document.addEventListener('click', (e) => {
-            const menuContainer = document.querySelector('.menu-container');
-            const dropdown = document.getElementById('menu-dropdown');
-            if (menuContainer && !menuContainer.contains(e.target) && dropdown) {
-                dropdown.classList.remove('show');
-            }
-        });
-
-        // ==================== LOGO DINÁMICO POR EMPRESA ====================
-        function applyColorTheme(tema) {
-            const themes = {
-                'rubi': { primary: '#FF4338', primaryDark: '#D32F2F', primaryLight: '#FF6B6B' },
-                'zafiro': { primary: '#2196F3', primaryDark: '#1565C0', primaryLight: '#64B5F6' },
-                'esmeralda': { primary: '#4CAF50', primaryDark: '#2E7D32', primaryLight: '#81C784' },
-                'amatista': { primary: '#9C27B0', primaryDark: '#6A1B9A', primaryLight: '#BA68C8' },
-                'ambar': { primary: '#FF9800', primaryDark: '#E65100', primaryLight: '#FFB74D' },
-                'grafito': { primary: '#607D8B', primaryDark: '#37474F', primaryLight: '#90A4AE' },
-                'corporativo': { primary: '#1a365d', primaryDark: '#0d1b2a', primaryLight: '#2c5282' },
-                'ejecutivo': { primary: '#2d3748', primaryDark: '#1a202c', primaryLight: '#4a5568' },
-                'oceano': { primary: '#0077b6', primaryDark: '#023e8a', primaryLight: '#0096c7' },
-                'bosque': { primary: '#2d6a4f', primaryDark: '#1b4332', primaryLight: '#40916c' },
-                'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
-                'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
-                'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
-                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
-                'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
-            };
-            if (!themes[tema]) tema = 'rubi';
-            const colors = themes[tema];
-            document.documentElement.setAttribute('data-color-theme', tema);
-            localStorage.setItem('colorTheme', tema);
-            document.documentElement.style.setProperty('--primary', colors.primary, 'important');
-            document.documentElement.style.setProperty('--primary-dark', colors.primaryDark, 'important');
-            document.documentElement.style.setProperty('--primary-light', colors.primaryLight, 'important');
-        }
-
-        async function cargarLogoEmpresa() {
-            const connection = localStorage.getItem('connection');
-            if (!connection) {
-                console.warn('No hay connection en localStorage, usando valores por defecto');
-                applyColorTheme('rubi');
-                return;
-            }
-            const logoElements = document.querySelectorAll('.logo, #header-logo');
-            try {
-                const configResponse = await fetch(`${API_URL}/api/empresa/${connection}/config`);
-                const config = await configResponse.json();
-                applyColorTheme(config.tema || 'rubi');
-                const invertirFilter = config.invertir_logo ? 'brightness(0) invert(1)' : 'none';
-                if (config.tiene_logo) {
-                    const logoUrl = `${API_URL}/api/empresa/${connection}/logo?t=${Date.now()}`;
-                    logoElements.forEach(el => {
-                        el.src = logoUrl;
-                        el.style.filter = invertirFilter;
-                        el.style.visibility = 'visible';
-                    });
-                } else {
-                    logoElements.forEach(el => {
-                        el.src = 'assets/logo.svg';
-                        el.style.filter = 'brightness(0) invert(1)';
-                        el.style.visibility = 'visible';
-                    });
-                }
-            } catch (error) {
-                console.log('Error al cargar logo:', error);
-                applyColorTheme('rubi');
-                logoElements.forEach(el => {
-                    el.src = 'assets/logo.svg';
-                    el.style.filter = 'brightness(0) invert(1)';
-                    el.style.visibility = 'visible';
-                });
-            }
-        }
-
-        // ==================== ORDENACIÓN Y FILTROS DE COLUMNAS ====================
+        let grid;
         let ordenActual = { columna: 'username', direccion: 'ASC' };
-        let filtrosColumna = [];
-        let popupFiltroAbierto = null;
 
-        const operadoresTexto = [
-            { key: 'contains', label: 'Contiene' },
-            { key: 'not_contains', label: 'No contiene', negativo: true },
-            { key: 'eq', label: 'Igual a' },
-            { key: 'neq', label: 'No igual a', negativo: true },
-            { key: 'starts', label: 'Empieza por' },
-            { key: 'not_starts', label: 'No empieza por', negativo: true },
-            { key: 'ends', label: 'Termina en' },
-            { key: 'not_ends', label: 'No termina en', negativo: true }
-        ];
-
-        const columnasFiltrables = [
-            { key: 'username', label: 'Usuario', tipo: 'texto' },
-            { key: 'full_name', label: 'Nombre', tipo: 'texto' },
-            { key: 'email', label: 'Email', tipo: 'texto' },
-            { key: 'company_name', label: 'Empresa', tipo: 'texto' },
-            { key: 'pais', label: 'País', tipo: 'texto' },
-            { key: 'rol', label: 'Rol', tipo: 'texto' },
-            { key: 'active', label: 'Estado', tipo: 'texto' }
-        ];
-
-        // ==================== FUNCIONES DE ORDENACIÓN ====================
-        function ordenarPor(columna) {
-            if (ordenActual.columna === columna) {
-                ordenActual.direccion = ordenActual.direccion === 'ASC' ? 'DESC' : 'ASC';
-            } else {
-                ordenActual.columna = columna;
-                ordenActual.direccion = 'ASC';
-            }
-            actualizarIconosOrdenacion();
-            aplicarFiltrosYOrdenacion();
-        }
-
-        function actualizarIconosOrdenacion() {
-            document.querySelectorAll('.users-table th').forEach(th => {
-                th.classList.remove('sorted-asc', 'sorted-desc');
-            });
-            const thActual = document.querySelector(`.users-table th[data-column="${ordenActual.columna}"]`);
-            if (thActual) {
-                thActual.classList.add(ordenActual.direccion === 'ASC' ? 'sorted-asc' : 'sorted-desc');
-            }
-        }
-
-        // ==================== FUNCIONES DE FILTROS DE COLUMNA ====================
-        function abrirPopupFiltro(columna, botonElement) {
-            cerrarPopupFiltro();
-
-            const columnaConfig = columnasFiltrables.find(c => c.key === columna);
-            if (!columnaConfig) return;
-
-            const filtroExistente = filtrosColumna.find(f => f.columna === columna);
-            const valorActual = filtroExistente ? filtroExistente.valor : '';
-            const operadorActual = filtroExistente ? filtroExistente.operador : 'contains';
-
-            const popup = document.createElement('div');
-            popup.className = 'filter-popup';
-            popup.id = 'filter-popup-activo';
-
-            let opcionesHtml = operadoresTexto.map(op => `
-                <label class="filter-condition-option ${op.negativo ? 'negativo' : ''}">
-                    <input type="radio" name="filter-operador" value="${op.key}" ${operadorActual === op.key ? 'checked' : ''}>
-                    <span>${op.label}</span>
-                </label>
-            `).join('');
-
-            popup.innerHTML = `
-                <div class="filter-popup-header">
-                    <span>Filtrar: ${columnaConfig.label}</span>
-                    <button class="filter-popup-close" onclick="cerrarPopupFiltro()">&times;</button>
-                </div>
-                <div class="filter-popup-body">
-                    <div class="filter-conditions">
-                        ${opcionesHtml}
-                    </div>
-                    <input type="text" class="filter-popup-input" id="filter-valor-input"
-                           placeholder="Escribir valor..." value="${valorActual}">
-                </div>
-                <div class="filter-popup-footer">
-                    <button class="filter-popup-btn filter-popup-btn-apply" onclick="aplicarFiltroColumna('${columna}')">
-                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M13.5 2.5l-7 7-3-3"/>
-                        </svg>
-                        Aplicar
-                    </button>
-                    <button class="filter-popup-btn filter-popup-btn-clear" onclick="limpiarFiltroColumna('${columna}')">
-                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M2 2l12 12M14 2L2 14"/>
-                        </svg>
-                        Limpiar
-                    </button>
-                </div>
-            `;
-
-            document.body.appendChild(popup);
-
-            const rect = botonElement.getBoundingClientRect();
-            popup.style.position = 'fixed';
-            popup.style.top = `${rect.bottom + 5}px`;
-            popup.style.left = `${rect.left}px`;
-            popup.style.zIndex = '9999';
-
-            const popupRect = popup.getBoundingClientRect();
-            if (popupRect.right > window.innerWidth) {
-                popup.style.left = `${window.innerWidth - popupRect.width - 10}px`;
-            }
-
-            popupFiltroAbierto = popup;
-
-            setTimeout(() => {
-                document.addEventListener('click', cerrarPopupFiltroClickFuera);
-            }, 100);
-
-            document.getElementById('filter-valor-input').focus();
-        }
-
-        function cerrarPopupFiltro() {
-            const popup = document.getElementById('filter-popup-activo');
-            if (popup) {
-                popup.remove();
-            }
-            popupFiltroAbierto = null;
-            document.removeEventListener('click', cerrarPopupFiltroClickFuera);
-        }
-
-        function cerrarPopupFiltroClickFuera(e) {
-            const popup = document.getElementById('filter-popup-activo');
-            if (popup && !popup.contains(e.target) && !e.target.closest('.column-filter-btn')) {
-                cerrarPopupFiltro();
-            }
-        }
-
-        function aplicarFiltroColumna(columna) {
-            const valor = document.getElementById('filter-valor-input').value.trim();
-            const operadorRadio = document.querySelector('input[name="filter-operador"]:checked');
-            const operador = operadorRadio ? operadorRadio.value : 'contains';
-
-            filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
-
-            if (valor) {
-                const columnaConfig = columnasFiltrables.find(c => c.key === columna);
-                filtrosColumna.push({
-                    columna: columna,
-                    operador: operador,
-                    valor: valor,
-                    label: columnaConfig ? columnaConfig.label : columna
-                });
-            }
-
-            cerrarPopupFiltro();
-            renderizarChipsFiltros();
-            aplicarFiltrosYOrdenacion();
-            actualizarBotonesFiltro();
-        }
-
-        function limpiarFiltroColumna(columna) {
-            filtrosColumna = filtrosColumna.filter(f => f.columna !== columna);
-            cerrarPopupFiltro();
-            renderizarChipsFiltros();
-            aplicarFiltrosYOrdenacion();
-            actualizarBotonesFiltro();
-        }
-
-        function actualizarBotonesFiltro() {
-            document.querySelectorAll('.users-table th').forEach(th => {
-                const columna = th.getAttribute('data-column');
-                const btn = th.querySelector('.column-filter-btn');
-                if (btn && columna) {
-                    const tieneFiltro = filtrosColumna.some(f => f.columna === columna);
-                    btn.classList.toggle('active', tieneFiltro);
-                }
-            });
-        }
-
-        function renderizarChipsFiltros() {
-            const container = document.getElementById('column-filters-chips');
-            if (!container) return;
-
-            if (filtrosColumna.length === 0) {
-                container.innerHTML = '';
-                container.style.display = 'none';
-                return;
-            }
-
-            container.style.display = 'flex';
-            container.innerHTML = filtrosColumna.map(filtro => {
-                const opLabel = operadoresTexto.find(o => o.key === filtro.operador)?.label || filtro.operador;
-                return `
-                    <div class="filter-chip">
-                        <span class="filter-chip-label">${filtro.label}:</span>
-                        <span class="filter-chip-operator">${opLabel}</span>
-                        <span class="filter-chip-value">"${filtro.valor}"</span>
-                        <button class="filter-chip-remove" onclick="limpiarFiltroColumna('${filtro.columna}')">&times;</button>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // ==================== APLICAR FILTROS Y ORDENACIÓN ====================
-        function aplicarFiltrosYOrdenacion() {
-            let resultado = [...users];
-
-            // Aplicar filtros de columna
-            filtrosColumna.forEach(filtro => {
-                resultado = resultado.filter(item => {
-                    let valorItem = '';
-
-                    switch(filtro.columna) {
-                        case 'active':
-                            valorItem = item.active ? 'activo' : 'inactivo';
-                            break;
-                        default:
-                            valorItem = String(item[filtro.columna] || '');
-                    }
-
-                    const valorFiltro = filtro.valor.toLowerCase();
-                    valorItem = valorItem.toLowerCase();
-
-                    switch(filtro.operador) {
-                        case 'contains':
-                            return valorItem.includes(valorFiltro);
-                        case 'not_contains':
-                            return !valorItem.includes(valorFiltro);
-                        case 'eq':
-                            return valorItem === valorFiltro;
-                        case 'neq':
-                            return valorItem !== valorFiltro;
-                        case 'starts':
-                            return valorItem.startsWith(valorFiltro);
-                        case 'not_starts':
-                            return !valorItem.startsWith(valorFiltro);
-                        case 'ends':
-                            return valorItem.endsWith(valorFiltro);
-                        case 'not_ends':
-                            return !valorItem.endsWith(valorFiltro);
-                        default:
-                            return true;
-                    }
-                });
-            });
-
-            // Aplicar ordenación
-            resultado.sort((a, b) => {
-                let valorA, valorB;
-
-                switch(ordenActual.columna) {
-                    case 'active':
-                        valorA = a.active ? 1 : 0;
-                        valorB = b.active ? 1 : 0;
-                        break;
-                    default:
-                        valorA = (a[ordenActual.columna] || '').toString().toLowerCase();
-                        valorB = (b[ordenActual.columna] || '').toString().toLowerCase();
-                }
-
-                let comparacion = 0;
-                if (valorA < valorB) comparacion = -1;
-                if (valorA > valorB) comparacion = 1;
-
-                return ordenActual.direccion === 'DESC' ? -comparacion : comparacion;
-            });
-
-            filteredUsers = resultado;
-            renderUsersConDatos(resultado);
-        }
-
-        // ==================== AUTENTICACIÓN ====================
-        async function checkAuth() {
-            try {
-                const response = await fetch(`${API_URL}/api/current-user`, {
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                currentUser = await response.json();
-
-                // Actualizar UI con datos del usuario
-                document.getElementById('user-name-display').textContent = currentUser.full_name || currentUser.username;
-                document.getElementById('menu-user-name').textContent = currentUser.full_name || currentUser.username;
-                document.getElementById('menu-user-rol').textContent = currentUser.rol;
-
-                // Mostrar opción de contexto solo para superusuarios
-                if (currentUser.rol === 'superusuario') {
-                    document.getElementById('menu-item-context').style.display = 'flex';
-                    document.getElementById('menu-divider-context').style.display = 'block';
-                }
-
-                // Verificar que sea administrador o superusuario
-                if (currentUser.rol !== 'administrador' && currentUser.rol !== 'superusuario') {
-                    alert('No tienes permisos para acceder a esta página');
-                    window.location.href = 'index.html';
-                    return;
-                }
-
-                // Mostrar secciones admin
-                document.getElementById('sidebar-admin-section').style.display = 'block';
-                document.getElementById('sidebar-config-section').style.display = 'block';
-            } catch (error) {
-                console.error('Error checking auth:', error);
-                window.location.href = 'login.html';
-            }
-        }
-
-        async function logout() {
-            try {
-                await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
-            } catch (e) {}
-            localStorage.removeItem('csrf_token');
-            window.location.href = 'login.html';
-        }
-
-        async function showContextInfo() {
-            try {
-                const response = await fetch(`${API_URL}/api/context-info`, { credentials: 'include' });
-                if (!response.ok) throw new Error('No se pudo obtener la información de contexto');
-                const info = await response.json();
-                let html = `<div style="font-family: monospace; font-size: 0.85rem; line-height: 1.6;"><h4 style="margin-bottom: 10px; color: var(--primary);">👤 Usuario</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>ID:</strong> ${info.user.id}</div><div><strong>Username:</strong> ${info.user.username}</div><div><strong>Nombre:</strong> ${info.user.full_name}</div><div><strong>Rol:</strong> ${info.user.rol}</div><div><strong>Cliente ID:</strong> ${info.user.cliente_id || 'N/A'}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🔗 Sesión</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Connection:</strong> ${info.session.connection}</div><div><strong>Empresa ID:</strong> ${info.session.empresa_id}</div><div><strong>Empresa Nombre:</strong> ${info.session.empresa_nombre}</div><div><strong>User ID:</strong> ${info.session.user_id}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🗄️ DB Config</h4><div style="background: ${info.has_db_config ? '#e8f5e9' : '#ffebee'}; padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Cacheado:</strong> ${info.has_db_config ? '✅ Sí' : '❌ No'}</div>${info.has_db_config ? `<div><strong>Server:</strong> ${info.db_config.dbserver}</div><div><strong>Database:</strong> ${info.db_config.dbname}</div>` : ''}</div><h4 style="margin-bottom: 10px; color: var(--primary);">💾 LocalStorage</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px;"><div><strong>connection:</strong> ${localStorage.getItem('connection') || 'N/A'}</div><div><strong>empresa_id:</strong> ${localStorage.getItem('empresa_id') || 'N/A'}</div></div></div>`;
-                const modal = document.createElement('div');
-                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
-                modal.innerHTML = `<div style="background:var(--bg-primary, white);padding:20px;border-radius:12px;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.3);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><h3 style="margin:0;">ℹ️ Info de Contexto</h3><button onclick="this.closest('div').parentElement.remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button></div>${html}</div>`;
-                modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-                document.body.appendChild(modal);
-            } catch (error) { console.error('Error:', error); alert('Error: ' + error.message); }
-        }
-
-        async function obtenerCsrfToken() {
-            try {
-                csrfToken = localStorage.getItem('csrf_token');
-                const response = await fetch(`${API_URL}/api/csrf-token`, { credentials: 'include' });
-                if (response.ok) {
-                    const data = await response.json();
-                    csrfToken = data.csrf_token;
-                    localStorage.setItem('csrf_token', csrfToken);
-                }
-            } catch (e) {
-                console.error('Error obteniendo CSRF token:', e);
-            }
-        }
-
-        // ==================== INICIALIZACIÓN ====================
+        // ==================== INICIALIZACION ====================
         document.addEventListener('DOMContentLoaded', async function() {
-            loadTheme();
-            await cargarLogoEmpresa();
+            PageCommon.loadTheme();
+            await PageCommon.cargarLogoEmpresa();
             await I18n.init();
             document.getElementById('lang-selector').value = I18n.currentLang;
-            await checkAuth();
-            await obtenerCsrfToken();
+
+            await PageCommon.checkAuth('administrador');
+            await PageCommon.obtenerCsrfToken();
+
+            grid = new DataGrid({
+                el: '#users-grid',
+                columns: [
+                    { key: 'username', label: t('users.username') || 'Usuario', tipo: 'texto' },
+                    { key: 'full_name', label: t('users.fullName') || 'Nombre Completo', tipo: 'texto' },
+                    { key: 'email', label: 'Email', tipo: 'texto' },
+                    { key: 'company_name', label: t('users.companyName') || 'Empresa', tipo: 'texto' },
+                    { key: 'pais', label: t('users.country') || 'País', tipo: 'texto' },
+                    { key: 'rol', label: t('users.role') || 'Rol', tipo: 'texto' },
+                    { key: 'active', label: t('users.status') || 'Estado', tipo: 'texto' },
+                    { key: '_actions', label: t('users.actions') || 'Acciones', sortable: false, filterable: false }
+                ],
+                renderCell(item, col) {
+                    switch (col.key) {
+                        case 'username': return `<strong>${item.username}</strong>`;
+                        case 'full_name': return item.full_name || '-';
+                        case 'email': return `<div class="email-cell">${item.email || '-'}${item.email ? (item.email_verificado ? '<span class="email-verified" title="Email verificado">✓</span>' : '<span class="email-not-verified" title="Email no verificado">✗</span>') : ''}</div>`;
+                        case 'company_name': return item.company_name || '-';
+                        case 'pais': return item.pais || '-';
+                        case 'rol': return getRoleBadge(item.rol);
+                        case 'active': return getStatusBadge(item.active);
+                        case '_actions': return `<div class="user-actions">${getActionButtons(item)}</div>`;
+                        default: return null;
+                    }
+                },
+                renderCard(item) {
+                    return `
+                        <div class="user-card">
+                            <div class="user-card-header">
+                                <div>
+                                    <div class="user-card-name">${item.full_name || item.username}</div>
+                                    <div class="user-card-username">@${item.username}</div>
+                                </div>
+                                ${getStatusBadge(item.active)}
+                            </div>
+                            <div class="user-card-info">
+                                <div class="user-card-info-item"><label>Email:</label> ${item.email || '-'}</div>
+                                <div class="user-card-info-item"><label>${t('users.companyName')}:</label> ${item.company_name || '-'}</div>
+                                <div class="user-card-info-item"><label>${t('users.role')}:</label> ${getRoleBadge(item.rol)}</div>
+                                <div class="user-card-info-item"><label>${t('users.country')}:</label> ${item.pais || '-'}</div>
+                            </div>
+                            <div class="user-card-actions">${getActionButtons(item)}</div>
+                        </div>`;
+                },
+                defaultSort: { column: 'username', direction: 'ASC' },
+                storageKey: 'filtrosGuardados_usuarios',
+                tableClass: 'users-table',
+                emptyIcon: '👥',
+                emptyText: t('users.noUsers') || 'No hay usuarios',
+                loadingText: t('users.loading') || 'Cargando usuarios...'
+            });
+
             await Promise.all([loadPaises(), loadUsers()]);
             initClientAutocomplete();
         });
 
-        // ==================== CARGAR PAÍSES ====================
+        // ==================== CARGAR USUARIOS ====================
+        async function loadUsers() {
+            grid.showLoading();
+            try {
+                const response = await fetch(`${API_URL}/api/usuarios`, { credentials: 'include' });
+                if (!response.ok) {
+                    if (response.status === 403) { alert('No tienes permisos para ver los usuarios'); window.location.href = 'index.html'; return; }
+                    throw new Error('Error loading users');
+                }
+                const data = await response.json();
+                users = data.usuarios || [];
+                document.getElementById('users-toolbar').style.display = users.length > 0 ? 'flex' : 'none';
+                grid.setData(users);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                grid.setData([]);
+            }
+        }
+
+        // ==================== PAISES ====================
         async function loadPaises() {
             try {
                 const response = await fetch(`${API_URL}/api/paises`);
-                paises = await response.json();
-
-                const select = document.getElementById('user-pais');
-                paises.forEach(pais => {
-                    const option = document.createElement('option');
-                    option.value = pais.alfa2;
-                    option.textContent = pais.nombre;
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error loading countries:', error);
-            }
-        }
-
-        // ==================== CARGAR USUARIOS ====================
-        async function loadUsers() {
-            const loadingEl = document.getElementById('users-loading');
-            const emptyEl = document.getElementById('users-empty');
-            const tableWrapper = document.getElementById('users-table-wrapper');
-            const toolbarEl = document.getElementById('users-toolbar');
-            const empresaId = localStorage.getItem('empresa_id');
-
-            try {
-                const response = await fetch(`${API_URL}/api/usuarios`, {
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    if (response.status === 403) {
-                        alert('No tienes permisos para ver los usuarios');
-                        window.location.href = 'index.html';
-                        return;
-                    }
-                    throw new Error('Error loading users');
+                if (response.ok) {
+                    paises = await response.json();
+                    const select = document.getElementById('user-pais');
+                    select.innerHTML = '<option value="">Seleccionar...</option>' + paises.map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
                 }
-
-                const data = await response.json();
-                users = data.usuarios || [];
-
-                loadingEl.style.display = 'none';
-
-                if (users.length === 0) {
-                    emptyEl.style.display = 'block';
-                    tableWrapper.style.display = 'none';
-                    toolbarEl.style.display = 'none';
-                } else {
-                    emptyEl.style.display = 'none';
-                    tableWrapper.style.display = 'block';
-                    toolbarEl.style.display = 'flex';
-                    renderUsers();
-                }
-            } catch (error) {
-                console.error('Error loading users:', error);
-                loadingEl.innerHTML = `<p style="color: #dc3545;">Error al cargar los usuarios</p>`;
-            }
+            } catch (e) { console.error('Error loading countries:', e); }
         }
 
-        // ==================== RENDERIZAR USUARIOS ====================
-        function renderUsers() {
-            actualizarIconosOrdenacion();
-            renderizarChipsFiltros();
-            actualizarBotonesFiltro();
-            aplicarFiltrosYOrdenacion();
+        // ==================== BADGES Y BOTONES ====================
+        function getRoleBadge(role) {
+            const roleMap = { 'usuario': 'roles.user', 'administrador': 'roles.admin', 'superusuario': 'roles.superuser' };
+            const cls = role === 'superusuario' ? 'role-superuser' : role === 'administrador' ? 'role-admin' : 'role-user';
+            return `<span class="role-badge ${cls}">${t(roleMap[role] || 'roles.user')}</span>`;
         }
 
-        function renderUsersConDatos(datos) {
-            const tableBody = document.getElementById('users-table-body');
-            const cardsEl = document.getElementById('users-cards');
-            const noResultsEl = document.getElementById('users-no-results');
-            const tableWrapper = document.getElementById('users-table-wrapper');
-
-            // Mostrar/ocultar mensaje de sin resultados por filtro
-            if (datos.length === 0 && filtrosColumna.length > 0) {
-                noResultsEl.style.display = 'block';
-                tableWrapper.style.display = 'none';
-                cardsEl.parentElement.style.display = 'none';
-                return;
-            } else {
-                noResultsEl.style.display = 'none';
-                tableWrapper.style.display = 'block';
-                cardsEl.parentElement.style.display = 'block';
-            }
-
-            // Renderizar tabla
-            tableBody.innerHTML = datos.map(user => `
-                <tr>
-                    <td><strong>${user.username}</strong></td>
-                    <td>${user.full_name || '-'}</td>
-                    <td>
-                        <div class="email-cell">
-                            ${user.email || '-'}
-                            ${user.email ? (user.email_verificado ?
-                                '<span class="email-verified" title="Email verificado">✓</span>' :
-                                '<span class="email-not-verified" title="Email no verificado">✗</span>') : ''}
-                        </div>
-                    </td>
-                    <td>${user.company_name || '-'}</td>
-                    <td>${user.pais || '-'}</td>
-                    <td>${getRoleBadge(user.rol)}</td>
-                    <td>${getStatusBadge(user.active)}</td>
-                    <td>
-                        <div class="user-actions">
-                            ${getActionButtons(user)}
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-
-            // Renderizar cards (móvil)
-            cardsEl.innerHTML = datos.map(user => `
-                <div class="user-card">
-                    <div class="user-card-header">
-                        <div>
-                            <div class="user-card-name">${user.full_name || user.username}</div>
-                            <div class="user-card-username">@${user.username}</div>
-                        </div>
-                        ${getStatusBadge(user.active)}
-                    </div>
-                    <div class="user-card-info">
-                        <div class="user-card-info-item">
-                            <label>Email:</label> ${user.email || '-'}
-                        </div>
-                        <div class="user-card-info-item">
-                            <label>${t('users.companyName')}:</label> ${user.company_name || '-'}
-                        </div>
-                        <div class="user-card-info-item">
-                            <label>${t('users.role')}:</label> ${getRoleBadge(user.rol)}
-                        </div>
-                        <div class="user-card-info-item">
-                            <label>${t('users.country')}:</label> ${user.pais || '-'}
-                        </div>
-                    </div>
-                    <div class="user-card-actions">
-                        ${getActionButtons(user)}
-                    </div>
-                </div>
-            `).join('');
-
-            // Actualizar footer con total de registros
-            const footerEl = document.getElementById('grid-footer');
-            if (footerEl) {
-                const totalOriginal = users.length;
-                const totalFiltrado = datos.length;
-                const hayFiltros = filtrosColumna.length > 0;
-
-                if (hayFiltros && totalFiltrado !== totalOriginal) {
-                    footerEl.innerHTML = `${totalFiltrado} ${t('dataGrid.records') || 'registros'} (${t('dataGrid.filteredFrom') || 'filtrados de'} ${totalOriginal})`;
-                } else {
-                    footerEl.innerHTML = `${totalFiltrado} ${t('dataGrid.records') || 'registros'}`;
-                }
-            }
+        function getStatusBadge(isActive) {
+            return isActive
+                ? `<span class="status-badge status-active">${t('users.active') || 'Activo'}</span>`
+                : `<span class="status-badge status-inactive">${t('users.inactive') || 'Inactivo'}</span>`;
         }
 
-        // ==================== OBTENER BOTONES DE ACCIÓN ====================
         function getActionButtons(user) {
-            let buttons = [];
-
-            // No permitir acciones sobre sí mismo
-            if (user.id === currentUser.id) {
-                return '<span style="color: #999; font-size: 12px;">👤</span>';
-            }
-
-            // Botón editar
-            buttons.push(`
-                <button class="btn-action btn-edit" onclick="openEditUserModal(${user.id})" title="${t('users.editUser')}">✏️</button>
-            `);
-
-            // Botón activar/desactivar
+            const currentUser = PageCommon.getCurrentUser();
+            let buttons = '';
+            buttons += `<button class="btn-icon btn-icon-primary btn-icon-sm" onclick="openEditUserModal(${user.id})" title="${t('users.edit') || 'Editar'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`;
             if (user.active) {
-                buttons.push(`
-                    <button class="btn-action btn-deactivate" onclick="deactivateUser(${user.id})" title="${t('users.deactivate')}">🚫</button>
-                `);
+                buttons += `<button class="btn-icon btn-icon-danger btn-icon-sm" onclick="deactivateUser(${user.id})" title="${t('users.deactivate') || 'Desactivar'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></button>`;
             } else {
-                buttons.push(`
-                    <button class="btn-action btn-activate" onclick="activateUser(${user.id})" title="${t('users.activate')}">✅</button>
-                `);
+                buttons += `<button class="btn-icon btn-icon-success btn-icon-sm" onclick="activateUser(${user.id})" title="${t('users.activate') || 'Activar'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></button>`;
             }
-
-            // Botón reenviar verificación (solo si tiene email y no está verificado)
             if (user.email && !user.email_verificado) {
-                buttons.push(`
-                    <button class="btn-action btn-resend" onclick="resendVerification('${escapeHtml(user.email)}')" title="${t('users.resendVerification')}">📧</button>
-                `);
+                buttons += `<button class="btn-icon btn-icon-warning btn-icon-sm" onclick="toggleVerification(${user.id}, true)" title="Verificar email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></button>`;
             }
-
-            // Botón para cambiar estado de verificación de email (solo si tiene email)
-            if (user.email) {
-                if (user.email_verificado) {
-                    buttons.push(`
-                        <button class="btn-action btn-unverify" onclick="toggleVerification(${user.id}, false)" title="${t('users.markAsUnverified')}">🔓</button>
-                    `);
-                } else {
-                    buttons.push(`
-                        <button class="btn-action btn-verify" onclick="toggleVerification(${user.id}, true)" title="${t('users.markAsVerified')}">🔒</button>
-                    `);
-                }
+            buttons += `<button class="btn-icon btn-icon-info btn-icon-sm" onclick="openRoleModal(${user.id}, '${user.rol}')" title="${t('users.changeRole') || 'Cambiar Rol'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></button>`;
+            if (currentUser && currentUser.rol === 'superusuario') {
+                buttons += `<button class="btn-icon btn-icon-danger btn-icon-sm" onclick="deleteUserCascade(${user.id}, '${user.username}')" title="${t('users.delete') || 'Eliminar'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>`;
             }
-
-            // Botón eliminar en cascada (solo para superusuarios)
-            if (currentUser.rol === 'superusuario') {
-                buttons.push(`
-                    <button class="btn-action btn-delete-cascade" onclick="deleteUserCascade(${user.id}, '${escapeHtml(user.username)}')" title="${t('users.deleteCascade') || 'Eliminar usuario y dependencias'}" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);">🗑️</button>
-                `);
-            }
-
-            return buttons.join('');
+            return buttons;
         }
 
-        // ==================== ACTIVAR USUARIO ====================
+        // ==================== ACTIVAR/DESACTIVAR ====================
         async function activateUser(userId) {
             if (!confirm('¿Activar este usuario?')) return;
-
             try {
-                const response = await fetch(`${API_URL}/api/usuarios/${userId}/activar`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'X-CSRF-Token': csrfToken
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error activating user');
-                }
-
-                // Actualizar usuario en la lista local
-                const index = users.findIndex(u => u.id === userId);
-                if (index !== -1) {
-                    users[index].active = true;
-                }
-
-                renderUsers();
-            } catch (error) {
-                console.error('Error activating user:', error);
-                alert('Error al activar el usuario');
-            }
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}/activar`, { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': PageCommon.getCsrfToken() } });
+                if (!response.ok) throw new Error('Error activating user');
+                const idx = users.findIndex(u => u.id === userId);
+                if (idx !== -1) users[idx].active = true;
+                grid.setData(users);
+            } catch (error) { alert('Error al activar el usuario'); }
         }
 
-        // ==================== DESACTIVAR USUARIO ====================
         async function deactivateUser(userId) {
             if (!confirm('¿Desactivar este usuario?')) return;
-
             try {
-                const response = await fetch(`${API_URL}/api/usuarios/${userId}/desactivar`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'X-CSRF-Token': csrfToken
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error deactivating user');
-                }
-
-                // Actualizar usuario en la lista local
-                const index = users.findIndex(u => u.id === userId);
-                if (index !== -1) {
-                    users[index].active = false;
-                }
-
-                renderUsers();
-            } catch (error) {
-                console.error('Error deactivating user:', error);
-                alert('Error al desactivar el usuario');
-            }
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}/desactivar`, { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': PageCommon.getCsrfToken() } });
+                if (!response.ok) throw new Error('Error deactivating user');
+                const idx = users.findIndex(u => u.id === userId);
+                if (idx !== -1) users[idx].active = false;
+                grid.setData(users);
+            } catch (error) { alert('Error al desactivar el usuario'); }
         }
 
-        // ==================== ELIMINAR USUARIO EN CASCADA ====================
         async function deleteUserCascade(userId, username) {
-            // Confirmación especial para eliminación en cascada
-            const confirmMsg = t('users.confirmDeleteCascade') ||
-                `¿Estás seguro de eliminar al usuario "${username}" y TODOS sus datos?\n\nSe eliminarán:\n- Todas sus propuestas y líneas\n- Todas sus consultas\n- Todas sus API keys\n- Todas sus sesiones\n- Todo su historial de auditoría\n\n⚠️ Esta acción NO se puede deshacer.`;
-
+            const confirmMsg = t('users.confirmDeleteCascade') || `¿Estás seguro de eliminar al usuario "${username}" y TODOS sus datos?`;
             if (!confirm(confirmMsg)) return;
-
-            // Segunda confirmación
             const secondConfirm = prompt(t('users.typeUsernameToConfirm') || `Para confirmar, escribe el nombre de usuario: ${username}`);
-            if (secondConfirm !== username) {
-                alert(t('users.usernameNotMatch') || 'El nombre de usuario no coincide. Eliminación cancelada.');
-                return;
-            }
-
+            if (secondConfirm !== username) { alert(t('users.usernameNotMatch') || 'El nombre de usuario no coincide.'); return; }
             try {
-                const response = await fetch(`${API_URL}/api/usuarios/${userId}`, {
-                    method: 'DELETE',
-                    credentials: 'include',
-                    headers: {
-                        'X-CSRF-Token': csrfToken
-                    }
-                });
-
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}`, { method: 'DELETE', credentials: 'include', headers: { 'X-CSRF-Token': PageCommon.getCsrfToken() } });
                 const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Error eliminando usuario');
-                }
-
-                // Mostrar resumen de lo eliminado
+                if (!response.ok) throw new Error(data.error || 'Error eliminando usuario');
                 let resumen = `Usuario "${username}" eliminado correctamente.\n\nRegistros eliminados:`;
-                if (data.eliminados) {
-                    resumen += `\n- Líneas de propuestas: ${data.eliminados.propuestas_lineas}`;
-                    resumen += `\n- Propuestas: ${data.eliminados.propuestas}`;
-                    resumen += `\n- Consultas: ${data.eliminados.consultas}`;
-                    resumen += `\n- API Keys: ${data.eliminados.api_keys}`;
-                    resumen += `\n- Sesiones: ${data.eliminados.user_sessions}`;
-                    resumen += `\n- Registros de auditoría: ${data.eliminados.audit_log}`;
-                }
+                if (data.eliminados) { resumen += `\n- Líneas de propuestas: ${data.eliminados.propuestas_lineas}\n- Propuestas: ${data.eliminados.propuestas}\n- Consultas: ${data.eliminados.consultas}\n- API Keys: ${data.eliminados.api_keys}\n- Sesiones: ${data.eliminados.user_sessions}\n- Registros de auditoría: ${data.eliminados.audit_log}`; }
                 alert(resumen);
-
-                // Eliminar usuario de la lista local
                 users = users.filter(u => u.id !== userId);
-                renderUsers();
-            } catch (error) {
-                console.error('Error deleting user:', error);
-                alert('Error al eliminar el usuario: ' + error.message);
-            }
+                grid.setData(users);
+            } catch (error) { alert('Error al eliminar el usuario: ' + error.message); }
         }
 
-        // ==================== REENVIAR VERIFICACIÓN ====================
-        async function resendVerification(email) {
-            if (!confirm(t('users.confirmResendVerification'))) return;
-
-            try {
-                const connection = localStorage.getItem('connection') || localStorage.getItem('empresa_id');
-                const response = await fetch(`${API_URL}/api/resend-verification`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
-                    },
-                    body: JSON.stringify({ email, connection: connection })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    alert(t('users.verificationSent'));
-                } else {
-                    alert(data.message || t('users.verificationError'));
-                }
-            } catch (error) {
-                console.error('Error resending verification:', error);
-                alert(t('users.verificationError'));
-            }
-        }
-
-        // ==================== CAMBIAR ESTADO DE VERIFICACIÓN ====================
         async function toggleVerification(userId, verificado) {
-            const mensaje = verificado
-                ? t('users.confirmMarkVerified')
-                : t('users.confirmMarkUnverified');
-
-            if (!confirm(mensaje)) return;
-
             try {
-                const response = await fetch(`${API_URL}/api/usuarios/${userId}/verificacion-email`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
-                    },
-                    body: JSON.stringify({ verificado })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    // Actualizar usuario en la lista local
-                    const index = users.findIndex(u => u.id === userId);
-                    if (index !== -1) {
-                        users[index].email_verificado = verificado;
-                    }
-                    renderUsers();
-                } else {
-                    alert(data.error || t('users.verificationChangeError'));
-                }
-            } catch (error) {
-                console.error('Error changing verification status:', error);
-                alert(t('users.verificationChangeError'));
-            }
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}/verificacion-email`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() }, body: JSON.stringify({ verificado }) });
+                if (!response.ok) throw new Error('Error toggling verification');
+                const idx = users.findIndex(u => u.id === userId);
+                if (idx !== -1) users[idx].email_verificado = verificado;
+                grid.setData(users);
+            } catch (error) { alert('Error al cambiar la verificación'); }
         }
 
-        // ==================== MODAL DE ROL ====================
+        async function resendVerification(email) {
+            try {
+                const response = await fetch(`${API_URL}/api/resend-verification`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() }, body: JSON.stringify({ email }) });
+                if (response.ok) alert('Email de verificación reenviado');
+                else alert('Error al reenviar verificación');
+            } catch (error) { alert('Error al reenviar verificación'); }
+        }
+
+        // ==================== ROLES ====================
         function openRoleModal(userId, currentRole) {
             selectedUserId = userId;
             document.getElementById('new-role-select').value = currentRole;
             document.getElementById('role-modal').style.display = 'flex';
         }
 
-        function closeRoleModal() {
-            document.getElementById('role-modal').style.display = 'none';
-            selectedUserId = null;
-        }
+        function closeRoleModal() { document.getElementById('role-modal').style.display = 'none'; selectedUserId = null; }
 
         async function saveRole() {
-            if (!selectedUserId) return;
-
             const newRole = document.getElementById('new-role-select').value;
-
             try {
-                const response = await fetch(`${API_URL}/api/usuarios/${selectedUserId}/rol`, {
-                    method: 'PUT',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
-                    },
-                    body: JSON.stringify({ rol: newRole })
-                });
-
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || 'Error changing role');
-                }
-
-                // Actualizar usuario en la lista local
-                const index = users.findIndex(u => u.id === selectedUserId);
-                if (index !== -1) {
-                    users[index].rol = newRole;
-                }
-
+                const response = await fetch(`${API_URL}/api/usuarios/${selectedUserId}/rol`, { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() }, body: JSON.stringify({ rol: newRole }) });
+                if (!response.ok) throw new Error('Error changing role');
+                const idx = users.findIndex(u => u.id === selectedUserId);
+                if (idx !== -1) users[idx].rol = newRole;
                 closeRoleModal();
-                renderUsers();
-            } catch (error) {
-                console.error('Error changing role:', error);
-                alert('Error al cambiar el rol: ' + error.message);
-            }
+                grid.setData(users);
+            } catch (error) { alert('Error al cambiar el rol'); }
         }
 
-        // ==================== UTILIDADES ====================
-        function getRoleBadge(role) {
-            const roleMap = {
-                'usuario': { class: 'role-usuario', key: 'roles.user' },
-                'administrador': { class: 'role-administrador', key: 'roles.admin' },
-                'superusuario': { class: 'role-superusuario', key: 'roles.superuser' }
-            };
-
-            const roleInfo = roleMap[role] || { class: 'role-usuario', key: 'roles.user' };
-            return `<span class="role-badge ${roleInfo.class}">${t(roleInfo.key)}</span>`;
-        }
-
-        function getStatusBadge(isActive) {
-            if (isActive) {
-                return `<span class="status-badge status-active">${t('users.active')}</span>`;
-            }
-            return `<span class="status-badge status-inactive">${t('users.inactive')}</span>`;
-        }
-
-        function goBack() {
-            const empresaId = localStorage.getItem('empresa_id');
-            window.location.href = `index.html?empresa=${empresaId}`;
-        }
-
-        // ==================== MODAL CREAR/EDITAR USUARIO ====================
+        // ==================== CREAR/EDITAR USUARIO ====================
         function openCreateUserModal() {
             editingUserId = null;
-            document.getElementById('user-modal-title').textContent = t('users.createUser');
+            document.getElementById('user-modal-title').textContent = t('users.createUser') || 'Crear Usuario';
             document.getElementById('user-form').reset();
             document.getElementById('user-id').value = '';
             document.getElementById('user-password').required = true;
-            document.getElementById('password-help').textContent = t('users.passwordHelpCreate');
-            document.getElementById('user-username').disabled = false;
-
-            // Mostrar checkbox de enviar email (solo en crear)
+            document.getElementById('password-help').textContent = t('users.passwordHelpCreate') || 'Mínimo 6 caracteres';
             document.getElementById('send-email-group').style.display = 'block';
-            document.getElementById('user-send-email').checked = false;
-
-            // Mostrar selector de rol solo para superusuario
-            document.getElementById('role-group').style.display =
-                currentUser.rol === 'superusuario' ? 'block' : 'none';
-
-            // Limpiar selección de cliente
+            const currentUser = PageCommon.getCurrentUser();
+            document.getElementById('role-group').style.display = currentUser && currentUser.rol === 'superusuario' ? 'block' : 'none';
             clearClientSelection();
-
             document.getElementById('user-modal').style.display = 'flex';
         }
 
         async function openEditUserModal(userId) {
-            const empresaId = localStorage.getItem('empresa_id');
-
+            editingUserId = userId;
+            document.getElementById('user-modal-title').textContent = t('users.editUser') || 'Editar Usuario';
+            document.getElementById('user-password').required = false;
+            document.getElementById('password-help').textContent = t('users.passwordHelpEdit') || 'Dejar vacío para no cambiar';
+            document.getElementById('send-email-group').style.display = 'none';
+            const currentUser = PageCommon.getCurrentUser();
+            document.getElementById('role-group').style.display = currentUser && currentUser.rol === 'superusuario' ? 'block' : 'none';
             try {
-                const response = await fetch(`${API_URL}/api/usuarios/${userId}`, {
-                    credentials: 'include'
-                });
-
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}`, { credentials: 'include' });
                 if (!response.ok) throw new Error('Error loading user');
-
                 const data = await response.json();
                 const user = data.usuario;
-
-                editingUserId = userId;
-                document.getElementById('user-modal-title').textContent = t('users.editUser');
-                document.getElementById('user-id').value = userId;
+                document.getElementById('user-id').value = user.id;
                 document.getElementById('user-username').value = user.username;
-                document.getElementById('user-username').disabled = true;
                 document.getElementById('user-password').value = '';
-                document.getElementById('user-password').required = false;
-                document.getElementById('password-help').textContent = t('users.passwordHelpEdit');
                 document.getElementById('user-fullname').value = user.full_name || '';
                 document.getElementById('user-email').value = user.email || '';
                 document.getElementById('user-company-name').value = user.company_name || '';
                 document.getElementById('user-pais').value = user.pais || '';
                 document.getElementById('user-rol').value = user.rol || 'usuario';
-
-                // Ocultar checkbox de enviar email (solo en crear)
-                document.getElementById('send-email-group').style.display = 'none';
-
-                // Mostrar selector de rol solo para superusuario
-                document.getElementById('role-group').style.display =
-                    currentUser.rol === 'superusuario' ? 'block' : 'none';
-
-                // Establecer cliente si existe
                 if (user.cliente_id) {
-                    selectClient(user.cliente_id, '');
-                    // Cargar nombre del cliente
-                    loadClientName(user.cliente_id);
-                } else {
-                    clearClientSelection();
-                }
-
+                    document.getElementById('user-cliente-id').value = user.cliente_id;
+                    document.getElementById('selected-client-code').textContent = user.cliente_id;
+                    document.getElementById('selected-client-name').textContent = user.cliente_nombre || '';
+                    document.getElementById('client-selected').style.display = 'flex';
+                    document.getElementById('client-search-wrapper').style.display = 'none';
+                } else { clearClientSelection(); }
                 document.getElementById('user-modal').style.display = 'flex';
-            } catch (error) {
-                console.error('Error loading user:', error);
-                alert('Error al cargar el usuario');
-            }
+            } catch (error) { alert('Error al cargar los datos del usuario'); }
         }
 
-        async function loadClientName(clienteId) {
-            const empresaId = localStorage.getItem('empresa_id');
-            try {
-                const response = await fetch(`${API_URL}/api/clientes/${clienteId}?empresa=${empresaId}`, {
-                    credentials: 'include'
-                });
-                if (response.ok) {
-                    // La API devuelve el cliente directamente
-                    const cliente = await response.json();
-                    if (cliente && !cliente.error) {
-                        document.getElementById('selected-client-name').textContent = cliente.razon || '';
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading client name:', error);
-            }
-        }
-
-        function closeUserModal() {
-            document.getElementById('user-modal').style.display = 'none';
-            editingUserId = null;
-        }
+        function closeUserModal() { document.getElementById('user-modal').style.display = 'none'; editingUserId = null; }
 
         async function saveUser(event) {
             event.preventDefault();
-
-            const empresaId = localStorage.getItem('empresa_id');
-            const userId = document.getElementById('user-id').value;
-            const isEditing = !!userId;
-
-            const password = document.getElementById('user-password').value;
-
-            // Validar contraseña en creación
-            if (!isEditing && (!password || password.length < 6)) {
-                alert(t('users.passwordRequired') + ' - ' + t('users.passwordHelpCreate'));
-                return;
-            }
-
-            // Validar contraseña en edición (si se proporciona)
-            if (isEditing && password && password.length < 6) {
-                alert(t('users.passwordHelpCreate'));
-                return;
-            }
-
-            // Validar que si se quiere enviar email, debe tener email
-            const enviarEmail = !isEditing && document.getElementById('user-send-email').checked;
-            const email = document.getElementById('user-email').value;
-            if (enviarEmail && !email) {
-                alert(t('users.emailRequiredForWelcome'));
-                return;
-            }
-
-            const data = {
-                username: document.getElementById('user-username').value,
-                full_name: document.getElementById('user-fullname').value || null,
-                email: document.getElementById('user-email').value || null,
-                company_name: document.getElementById('user-company-name').value || null,
-                pais: document.getElementById('user-pais').value || null,
-                cliente_id: document.getElementById('user-cliente-id').value || null,
-                empresa_id: empresaId
+            const userData = {
+                username: document.getElementById('user-username').value.trim(),
+                full_name: document.getElementById('user-fullname').value.trim(),
+                email: document.getElementById('user-email').value.trim(),
+                company_name: document.getElementById('user-company-name').value.trim(),
+                pais: document.getElementById('user-pais').value,
+                cliente_id: document.getElementById('user-cliente-id').value,
+                empresa_id: localStorage.getItem('empresa_id')
             };
+            const password = document.getElementById('user-password').value;
+            const currentUser = PageCommon.getCurrentUser();
+            if (currentUser && currentUser.rol === 'superusuario') { userData.rol = document.getElementById('user-rol').value; }
 
-            // Añadir password solo si se proporciona
-            if (password) {
-                data.password = password;
-            }
-
-            // Añadir rol si es superusuario
-            if (currentUser.rol === 'superusuario') {
-                data.rol = document.getElementById('user-rol').value;
-            }
-
-            // Añadir flag de enviar email (solo en crear)
-            if (!isEditing) {
-                data.enviar_email = document.getElementById('user-send-email').checked;
-            }
-
-            const btn = document.getElementById('btn-save-user');
-            const originalText = btn.textContent;
-            btn.disabled = true;
-            btn.textContent = t('users.saving');
-
-            try {
-                const url = isEditing
-                    ? `${API_URL}/api/usuarios/${userId}`
-                    : `${API_URL}/api/usuarios`;
-
-                const response = await fetch(url, {
-                    method: isEditing ? 'PUT' : 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.error || 'Error saving user');
-                }
-
-                // Mostrar mensaje según el resultado
-                if (isEditing) {
-                    alert(t('users.userUpdated'));
-                } else {
-                    if (result.email_enviado) {
-                        alert(t('users.userCreatedWithEmail'));
-                    } else if (result.email_error) {
-                        // Usuario creado pero error al enviar email
-                        alert(t('users.userCreated') + '\n\n⚠️ Error al enviar email: ' + result.email_error);
-                    } else {
-                        alert(t('users.userCreated'));
-                    }
-                }
-                closeUserModal();
-                await loadUsers();
-            } catch (error) {
-                console.error('Error saving user:', error);
-                alert(error.message || 'Error al guardar el usuario');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = originalText;
+            if (editingUserId) {
+                if (password) userData.password = password;
+                try {
+                    const response = await fetch(`${API_URL}/api/usuarios/${editingUserId}`, { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() }, body: JSON.stringify(userData) });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || 'Error al actualizar');
+                    closeUserModal();
+                    await loadUsers();
+                } catch (error) { alert('Error: ' + error.message); }
+            } else {
+                userData.password = password;
+                userData.enviar_email = document.getElementById('user-send-email').checked;
+                try {
+                    const response = await fetch(`${API_URL}/api/usuarios`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() }, body: JSON.stringify(userData) });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || 'Error al crear');
+                    closeUserModal();
+                    await loadUsers();
+                } catch (error) { alert('Error: ' + error.message); }
             }
         }
 
-        // ==================== AUTOCOMPLETE DE CLIENTES ====================
+        // ==================== CLIENT AUTOCOMPLETE ====================
         function initClientAutocomplete() {
-            const searchInput = document.getElementById('client-search');
-
-            searchInput.addEventListener('input', function() {
+            const input = document.getElementById('client-search');
+            if (!input) return;
+            input.addEventListener('input', function() {
+                clearTimeout(clientSearchTimeout);
                 const query = this.value.trim();
-
-                // Limpiar timeout anterior
-                if (clientSearchTimeout) {
-                    clearTimeout(clientSearchTimeout);
-                }
-
-                // Ocultar sugerencias si menos de 3 caracteres
-                if (query.length < 3) {
-                    document.getElementById('client-suggestions').classList.remove('show');
-                    return;
-                }
-
-                // Debounce de 300ms
-                clientSearchTimeout = setTimeout(() => {
-                    searchClients(query);
-                }, 300);
-            });
-
-            // Cerrar sugerencias al hacer clic fuera
-            document.addEventListener('click', function(e) {
-                const container = document.querySelector('.client-search-container');
-                if (container && !container.contains(e.target)) {
-                    document.getElementById('client-suggestions').classList.remove('show');
-                }
+                if (query.length < 3) { document.getElementById('client-suggestions').innerHTML = ''; return; }
+                clientSearchTimeout = setTimeout(() => searchClients(query), 300);
             });
         }
 
         async function searchClients(query) {
-            const suggestionsEl = document.getElementById('client-suggestions');
-            const empresaId = localStorage.getItem('empresa_id');
-
-            suggestionsEl.innerHTML = `<div class="client-suggestions-loading">${t('users.searchingClients')}</div>`;
-            suggestionsEl.classList.add('show');
-
             try {
-                const response = await fetch(
-                    `${API_URL}/api/clientes/search?empresa=${empresaId}&razon=${encodeURIComponent(query)}`,
-                    { credentials: 'include' }
-                );
-
-                if (!response.ok) throw new Error('Error searching clients');
-
-                // La API devuelve un array directamente
-                const clientes = await response.json();
-
-                if (!clientes || clientes.length === 0) {
-                    suggestionsEl.innerHTML = `<div class="client-suggestions-empty">${t('users.noClientsFound')}</div>`;
-                } else {
-                    suggestionsEl.innerHTML = clientes.map(cliente => `
-                        <div class="client-suggestion" onclick="selectClient('${escapeHtml(cliente.codigo)}', '${escapeHtml(cliente.razon || '')}')">
-                            <span class="client-suggestion-code">${escapeHtml(cliente.codigo)}</span>
-                            <span class="client-suggestion-name">${escapeHtml(cliente.razon || '')}</span>
-                        </div>
-                    `).join('');
-                }
-            } catch (error) {
-                console.error('Error searching clients:', error);
-                suggestionsEl.innerHTML = `<div class="client-suggestions-empty">Error al buscar</div>`;
-            }
+                const empresaId = localStorage.getItem('empresa_id');
+                const response = await fetch(`${API_URL}/api/clientes/search?empresa=${empresaId}&razon=${encodeURIComponent(query)}`, { credentials: 'include' });
+                if (!response.ok) return;
+                const data = await response.json();
+                const clientes = data.clientes || [];
+                const container = document.getElementById('client-suggestions');
+                container.innerHTML = clientes.map(c => `<div class="client-suggestion-item" onclick="selectClient('${c.codigo}', '${c.razon_social?.replace(/'/g, "\\'")}')">${c.codigo} - ${c.razon_social}</div>`).join('');
+            } catch (e) {}
         }
 
         function selectClient(codigo, razon) {
             document.getElementById('user-cliente-id').value = codigo;
             document.getElementById('selected-client-code').textContent = codigo;
             document.getElementById('selected-client-name').textContent = razon;
-
+            document.getElementById('client-selected').style.display = 'flex';
             document.getElementById('client-search-wrapper').style.display = 'none';
-            document.getElementById('client-selected').classList.add('show');
-            document.getElementById('client-suggestions').classList.remove('show');
+            document.getElementById('client-suggestions').innerHTML = '';
         }
 
         function clearClientSelection() {
             document.getElementById('user-cliente-id').value = '';
-            document.getElementById('client-search').value = '';
             document.getElementById('selected-client-code').textContent = '';
             document.getElementById('selected-client-name').textContent = '';
-
+            document.getElementById('client-selected').style.display = 'none';
             document.getElementById('client-search-wrapper').style.display = 'block';
-            document.getElementById('client-selected').classList.remove('show');
+            document.getElementById('client-search').value = '';
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+        // ==================== EVENT LISTENERS ====================
+        document.getElementById('role-modal').addEventListener('click', function(e) { if (e.target === this) closeRoleModal(); });
+        document.getElementById('user-modal').addEventListener('click', function(e) { if (e.target === this) closeUserModal(); });
 
-        // Cerrar modal al hacer clic fuera
-        document.getElementById('role-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeRoleModal();
-            }
-        });
-
-        document.getElementById('user-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeUserModal();
-            }
-        });
-
-        // Cerrar modal con Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                cerrarPopupFiltro();
+                const gf = grid?.getFilters();
+                if (gf) gf.cerrarPopupFiltro();
                 closeRoleModal();
                 closeUserModal();
                 hideChangePasswordModal();
             }
-        });
-
-        // Cerrar popup de filtro al hacer scroll
-        document.querySelector('.users-table-wrapper')?.addEventListener('scroll', function() {
-            cerrarPopupFiltro();
-        });
-
-        // ==================== CAMBIO DE CONTRASENA ====================
-        function showChangePasswordModal() {
-            document.getElementById('change-password-modal').style.display = 'flex';
-            document.getElementById('current-password').value = '';
-            document.getElementById('new-password').value = '';
-            document.getElementById('confirm-password').value = '';
-            document.getElementById('change-password-error').style.display = 'none';
-            document.getElementById('change-password-success').style.display = 'none';
-            document.getElementById('change-password-btn').disabled = false;
-            document.getElementById('change-password-btn').textContent = t('changePassword.changeButton');
-        }
-
-        function hideChangePasswordModal() {
-            document.getElementById('change-password-modal').style.display = 'none';
-        }
-
-        async function handleVoluntaryPasswordChange() {
-            const currentPwd = document.getElementById('current-password').value;
-            const newPwd = document.getElementById('new-password').value;
-            const confirmPwd = document.getElementById('confirm-password').value;
-            const errorEl = document.getElementById('change-password-error');
-            const successEl = document.getElementById('change-password-success');
-            const btn = document.getElementById('change-password-btn');
-
-            errorEl.style.display = 'none';
-            successEl.style.display = 'none';
-
-            if (!currentPwd) {
-                errorEl.textContent = t('changePassword.currentPasswordRequired');
-                errorEl.style.display = 'block';
-                return;
-            }
-            if (newPwd.length < 6) {
-                errorEl.textContent = t('changePassword.minLength');
-                errorEl.style.display = 'block';
-                return;
-            }
-            if (newPwd !== confirmPwd) {
-                errorEl.textContent = t('changePassword.mismatch');
-                errorEl.style.display = 'block';
-                return;
-            }
-
-            btn.disabled = true;
-            btn.textContent = t('changePassword.changing');
-
-            try {
-                const response = await fetch(`${API_URL}/api/usuarios/cambiar-password`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken || localStorage.getItem('csrf_token')
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({ current_password: currentPwd, new_password: newPwd })
-                });
-                const data = await response.json();
-                if (response.ok && data.success) {
-                    successEl.textContent = t('changePassword.success');
-                    successEl.style.display = 'block';
-                    setTimeout(() => hideChangePasswordModal(), 2000);
-                } else {
-                    errorEl.textContent = data.error || t('changePassword.error');
-                    errorEl.style.display = 'block';
-                    btn.disabled = false;
-                    btn.textContent = t('changePassword.changeButton');
-                }
-            } catch (error) {
-                errorEl.textContent = t('changePassword.error');
-                errorEl.style.display = 'block';
-                btn.disabled = false;
-                btn.textContent = t('changePassword.changeButton');
-            }
-        }
-
-        document.getElementById('change-password-modal').addEventListener('click', function(e) {
-            if (e.target === this) hideChangePasswordModal();
         });
     </script>
 

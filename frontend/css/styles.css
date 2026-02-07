@@ -878,8 +878,8 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 25px;
-    padding-top: 95px; /* 70px header + 25px padding */
+    padding: 15px;
+    padding-top: 85px; /* 70px header + 15px padding */
     margin-left: 240px;
     transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow-y: auto;
@@ -893,11 +893,11 @@
     min-width: unset !important;
     max-width: 100% !important;
     border-radius: var(--radius);
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border-right: none !important;
     border-bottom: 1px solid var(--border);
-    padding: 20px !important;
+    padding: 15px !important;
 }
 
 .main-content-area .filters h2 {
@@ -7185,6 +7185,128 @@ tbody tr:hover {
     opacity: 0.6;
 }
 
+/* ==================== MODAL REGISTRO EXITOSO ==================== */
+.register-success-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeInOverlay 0.3s ease;
+    padding: 20px;
+}
+
+@keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleInModal {
+    from { opacity: 0; transform: scale(0.85) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.register-success-modal {
+    background: var(--bg-primary, #fff);
+    border-radius: 16px;
+    padding: 40px 36px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: scaleInModal 0.4s ease;
+}
+
+.register-success-icon {
+    margin-bottom: 20px;
+}
+
+.register-success-icon svg {
+    filter: drop-shadow(0 2px 8px rgba(76, 175, 80, 0.3));
+}
+
+.register-success-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary, #333);
+    margin: 0 0 16px 0;
+}
+
+.register-success-message {
+    font-size: 0.95rem;
+    color: var(--text-secondary, #666);
+    line-height: 1.6;
+    margin: 0 0 12px 0;
+}
+
+.register-success-hint {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #999);
+    margin: 0 0 28px 0;
+    opacity: 0.8;
+    font-style: italic;
+}
+
+.register-success-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 32px;
+    background: linear-gradient(135deg, var(--primary, #4CAF50), var(--primary-dark, #388E3C));
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.register-success-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.register-success-btn:active {
+    transform: translateY(0);
+}
+
+/* Modo oscuro */
+[data-theme="dark"] .register-success-modal {
+    background: var(--bg-primary, #1e1e2e);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .register-success-title {
+    color: var(--text-primary, #e0e0e0);
+}
+
+[data-theme="dark"] .register-success-message {
+    color: var(--text-secondary, #b0b0b0);
+}
+
+[data-theme="dark"] .register-success-hint {
+    color: var(--text-secondary, #888);
+}
+
+@media (max-width: 480px) {
+    .register-success-modal {
+        padding: 30px 24px;
+    }
+
+    .register-success-title {
+        font-size: 1.2rem;
+    }
+}
+
 /* ==================== VERIFICACIÓN DE EMAIL ==================== */
 .verify-icon {
     font-size: 80px;
@@ -7840,6 +7962,59 @@ tbody tr:hover {
 }
 
 [data-theme="dark"] .audit-card .card-header {
+    background: var(--bg-tertiary);
+    border-color: var(--border);
+}
+
+/* Botón detalle dispositivo en auditoría */
+.btn-detail-device {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: var(--bg-secondary, #f0f0f0);
+    border: 1px solid var(--border, #ddd);
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--primary);
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.btn-detail-device:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+.btn-detail-device svg {
+    flex-shrink: 0;
+}
+
+/* Items de info del dispositivo en modal */
+.device-info-item {
+    padding: 8px 10px;
+    background: var(--bg-secondary, #f5f5f5);
+    border-radius: 8px;
+    border: 1px solid var(--border, #eee);
+}
+.device-info-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary, #888);
+    margin-bottom: 2px;
+}
+.device-info-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary, #333);
+}
+
+[data-theme="dark"] .btn-detail-device {
+    background: var(--bg-tertiary);
+    border-color: var(--border);
+}
+[data-theme="dark"] .device-info-item {
     background: var(--bg-tertiary);
     border-color: var(--border);
 }
@@ -8810,10 +8985,21 @@ tbody tr:hover {
 }
 
 /* ==================== GESTIÓN DE PROPUESTAS ==================== */
+/* Evitar scroll doble en páginas con grid DataGrid */
+.main-content-area:has(.proposals-container) {
+    height: 100vh;
+    min-height: unset;
+    overflow: hidden;
+}
+
 .proposals-container {
     background: white;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .proposals-header {
@@ -8850,17 +9036,26 @@ tbody tr:hover {
 }
 
 .proposals-content {
-    padding: 15px 20px;
+    padding: 10px 15px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 /* ==================== TABLA DE PROPUESTAS CON GRID AVANZADA ==================== */
 .proposals-table-wrapper {
     border-radius: var(--radius);
     border: 1px solid var(--border);
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .proposals-table-wrapper .table-scroll-container {
-    max-height: calc(100vh - 380px);
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: auto;
 }
@@ -9660,6 +9855,49 @@ tbody tr:hover {
     color: var(--text-primary);
 }
 
+/* ==================== MODAL DETALLE DE PEDIDO ==================== */
+#order-detail-modal .modal-content {
+    background: white;
+    border-radius: 10px;
+    padding: 0;
+    max-width: 900px;
+    width: 90%;
+    max-height: 85vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#order-detail-modal .modal-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+#order-detail-modal .modal-header h2 {
+    margin: 0;
+    color: white;
+    font-size: 20px;
+}
+
+#order-detail-modal .modal-close {
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+#order-detail-modal .modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] #order-detail-modal .modal-content {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
 /* Comentarios de propuesta */
 .proposal-comments {
     margin-top: 20px;
@@ -9826,7 +10064,7 @@ tbody tr:hover {
 /* Responsive propuestas */
 @media (max-width: 768px) {
     .proposals-content {
-        padding: 15px;
+        padding: 10px;
     }
 
     .proposals-header {
@@ -9835,12 +10073,14 @@ tbody tr:hover {
         text-align: center;
     }
 
-    .proposals-table-wrapper {
+    .proposals-table-wrapper,
+    .dg-table-wrapper {
         display: none !important;
     }
 
-    .proposals-cards {
-        display: block !important;
+    .proposals-cards,
+    .dg-cards {
+        display: flex !important;
     }
 
     .proposal-lines-table-wrapper {
@@ -13212,9 +13452,9 @@ data-grid {
     white-space: nowrap;
 }
 
-/* Cards (mobile) */
+/* Cards (mobile) - oculto en desktop, visible en mobile via .proposals-cards media query */
 .dg-cards {
-    display: flex;
+    display: none;
     flex-direction: column;
     gap: 15px;
     flex: 1;
@@ -14030,235 +14270,6 @@ data-grid {
     background: var(--bg-primary);
     color: var(--text-primary);
     border-color: var(--text-light);
-}
-
-/* ==================== FLATPICKR - CALENDARIO MODERNO ==================== */
-
-/* Input de Flatpickr */
-.flatpickr-input {
-    cursor: pointer !important;
-}
-
-.flatpickr-input.flatpickr-mobile {
-    pointer-events: auto !important;
-}
-
-/* Calendario */
-.flatpickr-calendar {
-    border-radius: var(--radius-lg) !important;
-    box-shadow: var(--shadow-xl) !important;
-    border: 1px solid var(--border) !important;
-    font-family: var(--font-family) !important;
-    overflow: hidden;
-}
-
-.flatpickr-calendar.open {
-    animation: flatpickr-fade-in 0.2s ease-out;
-}
-
-@keyframes flatpickr-fade-in {
-    from {
-        opacity: 0;
-        transform: translateY(-8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Header del mes */
-.flatpickr-months {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
-    padding: 8px 0 !important;
-}
-
-.flatpickr-months .flatpickr-month {
-    color: white !important;
-    fill: white !important;
-    height: 40px !important;
-}
-
-.flatpickr-current-month {
-    color: white !important;
-    font-weight: 600 !important;
-    font-size: 1.1rem !important;
-}
-
-.flatpickr-current-month .flatpickr-monthDropdown-months {
-    background: transparent !important;
-    color: white !important;
-    font-weight: 600 !important;
-}
-
-.flatpickr-current-month .flatpickr-monthDropdown-months:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-}
-
-.flatpickr-current-month input.cur-year {
-    color: white !important;
-    font-weight: 600 !important;
-}
-
-/* Flechas de navegación */
-.flatpickr-months .flatpickr-prev-month,
-.flatpickr-months .flatpickr-next-month {
-    fill: white !important;
-    color: white !important;
-    padding: 8px 12px !important;
-    border-radius: var(--radius) !important;
-    transition: all 0.2s ease !important;
-}
-
-.flatpickr-months .flatpickr-prev-month:hover,
-.flatpickr-months .flatpickr-next-month:hover {
-    background: rgba(255, 255, 255, 0.15) !important;
-}
-
-.flatpickr-months .flatpickr-prev-month svg,
-.flatpickr-months .flatpickr-next-month svg {
-    fill: white !important;
-}
-
-/* Días de la semana */
-.flatpickr-weekdays {
-    background: var(--bg-secondary) !important;
-    border-bottom: 1px solid var(--border) !important;
-}
-
-.flatpickr-weekday {
-    color: var(--text-secondary) !important;
-    font-weight: 600 !important;
-    font-size: 0.75rem !important;
-    text-transform: uppercase !important;
-}
-
-/* Container de días */
-.flatpickr-days {
-    border: none !important;
-}
-
-.dayContainer {
-    padding: 8px !important;
-}
-
-/* Días individuales */
-.flatpickr-day {
-    border-radius: 50% !important;
-    font-weight: 500 !important;
-    color: var(--text-primary) !important;
-    transition: all 0.15s ease !important;
-    max-width: 36px !important;
-    height: 36px !important;
-    line-height: 36px !important;
-}
-
-.flatpickr-day:hover {
-    background: var(--bg-tertiary) !important;
-    border-color: transparent !important;
-}
-
-.flatpickr-day.prevMonthDay,
-.flatpickr-day.nextMonthDay {
-    color: var(--text-light) !important;
-    opacity: 0.5 !important;
-}
-
-.flatpickr-day.today {
-    background: var(--accent) !important;
-    border-color: var(--primary) !important;
-    color: var(--primary-dark) !important;
-    font-weight: 600 !important;
-}
-
-.flatpickr-day.selected,
-.flatpickr-day.selected:hover {
-    background: var(--primary) !important;
-    border-color: var(--primary) !important;
-    color: white !important;
-    font-weight: 600 !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
-}
-
-.flatpickr-day.selected.startRange,
-.flatpickr-day.selected.endRange {
-    background: var(--primary) !important;
-    border-color: var(--primary) !important;
-}
-
-.flatpickr-day.inRange {
-    background: var(--accent) !important;
-    border-color: transparent !important;
-    box-shadow: none !important;
-}
-
-.flatpickr-day.disabled,
-.flatpickr-day.disabled:hover {
-    color: var(--text-light) !important;
-    opacity: 0.4 !important;
-    cursor: not-allowed !important;
-}
-
-/* Input alternativo (el visible) */
-.flatpickr-input[readonly] + .form-control,
-input.flatpickr-input[readonly] {
-    background-color: var(--bg-primary) !important;
-    cursor: pointer !important;
-}
-
-/* ==================== FLATPICKR - MODO OSCURO ==================== */
-
-[data-theme="dark"] .flatpickr-calendar {
-    background: var(--bg-secondary) !important;
-    border-color: var(--border) !important;
-}
-
-[data-theme="dark"] .flatpickr-weekdays {
-    background: var(--bg-tertiary) !important;
-    border-color: var(--border) !important;
-}
-
-[data-theme="dark"] .flatpickr-weekday {
-    color: var(--text-light) !important;
-}
-
-[data-theme="dark"] .flatpickr-day {
-    color: var(--text-primary) !important;
-}
-
-[data-theme="dark"] .flatpickr-day:hover {
-    background: var(--bg-tertiary) !important;
-}
-
-[data-theme="dark"] .flatpickr-day.prevMonthDay,
-[data-theme="dark"] .flatpickr-day.nextMonthDay {
-    color: var(--text-light) !important;
-}
-
-[data-theme="dark"] .flatpickr-day.today {
-    background: rgba(var(--primary-rgb, 107, 114, 128), 0.2) !important;
-    border-color: var(--primary) !important;
-    color: var(--primary-light) !important;
-}
-
-[data-theme="dark"] .flatpickr-day.selected {
-    background: var(--primary) !important;
-    color: white !important;
-}
-
-[data-theme="dark"] .flatpickr-day.inRange {
-    background: rgba(var(--primary-rgb, 107, 114, 128), 0.15) !important;
-}
-
-[data-theme="dark"] .flatpickr-current-month .flatpickr-monthDropdown-months option {
-    background: var(--bg-secondary) !important;
-    color: var(--text-primary) !important;
-}
-
-/* Año input en modo oscuro */
-[data-theme="dark"] .flatpickr-current-month input.cur-year {
-    background: transparent !important;
 }
 
 /* ==================== BOTONES CON ICONOS UNIFICADOS ==================== */
