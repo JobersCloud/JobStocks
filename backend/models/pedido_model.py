@@ -231,9 +231,8 @@ class PedidoModel:
             where_parts.append("fecha <= ?")
             params.append(fecha_hasta)
         if cliente:
-            where_parts.append("(cliente_nombre LIKE ? OR cliente LIKE ?)")
-            params.append(f'%{cliente}%')
-            params.append(f'%{cliente}%')
+            where_parts.append("cliente = ?")
+            params.append(cliente)
 
         where = " AND ".join(where_parts)
 
