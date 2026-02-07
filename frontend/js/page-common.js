@@ -126,6 +126,15 @@
     function toggleUserMenu() {
         const dropdown = document.getElementById('menu-dropdown');
         dropdown.classList.toggle('show');
+        // Cerrar sidebar móvil si está abierto
+        if (dropdown.classList.contains('show')) {
+            const mobileMenu = document.getElementById('mobile-menu-panel');
+            if (mobileMenu) {
+                mobileMenu.remove();
+                const overlay = document.querySelector('.sidebar-overlay');
+                if (overlay) overlay.style.display = '';
+            }
+        }
     }
 
     // Cerrar menu al hacer clic fuera

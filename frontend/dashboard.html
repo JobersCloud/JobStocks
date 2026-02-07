@@ -47,7 +47,7 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.12.73">
+    <link rel="stylesheet" href="css/styles.css?v=1.22.9">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -96,7 +96,6 @@
                             <span data-i18n="menu.contextInfo">Info de Contexto</span>
                         </a>
                         <div class="menu-divider"></div>
-                        <div class="menu-section-title" data-i18n="menu.appearance">Apariencia</div>
                         <a class="menu-item" onclick="toggleTheme()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -432,7 +431,36 @@
                         </div>
                     </div>
 
-                    <!-- Tercera fila: Propuestas por mes -->
+                    <!-- Tercera fila: Articulos mas vistos -->
+                    <div class="charts-row">
+                        <div class="chart-card" style="grid-column: 1 / -1;">
+                            <div class="chart-header">
+                                <span class="chart-title" data-i18n="dashboard.topViewedArticles">Articulos Mas Vistos</span>
+                                <div class="chart-period">
+                                    <button class="period-btn active" onclick="changeViewedPeriod(30, this)" data-i18n="dashboard.last30days">30 dias</button>
+                                    <button class="period-btn" onclick="changeViewedPeriod(90, this)">90 dias</button>
+                                    <button class="period-btn" onclick="changeViewedPeriod(365, this)">365 dias</button>
+                                </div>
+                            </div>
+                            <div id="top-viewed-container">
+                                <table class="products-table top-viewed-table-desktop">
+                                    <thead>
+                                        <tr>
+                                            <th data-i18n="table.code">Codigo</th>
+                                            <th data-i18n="table.description">Descripcion</th>
+                                            <th data-i18n="dashboard.views">Vistas</th>
+                                            <th data-i18n="dashboard.uniqueUsers">Usuarios</th>
+                                            <th data-i18n="dashboard.lastView">Ultima Vista</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="top-viewed-body"></tbody>
+                                </table>
+                                <div class="top-products-cards-mobile" id="top-viewed-cards"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cuarta fila: Propuestas por mes -->
                     <div class="charts-row">
                         <div class="chart-card" style="grid-column: 1 / -1;">
                             <div class="chart-header">
@@ -594,6 +622,7 @@
         let proposalsByStatusChart = null;
         let proposalsByMonthChart = null;
         let currentPeriod = 7;
+        let currentViewedPeriod = 30;
 
         // ==================== INICIALIZACION ====================
         document.addEventListener('DOMContentLoaded', async function() {
@@ -694,24 +723,30 @@
             const loadingEl = document.getElementById('dashboard-loading');
             const contentEl = document.getElementById('dashboard-content');
             try {
-                const [resumen, productosMasSolicitados, propuestasPorDia, propuestasPorEstado, usuariosMasActivos, propuestasPorMes] = await Promise.all([
+                const results = await Promise.allSettled([
                     fetchAPI('/api/estadisticas/resumen'),
                     fetchAPI('/api/estadisticas/productos-mas-solicitados?limit=10'),
                     fetchAPI(`/api/estadisticas/propuestas-por-dia?dias=${currentPeriod}`),
                     fetchAPI('/api/estadisticas/propuestas-por-estado'),
                     fetchAPI('/api/estadisticas/usuarios-mas-activos?limit=5'),
-                    fetchAPI('/api/estadisticas/propuestas-por-mes?meses=12')
+                    fetchAPI('/api/estadisticas/propuestas-por-mes?meses=12'),
+                    fetchAPI(`/api/estadisticas/articulos-mas-vistos?limit=10&dias=${currentViewedPeriod}`)
                 ]);
+                const val = (i) => results[i].status === 'fulfilled' ? results[i].value : null;
+                const resumen = val(0);
+                if (!resumen) throw new Error('No se pudo cargar el resumen');
                 loadingEl.style.display = 'none';
                 contentEl.style.display = 'flex';
                 updateStatCards(resumen);
-                renderProposalsByDayChart(propuestasPorDia);
-                renderProposalsByStatusChart(propuestasPorEstado);
-                renderTopProducts(productosMasSolicitados);
-                renderTopUsers(usuariosMasActivos);
-                renderProposalsByMonthChart(propuestasPorMes);
+                if (val(2)) renderProposalsByDayChart(val(2));
+                if (val(3)) renderProposalsByStatusChart(val(3));
+                if (val(1)) renderTopProducts(val(1));
+                if (val(4)) renderTopUsers(val(4));
+                if (val(6)) renderTopViewedArticles(val(6));
+                if (val(5)) renderProposalsByMonthChart(val(5));
             } catch (error) {
-                loadingEl.innerHTML = `<p style="color: #dc3545;">Error al cargar el dashboard</p>`;
+                console.error('Dashboard error:', error);
+                loadingEl.innerHTML = `<p style="color: #dc3545;">Error al cargar el dashboard: ${error.message}</p>`;
             }
         }
 
@@ -781,6 +816,29 @@
             }
             container.innerHTML = usuarios.map(u => `<div class="user-item"><div class="user-avatar">${getInitials(u.full_name || u.username)}</div><div class="user-info"><div class="user-name">${u.full_name || u.username}</div><div class="user-username">@${u.username}</div></div><div class="user-stats"><div class="user-proposals">${u.total_propuestas} ${t('dashboard.proposals')}</div><div class="user-last">${formatDateShort(u.ultima_propuesta)}</div></div></div>`).join('');
             cardsContainer.innerHTML = usuarios.map(u => `<div class="top-user-card"><div class="top-user-card-header"><div class="top-user-avatar">${getInitials(u.full_name || u.username)}</div><div class="top-user-info"><div class="top-user-name">${u.full_name || u.username}</div><div class="top-user-username">@${u.username}</div></div></div><div class="top-user-card-stats"><div class="top-user-stat"><span class="top-user-stat-value">${u.total_propuestas}</span><span class="top-user-stat-label">${t('dashboard.proposals')}</span></div><div class="top-user-stat"><span class="top-user-stat-value">${formatDateShort(u.ultima_propuesta)}</span><span class="top-user-stat-label">Ultima</span></div></div></div>`).join('');
+        }
+
+        function renderTopViewedArticles(articulos) {
+            const tbody = document.getElementById('top-viewed-body');
+            const cardsContainer = document.getElementById('top-viewed-cards');
+            if (!articulos || articulos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">${t('dashboard.noData')}</td></tr>`;
+                cardsContainer.innerHTML = `<div class="dashboard-empty-message">${t('dashboard.noData')}</div>`;
+                return;
+            }
+            tbody.innerHTML = articulos.map(a => `<tr><td class="product-code">${a.codigo}</td><td>${truncate(a.descripcion, 30)}</td><td class="product-qty">${a.vistas}</td><td class="product-times">${a.usuarios_unicos}</td><td>${formatDateShort(a.ultima_vista)}</td></tr>`).join('');
+            cardsContainer.innerHTML = articulos.map(a => `<div class="top-product-card"><div class="top-product-card-header"><span class="top-product-code">${a.codigo}</span><span class="top-product-times">${a.vistas} ${t('dashboard.views')}</span></div><div class="top-product-desc">${truncate(a.descripcion, 50)}</div><div class="top-product-qty">${t('dashboard.uniqueUsers')}: <strong>${a.usuarios_unicos}</strong> · ${formatDateShort(a.ultima_vista)}</div></div>`).join('');
+        }
+
+        async function changeViewedPeriod(dias, btn) {
+            const container = btn.closest('.chart-period');
+            container.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentViewedPeriod = dias;
+            try {
+                const data = await fetchAPI(`/api/estadisticas/articulos-mas-vistos?limit=10&dias=${dias}`);
+                renderTopViewedArticles(data);
+            } catch (error) {}
         }
 
         function renderProposalsByMonthChart(data) {

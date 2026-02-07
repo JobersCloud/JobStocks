@@ -46,6 +46,9 @@ class AuditAction:
     CONSULTA_SEND = 'CONSULTA_SEND'
     CONSULTA_RESPOND = 'CONSULTA_RESPOND'
 
+    # Articulos
+    ARTICLE_VIEW = 'ARTICLE_VIEW'
+
     @classmethod
     def get_all_actions(cls):
         """Retorna lista de todas las acciones disponibles"""
@@ -57,7 +60,8 @@ class AuditAction:
             cls.API_KEY_CREATE, cls.API_KEY_DELETE,
             cls.CONFIG_CHANGE, cls.EMAIL_CONFIG_CHANGE,
             cls.PROPUESTA_SEND, cls.PROPUESTA_STATUS_CHANGE,
-            cls.CONSULTA_SEND, cls.CONSULTA_RESPOND
+            cls.CONSULTA_SEND, cls.CONSULTA_RESPOND,
+            cls.ARTICLE_VIEW
         ]
 
 

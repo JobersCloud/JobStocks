@@ -45,7 +45,7 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.12.73">
+    <link rel="stylesheet" href="css/styles.css?v=1.22.9">
 </head>
 <body>
     <div class="app-layout">
@@ -92,7 +92,6 @@
                             <span data-i18n="menu.contextInfo">Info de Contexto</span>
                         </a>
                         <div class="menu-divider"></div>
-                        <div class="menu-section-title" data-i18n="menu.appearance">Apariencia</div>
                         <a class="menu-item" onclick="toggleTheme()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -351,24 +350,7 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="table-container">
-                            <table class="audit-table" id="sessions-table">
-                                <thead>
-                                    <tr>
-                                        <th>Usuario</th>
-                                        <th>Nombre</th>
-                                        <th>Rol</th>
-                                        <th>IP</th>
-                                        <th>Inicio</th>
-                                        <th>Última Actividad</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="sessions-body"></tbody>
-                            </table>
-                            <div class="cards-container" id="sessions-cards"></div>
-                            <div id="sessions-empty" class="empty-message" style="display: none;">No hay sesiones activas</div>
-                        </div>
+                        <div id="sessions-grid"></div>
                     </section>
 
                     <!-- Sección: Logs de Auditoría -->
@@ -424,37 +406,7 @@
                             </div>
                         </div>
 
-                        <div class="table-container">
-                            <table class="audit-table" id="audit-table">
-                                <thead>
-                                    <tr class="audit-header-row">
-                                        <th class="sortable" data-sort="fecha" onclick="sortAuditColumn('fecha')">
-                                            <div class="th-content"><span>Fecha</span><span class="sort-icon" id="sort-fecha">↕</span></div>
-                                        </th>
-                                        <th class="sortable" data-sort="username" onclick="sortAuditColumn('username')">
-                                            <div class="th-content"><span>Usuario</span><span class="sort-icon" id="sort-username">↕</span></div>
-                                        </th>
-                                        <th class="sortable" data-sort="accion" onclick="sortAuditColumn('accion')">
-                                            <div class="th-content"><span>Acción</span><span class="sort-icon" id="sort-accion">↕</span></div>
-                                        </th>
-                                        <th class="sortable" data-sort="recurso" onclick="sortAuditColumn('recurso')">
-                                            <div class="th-content"><span>Recurso</span><span class="sort-icon" id="sort-recurso">↕</span></div>
-                                        </th>
-                                        <th class="sortable" data-sort="ip_address" onclick="sortAuditColumn('ip_address')">
-                                            <div class="th-content"><span>IP</span><span class="sort-icon" id="sort-ip_address">↕</span></div>
-                                        </th>
-                                        <th class="sortable" data-sort="resultado" onclick="sortAuditColumn('resultado')">
-                                            <div class="th-content"><span>Resultado</span><span class="sort-icon" id="sort-resultado">↕</span></div>
-                                        </th>
-                                        <th style="width: 70px; text-align: center;">Detalle</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="audit-body"></tbody>
-                            </table>
-                            <div class="cards-container" id="audit-cards"></div>
-                            <div class="pagination-container" id="audit-pagination"></div>
-                            <div id="audit-empty" class="empty-message" style="display: none;">No hay registros de auditoría</div>
-                        </div>
+                        <div id="audit-grid"></div>
                     </section>
                 </div>
             </main>
@@ -499,148 +451,100 @@
         </div>
     </div>
 
-    <script src="js/i18n/i18n.js"></script>
+    <script src="js/i18n/i18n.js?v=20260128"></script>
     <script src="js/sidebar.js?v=20260143"></script>
+    <script src="js/grid-filters.js?v=20260207"></script>
+    <script src="js/data-grid.js?v=20260208a"></script>
+    <script src="js/page-common.js?v=20260207"></script>
+
     <script>
-        // ==================== CONFIGURACION ====================
-        const hostname = window.location.hostname;
-        const API_URL = (hostname === 'localhost' || hostname === '127.0.0.1')
-            ? `${window.location.protocol}//${hostname}:5000`
-            : window.location.origin;
+        // ==================== PAGE: AUDITORIA (Admin) ====================
+        const API_URL = PageCommon.API_URL;
+        let sessionsGrid;
+        let auditGrid;
 
-        let csrfToken = null;
-
-        // ==================== FUNCIONES GLOBALES ====================
-        function toggleUserMenu() {
-            const dropdown = document.getElementById('menu-dropdown');
-            dropdown.classList.toggle('show');
+        // ==================== HELPERS DE FORMATO ====================
+        function formatActionName(action) {
+            const actionNames = {
+                'LOGIN': 'Inicio sesion', 'LOGIN_FAILED': 'Login fallido', 'LOGOUT': 'Cerrar sesion',
+                'PASSWORD_CHANGE': 'Cambio contrasena', 'SESSION_KILL': 'Sesion cerrada',
+                'SESSION_KILL_ALL': 'Cerrar todas sesiones', 'USER_CREATE': 'Usuario creado',
+                'USER_ACTIVATE': 'Usuario activado', 'USER_DEACTIVATE': 'Usuario desactivado',
+                'USER_ROLE_CHANGE': 'Cambio de rol', 'API_KEY_CREATE': 'API Key creada',
+                'API_KEY_DELETE': 'API Key eliminada', 'CONFIG_CHANGE': 'Config. modificada',
+                'EMAIL_CONFIG_CHANGE': 'Config. email', 'PROPUESTA_SEND': 'Propuesta enviada',
+                'PROPUESTA_STATUS_CHANGE': 'Estado propuesta', 'CONSULTA_SEND': 'Consulta enviada',
+                'CONSULTA_RESPOND': 'Consulta respondida'
+            };
+            return actionNames[action] || action;
         }
 
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            document.getElementById('theme-icon').textContent = newTheme === 'dark' ? '🌙' : '☀️';
+        function formatResultName(result) {
+            const resultNames = { 'SUCCESS': 'Exito', 'FAILED': 'Fallido', 'BLOCKED': 'Bloqueado' };
+            return resultNames[result] || result;
         }
 
-        function toggleAccordion(header) {
-            const accordion = header.parentElement;
-            accordion.classList.toggle('expanded');
+        function getActionCategory(action) {
+            if (action.startsWith('LOGIN') || action === 'LOGOUT' || action === 'PASSWORD_CHANGE') return 'auth';
+            if (action.startsWith('SESSION')) return 'session';
+            if (action.startsWith('USER')) return 'user';
+            if (action.startsWith('API_KEY')) return 'apikey';
+            if (action.startsWith('CONFIG') || action.startsWith('EMAIL')) return 'config';
+            if (action.startsWith('PROPUESTA')) return 'propuesta';
+            if (action.startsWith('CONSULTA')) return 'consulta';
+            return 'other';
         }
 
-        async function logout() {
-            try {
-                await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
-            } catch (e) {}
-            const empresaId = localStorage.getItem('empresa_id');
-            window.location.href = `login.html?empresa=${empresaId}`;
-        }
-
-        async function showContextInfo() {
-            try {
-                const response = await fetch(`${API_URL}/api/context-info`, { credentials: 'include' });
-                if (!response.ok) throw new Error('No se pudo obtener la información de contexto');
-                const info = await response.json();
-                let html = `<div style="font-family: monospace; font-size: 0.85rem; line-height: 1.6;"><h4 style="margin-bottom: 10px; color: var(--primary);">👤 Usuario</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>ID:</strong> ${info.user.id}</div><div><strong>Username:</strong> ${info.user.username}</div><div><strong>Nombre:</strong> ${info.user.full_name}</div><div><strong>Rol:</strong> ${info.user.rol}</div><div><strong>Cliente ID:</strong> ${info.user.cliente_id || 'N/A'}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🔗 Sesión</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Connection:</strong> ${info.session.connection}</div><div><strong>Empresa ID:</strong> ${info.session.empresa_id}</div><div><strong>Empresa Nombre:</strong> ${info.session.empresa_nombre}</div><div><strong>User ID:</strong> ${info.session.user_id}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🗄️ DB Config</h4><div style="background: ${info.has_db_config ? '#e8f5e9' : '#ffebee'}; padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Cacheado:</strong> ${info.has_db_config ? '✅ Sí' : '❌ No'}</div>${info.has_db_config ? `<div><strong>Server:</strong> ${info.db_config.dbserver}</div><div><strong>Database:</strong> ${info.db_config.dbname}</div>` : ''}</div><h4 style="margin-bottom: 10px; color: var(--primary);">💾 LocalStorage</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px;"><div><strong>connection:</strong> ${localStorage.getItem('connection') || 'N/A'}</div><div><strong>empresa_id:</strong> ${localStorage.getItem('empresa_id') || 'N/A'}</div></div></div>`;
-                const modal = document.createElement('div');
-                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
-                modal.innerHTML = `<div style="background:var(--bg-primary, white);padding:20px;border-radius:12px;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.3);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><h3 style="margin:0;">ℹ️ Info de Contexto</h3><button onclick="this.closest('div').parentElement.remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button></div>${html}</div>`;
-                modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-                document.body.appendChild(modal);
-            } catch (error) { console.error('Error:', error); alert('Error: ' + error.message); }
-        }
-
-        function goBack() {
-            const empresaId = localStorage.getItem('empresa_id');
-            window.location.href = `index.html?empresa=${empresaId}`;
-        }
-
-        function formatDateTime(dateString) {
-            if (!dateString) return '-';
-            const date = new Date(dateString);
-            return date.toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        function formatRecurso(log) {
+            if (!log.recurso) return '-';
+            let text = log.recurso;
+            if (log.recurso_id) text += ` #${log.recurso_id}`;
+            return text;
         }
 
         // ==================== SESIONES ACTIVAS ====================
         async function loadSessions() {
+            sessionsGrid.showLoading();
             try {
-                const empresaId = localStorage.getItem('empresa_id');
+                const empresaId = PageCommon.getEmpresaId();
                 const response = await fetch(`${API_URL}/api/sesiones?empresa_id=${empresaId}`, { credentials: 'include' });
                 if (!response.ok) throw new Error('Error al cargar sesiones');
                 const data = await response.json();
                 const sessions = data.sesiones || [];
                 document.getElementById('sessions-count').textContent = sessions.length;
-                const tbody = document.getElementById('sessions-body');
-                const cardsContainer = document.getElementById('sessions-cards');
-                const emptyMsg = document.getElementById('sessions-empty');
-                if (sessions.length === 0) {
-                    tbody.innerHTML = '';
-                    cardsContainer.innerHTML = '';
-                    emptyMsg.style.display = 'block';
-                    return;
-                }
-                emptyMsg.style.display = 'none';
-                tbody.innerHTML = sessions.map(s => `
-                    <tr>
-                        <td><strong>${s.username}</strong></td>
-                        <td>${s.full_name || '-'}</td>
-                        <td><span class="role-badge role-${s.rol}">${s.rol}</span></td>
-                        <td>${s.ip_address || '-'}</td>
-                        <td>${formatDateTime(s.created_at)}</td>
-                        <td>${formatDateTime(s.last_activity)}</td>
-                        <td><button class="btn-action btn-danger-small" onclick="killSession(${s.id}, '${s.username}')" title="Terminar sesión">✕</button></td>
-                    </tr>
-                `).join('');
-                cardsContainer.innerHTML = sessions.map(s => `
-                    <div class="audit-card">
-                        <div class="card-header">
-                            <div class="card-user">
-                                <span class="card-username">${s.username}</span>
-                                <span class="role-badge role-${s.rol}">${s.rol}</span>
-                            </div>
-                            <button class="btn-action btn-danger-small" onclick="killSession(${s.id}, '${s.username}')" title="Terminar sesión">✕</button>
-                        </div>
-                        <div class="card-body">
-                            <div class="card-detail"><strong>Nombre:</strong> ${s.full_name || '-'}</div>
-                            <div class="card-detail"><strong>IP:</strong> ${s.ip_address || '-'}</div>
-                            <div class="card-detail"><strong>Inicio:</strong> ${formatDateTime(s.created_at)}</div>
-                            <div class="card-detail"><strong>Actividad:</strong> ${formatDateTime(s.last_activity)}</div>
-                        </div>
-                    </div>
-                `).join('');
+                sessionsGrid.setData(sessions);
             } catch (error) {
                 console.error('Error:', error);
+                sessionsGrid.setData([]);
             }
         }
 
         async function killSession(sessionId, username) {
-            if (!confirm(`¿Terminar la sesión de ${username}?`)) return;
+            if (!confirm(`Terminar la sesion de ${username}?`)) return;
             try {
                 const response = await fetch(`${API_URL}/api/sesiones/${sessionId}`, { method: 'DELETE', credentials: 'include' });
-                if (!response.ok) throw new Error('Error al terminar sesión');
+                if (!response.ok) throw new Error('Error al terminar sesion');
                 await loadSessions();
             } catch (error) {
-                alert('Error al terminar la sesión');
+                alert('Error al terminar la sesion');
             }
         }
 
         async function killAllSessionsExceptCurrent() {
-            if (!confirm('¿Cerrar todas las sesiones excepto la tuya?\n\nEsto desconectará a todos los usuarios actualmente conectados.')) return;
+            if (!confirm('Cerrar todas las sesiones excepto la tuya?\n\nEsto desconectara a todos los usuarios actualmente conectados.')) return;
             try {
-                const empresaId = localStorage.getItem('empresa_id');
-                const csrfToken = localStorage.getItem('csrf_token');
+                const empresaId = PageCommon.getEmpresaId();
                 const response = await fetch(`${API_URL}/api/sesiones/todas-excepto-actual?empresa_id=${empresaId}`, {
                     method: 'DELETE',
                     credentials: 'include',
-                    headers: { 'X-CSRF-Token': csrfToken }
+                    headers: { 'X-CSRF-Token': PageCommon.getCsrfToken() }
                 });
                 if (!response.ok) {
                     const error = await response.json();
                     throw new Error(error.message || 'Error al cerrar sesiones');
                 }
                 const data = await response.json();
-                alert(`${data.deleted_count} sesión(es) cerrada(s)`);
+                alert(`${data.deleted_count} sesion(es) cerrada(s)`);
                 await loadSessions();
             } catch (error) {
                 alert('Error al cerrar las sesiones: ' + error.message);
@@ -648,13 +552,6 @@
         }
 
         // ==================== AUDITORIA ====================
-        let auditCurrentPage = 0;
-        const auditPageSize = 20;
-        let auditTotalLogs = 0;
-        let auditSortColumn = 'fecha';
-        let auditSortDirection = 'desc';
-        let auditAllLogs = [];
-
         async function loadAuditActions() {
             try {
                 const response = await fetch(`${API_URL}/api/audit-logs/actions`, { credentials: 'include' });
@@ -672,12 +569,11 @@
             } catch (error) {}
         }
 
-        async function loadAuditLogs(page = 0) {
+        async function loadAuditLogs() {
+            auditGrid.showLoading();
             try {
-                auditCurrentPage = page;
-                const offset = page * auditPageSize;
                 const params = new URLSearchParams();
-                params.append('limit', 200);
+                params.append('limit', 500);
                 params.append('offset', 0);
                 const fechaDesde = document.getElementById('audit-fecha-desde')?.value;
                 const fechaHasta = document.getElementById('audit-fecha-hasta')?.value;
@@ -690,140 +586,16 @@
                 if (resultadoPanel) params.append('resultado', resultadoPanel);
                 if (usuarioPanel) params.append('username', usuarioPanel);
                 const response = await fetch(`${API_URL}/api/audit-logs?${params.toString()}`, { credentials: 'include' });
-                if (!response.ok) throw new Error('Error al cargar logs de auditoría');
+                if (!response.ok) throw new Error('Error al cargar logs de auditoria');
                 const data = await response.json();
-                auditAllLogs = data.logs || [];
-                auditTotalLogs = data.total || 0;
-                const filteredLogs = applyLocalFiltersAndSort(auditAllLogs);
-                const paginatedLogs = filteredLogs.slice(offset, offset + auditPageSize);
-                auditTotalLogs = filteredLogs.length;
-                renderAuditLogs(paginatedLogs);
-                renderAuditPagination();
+                auditGrid.setData(data.logs || []);
             } catch (error) {
-                const emptyMsg = document.getElementById('audit-empty');
-                if (emptyMsg) {
-                    emptyMsg.textContent = 'Error al cargar los registros de auditoría';
-                    emptyMsg.style.display = 'block';
-                }
+                console.error('Error:', error);
+                auditGrid.setData([]);
             }
         }
 
-        function applyLocalFiltersAndSort(logs) {
-            let filtered = [...logs];
-            filtered.sort((a, b) => {
-                let valA = a[auditSortColumn];
-                let valB = b[auditSortColumn];
-                if (valA === null || valA === undefined) valA = '';
-                if (valB === null || valB === undefined) valB = '';
-                let comparison = 0;
-                if (typeof valA === 'string') comparison = valA.localeCompare(valB);
-                else comparison = valA < valB ? -1 : valA > valB ? 1 : 0;
-                return auditSortDirection === 'asc' ? comparison : -comparison;
-            });
-            return filtered;
-        }
-
-        function sortAuditColumn(column) {
-            if (auditSortColumn === column) auditSortDirection = auditSortDirection === 'asc' ? 'desc' : 'asc';
-            else { auditSortColumn = column; auditSortDirection = 'asc'; }
-            updateSortIcons();
-            const filteredLogs = applyLocalFiltersAndSort(auditAllLogs);
-            const offset = auditCurrentPage * auditPageSize;
-            const paginatedLogs = filteredLogs.slice(offset, offset + auditPageSize);
-            auditTotalLogs = filteredLogs.length;
-            renderAuditLogs(paginatedLogs);
-            renderAuditPagination();
-        }
-
-        function updateSortIcons() {
-            const columns = ['fecha', 'username', 'accion', 'recurso', 'ip_address', 'resultado'];
-            columns.forEach(col => {
-                const icon = document.getElementById(`sort-${col}`);
-                if (icon) {
-                    if (col === auditSortColumn) {
-                        icon.textContent = auditSortDirection === 'asc' ? '↑' : '↓';
-                        icon.classList.add('active');
-                    } else {
-                        icon.textContent = '↕';
-                        icon.classList.remove('active');
-                    }
-                }
-            });
-        }
-
-        function truncateText(text, maxLength) {
-            if (!text) return '-';
-            if (text.length <= maxLength) return text;
-            return text.substring(0, maxLength) + '...';
-        }
-
-        function formatRecurso(log, truncate = false) {
-            if (!log.recurso) return '-';
-            let text = log.recurso;
-            if (log.recurso_id) {
-                text += ` #${truncate ? truncateText(log.recurso_id, 12) : log.recurso_id}`;
-            }
-            return text;
-        }
-
-        function renderAuditLogs(logs) {
-            const tbody = document.getElementById('audit-body');
-            const cardsContainer = document.getElementById('audit-cards');
-            const emptyMsg = document.getElementById('audit-empty');
-            if (logs.length === 0) {
-                tbody.innerHTML = '';
-                cardsContainer.innerHTML = '';
-                emptyMsg.style.display = 'block';
-                return;
-            }
-            emptyMsg.style.display = 'none';
-            tbody.innerHTML = logs.map(log => {
-                const hasDevice = log.accion === 'LOGIN' && log.detalles && log.detalles.dispositivo;
-                const detailBtn = hasDevice
-                    ? `<button class="btn-action btn-detail-device" onclick="showDeviceDetail(${log.id})" title="Ver dispositivo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></button>`
-                    : '';
-                return `<tr>
-                    <td>${formatDateTime(log.fecha)}</td>
-                    <td><strong>${log.username || '-'}</strong></td>
-                    <td><span class="action-badge action-${getActionCategory(log.accion)}">${formatActionName(log.accion)}</span></td>
-                    <td>${formatRecurso(log, false)}</td>
-                    <td>${log.ip_address || '-'}</td>
-                    <td><span class="result-badge result-${log.resultado.toLowerCase()}">${formatResultName(log.resultado)}</span></td>
-                    <td style="text-align: center;">${detailBtn}</td>
-                </tr>`;
-            }).join('');
-            cardsContainer.innerHTML = logs.map(log => {
-                const hasDevice = log.accion === 'LOGIN' && log.detalles && log.detalles.dispositivo;
-                const detailBtn = hasDevice
-                    ? `<button class="btn-action btn-detail-device" onclick="showDeviceDetail(${log.id})" title="Ver dispositivo" style="margin-left: auto;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Dispositivo</button>`
-                    : '';
-                return `<div class="audit-card">
-                    <div class="card-header">
-                        <span class="action-badge action-${getActionCategory(log.accion)}">${formatActionName(log.accion)}</span>
-                        <span class="result-badge result-${log.resultado.toLowerCase()}">${formatResultName(log.resultado)}</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="card-detail"><strong>Usuario:</strong> ${log.username || '-'}</div>
-                        <div class="card-detail"><strong>Fecha:</strong> ${formatDateTime(log.fecha)}</div>
-                        <div class="card-detail"><strong>Recurso:</strong> ${formatRecurso(log, true)}</div>
-                        <div class="card-detail"><strong>IP:</strong> ${log.ip_address || '-'}</div>
-                    </div>
-                    ${hasDevice ? `<div class="card-footer" style="padding: 8px 12px; border-top: 1px solid var(--border-color, #eee);">${detailBtn}</div>` : ''}
-                </div>`;
-            }).join('');
-        }
-
-        function renderAuditPagination() {
-            const container = document.getElementById('audit-pagination');
-            const totalPages = Math.ceil(auditTotalLogs / auditPageSize);
-            if (totalPages <= 1) { container.innerHTML = ''; return; }
-            let html = `<button class="btn-icon btn-icon-secondary btn-icon-sm" ${auditCurrentPage === 0 ? 'disabled' : ''} onclick="loadAuditLogs(${auditCurrentPage - 1})" title="Anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>`;
-            html += `<span class="pagination-info">Página ${auditCurrentPage + 1} de ${totalPages}</span>`;
-            html += `<button class="btn-icon btn-icon-secondary btn-icon-sm" ${auditCurrentPage >= totalPages - 1 ? 'disabled' : ''} onclick="loadAuditLogs(${auditCurrentPage + 1})" title="Siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button>`;
-            container.innerHTML = html;
-        }
-
-        function applyAuditFilters() { loadAuditLogs(0); }
+        function applyAuditFilters() { loadAuditLogs(); }
 
         function clearAuditFilters() {
             document.getElementById('audit-fecha-desde').value = '';
@@ -831,140 +603,17 @@
             document.getElementById('audit-accion').value = '';
             document.getElementById('audit-resultado').value = '';
             document.getElementById('audit-usuario').value = '';
-            loadAuditLogs(0);
-        }
-
-        function formatActionName(action) {
-            const actionNames = {
-                'LOGIN': 'Inicio sesión',
-                'LOGIN_FAILED': 'Login fallido',
-                'LOGOUT': 'Cerrar sesión',
-                'PASSWORD_CHANGE': 'Cambio contraseña',
-                'SESSION_KILL': 'Sesión cerrada',
-                'SESSION_KILL_ALL': 'Cerrar todas sesiones',
-                'USER_CREATE': 'Usuario creado',
-                'USER_ACTIVATE': 'Usuario activado',
-                'USER_DEACTIVATE': 'Usuario desactivado',
-                'USER_ROLE_CHANGE': 'Cambio de rol',
-                'API_KEY_CREATE': 'API Key creada',
-                'API_KEY_DELETE': 'API Key eliminada',
-                'CONFIG_CHANGE': 'Config. modificada',
-                'EMAIL_CONFIG_CHANGE': 'Config. email',
-                'PROPUESTA_SEND': 'Propuesta enviada',
-                'PROPUESTA_STATUS_CHANGE': 'Estado propuesta',
-                'CONSULTA_SEND': 'Consulta enviada',
-                'CONSULTA_RESPOND': 'Consulta respondida'
-            };
-            return actionNames[action] || action;
-        }
-
-        function formatResultName(result) {
-            const resultNames = { 'SUCCESS': 'Éxito', 'FAILED': 'Fallido', 'BLOCKED': 'Bloqueado' };
-            return resultNames[result] || result;
-        }
-
-        function getActionCategory(action) {
-            if (action.startsWith('LOGIN') || action === 'LOGOUT' || action === 'PASSWORD_CHANGE') return 'auth';
-            if (action.startsWith('SESSION')) return 'session';
-            if (action.startsWith('USER')) return 'user';
-            if (action.startsWith('API_KEY')) return 'apikey';
-            if (action.startsWith('CONFIG') || action.startsWith('EMAIL')) return 'config';
-            if (action.startsWith('PROPUESTA')) return 'propuesta';
-            if (action.startsWith('CONSULTA')) return 'consulta';
-            return 'other';
-        }
-
-        // ==================== INICIALIZACION ====================
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Cargar tema
-            const theme = localStorage.getItem('theme') || 'dark';
-            document.getElementById('theme-icon').textContent = theme === 'dark' ? '🌙' : '☀️';
-
-            // Verificar sesión
-            try {
-                const response = await fetch(`${API_URL}/api/current-user`, { credentials: 'include' });
-                if (!response.ok) {
-                    const empresaId = localStorage.getItem('empresa_id');
-                    window.location.href = `login.html?empresa=${empresaId}`;
-                    return;
-                }
-                const user = await response.json();
-                document.getElementById('user-name-display').textContent = user.username;
-                document.getElementById('menu-user-name').textContent = user.full_name || user.username;
-                document.getElementById('menu-user-rol').textContent = user.rol;
-
-                // Mostrar opción de contexto solo para superusuarios
-                if (user.rol === 'superusuario') {
-                    document.getElementById('menu-item-context').style.display = 'flex';
-                    document.getElementById('menu-divider-context').style.display = 'block';
-                }
-
-                // Verificar rol admin
-                if (user.rol !== 'administrador' && user.rol !== 'superusuario') {
-                    const empresaId = localStorage.getItem('empresa_id');
-                    window.location.href = `index.html?empresa=${empresaId}`;
-                    return;
-                }
-
-                // Mostrar secciones admin
-                document.getElementById('sidebar-admin-section').style.display = 'block';
-                document.getElementById('sidebar-config-section').style.display = 'block';
-
-                // Cargar logo
-                const empresaId = localStorage.getItem('empresa_id');
-                if (empresaId) {
-                    try {
-                        const logoResponse = await fetch(`${API_URL}/api/empresa/${empresaId}/logo`, { credentials: 'include' });
-                        if (logoResponse.ok) {
-                            const blob = await logoResponse.blob();
-                            document.getElementById('header-logo').src = URL.createObjectURL(blob);
-                        }
-                        const configResponse = await fetch(`${API_URL}/api/empresa/${empresaId}/config`, { credentials: 'include' });
-                        if (configResponse.ok) {
-                            const config = await configResponse.json();
-                            document.getElementById('header-company-name').textContent = config.nombre || 'Stocks';
-                        }
-                    } catch (e) {}
-                }
-
-                // Cargar datos
-                await loadSessions();
-                await loadAuditActions();
-                await loadAuditLogs();
-
-            } catch (error) {
-                const empresaId = localStorage.getItem('empresa_id');
-                window.location.href = `login.html?empresa=${empresaId}`;
-            }
-
-            // Cerrar menú al hacer clic fuera
-            document.addEventListener('click', function(e) {
-                const menuContainer = document.querySelector('.menu-container');
-                const dropdown = document.getElementById('menu-dropdown');
-                if (menuContainer && !menuContainer.contains(e.target)) {
-                    dropdown.classList.remove('show');
-                }
-            });
-
-            // Configurar selector de idioma
-            const langSelector = document.getElementById('lang-selector');
-            if (langSelector && typeof I18n !== 'undefined') {
-                langSelector.value = I18n.currentLang || 'es';
-            }
-        });
-
-        function t(key) {
-            return typeof I18n !== 'undefined' && I18n.t ? I18n.t(key) : key;
+            loadAuditLogs();
         }
 
         // ==================== DETALLE DISPOSITIVO ====================
         function showDeviceDetail(logId) {
-            const log = auditAllLogs.find(l => l.id === logId);
+            const log = auditGrid.getData().find(l => l.id === logId);
             if (!log || !log.detalles || !log.detalles.dispositivo) return;
             const d = log.detalles.dispositivo;
             const tipoIcon = d.tipo === 'Mobile' ? '📱' : d.tipo === 'Tablet' ? '📱' : '💻';
-            const tactilText = d.tactil === true ? 'Sí' : d.tactil === false ? 'No' : '-';
-            const cookiesText = d.cookies === true ? 'Sí' : d.cookies === false ? 'No' : '-';
+            const tactilText = d.tactil === true ? 'Si' : d.tactil === false ? 'No' : '-';
+            const cookiesText = d.cookies === true ? 'Si' : d.cookies === false ? 'No' : '-';
 
             const html = `
                 <div style="display: flex; flex-direction: column; gap: 16px;">
@@ -976,50 +625,17 @@
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <div class="device-info-item">
-                            <div class="device-info-label">Navegador</div>
-                            <div class="device-info-value">${d.navegador || '-'}</div>
-                        </div>
-                        <div class="device-info-item">
-                            <div class="device-info-label">Sistema Operativo</div>
-                            <div class="device-info-value">${d.sistema_operativo || '-'}</div>
-                        </div>
-                        <div class="device-info-item">
-                            <div class="device-info-label">Pantalla</div>
-                            <div class="device-info-value">${d.pantalla || '-'}</div>
-                        </div>
-                        <div class="device-info-item">
-                            <div class="device-info-label">Viewport</div>
-                            <div class="device-info-value">${d.viewport || '-'}</div>
-                        </div>
-                        <div class="device-info-item">
-                            <div class="device-info-label">Zona Horaria</div>
-                            <div class="device-info-value">${d.zona_horaria || '-'}</div>
-                        </div>
-                        <div class="device-info-item">
-                            <div class="device-info-label">Idioma</div>
-                            <div class="device-info-value">${d.idioma || '-'}</div>
-                        </div>
-                        <div class="device-info-item">
-                            <div class="device-info-label">Plataforma</div>
-                            <div class="device-info-value">${d.plataforma || '-'}</div>
-                        </div>
-                        <div class="device-info-item">
-                            <div class="device-info-label">Pantalla Táctil</div>
-                            <div class="device-info-value">${tactilText}</div>
-                        </div>
-                        <div class="device-info-item">
-                            <div class="device-info-label">Cookies</div>
-                            <div class="device-info-value">${cookiesText}</div>
-                        </div>
-                        <div class="device-info-item">
-                            <div class="device-info-label">Memoria (GB)</div>
-                            <div class="device-info-value">${d.memoria_gb != null ? d.memoria_gb : '-'}</div>
-                        </div>
-                        <div class="device-info-item">
-                            <div class="device-info-label">Núcleos CPU</div>
-                            <div class="device-info-value">${d.nucleos_cpu != null ? d.nucleos_cpu : '-'}</div>
-                        </div>
+                        <div class="device-info-item"><div class="device-info-label">Navegador</div><div class="device-info-value">${d.navegador || '-'}</div></div>
+                        <div class="device-info-item"><div class="device-info-label">Sistema Operativo</div><div class="device-info-value">${d.sistema_operativo || '-'}</div></div>
+                        <div class="device-info-item"><div class="device-info-label">Pantalla</div><div class="device-info-value">${d.pantalla || '-'}</div></div>
+                        <div class="device-info-item"><div class="device-info-label">Viewport</div><div class="device-info-value">${d.viewport || '-'}</div></div>
+                        <div class="device-info-item"><div class="device-info-label">Zona Horaria</div><div class="device-info-value">${d.zona_horaria || '-'}</div></div>
+                        <div class="device-info-item"><div class="device-info-label">Idioma</div><div class="device-info-value">${d.idioma || '-'}</div></div>
+                        <div class="device-info-item"><div class="device-info-label">Plataforma</div><div class="device-info-value">${d.plataforma || '-'}</div></div>
+                        <div class="device-info-item"><div class="device-info-label">Pantalla Tactil</div><div class="device-info-value">${tactilText}</div></div>
+                        <div class="device-info-item"><div class="device-info-label">Cookies</div><div class="device-info-value">${cookiesText}</div></div>
+                        <div class="device-info-item"><div class="device-info-label">Memoria (GB)</div><div class="device-info-value">${d.memoria_gb != null ? d.memoria_gb : '-'}</div></div>
+                        <div class="device-info-item"><div class="device-info-label">Nucleos CPU</div><div class="device-info-value">${d.nucleos_cpu != null ? d.nucleos_cpu : '-'}</div></div>
                     </div>
                     <details style="margin-top: 4px;">
                         <summary style="cursor: pointer; color: var(--text-secondary, #666); font-size: 0.8rem;">User-Agent completo</summary>
@@ -1035,87 +651,144 @@
             document.getElementById('device-detail-modal').style.display = 'none';
         }
 
-        // ==================== CAMBIO DE CONTRASENA ====================
-        function showChangePasswordModal() {
-            document.getElementById('change-password-modal').style.display = 'flex';
-            document.getElementById('current-password').value = '';
-            document.getElementById('new-password').value = '';
-            document.getElementById('confirm-password').value = '';
-            document.getElementById('change-password-error').style.display = 'none';
-            document.getElementById('change-password-success').style.display = 'none';
-            document.getElementById('change-password-btn').disabled = false;
-            document.getElementById('change-password-btn').textContent = t('changePassword.changeButton');
-        }
+        // ==================== INICIALIZACION ====================
+        document.addEventListener('DOMContentLoaded', async function() {
+            PageCommon.loadTheme();
+            await PageCommon.cargarLogoEmpresa();
+            await I18n.init();
+            document.getElementById('lang-selector').value = I18n.currentLang;
 
-        function hideChangePasswordModal() {
-            document.getElementById('change-password-modal').style.display = 'none';
-        }
+            await PageCommon.checkAuth('administrador');
+            await PageCommon.obtenerCsrfToken();
 
-        async function handleVoluntaryPasswordChange() {
-            const currentPwd = document.getElementById('current-password').value;
-            const newPwd = document.getElementById('new-password').value;
-            const confirmPwd = document.getElementById('confirm-password').value;
-            const errorEl = document.getElementById('change-password-error');
-            const successEl = document.getElementById('change-password-success');
-            const btn = document.getElementById('change-password-btn');
+            // Crear grid de sesiones
+            sessionsGrid = new DataGrid({
+                el: '#sessions-grid',
+                columns: [
+                    { key: 'username', label: 'Usuario', tipo: 'texto' },
+                    { key: 'full_name', label: 'Nombre', tipo: 'texto' },
+                    { key: 'rol', label: 'Rol', tipo: 'texto' },
+                    { key: 'ip_address', label: 'IP', tipo: 'texto' },
+                    { key: 'created_at', label: 'Inicio', tipo: 'texto' },
+                    { key: 'last_activity', label: 'Ultima Actividad', tipo: 'texto' },
+                    { key: '_actions', label: 'Acciones', sortable: false, filterable: false, align: 'center' }
+                ],
+                renderCell(item, col) {
+                    switch (col.key) {
+                        case 'username': return `<strong>${item.username}</strong>`;
+                        case 'full_name': return item.full_name || '-';
+                        case 'rol': return `<span class="role-badge role-${item.rol}">${item.rol}</span>`;
+                        case 'created_at': return PageCommon.formatDateTime(item.created_at);
+                        case 'last_activity': return PageCommon.formatDateTime(item.last_activity);
+                        case '_actions': return `<button class="btn-action btn-danger-small" onclick="killSession(${item.id}, '${item.username}')" title="Terminar sesion">&#10005;</button>`;
+                        default: return null;
+                    }
+                },
+                renderCard(item) {
+                    return `<div class="proposal-card">
+                        <div class="proposal-card-header">
+                            <span class="proposal-card-id">${item.username}</span>
+                            <span class="role-badge role-${item.rol}">${item.rol}</span>
+                        </div>
+                        <div class="proposal-card-info">
+                            <div class="proposal-card-info-item"><label>Nombre</label><span>${item.full_name || '-'}</span></div>
+                            <div class="proposal-card-info-item"><label>IP</label><span>${item.ip_address || '-'}</span></div>
+                            <div class="proposal-card-info-item"><label>Inicio</label><span>${PageCommon.formatDateTime(item.created_at)}</span></div>
+                            <div class="proposal-card-info-item"><label>Actividad</label><span>${PageCommon.formatDateTime(item.last_activity)}</span></div>
+                        </div>
+                        <div class="proposal-card-actions btn-icon-group" style="justify-content: center;">
+                            <button class="btn-icon btn-icon-danger btn-icon-sm" onclick="killSession(${item.id}, '${item.username}')" title="Terminar sesion">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                            </button>
+                        </div>
+                    </div>`;
+                },
+                defaultSort: { column: 'last_activity', direction: 'DESC' },
+                storageKey: 'filtros_sesiones',
+                tableClass: 'proposals-table',
+                emptyIcon: '👥',
+                emptyText: 'No hay sesiones activas',
+                loadingText: 'Cargando sesiones...'
+            });
 
-            errorEl.style.display = 'none';
-            successEl.style.display = 'none';
+            // Crear grid de auditoria
+            auditGrid = new DataGrid({
+                el: '#audit-grid',
+                columns: [
+                    { key: 'fecha', label: 'Fecha', tipo: 'texto' },
+                    { key: 'username', label: 'Usuario', tipo: 'texto' },
+                    { key: 'accion', label: 'Accion', tipo: 'texto' },
+                    { key: 'recurso', label: 'Recurso', tipo: 'texto', width: '120px' },
+                    { key: 'ip_address', label: 'IP', tipo: 'texto' },
+                    { key: 'resultado', label: 'Resultado', tipo: 'texto' },
+                    { key: '_detail', label: 'Detalle', sortable: false, filterable: false, align: 'center' }
+                ],
+                renderCell(item, col) {
+                    switch (col.key) {
+                        case 'fecha': return PageCommon.formatDateTime(item.fecha);
+                        case 'username': return `<strong>${item.username || '-'}</strong>`;
+                        case 'accion': return `<span class="action-badge action-${getActionCategory(item.accion)}">${formatActionName(item.accion)}</span>`;
+                        case 'recurso': return formatRecurso(item);
+                        case 'resultado': return `<span class="result-badge result-${item.resultado.toLowerCase()}">${formatResultName(item.resultado)}</span>`;
+                        case '_detail': {
+                            const hasDevice = item.accion === 'LOGIN' && item.detalles && item.detalles.dispositivo;
+                            return hasDevice
+                                ? `<button class="btn-action btn-detail-device" onclick="showDeviceDetail(${item.id})" title="Ver dispositivo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></button>`
+                                : '';
+                        }
+                        default: return null;
+                    }
+                },
+                renderCard(item) {
+                    const hasDevice = item.accion === 'LOGIN' && item.detalles && item.detalles.dispositivo;
+                    const detailBtn = hasDevice
+                        ? `<div class="proposal-card-actions btn-icon-group" style="justify-content: center; border-top: 1px solid var(--border-color, #eee); padding-top: 8px; margin-top: 4px;">
+                            <button class="btn-action btn-detail-device" onclick="showDeviceDetail(${item.id})" title="Ver dispositivo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Dispositivo</button>
+                           </div>` : '';
+                    return `<div class="proposal-card">
+                        <div class="proposal-card-header">
+                            <span class="action-badge action-${getActionCategory(item.accion)}">${formatActionName(item.accion)}</span>
+                            <span class="result-badge result-${item.resultado.toLowerCase()}">${formatResultName(item.resultado)}</span>
+                        </div>
+                        <div class="proposal-card-info">
+                            <div class="proposal-card-info-item"><label>Usuario</label><span>${item.username || '-'}</span></div>
+                            <div class="proposal-card-info-item"><label>Fecha</label><span>${PageCommon.formatDateTime(item.fecha)}</span></div>
+                            <div class="proposal-card-info-item"><label>Recurso</label><span>${formatRecurso(item)}</span></div>
+                            <div class="proposal-card-info-item"><label>IP</label><span>${item.ip_address || '-'}</span></div>
+                        </div>
+                        ${detailBtn}
+                    </div>`;
+                },
+                defaultSort: { column: 'fecha', direction: 'DESC' },
+                storageKey: 'filtros_auditoria',
+                tableClass: 'proposals-table',
+                emptyIcon: '🛡️',
+                emptyText: 'No hay registros de auditoria',
+                loadingText: 'Cargando registros...'
+            });
 
-            if (!currentPwd) {
-                errorEl.textContent = t('changePassword.currentPasswordRequired');
-                errorEl.style.display = 'block';
-                return;
-            }
-            if (newPwd.length < 6) {
-                errorEl.textContent = t('changePassword.minLength');
-                errorEl.style.display = 'block';
-                return;
-            }
-            if (newPwd !== confirmPwd) {
-                errorEl.textContent = t('changePassword.mismatch');
-                errorEl.style.display = 'block';
-                return;
-            }
+            // Cargar datos
+            await loadSessions();
+            await loadAuditActions();
+            await loadAuditLogs();
+        });
 
-            btn.disabled = true;
-            btn.textContent = t('changePassword.changing');
-
-            try {
-                const response = await fetch(`${API_URL}/api/usuarios/cambiar-password`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken || localStorage.getItem('csrf_token')
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({ current_password: currentPwd, new_password: newPwd })
-                });
-                const data = await response.json();
-                if (response.ok && data.success) {
-                    successEl.textContent = t('changePassword.success');
-                    successEl.style.display = 'block';
-                    setTimeout(() => hideChangePasswordModal(), 2000);
-                } else {
-                    errorEl.textContent = data.error || t('changePassword.error');
-                    errorEl.style.display = 'block';
-                    btn.disabled = false;
-                    btn.textContent = t('changePassword.changeButton');
-                }
-            } catch (error) {
-                errorEl.textContent = t('changePassword.error');
-                errorEl.style.display = 'block';
-                btn.disabled = false;
-                btn.textContent = t('changePassword.changeButton');
-            }
-        }
-    </script>
-    <script>
+        // ==================== EVENT LISTENERS ====================
         document.getElementById('change-password-modal').addEventListener('click', function(e) {
             if (e.target === this) hideChangePasswordModal();
         });
         document.getElementById('device-detail-modal').addEventListener('click', function(e) {
             if (e.target === this) hideDeviceDetailModal();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideDeviceDetailModal();
+                hideChangePasswordModal();
+                const sf = sessionsGrid?.getFilters();
+                const af = auditGrid?.getFilters();
+                if (sf) sf.cerrarPopupFiltro();
+                if (af) af.cerrarPopupFiltro();
+            }
         });
     </script>
 </body>

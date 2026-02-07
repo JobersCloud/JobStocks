@@ -45,7 +45,7 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.12.77">
+    <link rel="stylesheet" href="css/styles.css?v=1.22.9">
 </head>
 <body>
     <div class="app-layout">
@@ -92,7 +92,6 @@
                             <span data-i18n="menu.contextInfo">Info de Contexto</span>
                         </a>
                         <div class="menu-divider"></div>
-                        <div class="menu-section-title" data-i18n="menu.appearance">Apariencia</div>
                         <a class="menu-item" onclick="toggleTheme()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -380,9 +379,9 @@
 
     <script src="js/i18n/i18n.js?v=20260128"></script>
     <script src="js/sidebar.js?v=20260143"></script>
-    <script src="js/grid-filters.js?v=20260206"></script>
-    <script src="js/data-grid.js?v=20260206"></script>
-    <script src="js/page-common.js?v=20260206"></script>
+    <script src="js/grid-filters.js?v=20260207"></script>
+    <script src="js/data-grid.js?v=20260208a"></script>
+    <script src="js/page-common.js?v=20260207"></script>
     <script>
         // ==================== PAGE: MIS PEDIDOS (User) ====================
         const API_URL = PageCommon.API_URL;
@@ -396,12 +395,13 @@
             await I18n.init();
             document.getElementById('lang-selector').value = I18n.currentLang;
 
-            // Rellenar selector de anos
+            // Rellenar selector de anos (año actual por defecto)
             const selectAnyo = document.getElementById('filter-anyo');
             const currentYear = new Date().getFullYear();
             selectAnyo.innerHTML = `<option value="" data-i18n="orders.allYears">Todos</option>`;
             for (let y = currentYear; y >= currentYear - 5; y--) {
-                selectAnyo.innerHTML += `<option value="${y}">${y}</option>`;
+                const selected = y === currentYear ? ' selected' : '';
+                selectAnyo.innerHTML += `<option value="${y}"${selected}>${y}</option>`;
             }
 
             await PageCommon.checkAuth('usuario');
@@ -459,21 +459,22 @@
                 storageKey: 'filtrosGuardados_mispedidos',
                 emptyIcon: '📦',
                 emptyText: t('orders.noOrders') || 'No hay pedidos',
-                loadingText: t('orders.loading') || 'Cargando pedidos...'
+                loadingText: t('orders.loading') || 'Cargando pedidos...',
+                onPageChange: (page) => loadOrders(page)
             });
 
             await loadOrders();
         });
 
         // ==================== CARGAR PEDIDOS ====================
-        async function loadOrders() {
+        async function loadOrders(page = 1) {
             grid.showLoading();
             try {
                 const anyo = document.getElementById('filter-anyo').value;
                 const fechaDesde = document.getElementById('filter-fecha-desde').value;
                 const fechaHasta = document.getElementById('filter-fecha-hasta').value;
 
-                let url = `${API_URL}/api/pedidos/mis-pedidos?`;
+                let url = `${API_URL}/api/pedidos/mis-pedidos?page=${page}&page_size=50&`;
                 if (anyo) url += `anyo=${anyo}&`;
                 if (fechaDesde) url += `fecha_desde=${fechaDesde}&`;
                 if (fechaHasta) url += `fecha_hasta=${fechaHasta}&`;
@@ -482,7 +483,6 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    // Check for no-client state
                     if (data.error && data.error.includes('cliente')) {
                         const noClientEl = document.getElementById('no-client');
                         if (noClientEl) noClientEl.style.display = 'block';
@@ -493,7 +493,12 @@
                 }
 
                 allOrders = data.pedidos || [];
-                grid.setData(allOrders);
+                grid.setPaginatedData(allOrders, {
+                    page: data.page,
+                    page_size: data.page_size,
+                    total: data.total,
+                    total_pages: data.total_pages
+                });
             } catch (error) {
                 console.error('Error loading orders:', error);
                 grid.setData([]);

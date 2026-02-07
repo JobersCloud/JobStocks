@@ -2905,20 +2905,6 @@ tbody tr:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Dark mode drag & drop */
-[data-theme="dark"] .sortable-th.dragging {
-    background: #1a202c !important;
-}
-
-[data-theme="dark"] .sortable-th.drag-over {
-    background: rgba(var(--primary-rgb, 255, 67, 56), 0.2) !important;
-    box-shadow: inset 0 0 0 2px var(--primary);
-}
-
-[data-theme="dark"] .drag-handle {
-    color: #718096;
-}
-
 [data-theme="dark"] .btn-clear-filters {
     border-color: #4a5568;
     color: #a0aec0;
@@ -3012,9 +2998,11 @@ tbody tr:hover {
     border-radius: var(--radius);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
     min-width: 200px;
-    max-width: 260px;
+    max-width: 280px;
     overflow: hidden;
     font-size: 0.72rem;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Header del popup */
@@ -3067,6 +3055,9 @@ tbody tr:hover {
 /* Body del popup */
 .filter-popup-body {
     padding: 0;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .filter-popup-section {
@@ -3188,7 +3179,7 @@ tbody tr:hover {
 }
 
 .filter-popup-values {
-    max-height: 320px;
+    max-height: min(320px, 40vh);
     overflow-y: auto;
     border: 1px solid var(--border);
     border-radius: 4px;
@@ -3270,6 +3261,7 @@ tbody tr:hover {
     padding: 6px 8px;
     background: var(--bg-secondary, #f8f9fa);
     border-top: 1px solid var(--border);
+    flex-shrink: 0;
 }
 
 .btn-filter-apply,
@@ -5089,6 +5081,40 @@ tbody tr:hover {
         height: 50px;
         font-size: 20px;
     }
+}
+
+/* ==================== GROUPBOX DETALLES ==================== */
+
+.detail-groupbox {
+    width: 100%;
+    margin-top: 15px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    position: relative;
+    padding: 20px 15px 10px;
+}
+
+.detail-groupbox-title {
+    position: absolute;
+    top: -10px;
+    left: 15px;
+    background: var(--bg-primary, #fff);
+    padding: 0 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+[data-theme="dark"] .detail-groupbox-title {
+    background: var(--bg-primary, #1a1a2e);
+}
+
+.detail-groupbox-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
 /* ==================== SECCIÓN DE EMPAQUETADO ==================== */
@@ -13320,13 +13346,40 @@ data-grid {
     color: white;
 }
 
+/* Column resize handle */
+.dg-table-wrapper th {
+    position: relative;
+}
+
+.dg-resize-handle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    cursor: col-resize;
+    user-select: none;
+}
+
+.dg-resize-handle:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
 /* Table */
 .dg-table-wrapper {
-    overflow: auto;
     border-radius: 10px;
     border: 1px solid #e0e0e0;
     flex: 1;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.dg-table-wrapper .table-scroll-container {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: auto;
 }
 
 .dg-table {
@@ -13570,6 +13623,35 @@ data-grid {
     .dg-footer-pagination {
         order: 1;
     }
+}
+
+/* Pagination layout */
+.dg-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
+}
+
+.dg-pagination-info {
+    font-size: 13px;
+    color: var(--text-secondary, #666);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.dg-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dg-page-current {
+    padding: 0 10px;
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
 }
 
 .dg-page-btn {

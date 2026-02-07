@@ -16,6 +16,9 @@ window.toggleSidebarMobile = function() {
         mobileMenu.remove();
         if (overlay) overlay.style.display = '';
     } else {
+        // Cerrar menú de usuario si está abierto
+        var userDropdown = document.getElementById('menu-dropdown');
+        if (userDropdown) userDropdown.classList.remove('show');
         // Abrir - crear menú móvil clonando el sidebar
         mobileMenu = sidebar.cloneNode(true);
         mobileMenu.id = 'mobile-menu-panel';

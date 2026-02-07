@@ -16,10 +16,14 @@
 # ARCHIVO: routes/pedido_routes.py
 # Endpoints para consulta de pedidos de venta (ERP)
 # ============================================
+import time
+import logging
 from flask import Blueprint, jsonify, request, session
 from flask_login import login_required, current_user
 from utils.auth import api_key_or_login_required, administrador_required
 from models.pedido_model import PedidoModel
+
+logger = logging.getLogger(__name__)
 
 pedido_bp = Blueprint('pedido', __name__, url_prefix='/api/pedidos')
 
@@ -28,8 +32,7 @@ pedido_bp = Blueprint('pedido', __name__, url_prefix='/api/pedidos')
 @login_required
 def get_mis_pedidos():
     """
-    Obtener los pedidos del usuario actual (usando cliente_id).
-    Usa empresa de sesion.
+    Obtener los pedidos del usuario actual con paginacion.
     ---
     tags:
       - Pedidos
@@ -40,28 +43,31 @@ def get_mis_pedidos():
         in: query
         type: integer
         required: false
-        description: Filtrar por año
       - name: fecha_desde
         in: query
         type: string
         format: date
         required: false
-        description: Filtrar desde fecha (YYYY-MM-DD)
       - name: fecha_hasta
         in: query
         type: string
         format: date
         required: false
-        description: Filtrar hasta fecha (YYYY-MM-DD)
+      - name: page
+        in: query
+        type: integer
+        required: false
+        default: 1
+      - name: page_size
+        in: query
+        type: integer
+        required: false
+        default: 50
     responses:
       200:
-        description: Lista de pedidos del usuario
-      400:
-        description: El usuario no tiene cliente_id asignado
-      401:
-        description: No autenticado
+        description: Lista paginada de pedidos del usuario
     """
-    # Verificar que el usuario tiene cliente_id asignado
+    t0 = time.time()
     cliente_id = current_user.cliente_id
     if not cliente_id:
         return jsonify({
@@ -73,21 +79,39 @@ def get_mis_pedidos():
     anyo = request.args.get('anyo', type=int)
     fecha_desde = request.args.get('fecha_desde')
     fecha_hasta = request.args.get('fecha_hasta')
+    page = request.args.get('page', 1, type=int)
+    page_size = min(request.args.get('page_size', 50, type=int), 200)
+
+    logger.warning(f'[PERF] GET /api/pedidos/mis-pedidos cliente={cliente_id} anyo={anyo} page={page}')
 
     try:
-        pedidos = PedidoModel.get_by_user(
+        t1 = time.time()
+        result = PedidoModel.get_by_user(
             cliente_id=cliente_id,
             empresa_id=empresa_id,
             anyo=anyo,
             fecha_desde=fecha_desde,
-            fecha_hasta=fecha_hasta
+            fecha_hasta=fecha_hasta,
+            page=page,
+            page_size=page_size
         )
-        return jsonify({
+        t2 = time.time()
+        logger.warning(f'[PERF] DB query + fetch: {t2-t1:.3f}s | rows={len(result["pedidos"])}')
+
+        response = jsonify({
             'success': True,
-            'total': len(pedidos),
-            'pedidos': pedidos
-        }), 200
+            'total': result['total'],
+            'page': result['page'],
+            'page_size': result['page_size'],
+            'total_pages': result['total_pages'],
+            'pedidos': result['pedidos']
+        })
+        t3 = time.time()
+        logger.warning(f'[PERF] JSON serialize: {t3-t2:.3f}s | TOTAL: {t3-t0:.3f}s')
+
+        return response, 200
     except Exception as e:
+        logger.error(f'[PERF] ERROR after {time.time()-t0:.3f}s: {e}')
         return jsonify({
             'success': False,
             'error': str(e)
@@ -99,8 +123,7 @@ def get_mis_pedidos():
 @administrador_required
 def get_todos_pedidos():
     """
-    Obtener todos los pedidos (solo administradores).
-    Usa empresa de sesion.
+    Obtener todos los pedidos con paginacion (solo administradores).
     ---
     tags:
       - Pedidos
@@ -111,52 +134,73 @@ def get_todos_pedidos():
         in: query
         type: integer
         required: false
-        description: Filtrar por año
       - name: fecha_desde
         in: query
         type: string
         format: date
         required: false
-        description: Filtrar desde fecha (YYYY-MM-DD)
       - name: fecha_hasta
         in: query
         type: string
         format: date
         required: false
-        description: Filtrar hasta fecha (YYYY-MM-DD)
       - name: cliente
         in: query
         type: string
         required: false
-        description: Filtrar por codigo de cliente
+      - name: page
+        in: query
+        type: integer
+        required: false
+        default: 1
+      - name: page_size
+        in: query
+        type: integer
+        required: false
+        default: 50
     responses:
       200:
-        description: Lista de todos los pedidos
-      401:
-        description: No autenticado
-      403:
-        description: No autorizado (requiere rol administrador)
+        description: Lista paginada de todos los pedidos
     """
+    t0 = time.time()
     empresa_id = session.get('empresa_id', '1')
     anyo = request.args.get('anyo', type=int)
     fecha_desde = request.args.get('fecha_desde')
     fecha_hasta = request.args.get('fecha_hasta')
     cliente = request.args.get('cliente')
+    page = request.args.get('page', 1, type=int)
+    page_size = min(request.args.get('page_size', 50, type=int), 200)
+
+    logger.warning(f'[PERF] GET /api/pedidos empresa={empresa_id} anyo={anyo} cliente={cliente} page={page}')
 
     try:
-        pedidos = PedidoModel.get_all(
+        t1 = time.time()
+        result = PedidoModel.get_all(
             empresa_id=empresa_id,
             anyo=anyo,
             fecha_desde=fecha_desde,
             fecha_hasta=fecha_hasta,
-            cliente=cliente
+            cliente=cliente,
+            page=page,
+            page_size=page_size
         )
-        return jsonify({
+        t2 = time.time()
+        logger.warning(f'[PERF] DB query + fetch: {t2-t1:.3f}s | rows={len(result["pedidos"])}')
+
+        response = jsonify({
             'success': True,
-            'total': len(pedidos),
-            'pedidos': pedidos
-        }), 200
+            'total': result['total'],
+            'page': result['page'],
+            'page_size': result['page_size'],
+            'total_pages': result['total_pages'],
+            'pedidos': result['pedidos']
+        })
+        t3 = time.time()
+        logger.warning(f'[PERF] JSON serialize: {t3-t2:.3f}s | TOTAL: {t3-t0:.3f}s')
+
+        return response, 200
     except Exception as e:
+        logger.error(f'[PERF] ERROR after {time.time()-t0:.3f}s: {e}')
         return jsonify({
             'success': False,
             'error': str(e)
@@ -171,33 +215,6 @@ def get_pedido(empresa, anyo, pedido):
     ---
     tags:
       - Pedidos
-    security:
-      - cookieAuth: []
-      - apiKeyHeader: []
-      - apiKeyQuery: []
-    parameters:
-      - name: empresa
-        in: path
-        type: integer
-        required: true
-        description: Codigo de empresa
-      - name: anyo
-        in: path
-        type: integer
-        required: true
-        description: Año del pedido
-      - name: pedido
-        in: path
-        type: integer
-        required: true
-        description: Numero de pedido
-    responses:
-      200:
-        description: Detalle del pedido con sus lineas
-      401:
-        description: No autenticado
-      404:
-        description: Pedido no encontrado
     """
     try:
         pedido_data = PedidoModel.get_by_id(empresa, anyo, pedido)
@@ -226,31 +243,6 @@ def get_lineas_pedido(empresa, anyo, pedido):
     ---
     tags:
       - Pedidos
-    security:
-      - cookieAuth: []
-      - apiKeyHeader: []
-      - apiKeyQuery: []
-    parameters:
-      - name: empresa
-        in: path
-        type: integer
-        required: true
-        description: Codigo de empresa
-      - name: anyo
-        in: path
-        type: integer
-        required: true
-        description: Año del pedido
-      - name: pedido
-        in: path
-        type: integer
-        required: true
-        description: Numero de pedido
-    responses:
-      200:
-        description: Lista de lineas del pedido
-      401:
-        description: No autenticado
     """
     try:
         lineas = PedidoModel.get_lineas(empresa, anyo, pedido)

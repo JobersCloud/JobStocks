@@ -275,3 +275,57 @@ def get_consultas_por_estado():
     empresa_id = get_empresa_id()
     estados = EstadisticasModel.get_consultas_por_estado(empresa_id)
     return jsonify(estados)
+
+
+@estadisticas_bp.route('/api/estadisticas/articulos-mas-vistos', methods=['GET'])
+@login_required
+@administrador_required
+def get_articulos_mas_vistos():
+    """
+    Obtener articulos mas vistos (por clicks en detalle)
+    ---
+    tags:
+      - Estadisticas
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: limit
+        in: query
+        type: integer
+        default: 10
+        description: Cantidad de articulos a retornar
+      - name: dias
+        in: query
+        type: integer
+        default: 30
+        description: Periodo en dias hacia atras
+    responses:
+      200:
+        description: Lista de articulos mas vistos
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              codigo:
+                type: string
+              vistas:
+                type: integer
+              usuarios_unicos:
+                type: integer
+              ultima_vista:
+                type: string
+                format: date-time
+              descripcion:
+                type: string
+    """
+    empresa_id = get_empresa_id()
+    limit = request.args.get('limit', 10, type=int)
+    dias = request.args.get('dias', 30, type=int)
+    if dias > 365:
+        dias = 365
+    try:
+        articulos = EstadisticasModel.get_articulos_mas_vistos(empresa_id, limit, dias)
+        return jsonify(articulos)
+    except Exception:
+        return jsonify([])

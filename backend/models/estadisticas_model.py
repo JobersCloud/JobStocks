@@ -267,6 +267,51 @@ class EstadisticasModel:
         return propuestas
 
     @staticmethod
+    def get_articulos_mas_vistos(empresa_id='1', limit=10, dias=30):
+        """
+        Obtiene los articulos mas vistos (desde audit_log ARTICLE_VIEW).
+
+        Args:
+            empresa_id: ID de la empresa
+            limit: Cantidad de articulos a retornar
+            dias: Periodo en dias hacia atras
+
+        Returns:
+            list: Lista de articulos con cantidad de vistas
+        """
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT TOP (?)
+                a.recurso_id as codigo,
+                COUNT(*) as vistas,
+                COUNT(DISTINCT a.user_id) as usuarios_unicos,
+                MAX(a.fecha) as ultima_vista,
+                s.descripcion
+            FROM audit_log a
+            LEFT JOIN view_externos_stock s ON s.codigo = a.recurso_id AND s.empresa = ?
+            WHERE a.accion = 'ARTICLE_VIEW'
+                AND a.empresa_id = ?
+                AND a.fecha >= DATEADD(DAY, ?, GETDATE())
+            GROUP BY a.recurso_id, s.descripcion
+            ORDER BY vistas DESC
+        """, (limit, empresa_id, empresa_id, -dias))
+
+        articulos = []
+        for row in cursor.fetchall():
+            articulos.append({
+                'codigo': row[0],
+                'vistas': row[1],
+                'usuarios_unicos': row[2],
+                'ultima_vista': row[3].isoformat() if row[3] else None,
+                'descripcion': row[4] or row[0]
+            })
+
+        conn.close()
+        return articulos
+
+    @staticmethod
     def get_consultas_por_estado(empresa_id='1'):
         """
         Obtiene el conteo de consultas por estado.

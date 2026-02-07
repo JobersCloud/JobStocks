@@ -47,7 +47,7 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.12.73">
+    <link rel="stylesheet" href="css/styles.css?v=1.22.9">
 </head>
 <body>
     <!-- ==================== MASTERPAGE LAYOUT ==================== -->
@@ -95,7 +95,6 @@
                             <span data-i18n="menu.contextInfo">Info de Contexto</span>
                         </a>
                         <div class="menu-divider"></div>
-                        <div class="menu-section-title" data-i18n="menu.appearance">Apariencia</div>
                         <a class="menu-item" onclick="toggleTheme()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -468,9 +467,9 @@
 
     <script src="js/i18n/i18n.js"></script>
     <script src="js/sidebar.js?v=20260143"></script>
-    <script src="js/grid-filters.js?v=20260206"></script>
-    <script src="js/data-grid.js?v=20260206"></script>
-    <script src="js/page-common.js?v=20260206"></script>
+    <script src="js/grid-filters.js?v=20260207"></script>
+    <script src="js/data-grid.js?v=20260208a"></script>
+    <script src="js/page-common.js?v=20260207"></script>
     <script>
         // ==================== PAGE: USUARIOS (Admin) ====================
         const API_URL = PageCommon.API_URL;
@@ -784,21 +783,38 @@
             input.addEventListener('input', function() {
                 clearTimeout(clientSearchTimeout);
                 const query = this.value.trim();
-                if (query.length < 3) { document.getElementById('client-suggestions').innerHTML = ''; return; }
+                if (query.length < 2) { document.getElementById('client-suggestions').innerHTML = ''; return; }
                 clientSearchTimeout = setTimeout(() => searchClients(query), 300);
+            });
+            // Cerrar sugerencias al hacer clic fuera
+            document.addEventListener('click', function(e) {
+                const container = document.querySelector('#client-search-wrapper')?.closest('.client-search-container');
+                if (container && !container.contains(e.target)) {
+                    document.getElementById('client-suggestions').innerHTML = '';
+                }
             });
         }
 
         async function searchClients(query) {
+            const suggestionsEl = document.getElementById('client-suggestions');
+            const connection = localStorage.getItem('connection') || '1';
             try {
-                const empresaId = localStorage.getItem('empresa_id');
-                const response = await fetch(`${API_URL}/api/clientes/search?empresa=${empresaId}&razon=${encodeURIComponent(query)}`, { credentials: 'include' });
+                const response = await fetch(`${API_URL}/api/clientes/search?empresa=${connection}&razon=${encodeURIComponent(query)}`, { credentials: 'include' });
                 if (!response.ok) return;
-                const data = await response.json();
-                const clientes = data.clientes || [];
-                const container = document.getElementById('client-suggestions');
-                container.innerHTML = clientes.map(c => `<div class="client-suggestion-item" onclick="selectClient('${c.codigo}', '${c.razon_social?.replace(/'/g, "\\'")}')">${c.codigo} - ${c.razon_social}</div>`).join('');
-            } catch (e) {}
+                const clientes = await response.json();
+                if (!clientes || clientes.length === 0) {
+                    suggestionsEl.innerHTML = '<div class="client-suggestions-empty">Sin resultados</div>';
+                    return;
+                }
+                suggestionsEl.innerHTML = clientes.slice(0, 15).map(c => `
+                    <div class="client-suggestion" onclick="selectClient('${c.codigo}', '${(c.razon || '').replace(/'/g, "\\'")}')">
+                        <span class="client-suggestion-code">${c.codigo}</span>
+                        <span class="client-suggestion-name">${c.razon}</span>
+                    </div>
+                `).join('');
+            } catch (e) {
+                suggestionsEl.innerHTML = '';
+            }
         }
 
         function selectClient(codigo, razon) {

@@ -19,6 +19,21 @@ from config.database import Database
 
 
 class ClienteModel:
+    COLUMNS = 'empresa, codigo, razon, domicilio, codpos, poblacion, provincia, pais'
+
+    @staticmethod
+    def _row_to_dict(row):
+        return {
+            'empresa': row[0],
+            'codigo': row[1],
+            'razon': row[2],
+            'domicilio': row[3] if len(row) > 3 else None,
+            'codpos': row[4] if len(row) > 4 else None,
+            'poblacion': row[5] if len(row) > 5 else None,
+            'provincia': row[6] if len(row) > 6 else None,
+            'pais': row[7] if len(row) > 7 else None
+        }
+
     @staticmethod
     def get_all(empresa_id=None):
         """
@@ -33,10 +48,7 @@ class ClienteModel:
         conn = Database.get_connection()
         cursor = conn.cursor()
 
-        query = """
-            SELECT empresa, codigo, razon
-            FROM view_externos_clientes
-        """
+        query = f"SELECT {ClienteModel.COLUMNS} FROM view_externos_clientes"
         params = []
 
         if empresa_id:
@@ -46,15 +58,7 @@ class ClienteModel:
         query += " ORDER BY razon"
 
         cursor.execute(query, params)
-
-        clientes = []
-        for row in cursor.fetchall():
-            clientes.append({
-                'empresa': row[0],
-                'codigo': row[1],
-                'razon': row[2]
-            })
-
+        clientes = [ClienteModel._row_to_dict(row) for row in cursor.fetchall()]
         conn.close()
         return clientes
 
@@ -73,11 +77,7 @@ class ClienteModel:
         conn = Database.get_connection()
         cursor = conn.cursor()
 
-        query = """
-            SELECT empresa, codigo, razon
-            FROM view_externos_clientes
-            WHERE codigo = ?
-        """
+        query = f"SELECT {ClienteModel.COLUMNS} FROM view_externos_clientes WHERE codigo = ?"
         params = [codigo]
 
         if empresa_id:
@@ -86,15 +86,7 @@ class ClienteModel:
 
         cursor.execute(query, params)
         row = cursor.fetchone()
-
-        cliente = None
-        if row:
-            cliente = {
-                'empresa': row[0],
-                'codigo': row[1],
-                'razon': row[2]
-            }
-
+        cliente = ClienteModel._row_to_dict(row) if row else None
         conn.close()
         return cliente
 
@@ -112,11 +104,7 @@ class ClienteModel:
         conn = Database.get_connection()
         cursor = conn.cursor()
 
-        query = """
-            SELECT empresa, codigo, razon
-            FROM view_externos_clientes
-            WHERE 1=1
-        """
+        query = f"SELECT {ClienteModel.COLUMNS} FROM view_externos_clientes WHERE 1=1"
         params = []
 
         if filtros.get('empresa'):
@@ -130,14 +118,6 @@ class ClienteModel:
         query += " ORDER BY razon"
 
         cursor.execute(query, params)
-
-        clientes = []
-        for row in cursor.fetchall():
-            clientes.append({
-                'empresa': row[0],
-                'codigo': row[1],
-                'razon': row[2]
-            })
-
+        clientes = [ClienteModel._row_to_dict(row) for row in cursor.fetchall()]
         conn.close()
         return clientes

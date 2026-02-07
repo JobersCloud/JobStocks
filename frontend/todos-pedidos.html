@@ -45,7 +45,7 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.19.0">
+    <link rel="stylesheet" href="css/styles.css?v=1.22.9">
 </head>
 <body>
     <div class="app-layout">
@@ -92,7 +92,6 @@
                             <span data-i18n="menu.contextInfo">Info de Contexto</span>
                         </a>
                         <div class="menu-divider"></div>
-                        <div class="menu-section-title" data-i18n="menu.appearance">Apariencia</div>
                         <a class="menu-item" onclick="toggleTheme()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -345,7 +344,21 @@
                         </div>
                         <div class="form-group">
                             <label data-i18n="orders.filterClient">Cliente</label>
-                            <input type="text" id="filter-cliente" placeholder="Buscar cliente...">
+                            <div class="client-search-container">
+                                <div class="client-search-input-wrapper" id="client-search-wrapper-pedidos">
+                                    <input type="text" id="client-search-pedidos" placeholder="Buscar cliente..." autocomplete="off">
+                                    <span class="client-search-icon">🔍</span>
+                                </div>
+                                <div class="client-suggestions" id="client-suggestions-pedidos"></div>
+                                <div class="client-selected" id="client-selected-pedidos" style="display: none;">
+                                    <div class="client-selected-info">
+                                        <span class="client-selected-code" id="selected-client-code-pedidos"></span>
+                                        <span class="client-selected-name" id="selected-client-name-pedidos"></span>
+                                    </div>
+                                    <button class="client-clear-btn" onclick="clearClientSelectionPedidos()" type="button">&times;</button>
+                                </div>
+                            </div>
+                            <input type="hidden" id="filter-cliente" value="">
                         </div>
                     </div>
                     <div class="btn-icon-group">
@@ -403,9 +416,9 @@
 
     <script src="js/i18n/i18n.js?v=20260128"></script>
     <script src="js/sidebar.js?v=20260143"></script>
-    <script src="js/grid-filters.js?v=20260206"></script>
-    <script src="js/data-grid.js?v=20260206"></script>
-    <script src="js/page-common.js?v=20260206"></script>
+    <script src="js/grid-filters.js?v=20260207"></script>
+    <script src="js/data-grid.js?v=20260208a"></script>
+    <script src="js/page-common.js?v=20260207"></script>
 
     <script>
         // ==================== PAGE: TODOS LOS PEDIDOS (Admin) ====================
@@ -421,12 +434,13 @@
             await I18n.init();
             document.getElementById('lang-selector').value = I18n.currentLang;
 
-            // Rellenar selector de anos
+            // Rellenar selector de anos (año actual por defecto)
             const selectAnyo = document.getElementById('filter-anyo');
             const currentYear = new Date().getFullYear();
             selectAnyo.innerHTML = `<option value="" data-i18n="orders.allYears">Todos</option>`;
             for (let y = currentYear; y >= currentYear - 5; y--) {
-                selectAnyo.innerHTML += `<option value="${y}">${y}</option>`;
+                const selected = y === currentYear ? ' selected' : '';
+                selectAnyo.innerHTML += `<option value="${y}"${selected}>${y}</option>`;
             }
 
             await PageCommon.checkAuth('administrador');
@@ -450,16 +464,25 @@
                         case 'fecha': return PageCommon.formatDate(item.fecha);
                         case 'cliente_nombre': return item.cliente_nombre || item.cliente;
                         case 'total': return `${PageCommon.formatCurrency(item.total)} ${item.divisa || 'EUR'}`;
-                        case '_actions': return `
+                        case '_actions': {
+                            const codSafe = String(item.cliente || '').replace(/'/g, "\\'");
+                            const nomSafe = String(item.cliente_nombre || item.cliente || '').replace(/'/g, "\\'");
+                            return `
                             <div class="action-buttons btn-icon-group">
                                 <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewOrderDetails(${item.empresa}, ${item.anyo}, ${item.pedido})" title="${t('orders.viewDetails')}">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </button>
+                                <button class="btn-icon btn-icon-ghost btn-icon-sm" onclick="showClientMap('${codSafe}','${nomSafe}')" title="${t('orders.viewLocation') || 'Ver ubicación'}">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                </button>
                             </div>`;
+                        }
                         default: return null;
                     }
                 },
                 renderCard(item) {
+                    const codSafe = String(item.cliente || '').replace(/'/g, "\\'");
+                    const nomSafe = String(item.cliente_nombre || item.cliente || '').replace(/'/g, "\\'");
                     return `
                         <div class="proposal-card">
                             <div class="proposal-card-header">
@@ -477,6 +500,9 @@
                                 <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewOrderDetails(${item.empresa}, ${item.anyo}, ${item.pedido})" title="${t('orders.viewDetails')}">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </button>
+                                <button class="btn-icon btn-icon-ghost btn-icon-sm" onclick="showClientMap('${codSafe}','${nomSafe}')" title="${t('orders.viewLocation') || 'Ver ubicación'}">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                </button>
                             </div>
                         </div>`;
                 },
@@ -484,14 +510,80 @@
                 storageKey: 'filtrosGuardados_pedidos',
                 emptyIcon: '📦',
                 emptyText: t('orders.noOrdersAdmin') || 'No hay pedidos',
-                loadingText: t('orders.loading') || 'Cargando pedidos...'
+                loadingText: t('orders.loading') || 'Cargando pedidos...',
+                onPageChange: (page) => loadOrders(page)
             });
 
+            initClientAutocompletePedidos();
             await loadOrders();
         });
 
+        // ==================== AYUDA CLIENTES ====================
+        let clientSearchTimeout = null;
+
+        function initClientAutocompletePedidos() {
+            const input = document.getElementById('client-search-pedidos');
+            if (!input) return;
+            input.addEventListener('input', function() {
+                clearTimeout(clientSearchTimeout);
+                const query = this.value.trim();
+                if (query.length < 2) {
+                    document.getElementById('client-suggestions-pedidos').innerHTML = '';
+                    return;
+                }
+                clientSearchTimeout = setTimeout(() => searchClientsPedidos(query), 300);
+            });
+            // Cerrar sugerencias al hacer clic fuera
+            document.addEventListener('click', function(e) {
+                const container = document.querySelector('#client-search-wrapper-pedidos')?.closest('.client-search-container');
+                if (container && !container.contains(e.target)) {
+                    document.getElementById('client-suggestions-pedidos').innerHTML = '';
+                }
+            });
+        }
+
+        async function searchClientsPedidos(query) {
+            const suggestionsEl = document.getElementById('client-suggestions-pedidos');
+            const connection = localStorage.getItem('connection') || '1';
+            try {
+                const response = await fetch(`${API_URL}/api/clientes/search?empresa=${connection}&razon=${encodeURIComponent(query)}`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Error');
+                const clientes = await response.json();
+                if (clientes.length === 0) {
+                    suggestionsEl.innerHTML = '<div class="client-suggestions-empty">Sin resultados</div>';
+                    return;
+                }
+                suggestionsEl.innerHTML = clientes.slice(0, 15).map(c => `
+                    <div class="client-suggestion" onclick="selectClientPedidos('${c.codigo}', '${(c.razon || '').replace(/'/g, "\\'")}')">
+                        <span class="client-suggestion-code">${c.codigo}</span>
+                        <span class="client-suggestion-name">${c.razon}</span>
+                    </div>
+                `).join('');
+            } catch (e) {
+                suggestionsEl.innerHTML = '';
+            }
+        }
+
+        function selectClientPedidos(codigo, razon) {
+            document.getElementById('filter-cliente').value = codigo;
+            document.getElementById('selected-client-code-pedidos').textContent = codigo;
+            document.getElementById('selected-client-name-pedidos').textContent = razon;
+            document.getElementById('client-selected-pedidos').style.display = 'flex';
+            document.getElementById('client-search-wrapper-pedidos').style.display = 'none';
+            document.getElementById('client-suggestions-pedidos').innerHTML = '';
+        }
+        window.selectClientPedidos = selectClientPedidos;
+
+        function clearClientSelectionPedidos() {
+            document.getElementById('filter-cliente').value = '';
+            document.getElementById('client-selected-pedidos').style.display = 'none';
+            document.getElementById('client-search-wrapper-pedidos').style.display = '';
+            document.getElementById('client-search-pedidos').value = '';
+        }
+        window.clearClientSelectionPedidos = clearClientSelectionPedidos;
+
         // ==================== CARGAR PEDIDOS ====================
-        async function loadOrders() {
+        async function loadOrders(page = 1) {
             grid.showLoading();
             try {
                 const anyo = document.getElementById('filter-anyo').value;
@@ -499,7 +591,7 @@
                 const fechaHasta = document.getElementById('filter-fecha-hasta').value;
                 const cliente = document.getElementById('filter-cliente').value.trim();
 
-                let url = `${API_URL}/api/pedidos?`;
+                let url = `${API_URL}/api/pedidos?page=${page}&page_size=50&`;
                 if (anyo) url += `anyo=${anyo}&`;
                 if (fechaDesde) url += `fecha_desde=${fechaDesde}&`;
                 if (fechaHasta) url += `fecha_hasta=${fechaHasta}&`;
@@ -511,7 +603,12 @@
                 if (!response.ok) throw new Error(data.error || 'Error loading orders');
 
                 allOrders = data.pedidos || [];
-                grid.setData(allOrders);
+                grid.setPaginatedData(allOrders, {
+                    page: data.page,
+                    page_size: data.page_size,
+                    total: data.total,
+                    total_pages: data.total_pages
+                });
             } catch (error) {
                 console.error('Error loading orders:', error);
                 grid.setData([]);
@@ -524,7 +621,7 @@
             document.getElementById('filter-anyo').value = '';
             document.getElementById('filter-fecha-desde').value = '';
             document.getElementById('filter-fecha-hasta').value = '';
-            document.getElementById('filter-cliente').value = '';
+            clearClientSelectionPedidos();
             loadOrders();
         }
 
@@ -609,6 +706,78 @@
             document.getElementById('order-detail-modal').style.display = 'none';
         }
 
+        // ==================== MAPA DE CLIENTE ====================
+        let _mapComponent = null;
+        let _leafletLoading = null;
+
+        function _loadLeaflet() {
+            if (typeof L !== 'undefined' && typeof MapComponent !== 'undefined') return Promise.resolve();
+            if (_leafletLoading) return _leafletLoading;
+            _leafletLoading = new Promise((resolve, reject) => {
+                // CSS
+                if (!document.querySelector('link[href*="leaflet.css"]')) {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+                    document.head.appendChild(link);
+                }
+
+                function loadScript(src) {
+                    return new Promise((res, rej) => {
+                        const s = document.createElement('script');
+                        s.src = src;
+                        s.onload = res;
+                        s.onerror = () => rej(new Error('No se pudo cargar: ' + src));
+                        document.head.appendChild(s);
+                    });
+                }
+
+                // JS Leaflet, then MapComponent
+                const leafletSrc = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+                const p = typeof L !== 'undefined'
+                    ? Promise.resolve()
+                    : loadScript(leafletSrc);
+
+                p.then(() => loadScript('js/map-component.js?v=20260207b'))
+                 .then(resolve)
+                 .catch(err => {
+                     _leafletLoading = null; // Reset so next click retries
+                     reject(err);
+                 });
+            });
+            return _leafletLoading;
+        }
+
+        async function showClientMap(clienteCodigo, clienteNombre) {
+            try {
+                await _loadLeaflet();
+            } catch (e) {
+                console.error('Error loading map:', e);
+                alert('Error cargando el componente de mapa: ' + (e.message || 'Comprueba la conexion a internet.'));
+                return;
+            }
+            if (!_mapComponent) _mapComponent = new MapComponent();
+
+            const connection = localStorage.getItem('connection') || '1';
+            try {
+                const response = await fetch(`${API_URL}/api/clientes/${encodeURIComponent(clienteCodigo)}?empresa=${connection}`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Error');
+                const cliente = await response.json();
+
+                const parts = [cliente.domicilio, cliente.codpos, cliente.poblacion, cliente.provincia, cliente.pais].filter(p => p && p.trim());
+                if (parts.length === 0) {
+                    alert(t('orders.noAddress') || 'No hay dirección disponible para este cliente');
+                    return;
+                }
+                const address = parts.join(', ');
+                _mapComponent.showModal(address, clienteNombre || cliente.razon || clienteCodigo);
+            } catch (e) {
+                console.error('Error loading client for map:', e);
+                alert('Error al obtener datos del cliente');
+            }
+        }
+        window.showClientMap = showClientMap;
+
         // ==================== EVENT LISTENERS ====================
         document.getElementById('order-detail-modal').addEventListener('click', function(e) {
             if (e.target === this) closeOrderModal();
@@ -616,6 +785,7 @@
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
+                if (_mapComponent) _mapComponent.hideModal();
                 closeOrderModal();
                 hideChangePasswordModal();
                 const gf = grid?.getFilters();

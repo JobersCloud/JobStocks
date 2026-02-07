@@ -462,6 +462,52 @@ def get_thumbnails_batch():
         return jsonify({'error': str(e)}), 500
 
 
+@stock_bp.route('/api/stocks/<string:codigo>/view', methods=['POST'])
+@api_key_or_login_required
+def track_article_view(codigo):
+    """
+    Registrar vista de un articulo (para estadisticas de mas vistos)
+    ---
+    tags:
+      - Stocks
+    security:
+      - apiKeyAuth: []
+      - cookieAuth: []
+    parameters:
+      - name: codigo
+        in: path
+        type: string
+        required: true
+        description: Codigo del producto
+    responses:
+      200:
+        description: Vista registrada
+      500:
+        description: Error del servidor
+    """
+    try:
+        from models.audit_model import AuditModel, AuditAction
+        empresa_id = session.get('empresa_id', '1')
+        user_id = current_user.id if current_user and current_user.is_authenticated else None
+        username = current_user.username if current_user and current_user.is_authenticated else None
+        ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+        user_agent = request.headers.get('User-Agent', '')
+
+        AuditModel.log(
+            accion=AuditAction.ARTICLE_VIEW,
+            user_id=user_id,
+            username=username,
+            empresa_id=empresa_id,
+            recurso='articulo',
+            recurso_id=codigo,
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+        return jsonify({'ok': True}), 200
+    except Exception as e:
+        return jsonify({'ok': False}), 200
+
+
 def get_empresa_id():
     """Obtiene el empresa_id del contexto actual."""
     if hasattr(current_user, 'empresa_id') and current_user.empresa_id:

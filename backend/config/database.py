@@ -78,8 +78,9 @@ class Database:
                     f"PWD={db_config['dbpass']};"
                     f"TrustServerCertificate=yes;"
                     f"Encrypt=yes;"
+                    f"Connection Timeout=10;"
                 )
-                return pyodbc.connect(conn_str)
+                return pyodbc.connect(conn_str, timeout=10)
 
         # Si no hay datos en sesión, obtener empresa_cli_id
         if empresa_cli_id is None:
@@ -111,9 +112,10 @@ class Database:
             f"PWD={empresa['dbpass']};"
             f"TrustServerCertificate=yes;"
             f"Encrypt=yes;"
+            f"Connection Timeout=10;"
         )
 
-        return pyodbc.connect(conn_str)
+        return pyodbc.connect(conn_str, timeout=10)
 
     @staticmethod
     def get_empresa_erp(empresa_cli_id=None):

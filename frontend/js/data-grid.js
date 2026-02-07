@@ -36,7 +36,8 @@
  *       tableClass: 'proposals-table',
  *       emptyIcon: '📦',
  *       emptyText: 'No hay pedidos',
- *       loadingText: 'Cargando pedidos...'
+ *       loadingText: 'Cargando pedidos...',
+ *       onPageChange: (page) => loadOrders(page)  // Server-side pagination callback
  *   });
  */
 class DataGrid {
@@ -53,6 +54,7 @@ class DataGrid {
         this.loadingText = config.loadingText || 'Cargando...';
         this.storageKey = config.storageKey || 'filtrosGuardados';
         this.onSort = config.onSort || null;
+        this.onPageChange = config.onPageChange || null;
 
         // Sort state
         this.ordenActual = {
@@ -64,16 +66,62 @@ class DataGrid {
         this._allData = [];
         this._filteredData = [];
 
+        // Server-side pagination metadata
+        this._paginationMeta = null;
+
         // DOM refs (se crean en _buildDOM)
         this._refs = {};
 
         // GridFilters instance
         this._gridFilters = null;
 
+        // Ensure host element participates in flex layout
+        this.el.style.flex = '1';
+        this.el.style.minHeight = '0';
+        this.el.style.display = 'flex';
+        this.el.style.flexDirection = 'column';
+
+        // Lock the parent .main-content-area to viewport height
+        this._lockParentHeight();
+
         // Build
         this._buildDOM();
         this._initGridFilters();
         this._initEventListeners();
+        this._initColumnResize();
+
+        // Resize handler for viewport fitting
+        this._resizeHandler = () => this._fitToViewport();
+        window.addEventListener('resize', this._resizeHandler);
+    }
+
+    // ==================== LAYOUT ====================
+
+    _lockParentHeight() {
+        const mca = this.el.closest('.main-content-area');
+        if (mca) {
+            mca.style.height = '100vh';
+            mca.style.minHeight = 'unset';
+            mca.style.overflow = 'hidden';
+            mca.style.overflowY = 'hidden';
+        }
+    }
+
+    _fitToViewport() {
+        // Directly calculate and set max-height on scroll container
+        // so thead stays sticky at top, footer stays fixed at bottom
+        const sc = this._refs?.tableWrapper?.querySelector('.table-scroll-container');
+        if (!sc || this._refs.tableWrapper.style.display === 'none') return;
+
+        const scRect = sc.getBoundingClientRect();
+        const footerH = this._refs.footer?.offsetHeight || 40;
+        const padding = 25;
+        const available = window.innerHeight - scRect.top - footerH - padding;
+
+        if (available > 100) {
+            sc.style.maxHeight = available + 'px';
+            sc.style.overflowY = 'auto';
+        }
     }
 
     // ==================== DOM GENERATION ====================
@@ -87,9 +135,12 @@ class DataGrid {
             const sortable = col.sortable !== false;
             const filterable = col.filterable !== false;
             const alignClass = col.align === 'right' ? ' class="text-right"' : col.align === 'center' ? ' class="text-center"' : '';
+            const widthStyle = col.width ? ` style="width:${col.width};max-width:${col.width};"` : '';
+
+            const resizeHandle = '<div class="dg-resize-handle"></div>';
 
             if (!sortable && !filterable) {
-                return `<th${alignClass}>${col.label}</th>`;
+                return `<th${alignClass}${widthStyle} data-column="${col.key}">${col.label}${resizeHandle}</th>`;
             }
 
             let inner = '';
@@ -102,7 +153,7 @@ class DataGrid {
                 inner += `<button class="column-filter-btn" data-columna="${col.key}" title="Filtrar">${filterIconSVG}</button>`;
             }
 
-            return `<th data-column="${col.key}"${alignClass ? ' ' + alignClass.trim() : ''}><div class="column-header-wrapper">${inner}</div></th>`;
+            return `<th data-column="${col.key}"${alignClass ? ' ' + alignClass.trim() : ''}${widthStyle}><div class="column-header-wrapper">${inner}</div>${resizeHandle}</th>`;
         }).join('');
 
         this.el.innerHTML = `
@@ -187,6 +238,35 @@ class DataGrid {
                 this._handleSort(column);
             });
         }
+    }
+
+    // ==================== COLUMN RESIZE ====================
+
+    _initColumnResize() {
+        const handles = this.el.querySelectorAll('.dg-resize-handle');
+        handles.forEach(handle => {
+            handle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const th = handle.parentElement;
+                const startX = e.pageX;
+                const startWidth = th.offsetWidth;
+
+                const onMouseMove = (ev) => {
+                    const newWidth = Math.max(40, startWidth + (ev.pageX - startX));
+                    th.style.width = newWidth + 'px';
+                    th.style.minWidth = newWidth + 'px';
+                };
+
+                const onMouseUp = () => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                };
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+        });
     }
 
     // ==================== SORTING ====================
@@ -313,7 +393,7 @@ class DataGrid {
         // Has data
         this._refs.empty.style.display = 'none';
         this._refs.noResults.style.display = 'none';
-        this._refs.tableWrapper.style.display = 'block';
+        this._refs.tableWrapper.style.display = 'flex';
 
         // Render table rows
         this._refs.tbody.innerHTML = data.map(item => {
@@ -326,14 +406,27 @@ class DataGrid {
             return `<tr>${cells}</tr>`;
         }).join('');
 
-        // Render cards
-        this._refs.cards.innerHTML = data.map(item => this.renderCard(item)).join('');
+        // Render cards only on mobile viewport (cards are hidden on desktop via CSS)
+        if (window.innerWidth <= 768) {
+            this._refs.cards.innerHTML = data.map(item => this.renderCard(item)).join('');
+        } else {
+            this._refs.cards.innerHTML = '';
+        }
 
         // Update footer
         this._updateFooter(data.length);
+
+        // Adjust scroll container height to fit viewport
+        requestAnimationFrame(() => this._fitToViewport());
     }
 
     _updateFooter(count) {
+        // Server-side pagination mode
+        if (this._paginationMeta) {
+            this._renderPaginationFooter(count);
+            return;
+        }
+        // Client-side mode
         const total = this._allData.length;
         const hasFilters = this._gridFilters && this._gridFilters.filtrosColumna.length > 0;
         if (hasFilters && count !== total) {
@@ -343,22 +436,72 @@ class DataGrid {
         }
     }
 
+    _renderPaginationFooter(filteredCount) {
+        const meta = this._paginationMeta;
+        if (!meta) return;
+
+        const { page, total_pages, total, page_size } = meta;
+        const start = Math.min((page - 1) * page_size + 1, total);
+        const end = Math.min(page * page_size, total);
+
+        const hasFilters = this._gridFilters && this._gridFilters.filtrosColumna.length > 0;
+        let filterInfo = '';
+        if (hasFilters && filteredCount < this._allData.length) {
+            filterInfo = ` | ${filteredCount} filtrados en pagina`;
+        }
+
+        this._refs.footer.innerHTML = `
+            <div class="dg-pagination">
+                <div class="dg-pagination-info">
+                    ${start}-${end} de ${total} registros${filterInfo}
+                </div>
+                <div class="dg-pagination-controls">
+                    <button class="dg-page-btn" data-page="1" ${page <= 1 ? 'disabled' : ''} title="Primera">&laquo;</button>
+                    <button class="dg-page-btn" data-page="${page - 1}" ${page <= 1 ? 'disabled' : ''} title="Anterior">&lsaquo;</button>
+                    <span class="dg-page-current">Pag. ${page} / ${total_pages}</span>
+                    <button class="dg-page-btn" data-page="${page + 1}" ${page >= total_pages ? 'disabled' : ''} title="Siguiente">&rsaquo;</button>
+                    <button class="dg-page-btn" data-page="${total_pages}" ${page >= total_pages ? 'disabled' : ''} title="Ultima">&raquo;</button>
+                </div>
+            </div>
+        `;
+
+        // Attach click handlers for pagination buttons
+        this._refs.footer.querySelectorAll('.dg-page-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const newPage = parseInt(btn.dataset.page);
+                if (newPage >= 1 && newPage <= total_pages && newPage !== page && this.onPageChange) {
+                    this.onPageChange(newPage);
+                }
+            });
+        });
+    }
+
     _escapeHtml(value) {
         if (value === null || value === undefined) return '';
-        const str = String(value);
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
+        return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     // ==================== PUBLIC API ====================
 
     /**
-     * Load data into the grid. Applies filters and sort, then renders.
+     * Load data into the grid (client-side mode). Applies filters and sort, then renders.
      * @param {Array} data - Array of data objects
      */
     setData(data) {
         this._allData = data || [];
+        this._paginationMeta = null;
+        this._applyFiltersAndSort();
+        this._updateSortIcons();
+    }
+
+    /**
+     * Load paginated data from server. Renders data with pagination controls.
+     * @param {Array} data - Array of data objects for current page
+     * @param {Object} meta - Pagination metadata: { page, page_size, total, total_pages }
+     */
+    setPaginatedData(data, meta) {
+        this._allData = data || [];
+        this._paginationMeta = meta || null;
         this._applyFiltersAndSort();
         this._updateSortIcons();
     }
@@ -407,6 +550,9 @@ class DataGrid {
      * Cleans up event listeners and DOM.
      */
     destroy() {
+        if (this._resizeHandler) {
+            window.removeEventListener('resize', this._resizeHandler);
+        }
         if (this._gridFilters) {
             this._gridFilters.cerrarPopupFiltro();
         }

@@ -17,98 +17,124 @@
 # Descripcion: Modelo para consultar pedidos de venta del ERP
 # Vistas: view_externos_venped, view_externos_venliped
 # ============================================
+import math
+import time
+import logging
 from config.database import Database
+
+logger = logging.getLogger(__name__)
 
 
 class PedidoModel:
     @staticmethod
-    def get_by_user(cliente_id, empresa_id=None, anyo=None, fecha_desde=None, fecha_hasta=None):
+    def get_by_user(cliente_id, empresa_id=None, anyo=None, fecha_desde=None, fecha_hasta=None, page=1, page_size=50):
         """
-        Obtiene todos los pedidos de un cliente.
-
-        Args:
-            cliente_id: Codigo del cliente en el ERP
-            empresa_id: Filtrar por empresa (opcional)
-            anyo: Filtrar por año (opcional)
-            fecha_desde: Filtrar desde fecha (opcional)
-            fecha_hasta: Filtrar hasta fecha (opcional)
+        Obtiene pedidos de un cliente con paginacion servidor.
 
         Returns:
-            list: Lista de pedidos (solo cabecera)
+            dict: { pedidos, total, page, page_size, total_pages }
         """
+        t0 = time.time()
         conn = Database.get_connection()
+        t1 = time.time()
+        logger.warning(f'[PERF-MODEL] get_connection: {t1-t0:.3f}s')
+
         cursor = conn.cursor()
 
-        query = """
-            SELECT empresa, anyo, pedido, fecha, fecha_entrega, cliente,
-                   cliente_nombre, pedido_cliente, serie, bruto, importe_dto,
-                   total, peso, divisa, usuario, fecha_alta
-            FROM view_externos_venped
-            WHERE cliente = ?
-        """
+        # Build WHERE
+        where_parts = ["cliente = ?"]
         params = [cliente_id]
 
         if empresa_id:
-            query += " AND empresa = ?"
+            where_parts.append("empresa = ?")
             params.append(empresa_id)
-
         if anyo:
-            query += " AND anyo = ?"
+            where_parts.append("anyo = ?")
             params.append(anyo)
-
         if fecha_desde:
-            query += " AND fecha >= ?"
+            where_parts.append("fecha >= ?")
             params.append(fecha_desde)
-
         if fecha_hasta:
-            query += " AND fecha <= ?"
+            where_parts.append("fecha <= ?")
             params.append(fecha_hasta)
 
-        query += " ORDER BY fecha DESC, pedido DESC"
+        where = " AND ".join(where_parts)
 
-        cursor.execute(query, params)
+        # 1. Count total
+        cursor.execute(f"SELECT COUNT(*) FROM view_externos_venped WHERE {where}", params)
+        total = cursor.fetchone()[0]
+        t2 = time.time()
+        logger.warning(f'[PERF-MODEL] COUNT: {t2-t1:.3f}s | total={total}')
+
+        # 2. Paginated data with ROW_NUMBER (SQL Server 2008 compatible)
+        offset_start = (page - 1) * page_size + 1
+        offset_end = page * page_size
+
+        data_query = f"""
+            SELECT * FROM (
+                SELECT ROW_NUMBER() OVER (ORDER BY fecha DESC, pedido DESC) AS rn,
+                       empresa, anyo, pedido, fecha, fecha_entrega, cliente,
+                       cliente_nombre, pedido_cliente, serie, bruto, importe_dto,
+                       total, peso, divisa, usuario, fecha_alta
+                FROM view_externos_venped
+                WHERE {where}
+            ) sub
+            WHERE rn BETWEEN ? AND ?
+        """
+        data_params = params + [offset_start, offset_end]
+
+        t3 = time.time()
+        cursor.execute(data_query, data_params)
+        t4 = time.time()
+        logger.warning(f'[PERF-MODEL] SQL execute: {t4-t3:.3f}s')
+
+        rows = cursor.fetchall()
+        t5 = time.time()
+        logger.warning(f'[PERF-MODEL] fetchall: {t5-t4:.3f}s | rows={len(rows)}')
 
         pedidos = []
-        for row in cursor.fetchall():
+        for row in rows:
             pedidos.append({
-                'empresa': row[0],
-                'anyo': row[1],
-                'pedido': row[2],
-                'fecha': row[3].isoformat() if row[3] else None,
-                'fecha_entrega': row[4].isoformat() if row[4] else None,
-                'cliente': row[5],
-                'cliente_nombre': row[6],
-                'pedido_cliente': row[7],
-                'serie': row[8],
-                'bruto': float(row[9]) if row[9] else 0,
-                'importe_dto': float(row[10]) if row[10] else 0,
-                'total': float(row[11]) if row[11] else 0,
-                'peso': float(row[12]) if row[12] else 0,
-                'divisa': row[13],
-                'usuario': row[14],
-                'fecha_alta': row[15].isoformat() if row[15] else None
+                'empresa': row[1],
+                'anyo': row[2],
+                'pedido': row[3],
+                'fecha': row[4].isoformat() if row[4] else None,
+                'fecha_entrega': row[5].isoformat() if row[5] else None,
+                'cliente': row[6],
+                'cliente_nombre': row[7],
+                'pedido_cliente': row[8],
+                'serie': row[9],
+                'bruto': float(row[10]) if row[10] else 0,
+                'importe_dto': float(row[11]) if row[11] else 0,
+                'total': float(row[12]) if row[12] else 0,
+                'peso': float(row[13]) if row[13] else 0,
+                'divisa': row[14],
+                'usuario': row[15],
+                'fecha_alta': row[16].isoformat() if row[16] else None
             })
 
+        t6 = time.time()
+        logger.warning(f'[PERF-MODEL] Python mapping: {t6-t5:.3f}s | TOTAL model: {t6-t0:.3f}s')
+
         conn.close()
-        return pedidos
+
+        total_pages = math.ceil(total / page_size) if total > 0 else 1
+        return {
+            'pedidos': pedidos,
+            'total': total,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': total_pages
+        }
 
     @staticmethod
     def get_by_id(empresa, anyo, pedido):
         """
         Obtiene un pedido por su clave primaria compuesta con sus lineas.
-
-        Args:
-            empresa: Codigo de empresa
-            anyo: Año del pedido
-            pedido: Numero de pedido
-
-        Returns:
-            dict: Pedido con sus lineas o None si no existe
         """
         conn = Database.get_connection()
         cursor = conn.cursor()
 
-        # Obtener cabecera
         cursor.execute("""
             SELECT empresa, anyo, pedido, fecha, fecha_entrega, cliente,
                    cliente_nombre, pedido_cliente, serie, bruto, importe_dto,
@@ -142,7 +168,6 @@ class PedidoModel:
             'lineas': []
         }
 
-        # Obtener lineas
         cursor.execute("""
             SELECT linea, articulo, descripcion, formato, calidad, tono,
                    calibre, cantidad, precio, importe, pallets, cajas,
@@ -175,93 +200,114 @@ class PedidoModel:
         return pedido_data
 
     @staticmethod
-    def get_all(empresa_id=None, anyo=None, fecha_desde=None, fecha_hasta=None, cliente=None):
+    def get_all(empresa_id=None, anyo=None, fecha_desde=None, fecha_hasta=None, cliente=None, page=1, page_size=50):
         """
-        Obtiene todos los pedidos (para administradores).
-
-        Args:
-            empresa_id: Filtrar por empresa (opcional)
-            anyo: Filtrar por año (opcional)
-            fecha_desde: Filtrar desde fecha (opcional)
-            fecha_hasta: Filtrar hasta fecha (opcional)
-            cliente: Filtrar por codigo de cliente (opcional)
+        Obtiene todos los pedidos con paginacion servidor (para administradores).
 
         Returns:
-            list: Lista de pedidos con info del cliente
+            dict: { pedidos, total, page, page_size, total_pages }
         """
+        t0 = time.time()
         conn = Database.get_connection()
+        t1 = time.time()
+        logger.warning(f'[PERF-MODEL] get_connection: {t1-t0:.3f}s')
+
         cursor = conn.cursor()
 
-        query = """
-            SELECT empresa, anyo, pedido, fecha, fecha_entrega, cliente,
-                   cliente_nombre, pedido_cliente, serie, bruto, importe_dto,
-                   total, peso, divisa, usuario, fecha_alta
-            FROM view_externos_venped
-            WHERE 1=1
-        """
+        # Build WHERE
+        where_parts = ["1=1"]
         params = []
 
         if empresa_id:
-            query += " AND empresa = ?"
+            where_parts.append("empresa = ?")
             params.append(empresa_id)
-
         if anyo:
-            query += " AND anyo = ?"
+            where_parts.append("anyo = ?")
             params.append(anyo)
-
         if fecha_desde:
-            query += " AND fecha >= ?"
+            where_parts.append("fecha >= ?")
             params.append(fecha_desde)
-
         if fecha_hasta:
-            query += " AND fecha <= ?"
+            where_parts.append("fecha <= ?")
             params.append(fecha_hasta)
-
         if cliente:
-            query += " AND (cliente_nombre LIKE ? OR cliente LIKE ?)"
+            where_parts.append("(cliente_nombre LIKE ? OR cliente LIKE ?)")
             params.append(f'%{cliente}%')
             params.append(f'%{cliente}%')
 
-        query += " ORDER BY fecha DESC, pedido DESC"
+        where = " AND ".join(where_parts)
 
-        cursor.execute(query, params)
+        # 1. Count total
+        cursor.execute(f"SELECT COUNT(*) FROM view_externos_venped WHERE {where}", params)
+        total = cursor.fetchone()[0]
+        t2 = time.time()
+        logger.warning(f'[PERF-MODEL] COUNT: {t2-t1:.3f}s | total={total}')
+
+        # 2. Paginated data with ROW_NUMBER (SQL Server 2008 compatible)
+        offset_start = (page - 1) * page_size + 1
+        offset_end = page * page_size
+
+        data_query = f"""
+            SELECT * FROM (
+                SELECT ROW_NUMBER() OVER (ORDER BY fecha DESC, pedido DESC) AS rn,
+                       empresa, anyo, pedido, fecha, fecha_entrega, cliente,
+                       cliente_nombre, pedido_cliente, serie, bruto, importe_dto,
+                       total, peso, divisa, usuario, fecha_alta
+                FROM view_externos_venped
+                WHERE {where}
+            ) sub
+            WHERE rn BETWEEN ? AND ?
+        """
+        data_params = params + [offset_start, offset_end]
+
+        t3 = time.time()
+        cursor.execute(data_query, data_params)
+        t4 = time.time()
+        logger.warning(f'[PERF-MODEL] SQL execute: {t4-t3:.3f}s')
+
+        rows = cursor.fetchall()
+        t5 = time.time()
+        logger.warning(f'[PERF-MODEL] fetchall: {t5-t4:.3f}s | rows={len(rows)}')
 
         pedidos = []
-        for row in cursor.fetchall():
+        for row in rows:
             pedidos.append({
-                'empresa': row[0],
-                'anyo': row[1],
-                'pedido': row[2],
-                'fecha': row[3].isoformat() if row[3] else None,
-                'fecha_entrega': row[4].isoformat() if row[4] else None,
-                'cliente': row[5],
-                'cliente_nombre': row[6],
-                'pedido_cliente': row[7],
-                'serie': row[8],
-                'bruto': float(row[9]) if row[9] else 0,
-                'importe_dto': float(row[10]) if row[10] else 0,
-                'total': float(row[11]) if row[11] else 0,
-                'peso': float(row[12]) if row[12] else 0,
-                'divisa': row[13],
-                'usuario': row[14],
-                'fecha_alta': row[15].isoformat() if row[15] else None
+                'empresa': row[1],
+                'anyo': row[2],
+                'pedido': row[3],
+                'fecha': row[4].isoformat() if row[4] else None,
+                'fecha_entrega': row[5].isoformat() if row[5] else None,
+                'cliente': row[6],
+                'cliente_nombre': row[7],
+                'pedido_cliente': row[8],
+                'serie': row[9],
+                'bruto': float(row[10]) if row[10] else 0,
+                'importe_dto': float(row[11]) if row[11] else 0,
+                'total': float(row[12]) if row[12] else 0,
+                'peso': float(row[13]) if row[13] else 0,
+                'divisa': row[14],
+                'usuario': row[15],
+                'fecha_alta': row[16].isoformat() if row[16] else None
             })
 
+        t6 = time.time()
+        logger.warning(f'[PERF-MODEL] Python mapping: {t6-t5:.3f}s | TOTAL model: {t6-t0:.3f}s')
+
         conn.close()
-        return pedidos
+
+        total_pages = math.ceil(total / page_size) if total > 0 else 1
+        return {
+            'pedidos': pedidos,
+            'total': total,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': total_pages
+        }
 
     @staticmethod
     def get_lineas(empresa, anyo, pedido):
         """
         Obtiene las lineas de un pedido.
-
-        Args:
-            empresa: Codigo de empresa
-            anyo: Año del pedido
-            pedido: Numero de pedido
-
-        Returns:
-            list: Lista de lineas del pedido
         """
         conn = Database.get_connection()
         cursor = conn.cursor()

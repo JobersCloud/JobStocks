@@ -127,6 +127,7 @@
   },
   "detail": {
     "title": "Détail du Stock",
+    "details": "Détails",
     "code": "Code",
     "ean13": "EAN-13",
     "description": "Description",
@@ -286,7 +287,9 @@
     "allYears": "Toutes",
     "allTitle": "Toutes les Commandes",
     "filterClient": "Client",
-    "noOrdersAdmin": "Aucune commande"
+    "noOrdersAdmin": "Aucune commande",
+    "noAddress": "Aucune adresse disponible pour ce client",
+    "viewLocation": "Voir l'emplacement"
   },
   "empresaLogo": {
     "title": "Logo d'Entreprise",
@@ -330,7 +333,11 @@
     "last7days": "7 jours",
     "last30days": "30 jours",
     "last90days": "90 jours",
-    "noData": "Aucune donnée"
+    "noData": "Aucune donnée",
+    "topViewedArticles": "Articles les Plus Vus",
+    "views": "Vues",
+    "uniqueUsers": "Utilisateurs",
+    "lastView": "Derniere Vue"
   },
   "roles": {
     "user": "Utilisateur",

@@ -242,14 +242,51 @@ class GridFilters {
             </div>
         `;
 
-        // Posicionar el popup debajo del icono
-        const rect = elemento.getBoundingClientRect();
+        // Posicionar el popup - primero añadir al DOM para medir
         popup.style.position = 'fixed';
-        popup.style.top = `${rect.bottom + 5}px`;
-        popup.style.left = `${Math.min(rect.left, window.innerWidth - 280)}px`;
         popup.style.zIndex = '1000';
-
+        popup.style.visibility = 'hidden';
         document.body.appendChild(popup);
+
+        const rect = elemento.getBoundingClientRect();
+        const popupRect = popup.getBoundingClientRect();
+        const viewportH = window.innerHeight;
+        const viewportW = window.innerWidth;
+        const popupW = Math.max(popupRect.width, 260);
+        const popupH = popupRect.height;
+
+        // Horizontal: no salir por la derecha
+        let left = rect.left;
+        if (left + popupW > viewportW - 10) {
+            left = viewportW - popupW - 10;
+        }
+        if (left < 10) left = 10;
+
+        // Vertical: si no cabe abajo, poner arriba
+        let top;
+        const spaceBelow = viewportH - rect.bottom - 10;
+        const spaceAbove = rect.top - 10;
+        if (spaceBelow >= popupH || spaceBelow >= spaceAbove) {
+            top = rect.bottom + 5;
+        } else {
+            top = rect.top - popupH - 5;
+        }
+
+        // Asegurar que no se salga por arriba ni por abajo
+        const maxH = viewportH - 20;
+        if (popupH > maxH) {
+            popup.style.maxHeight = maxH + 'px';
+            popup.style.overflowY = 'auto';
+            top = 10;
+        } else if (top < 10) {
+            top = 10;
+        } else if (top + popupH > viewportH - 10) {
+            top = viewportH - popupH - 10;
+        }
+
+        popup.style.top = `${top}px`;
+        popup.style.left = `${left}px`;
+        popup.style.visibility = 'visible';
         this.popupFiltroAbierto = popup;
 
         // Si tiene un filtro de rango existente, mostrar los inputs de rango
