@@ -45,7 +45,7 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.22.9">
+    <link rel="stylesheet" href="css/styles.css?v=1.22.17">
 </head>
 <body>
     <div class="app-layout">
@@ -380,7 +380,7 @@
     <script src="js/i18n/i18n.js?v=20260128"></script>
     <script src="js/sidebar.js?v=20260143"></script>
     <script src="js/grid-filters.js?v=20260207"></script>
-    <script src="js/data-grid.js?v=20260208a"></script>
+    <script src="js/data-grid.js?v=20260208b"></script>
     <script src="js/page-common.js?v=20260207"></script>
     <script>
         // ==================== PAGE: MIS PEDIDOS (User) ====================
@@ -413,7 +413,6 @@
                 columns: [
                     { key: 'pedido', label: '# Pedido', tipo: 'numero' },
                     { key: 'fecha', label: t('orders.date') || 'Fecha', tipo: 'texto' },
-                    { key: 'cliente_nombre', label: t('orders.client') || 'Cliente', tipo: 'texto' },
                     { key: 'total', label: t('orders.total') || 'Total', tipo: 'numero', align: 'right' },
                     { key: 'serie', label: 'Serie', tipo: 'texto' },
                     { key: 'peso', label: 'Peso', tipo: 'numero', align: 'right' },
@@ -423,7 +422,6 @@
                     switch (col.key) {
                         case 'pedido': return `<strong>${item.anyo}/${item.pedido}</strong>`;
                         case 'fecha': return PageCommon.formatDate(item.fecha);
-                        case 'cliente_nombre': return item.cliente_nombre || item.cliente;
                         case 'total': return `${PageCommon.formatCurrency(item.total)} ${item.divisa || 'EUR'}`;
                         case '_actions': return `
                             <div class="action-buttons btn-icon-group">
@@ -444,8 +442,12 @@
                             <div class="proposal-card-date">${PageCommon.formatDate(item.fecha)}</div>
                             <div class="proposal-card-info">
                                 <div class="proposal-card-info-item">
-                                    <label>${t('orders.client')}</label>
-                                    <span>${item.cliente_nombre || item.cliente}</span>
+                                    <label>Serie</label>
+                                    <span>${item.serie || '-'}</span>
+                                </div>
+                                <div class="proposal-card-info-item">
+                                    <label>Peso</label>
+                                    <span>${item.peso || '-'}</span>
                                 </div>
                             </div>
                             <div class="proposal-card-actions btn-icon-group" style="justify-content: center;">

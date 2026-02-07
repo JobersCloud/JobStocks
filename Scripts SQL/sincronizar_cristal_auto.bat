@@ -27,11 +27,10 @@ REM Crear carpetas si no existen
 if not exist "%DATOS%" mkdir "%DATOS%"
 if not exist "%LOGS%" mkdir "%LOGS%"
 
-REM Nombre del log con fecha y hora
+REM Nombre del log solo con fecha (1 fichero por dia, se sobreescribe en cada ejecucion)
 for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value') do set datetime=%%I
 set FECHA=%datetime:~0,4%-%datetime:~4,2%-%datetime:~6,2%
-set HORA=%datetime:~8,2%-%datetime:~10,2%-%datetime:~12,2%
-SET LOGFILE=%LOGS%\sync_%FECHA%_%HORA%.log
+SET LOGFILE=%LOGS%\sync_%FECHA%.log
 
 REM Redirigir toda la salida al log
 call :main > "%LOGFILE%" 2>&1
@@ -91,6 +90,8 @@ call :sync_tabla almarttonopeso
 call :sync_tabla venliped
 call :sync_venped
 call :sync_tabla genter
+call :sync_tabla paises
+call :sync_tabla provincias
 
 echo.
 

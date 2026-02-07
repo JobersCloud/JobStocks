@@ -83,6 +83,8 @@ call :sync_tabla almarttonopeso
 call :sync_tabla venliped
 call :sync_venped
 call :sync_tabla genter
+call :sync_tabla paises
+call :sync_tabla provincias
 
 echo.
 

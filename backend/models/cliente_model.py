@@ -19,7 +19,7 @@ from config.database import Database
 
 
 class ClienteModel:
-    COLUMNS = 'empresa, codigo, razon, domicilio, codpos, poblacion, provincia, pais'
+    COLUMNS = 'empresa, codigo, razon, domicilio, cod_postal, localidad, provincia, pais'
 
     @staticmethod
     def _row_to_dict(row):

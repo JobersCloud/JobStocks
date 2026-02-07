@@ -39,7 +39,7 @@
             document.head.appendChild(style);
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.22.9">
+    <link rel="stylesheet" href="css/styles.css?v=1.22.17">
 </head>
 <body>
     <!-- Selector de idioma y tema fijo -->
@@ -274,6 +274,56 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            {
+                version: 'v1.22.17',
+                date: '2026-02-07',
+                title: 'Sidebar y pedidos móvil',
+                items: [
+                    { type: 'improve', text: 'Botón "Cerrar Sesión" del sidebar fijo en la parte inferior' },
+                    { type: 'fix', text: 'DataGrid no bloquea scroll en móvil' },
+                    { type: 'fix', text: 'Mis Pedidos: eliminada columna Cliente (no necesaria para usuario)' },
+                    { type: 'fix', text: 'Filtro cliente con carga automática al seleccionar' }
+                ]
+            },
+            {
+                version: 'v1.22.13',
+                date: '2026-02-07',
+                title: 'Mapa a pantalla completa y ajustes móvil',
+                items: [
+                    { type: 'improve', text: 'Mapa de ubicación de clientes a pantalla completa con icono de cierre' },
+                    { type: 'fix', text: 'Tarjetas de pedidos: nombres de cliente largos pasan a siguiente línea' },
+                    { type: 'fix', text: 'DataGrid cards: valores largos se ajustan correctamente' }
+                ]
+            },
+            {
+                version: 'v1.22.12',
+                date: '2026-02-07',
+                title: 'Responsive móvil y correcciones',
+                items: [
+                    { type: 'fix', text: 'Dashboard: tabla "Artículos Más Vistos" pasa a tarjetas en móvil' },
+                    { type: 'fix', text: 'Tarjetas de pedidos y auditoría ajustan textos largos correctamente' },
+                    { type: 'fix', text: 'Buscador de clientes en pedidos ahora muestra sugerencias' },
+                    { type: 'fix', text: 'Auditoría: tokens largos en campo recurso se truncan' },
+                    { type: 'improve', text: 'Mejor detalle de errores en mapa de clientes' }
+                ]
+            },
+            {
+                version: 'v1.22.0',
+                date: '2026-02-07',
+                title: 'Pedidos, DataGrid y paginación',
+                items: [
+                    { type: 'new', text: 'Página "Todos los Pedidos" con datos del ERP' },
+                    { type: 'new', text: 'Página "Mis Pedidos" para usuarios' },
+                    { type: 'new', text: 'Componente DataGrid reutilizable (cabeceras fijas, footer, filtros)' },
+                    { type: 'new', text: 'Paginación en servidor para pedidos (rendimiento OVH)' },
+                    { type: 'new', text: 'Mapa de ubicación de clientes con OpenStreetMap' },
+                    { type: 'new', text: 'Buscador autocompletado de clientes en filtros' },
+                    { type: 'new', text: 'Detalle de dispositivo en auditoría de LOGIN' },
+                    { type: 'improve', text: 'Módulos JS compartidos (page-common.js, data-grid.js, grid-filters.js)' },
+                    { type: 'improve', text: 'Empaquetado junto a botones en detalle de stock' },
+                    { type: 'fix', text: 'Botón cerrar (X) junto a acciones en detalle de stock' }
+                ]
+            },
             {
                 version: 'v1.18.0',
                 date: '2026-02-06',

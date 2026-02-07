@@ -45,7 +45,7 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.22.9">
+    <link rel="stylesheet" href="css/styles.css?v=1.22.17">
 </head>
 <body>
     <div class="app-layout">
@@ -417,7 +417,7 @@
     <script src="js/i18n/i18n.js?v=20260128"></script>
     <script src="js/sidebar.js?v=20260143"></script>
     <script src="js/grid-filters.js?v=20260207"></script>
-    <script src="js/data-grid.js?v=20260208a"></script>
+    <script src="js/data-grid.js?v=20260208b"></script>
     <script src="js/page-common.js?v=20260207"></script>
 
     <script>
@@ -528,7 +528,9 @@
                 clearTimeout(clientSearchTimeout);
                 const query = this.value.trim();
                 if (query.length < 2) {
-                    document.getElementById('client-suggestions-pedidos').innerHTML = '';
+                    const sEl = document.getElementById('client-suggestions-pedidos');
+                    sEl.innerHTML = '';
+                    sEl.classList.remove('show');
                     return;
                 }
                 clientSearchTimeout = setTimeout(() => searchClientsPedidos(query), 300);
@@ -537,7 +539,9 @@
             document.addEventListener('click', function(e) {
                 const container = document.querySelector('#client-search-wrapper-pedidos')?.closest('.client-search-container');
                 if (container && !container.contains(e.target)) {
-                    document.getElementById('client-suggestions-pedidos').innerHTML = '';
+                    const sEl = document.getElementById('client-suggestions-pedidos');
+                    sEl.innerHTML = '';
+                    sEl.classList.remove('show');
                 }
             });
         }
@@ -551,6 +555,7 @@
                 const clientes = await response.json();
                 if (clientes.length === 0) {
                     suggestionsEl.innerHTML = '<div class="client-suggestions-empty">Sin resultados</div>';
+                    suggestionsEl.classList.add('show');
                     return;
                 }
                 suggestionsEl.innerHTML = clientes.slice(0, 15).map(c => `
@@ -559,8 +564,10 @@
                         <span class="client-suggestion-name">${c.razon}</span>
                     </div>
                 `).join('');
+                suggestionsEl.classList.add('show');
             } catch (e) {
                 suggestionsEl.innerHTML = '';
+                suggestionsEl.classList.remove('show');
             }
         }
 
@@ -570,15 +577,19 @@
             document.getElementById('selected-client-name-pedidos').textContent = razon;
             document.getElementById('client-selected-pedidos').style.display = 'flex';
             document.getElementById('client-search-wrapper-pedidos').style.display = 'none';
-            document.getElementById('client-suggestions-pedidos').innerHTML = '';
+            const sEl = document.getElementById('client-suggestions-pedidos');
+            sEl.innerHTML = '';
+            sEl.classList.remove('show');
+            loadOrders();
         }
         window.selectClientPedidos = selectClientPedidos;
 
-        function clearClientSelectionPedidos() {
+        function clearClientSelectionPedidos(reload = true) {
             document.getElementById('filter-cliente').value = '';
             document.getElementById('client-selected-pedidos').style.display = 'none';
             document.getElementById('client-search-wrapper-pedidos').style.display = '';
             document.getElementById('client-search-pedidos').value = '';
+            if (reload) loadOrders();
         }
         window.clearClientSelectionPedidos = clearClientSelectionPedidos;
 
@@ -597,8 +608,12 @@
                 if (fechaHasta) url += `fecha_hasta=${fechaHasta}&`;
                 if (cliente) url += `cliente=${encodeURIComponent(cliente)}&`;
 
+                console.log('[PEDIDOS] Cargando:', url);
+
                 const response = await fetch(url, { credentials: 'include' });
                 const data = await response.json();
+
+                console.log('[PEDIDOS] Resultado:', data.total, 'registros, cliente filtro:', cliente || '(ninguno)');
 
                 if (!response.ok) throw new Error(data.error || 'Error loading orders');
 
@@ -621,7 +636,7 @@
             document.getElementById('filter-anyo').value = '';
             document.getElementById('filter-fecha-desde').value = '';
             document.getElementById('filter-fecha-hasta').value = '';
-            clearClientSelectionPedidos();
+            clearClientSelectionPedidos(false);
             loadOrders();
         }
 
@@ -761,7 +776,10 @@
             const connection = localStorage.getItem('connection') || '1';
             try {
                 const response = await fetch(`${API_URL}/api/clientes/${encodeURIComponent(clienteCodigo)}?empresa=${connection}`, { credentials: 'include' });
-                if (!response.ok) throw new Error('Error');
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.error || `HTTP ${response.status}`);
+                }
                 const cliente = await response.json();
 
                 const parts = [cliente.domicilio, cliente.codpos, cliente.poblacion, cliente.provincia, cliente.pais].filter(p => p && p.trim());
@@ -773,7 +791,7 @@
                 _mapComponent.showModal(address, clienteNombre || cliente.razon || clienteCodigo);
             } catch (e) {
                 console.error('Error loading client for map:', e);
-                alert('Error al obtener datos del cliente');
+                alert('Error al obtener datos del cliente: ' + (e.message || 'Comprueba la consola del navegador'));
             }
         }
         window.showClientMap = showClientMap;

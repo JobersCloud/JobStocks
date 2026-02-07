@@ -641,10 +641,11 @@
     opacity: 1;
 }
 
-/* Footer del sidebar */
+/* Footer del sidebar - siempre fijo abajo */
 .sidebar-footer {
     padding: 15px;
     border-top: 1px solid var(--border);
+    margin-top: auto;
 }
 
 /* Contenedor principal (header + content) */
@@ -9958,6 +9959,10 @@ tbody tr:hover {
     padding: 20px;
     margin-bottom: 15px;
     transition: all 0.3s;
+    overflow: hidden;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .proposal-card:hover {
@@ -9985,19 +9990,32 @@ tbody tr:hover {
 
 .proposal-card-info {
     margin-bottom: 15px;
+    overflow: hidden;
+    width: 100%;
 }
 
 .proposal-card-info-item {
     font-size: 13px;
     margin-bottom: 8px;
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
 }
 
 .proposal-card-info-item label {
-    display: inline-block;
     color: #999;
     font-size: 11px;
     text-transform: uppercase;
     min-width: 60px;
+    flex-shrink: 0;
+}
+
+.proposal-card-info-item span {
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    min-width: 0;
+    flex: 1;
+    max-width: calc(100% - 70px);
 }
 
 .proposal-card-actions {
@@ -10107,6 +10125,48 @@ tbody tr:hover {
     .proposals-cards,
     .dg-cards {
         display: flex !important;
+        max-width: 100%;
+        padding: 8px;
+    }
+
+    .proposal-card,
+    .dg-card {
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 15px;
+        overflow: hidden;
+    }
+
+    .proposal-card-header {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .proposal-card-info-item {
+        flex-wrap: wrap;
+    }
+
+    .proposal-card-info-item span {
+        word-break: break-all;
+        overflow-wrap: anywhere;
+    }
+
+    .main-content-area {
+        overflow-x: hidden !important;
+    }
+
+    .main-content-area:has(.proposals-container) {
+        height: auto !important;
+        overflow: auto !important;
+    }
+
+    .proposals-container {
+        overflow: hidden;
+    }
+
+    .proposals-content {
+        overflow: hidden;
     }
 
     .proposal-lines-table-wrapper {
@@ -11153,7 +11213,8 @@ tbody tr:hover {
 
     /* Tarjetas móviles para productos y usuarios */
     .top-products-table-desktop,
-    .top-users-list-desktop {
+    .top-users-list-desktop,
+    .top-viewed-table-desktop {
         display: none;
     }
 
@@ -13513,7 +13574,10 @@ data-grid {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 5px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .dg-card {
@@ -13555,16 +13619,21 @@ data-grid {
     display: flex;
     justify-content: space-between;
     font-size: 13px;
+    gap: 8px;
 }
 
 .dg-card-label {
     color: var(--text-secondary, #666);
+    flex-shrink: 0;
 }
 
 .dg-card-value {
     color: var(--text-primary, #333);
     font-weight: 500;
     text-align: right;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    min-width: 0;
 }
 
 .dg-card-actions {

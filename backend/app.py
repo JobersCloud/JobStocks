@@ -136,7 +136,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.22.10'
+APP_VERSION = 'v1.22.17'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -857,6 +857,24 @@ def serve_data_grid_js():
 @login_required
 def serve_page_common_js():
     response = send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'page-common.js', mimetype='application/javascript')
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
+@app.route('/js/map-component.js')
+@login_required
+def serve_map_component_js():
+    response = send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'map-component.js', mimetype='application/javascript')
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
+@app.route('/js/datepicker.js')
+@login_required
+def serve_datepicker_js():
+    response = send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'datepicker.js', mimetype='application/javascript')
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'

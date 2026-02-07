@@ -98,6 +98,8 @@ class DataGrid {
     // ==================== LAYOUT ====================
 
     _lockParentHeight() {
+        // Solo bloquear altura en desktop - en movil necesitamos scroll natural
+        if (window.innerWidth <= 768) return;
         const mca = this.el.closest('.main-content-area');
         if (mca) {
             mca.style.height = '100vh';
@@ -406,12 +408,8 @@ class DataGrid {
             return `<tr>${cells}</tr>`;
         }).join('');
 
-        // Render cards only on mobile viewport (cards are hidden on desktop via CSS)
-        if (window.innerWidth <= 768) {
-            this._refs.cards.innerHTML = data.map(item => this.renderCard(item)).join('');
-        } else {
-            this._refs.cards.innerHTML = '';
-        }
+        // Render cards always (CSS handles visibility via media queries)
+        this._refs.cards.innerHTML = data.map(item => this.renderCard(item)).join('');
 
         // Update footer
         this._updateFooter(data.length);

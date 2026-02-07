@@ -33,13 +33,23 @@
 
             const modal = document.createElement('div');
             modal.id = this.modalId;
-            modal.className = 'modal-overlay';
-            modal.style.display = 'none';
+            modal.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center;';
             modal.innerHTML = `
-                <div class="modal-content" style="max-width: 700px; height: 80vh; display: flex; flex-direction: column;">
-                    <div class="modal-header">
-                        <h2 id="${this.modalId}-title" style="font-size: 1rem; margin: 0;"></h2>
-                        <button class="modal-close" onclick="document.getElementById('${this.modalId}').style.display='none'">&times;</button>
+                <div style="width: 96vw; height: 96vh; max-width: 96vw; border-radius: 12px; display: flex; flex-direction: column; background: var(--bg-primary, white); overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                    <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px;">
+                        <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <h2 id="${this.modalId}-title" style="font-size: 1rem; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></h2>
+                        </div>
+                        <button onclick="document.getElementById('${this.modalId}').style.display='none'" style="background: none; border: none; cursor: pointer; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
                     </div>
                     <div id="${this.modalId}-address" style="padding: 8px 16px; font-size: 0.85rem; color: var(--text-secondary, #666); border-bottom: 1px solid var(--border-color, #eee);"></div>
                     <div id="${this.modalId}-map" style="flex: 1; min-height: 300px;"></div>
