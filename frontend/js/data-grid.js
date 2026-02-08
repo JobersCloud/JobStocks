@@ -427,11 +427,17 @@ class DataGrid {
         // Client-side mode
         const total = this._allData.length;
         const hasFilters = this._gridFilters && this._gridFilters.filtrosColumna.length > 0;
-        if (hasFilters && count !== total) {
-            this._refs.footer.innerHTML = `${count} registros (filtrados de ${total})`;
-        } else {
-            this._refs.footer.innerHTML = `${count} registros`;
-        }
+        const infoText = hasFilters && count !== total
+            ? `${count} registros (filtrados de ${total})`
+            : `${count} registros`;
+
+        this._refs.footer.innerHTML = `
+            <div class="dg-footer-row">
+                <span>${infoText}</span>
+                ${count > 0 ? this._exportButtonHtml() : ''}
+            </div>
+        `;
+        this._attachExportHandler();
     }
 
     _renderPaginationFooter(filteredCount) {
@@ -452,6 +458,7 @@ class DataGrid {
             <div class="dg-pagination">
                 <div class="dg-pagination-info">
                     ${start}-${end} de ${total} registros${filterInfo}
+                    ${this._allData.length > 0 ? this._exportButtonHtml() : ''}
                 </div>
                 <div class="dg-pagination-controls">
                     <button class="dg-page-btn" data-page="1" ${page <= 1 ? 'disabled' : ''} title="Primera">&laquo;</button>
@@ -462,6 +469,7 @@ class DataGrid {
                 </div>
             </div>
         `;
+        this._attachExportHandler();
 
         // Attach click handlers for pagination buttons
         this._refs.footer.querySelectorAll('.dg-page-btn').forEach(btn => {
@@ -477,6 +485,64 @@ class DataGrid {
     _escapeHtml(value) {
         if (value === null || value === undefined) return '';
         return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // ==================== EXPORT ====================
+
+    _exportButtonHtml() {
+        return `<button class="dg-export-btn" title="Exportar a Excel">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Excel
+        </button>`;
+    }
+
+    _attachExportHandler() {
+        const btn = this._refs.footer.querySelector('.dg-export-btn');
+        if (btn) btn.addEventListener('click', () => this.exportToExcel());
+    }
+
+    /**
+     * Exports current data (filtered if filters active) to Excel-compatible CSV.
+     * @param {string} filename - Optional filename (default: 'export.csv')
+     */
+    exportToExcel(filename) {
+        const data = this._filteredData.length > 0 || (this._gridFilters && this._gridFilters.filtrosColumna.length > 0)
+            ? this._filteredData
+            : this._allData;
+
+        if (data.length === 0) return;
+
+        // Use only visible data columns (exclude _actions and similar)
+        const exportCols = this.columns.filter(c => !c.key.startsWith('_') && c.exportable !== false);
+
+        // Header row
+        const header = exportCols.map(c => `"${c.label.replace(/"/g, '""')}"`).join(';');
+
+        // Data rows
+        const rows = data.map(item => {
+            return exportCols.map(col => {
+                let val = item[col.key];
+                if (val === null || val === undefined) val = '';
+                val = String(val).replace(/"/g, '""');
+                return `"${val}"`;
+            }).join(';');
+        });
+
+        // BOM + CSV content (semicolon separator for es-ES Excel)
+        const csvContent = '\uFEFF' + header + '\n' + rows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+        // Download
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename || `export_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     }
 
     // ==================== PUBLIC API ====================

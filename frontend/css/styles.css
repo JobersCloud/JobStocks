@@ -14299,6 +14299,65 @@ data-grid {
     color: var(--text-secondary);
 }
 
+/* Export button in grid footer */
+.dg-footer-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    font-size: 13px;
+    color: var(--text-secondary, #666);
+    font-weight: 500;
+}
+
+.dg-export-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #217346;
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    margin-left: auto;
+}
+
+.dg-export-btn:hover {
+    background: #c8e6c9;
+    border-color: #81c784;
+}
+
+.dg-export-btn svg {
+    flex-shrink: 0;
+}
+
+.dg-pagination-info .dg-export-btn {
+    margin-left: 12px;
+}
+
+[data-theme="dark"] .dg-export-btn {
+    color: #81c784;
+    background: rgba(76, 175, 80, 0.15);
+    border-color: rgba(76, 175, 80, 0.3);
+}
+
+[data-theme="dark"] .dg-export-btn:hover {
+    background: rgba(76, 175, 80, 0.25);
+    border-color: rgba(76, 175, 80, 0.5);
+}
+
+@media (max-width: 768px) {
+    .dg-export-btn {
+        padding: 3px 8px;
+        font-size: 11px;
+    }
+}
+
 /* ==================== DATEPICKER MODERNO ==================== */
 
 .datepicker-wrapper {
