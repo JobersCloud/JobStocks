@@ -64,6 +64,14 @@ def verify_user(username, password, empresa_cli_id, empresa_erp=None):
         if not check_password_hash(user['password_hash'], password):
             return None
 
+        # Obtener fecha_ultimo_cambio_password (puede no existir la columna)
+        try:
+            cursor.execute("SELECT fecha_ultimo_cambio_password FROM users WHERE id = ?", (user['id'],))
+            pwd_row = cursor.fetchone()
+            user['fecha_ultimo_cambio_password'] = pwd_row[0] if pwd_row else None
+        except Exception:
+            user['fecha_ultimo_cambio_password'] = None
+
         # Obtener datos de empresa si se proporciona empresa_erp
         if empresa_erp:
             cursor.execute("""
@@ -639,6 +647,14 @@ def change_password(user_id, new_password, empresa_cli_id):
             SET password_hash = ?, debe_cambiar_password = 0
             WHERE id = ?
         """, (password_hash, user_id))
+
+        # Actualizar fecha_ultimo_cambio_password (puede no existir la columna)
+        try:
+            cursor.execute("""
+                UPDATE users SET fecha_ultimo_cambio_password = GETDATE() WHERE id = ?
+            """, (user_id,))
+        except Exception:
+            pass  # Columna no existe aún
 
         rows_affected = cursor.rowcount
         conn.commit()

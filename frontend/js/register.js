@@ -190,6 +190,7 @@ async function initRegister() {
     verificarRegistroHabilitado();
     cargarPaises();
     setupRegisterForm();
+    injectRegPasswordRequirements();
 }
 
 // Cargar países al iniciar
@@ -238,6 +239,68 @@ function showAlert(message, type) {
     `;
 }
 
+// ==================== PASSWORD POLICY ====================
+let _regPasswordPolicy = null;
+
+async function loadRegPasswordPolicy() {
+    if (_regPasswordPolicy) return _regPasswordPolicy;
+    try {
+        const resp = await fetch(`${API_URL}/api/password-policy`);
+        if (resp.ok) _regPasswordPolicy = await resp.json();
+    } catch (e) { /* fallback */ }
+    if (!_regPasswordPolicy) {
+        _regPasswordPolicy = { min_length: 8, require_uppercase: true, require_lowercase: true, require_number: true, require_special: true };
+    }
+    return _regPasswordPolicy;
+}
+
+function buildRegPwdReqHtml(policy) {
+    const items = [];
+    if (policy.min_length) items.push({ key: 'min_length', text: (t('changePassword.reqMinLength') || `Mínimo ${policy.min_length} caracteres`).replace('{n}', policy.min_length) });
+    if (policy.require_uppercase) items.push({ key: 'uppercase', text: t('changePassword.reqUppercase') || 'Al menos una mayúscula' });
+    if (policy.require_lowercase) items.push({ key: 'lowercase', text: t('changePassword.reqLowercase') || 'Al menos una minúscula' });
+    if (policy.require_number) items.push({ key: 'number', text: t('changePassword.reqNumber') || 'Al menos un número' });
+    if (policy.require_special) items.push({ key: 'special', text: t('changePassword.reqSpecial') || 'Al menos un carácter especial' });
+    return `<div class="password-requirements">
+        <div class="password-requirements-title">${t('changePassword.requirementsTitle') || 'Requisitos de contraseña:'}</div>
+        <ul class="password-req-list">
+            ${items.map(i => `<li class="password-req-item" data-req="${i.key}"><span class="req-icon">&#10003;</span>${i.text}</li>`).join('')}
+        </ul>
+    </div>`;
+}
+
+function checkRegPwdReq(password, container) {
+    if (!container) return;
+    container.querySelectorAll('.password-req-item').forEach(item => {
+        const req = item.getAttribute('data-req');
+        let met = false;
+        switch (req) {
+            case 'min_length': met = password.length >= (_regPasswordPolicy?.min_length || 8); break;
+            case 'uppercase': met = /[A-Z]/.test(password); break;
+            case 'lowercase': met = /[a-z]/.test(password); break;
+            case 'number': met = /[0-9]/.test(password); break;
+            case 'special': met = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?~`]/.test(password); break;
+        }
+        item.classList.toggle('met', met);
+    });
+}
+
+async function injectRegPasswordRequirements() {
+    const policy = await loadRegPasswordPolicy();
+    const pwdInput = document.getElementById('password');
+    if (!pwdInput) return;
+    let reqContainer = document.querySelector('#register-form .password-requirements');
+    if (!reqContainer) {
+        // Insert after the password field's parent (form-group)
+        const formGroup = pwdInput.closest('.form-group') || pwdInput.parentElement;
+        formGroup.insertAdjacentHTML('afterend', buildRegPwdReqHtml(policy));
+        reqContainer = document.querySelector('#register-form .password-requirements');
+        pwdInput.addEventListener('input', function() {
+            checkRegPwdReq(this.value, reqContainer);
+        });
+    }
+}
+
 // Configurar formulario de registro
 function setupRegisterForm() {
     document.getElementById('register-form').addEventListener('submit', async function(e) {
@@ -267,8 +330,16 @@ function setupRegisterForm() {
             return;
         }
 
-        // Validar longitud de contraseña
-        if (formData.password.length < 6) {
+        // Validar contraseña contra política
+        const reqContainer = document.querySelector('#register-form .password-requirements');
+        if (reqContainer) {
+            checkRegPwdReq(formData.password, reqContainer);
+            const allMet = Array.from(reqContainer.querySelectorAll('.password-req-item')).every(i => i.classList.contains('met'));
+            if (!allMet) {
+                showAlert(t('auth.passwordMinLength'), 'error');
+                return;
+            }
+        } else if (formData.password.length < (_regPasswordPolicy?.min_length || 8)) {
             showAlert(t('auth.passwordMinLength'), 'error');
             return;
         }

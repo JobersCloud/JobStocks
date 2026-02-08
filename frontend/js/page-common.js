@@ -288,7 +288,7 @@
     }
 
     // ==================== CAMBIO DE CONTRASENA ====================
-    function showChangePasswordModal() {
+    async function showChangePasswordModal() {
         const modal = document.getElementById('change-password-modal');
         if (!modal) return;
         modal.style.display = 'flex';
@@ -300,6 +300,19 @@
         const btn = document.getElementById('change-password-btn');
         btn.disabled = false;
         btn.textContent = t('changePassword.changeButton');
+
+        // Inject password requirements
+        const policy = await loadPasswordPolicy();
+        const newPwdInput = document.getElementById('new-password');
+        let reqContainer = modal.querySelector('.password-requirements');
+        if (!reqContainer && newPwdInput) {
+            newPwdInput.insertAdjacentHTML('afterend', buildPasswordRequirementsHtml(policy));
+            reqContainer = modal.querySelector('.password-requirements');
+            newPwdInput.addEventListener('input', function() {
+                checkPasswordRequirements(this.value, reqContainer);
+            });
+        }
+        if (reqContainer) checkPasswordRequirements('', reqContainer);
     }
 
     function hideChangePasswordModal() {
@@ -323,7 +336,13 @@
             errorEl.style.display = 'block';
             return;
         }
-        if (newPwd.length < 6) {
+        const reqContainer = document.querySelector('#change-password-modal .password-requirements');
+        if (reqContainer && !allRequirementsMet(reqContainer)) {
+            errorEl.textContent = t('changePassword.minLength');
+            errorEl.style.display = 'block';
+            return;
+        }
+        if (newPwd.length < (_passwordPolicy?.min_length || 8)) {
             errorEl.textContent = t('changePassword.minLength');
             errorEl.style.display = 'block';
             return;
@@ -380,6 +399,59 @@
         document.addEventListener('DOMContentLoaded', _initPasswordModal);
     } else {
         _initPasswordModal();
+    }
+
+    // ==================== PASSWORD POLICY ====================
+    let _passwordPolicy = null;
+
+    async function loadPasswordPolicy() {
+        if (_passwordPolicy) return _passwordPolicy;
+        try {
+            const resp = await fetch(`${API_URL}/api/password-policy`);
+            if (resp.ok) _passwordPolicy = await resp.json();
+        } catch (e) { /* fallback defaults */ }
+        if (!_passwordPolicy) {
+            _passwordPolicy = { min_length: 8, require_uppercase: true, require_lowercase: true, require_number: true, require_special: true };
+        }
+        return _passwordPolicy;
+    }
+
+    function buildPasswordRequirementsHtml(policy) {
+        const items = [];
+        if (policy.min_length) items.push({ key: 'min_length', text: t('changePassword.reqMinLength').replace('{n}', policy.min_length) });
+        if (policy.require_uppercase) items.push({ key: 'uppercase', text: t('changePassword.reqUppercase') });
+        if (policy.require_lowercase) items.push({ key: 'lowercase', text: t('changePassword.reqLowercase') });
+        if (policy.require_number) items.push({ key: 'number', text: t('changePassword.reqNumber') });
+        if (policy.require_special) items.push({ key: 'special', text: t('changePassword.reqSpecial') });
+        return `<div class="password-requirements">
+            <div class="password-requirements-title">${t('changePassword.requirementsTitle')}</div>
+            <ul class="password-req-list">
+                ${items.map(i => `<li class="password-req-item" data-req="${i.key}"><span class="req-icon">&#10003;</span>${i.text}</li>`).join('')}
+            </ul>
+        </div>`;
+    }
+
+    function checkPasswordRequirements(password, container) {
+        if (!container) return;
+        const items = container.querySelectorAll('.password-req-item');
+        items.forEach(item => {
+            const req = item.getAttribute('data-req');
+            let met = false;
+            switch (req) {
+                case 'min_length': met = password.length >= (_passwordPolicy?.min_length || 8); break;
+                case 'uppercase': met = /[A-Z]/.test(password); break;
+                case 'lowercase': met = /[a-z]/.test(password); break;
+                case 'number': met = /[0-9]/.test(password); break;
+                case 'special': met = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?~`]/.test(password); break;
+            }
+            item.classList.toggle('met', met);
+        });
+    }
+
+    function allRequirementsMet(container) {
+        if (!container) return true;
+        const items = container.querySelectorAll('.password-req-item');
+        return Array.from(items).every(i => i.classList.contains('met'));
     }
 
     // ==================== UTILIDADES ====================
@@ -442,6 +514,10 @@
         showChangePasswordModal,
         hideChangePasswordModal,
         handleVoluntaryPasswordChange,
+        loadPasswordPolicy,
+        buildPasswordRequirementsHtml,
+        checkPasswordRequirements,
+        allRequirementsMet,
         // Utilities
         formatDate,
         formatDateTime,

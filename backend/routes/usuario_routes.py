@@ -28,6 +28,7 @@ from database.users_db import (
     change_password, add_user_to_empresa, get_user_empresas, set_email_verified
 )
 from models.email_config_model import EmailConfigModel
+from utils.password_policy import validate_password, get_password_error_message
 import smtplib
 import os
 from datetime import datetime
@@ -192,11 +193,13 @@ def crear_usuario():
                 'error': f'Campo "{field}" es requerido'
             }), 400
 
-    # Validar longitud de contraseña
-    if len(data['password']) < 6:
+    # Validar contraseña contra política de complejidad
+    is_valid, pwd_errors = validate_password(data['password'])
+    if not is_valid:
         return jsonify({
             'success': False,
-            'error': 'La contraseña debe tener al menos 6 caracteres'
+            'error': get_password_error_message(pwd_errors),
+            'password_errors': pwd_errors
         }), 400
 
     # Validar que solo superusuario puede crear admin/superusuario
@@ -932,10 +935,13 @@ def cambiar_password():
 
     new_password = data['new_password']
 
-    if len(new_password) < 6:
+    # Validar contra política de complejidad
+    is_valid, pwd_errors = validate_password(new_password)
+    if not is_valid:
         return jsonify({
             'success': False,
-            'error': 'La contraseña debe tener al menos 6 caracteres'
+            'error': get_password_error_message(pwd_errors),
+            'password_errors': pwd_errors
         }), 400
 
     # Si se envía current_password, verificar antes de cambiar (cambio voluntario)

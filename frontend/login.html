@@ -39,7 +39,7 @@
             document.head.appendChild(style);
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.22.18">
+    <link rel="stylesheet" href="css/styles.css?v=1.26.0">
 </head>
 <body>
     <!-- Selector de idioma y tema fijo -->
@@ -274,6 +274,17 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            {
+                version: 'v1.26.0',
+                date: '2026-02-08',
+                title: 'Seguridad: Politica de contraseñas y registro de IP',
+                items: [
+                    { type: 'new', text: 'Politica de contraseñas: minimo 8 caracteres, mayuscula, minuscula, numero y caracter especial' },
+                    { type: 'new', text: 'Indicador visual de requisitos de contraseña en tiempo real' },
+                    { type: 'new', text: 'Expiracion periodica de contraseñas (configurable, por defecto 90 dias)' },
+                    { type: 'fix', text: 'Registro de IP real del cliente en auditoria (soporte proxies)' }
+                ]
+            },
             {
                 version: 'v1.25.0',
                 date: '2026-02-08',

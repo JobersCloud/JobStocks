@@ -43,10 +43,12 @@ from models.user_session_model import UserSessionModel
 from models.audit_model import AuditModel, AuditAction, AuditResult
 from models.cliente_model import ClienteModel
 from models.dominio_model import DominioModel
+from utils.password_policy import get_policy_info, PASSWORD_POLICY
 
 import os
 import re
 import secrets
+from datetime import datetime
 
 
 def parse_user_agent(ua_string):
@@ -137,7 +139,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.25.0'
+APP_VERSION = 'v1.26.0'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -494,6 +496,15 @@ def login():
         # Verificar si debe cambiar la contraseña
         debe_cambiar = user_data.get('debe_cambiar_password', False)
 
+        # Verificar expiración de contraseña
+        if not debe_cambiar and PASSWORD_POLICY['expiration_days'] > 0:
+            fecha_pwd = user_data.get('fecha_ultimo_cambio_password')
+            if fecha_pwd:
+                dias_desde_cambio = (datetime.now() - fecha_pwd).days
+                if dias_desde_cambio > PASSWORD_POLICY['expiration_days']:
+                    debe_cambiar = True
+                    print(f"[INFO] Contraseña expirada para {username} ({dias_desde_cambio} días)")
+
         # Generar CSRF token
         csrf_token = secrets.token_hex(32)
         session['csrf_token'] = csrf_token
@@ -740,6 +751,19 @@ def get_version():
     """
     return jsonify({'version': APP_VERSION})
 
+@app.route('/api/password-policy')
+def password_policy():
+    """
+    Obtener política de contraseñas actual
+    ---
+    tags:
+      - Sistema
+    responses:
+      200:
+        description: Reglas de la política de contraseñas
+    """
+    return jsonify(get_policy_info())
+
 @app.route('/api/default-connection')
 def get_default_connection():
     """
@@ -932,7 +956,7 @@ def require_login():
         return None
 
     # Permitir rutas de registro, empresa y consultas sin autenticación
-    public_api_routes = ['/api/register', '/api/verify-email', '/api/resend-verification', '/api/paises', '/api/registro-habilitado', '/api/parametros/propuestas-habilitadas', '/api/consultas/whatsapp-config', '/api/empresa/validate', '/api/empresa/init', '/api/empresa/list', '/api/default-connection', '/api/version']
+    public_api_routes = ['/api/register', '/api/verify-email', '/api/resend-verification', '/api/paises', '/api/registro-habilitado', '/api/parametros/propuestas-habilitadas', '/api/consultas/whatsapp-config', '/api/empresa/validate', '/api/empresa/init', '/api/empresa/list', '/api/default-connection', '/api/version', '/api/password-policy']
     if any(request.path.startswith(route) for route in public_api_routes):
         return None
 

@@ -21,6 +21,7 @@ from models.parametros_model import ParametrosModel
 from models.email_config_model import EmailConfigModel
 from models.audit_model import AuditModel, AuditAction, AuditResult
 from config.database import Database
+from utils.password_policy import validate_password, get_password_error_message
 from datetime import datetime, timedelta
 import secrets
 import json
@@ -31,6 +32,21 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 
 register_bp = Blueprint('register', __name__, url_prefix='/api')
+
+
+def get_client_ip():
+    """Obtener IP real del cliente, considerando proxies"""
+    headers_to_check = [
+        'X-Forwarded-For', 'X-Real-IP', 'CF-Connecting-IP',
+        'True-Client-IP', 'X-Client-IP'
+    ]
+    for header in headers_to_check:
+        ip = request.headers.get(header)
+        if ip:
+            if ',' in ip:
+                ip = ip.split(',')[0].strip()
+            return ip
+    return request.remote_addr
 
 # Cargar lista de países
 PAISES_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'paises.json')
@@ -213,11 +229,13 @@ def register():
     company_name = data.get('company_name', '').strip()  # Campo opcional
     cif_nif = data.get('cif_nif', '').strip()  # Campo opcional
 
-    # Validar longitud de password
-    if len(password) < 6:
+    # Validar contraseña contra política de complejidad
+    is_valid, pwd_errors = validate_password(password)
+    if not is_valid:
         return jsonify({
             'success': False,
-            'message': 'La contraseña debe tener al menos 6 caracteres'
+            'message': get_password_error_message(pwd_errors),
+            'password_errors': pwd_errors
         }), 400
 
     # Validar email
@@ -286,7 +304,7 @@ def register():
             connection_id=connection,
             recurso='user',
             recurso_id=str(user_id),
-            ip_address=request.remote_addr,
+            ip_address=get_client_ip(),
             user_agent=request.headers.get('User-Agent'),
             detalles={'email': email, 'full_name': full_name, 'pais': pais},
             resultado=AuditResult.SUCCESS
@@ -404,7 +422,7 @@ def resend_verification():
                 connection_id=connection,
                 recurso='user',
                 recurso_id=str(user_id),
-                ip_address=request.remote_addr,
+                ip_address=get_client_ip(),
                 user_agent=request.headers.get('User-Agent'),
                 detalles={'email': email, 'full_name': full_name},
                 resultado=AuditResult.SUCCESS
@@ -542,7 +560,7 @@ def verify_email():
             connection_id=connection,
             recurso='user',
             recurso_id=str(user_id),
-            ip_address=request.remote_addr,
+            ip_address=get_client_ip(),
             user_agent=request.headers.get('User-Agent'),
             detalles={'email': email, 'full_name': full_name},
             resultado=AuditResult.SUCCESS

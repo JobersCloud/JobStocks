@@ -6863,6 +6863,80 @@ tbody tr:hover {
     margin-bottom: 20px;
 }
 
+/* ==================== PASSWORD REQUIREMENTS ==================== */
+.password-requirements {
+    margin: 8px 0 12px;
+    padding: 10px 14px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+[data-theme="dark"] .password-requirements {
+    background: #1e1e2e;
+    border-color: #3a3a4e;
+}
+
+.password-requirements-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary, #6b7280);
+    margin-bottom: 6px;
+}
+
+.password-req-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px 12px;
+}
+
+@media (max-width: 480px) {
+    .password-req-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+.password-req-item {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.2s;
+}
+
+.password-req-item .req-icon {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    flex-shrink: 0;
+    border: 1.5px solid #d1d5db;
+    color: #d1d5db;
+    transition: all 0.2s;
+}
+
+[data-theme="dark"] .password-req-item .req-icon {
+    border-color: #4b5563;
+    color: #4b5563;
+}
+
+.password-req-item.met {
+    color: #10b981;
+}
+
+.password-req-item.met .req-icon {
+    background: #10b981;
+    border-color: #10b981;
+    color: white;
+}
+
 /* Mobile footer inside login-box (controls + developer logo, visible when sidebar hidden) */
 .login-mobile-footer {
     display: none;

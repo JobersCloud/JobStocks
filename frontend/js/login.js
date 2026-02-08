@@ -525,10 +525,68 @@ function setupChangePasswordForm() {
     }
 }
 
-function showPasswordChangeModal() {
+let _loginPasswordPolicy = null;
+
+async function loadLoginPasswordPolicy() {
+    if (_loginPasswordPolicy) return _loginPasswordPolicy;
+    try {
+        const resp = await fetch(`${API_URL}/api/password-policy`);
+        if (resp.ok) _loginPasswordPolicy = await resp.json();
+    } catch (e) { /* fallback */ }
+    if (!_loginPasswordPolicy) {
+        _loginPasswordPolicy = { min_length: 8, require_uppercase: true, require_lowercase: true, require_number: true, require_special: true };
+    }
+    return _loginPasswordPolicy;
+}
+
+function buildLoginPwdReqHtml(policy) {
+    const items = [];
+    if (policy.min_length) items.push({ key: 'min_length', text: t('changePassword.reqMinLength').replace('{n}', policy.min_length) });
+    if (policy.require_uppercase) items.push({ key: 'uppercase', text: t('changePassword.reqUppercase') });
+    if (policy.require_lowercase) items.push({ key: 'lowercase', text: t('changePassword.reqLowercase') });
+    if (policy.require_number) items.push({ key: 'number', text: t('changePassword.reqNumber') });
+    if (policy.require_special) items.push({ key: 'special', text: t('changePassword.reqSpecial') });
+    return `<div class="password-requirements">
+        <div class="password-requirements-title">${t('changePassword.requirementsTitle')}</div>
+        <ul class="password-req-list">
+            ${items.map(i => `<li class="password-req-item" data-req="${i.key}"><span class="req-icon">&#10003;</span>${i.text}</li>`).join('')}
+        </ul>
+    </div>`;
+}
+
+function checkLoginPwdReq(password, container) {
+    if (!container) return;
+    container.querySelectorAll('.password-req-item').forEach(item => {
+        const req = item.getAttribute('data-req');
+        let met = false;
+        switch (req) {
+            case 'min_length': met = password.length >= (_loginPasswordPolicy?.min_length || 8); break;
+            case 'uppercase': met = /[A-Z]/.test(password); break;
+            case 'lowercase': met = /[a-z]/.test(password); break;
+            case 'number': met = /[0-9]/.test(password); break;
+            case 'special': met = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?~`]/.test(password); break;
+        }
+        item.classList.toggle('met', met);
+    });
+}
+
+async function showPasswordChangeModal() {
     const modal = document.getElementById('change-password-modal');
     modal.style.display = 'flex';
-    document.getElementById('new-password').focus();
+
+    // Inject password requirements
+    const policy = await loadLoginPasswordPolicy();
+    const newPwdInput = document.getElementById('new-password');
+    let reqContainer = modal.querySelector('.password-requirements');
+    if (!reqContainer && newPwdInput) {
+        newPwdInput.insertAdjacentHTML('afterend', buildLoginPwdReqHtml(policy));
+        reqContainer = modal.querySelector('.password-requirements');
+        newPwdInput.addEventListener('input', function() {
+            checkLoginPwdReq(this.value, reqContainer);
+        });
+    }
+    if (reqContainer) checkLoginPwdReq('', reqContainer);
+    newPwdInput.focus();
 }
 
 function hidePasswordChangeModal() {
@@ -557,8 +615,16 @@ async function handlePasswordChange(e) {
     const confirmPassword = document.getElementById('confirm-password').value;
     const btnChange = document.getElementById('btn-change-password');
 
-    // Validaciones
-    if (newPassword.length < 6) {
+    // Validaciones contra política
+    const reqContainer = document.querySelector('#change-password-modal .password-requirements');
+    if (reqContainer) {
+        checkLoginPwdReq(newPassword, reqContainer);
+        const allMet = Array.from(reqContainer.querySelectorAll('.password-req-item')).every(i => i.classList.contains('met'));
+        if (!allMet) {
+            showPasswordAlert(t('changePassword.minLength'));
+            return;
+        }
+    } else if (newPassword.length < (_loginPasswordPolicy?.min_length || 8)) {
         showPasswordAlert(t('changePassword.minLength'));
         return;
     }
