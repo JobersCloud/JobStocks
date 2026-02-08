@@ -78,6 +78,7 @@ class PedidoModel:
                        ROUND(v.bruto, 2) AS bruto, ROUND(v.importe_dto, 2) AS importe_dto,
                        ROUND(v.total, 2) AS total, ROUND(v.peso, 2) AS peso,
                        v.divisa, v.usuario, v.fecha_alta,
+                       RTRIM(ISNULL(v.numpedcli, '')) AS numpedcli,
                        RTRIM(ISNULL(pa.nombre, '')) AS pais_nombre,
                        RTRIM(ISNULL(pr.nombre, '')) AS provincia_nombre
                 FROM view_externos_venped v
@@ -119,8 +120,9 @@ class PedidoModel:
                 'divisa': row[14],
                 'usuario': row[15],
                 'fecha_alta': row[16].isoformat() if row[16] else None,
-                'pais_nombre': row[17] if row[17] else '',
-                'provincia_nombre': row[18] if row[18] else ''
+                'numpedcli': row[17].strip() if row[17] else '',
+                'pais_nombre': row[18] if row[18] else '',
+                'provincia_nombre': row[19] if row[19] else ''
             })
 
         t6 = time.time()
@@ -150,7 +152,8 @@ class PedidoModel:
                    cliente_nombre, pedido_cliente, serie,
                    ROUND(bruto, 2) AS bruto, ROUND(importe_dto, 2) AS importe_dto,
                    ROUND(total, 2) AS total, ROUND(peso, 2) AS peso,
-                   divisa, usuario, fecha_alta
+                   divisa, usuario, fecha_alta,
+                   RTRIM(ISNULL(numpedcli, '')) AS numpedcli
             FROM view_externos_venped
             WHERE empresa = ? AND anyo = ? AND pedido = ?
         """, (empresa, anyo, pedido))
@@ -177,6 +180,7 @@ class PedidoModel:
             'divisa': row[13],
             'usuario': row[14],
             'fecha_alta': row[15].isoformat() if row[15] else None,
+            'numpedcli': row[16].strip() if row[16] else '',
             'lineas': []
         }
 
@@ -276,6 +280,7 @@ class PedidoModel:
                        ROUND(v.bruto, 2) AS bruto, ROUND(v.importe_dto, 2) AS importe_dto,
                        ROUND(v.total, 2) AS total, ROUND(v.peso, 2) AS peso,
                        v.divisa, v.usuario, v.fecha_alta,
+                       RTRIM(ISNULL(v.numpedcli, '')) AS numpedcli,
                        RTRIM(ISNULL(pa.nombre, '')) AS pais_nombre,
                        RTRIM(ISNULL(pr.nombre, '')) AS provincia_nombre
                 FROM view_externos_venped v
@@ -317,8 +322,9 @@ class PedidoModel:
                 'divisa': row[14],
                 'usuario': row[15],
                 'fecha_alta': row[16].isoformat() if row[16] else None,
-                'pais_nombre': row[17] if row[17] else '',
-                'provincia_nombre': row[18] if row[18] else ''
+                'numpedcli': row[17].strip() if row[17] else '',
+                'pais_nombre': row[18] if row[18] else '',
+                'provincia_nombre': row[19] if row[19] else ''
             })
 
         t6 = time.time()

@@ -294,7 +294,8 @@
     "image": "Image",
     "format": "Format",
     "filterCountry": "Pays",
-    "filterProvince": "Province"
+    "filterProvince": "Province",
+    "reference": "Référence"
   },
   "empresaLogo": {
     "title": "Logo d'Entreprise",

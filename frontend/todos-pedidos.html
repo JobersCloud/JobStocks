@@ -480,6 +480,7 @@
                     { key: 'pedido', label: '# Pedido', tipo: 'numero' },
                     { key: 'fecha', label: t('orders.date') || 'Fecha', tipo: 'texto' },
                     { key: 'cliente_nombre', label: t('orders.client') || 'Cliente', tipo: 'texto' },
+                    { key: 'numpedcli', label: t('orders.reference') || 'Referencia', tipo: 'texto' },
                     { key: 'pais_nombre', label: t('orders.filterCountry') || 'Pais', tipo: 'texto' },
                     { key: 'provincia_nombre', label: t('orders.filterProvince') || 'Provincia', tipo: 'texto' },
                     { key: 'total', label: t('orders.total') || 'Total', tipo: 'numero', align: 'right' },
@@ -525,6 +526,10 @@
                                     <label>${t('orders.client')}</label>
                                     <span>${item.cliente_nombre || item.cliente}</span>
                                 </div>
+                                ${item.numpedcli ? `<div class="proposal-card-info-item">
+                                    <label>${t('orders.reference') || 'Referencia'}</label>
+                                    <span>${item.numpedcli}</span>
+                                </div>` : ''}
                                 ${item.pais_nombre ? `<div class="proposal-card-info-item">
                                     <label>${t('orders.filterCountry')}</label>
                                     <span>${item.pais_nombre}</span>
@@ -745,6 +750,7 @@
                         <div class="proposal-info-item"><label>${t('orders.date')}</label><span>${PageCommon.formatDate(order.fecha)}</span></div>
                         <div class="proposal-info-item"><label>${t('orders.deliveryDate')}</label><span>${order.fecha_entrega ? PageCommon.formatDate(order.fecha_entrega) : '-'}</span></div>
                         <div class="proposal-info-item"><label>${t('orders.client')}</label><span>${order.cliente_nombre || order.cliente}</span></div>
+                        ${order.numpedcli ? `<div class="proposal-info-item"><label>${t('orders.reference') || 'Referencia'}</label><span>${order.numpedcli}</span></div>` : ''}
                         <div class="proposal-info-item"><label>${t('orders.total')}</label><span style="font-weight:600;color:var(--primary);">${PageCommon.formatCurrency(order.total)} ${order.divisa || 'EUR'}</span></div>
                     </div>
                     <h3 class="proposal-lines-title">${t('orders.lines')}</h3>
