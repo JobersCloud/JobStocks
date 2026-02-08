@@ -86,6 +86,23 @@ def get_db_info():
         except Exception:
             info['recovery_model'] = None
 
+        # Edicion de SQL Server (Express, Standard, Enterprise, etc.)
+        try:
+            cursor.execute("SELECT SERVERPROPERTY('Edition')")
+            row = cursor.fetchone()
+            if row and row[0]:
+                info['edition'] = str(row[0])
+        except Exception:
+            info['edition'] = None
+
+        # Fallback: extraer edicion de @@VERSION si SERVERPROPERTY fallo
+        if not info.get('edition') and info.get('version'):
+            version_str = info['version'].lower()
+            for ed in ['express', 'standard', 'enterprise', 'developer', 'web']:
+                if ed in version_str:
+                    info['edition'] = ed.capitalize() + ' Edition'
+                    break
+
         # Tamaño de la BD con sp_spaceused
         try:
             cursor.execute("EXEC sp_spaceused")
@@ -105,6 +122,17 @@ def get_db_info():
                     info['space']['unused'] = row[3].strip() if row[3] else None
         except Exception:
             info['space'] = None
+
+        # Tamaño numerico en MB desde sys.database_files (fiable, sin problemas de locale)
+        try:
+            cursor.execute("SELECT SUM(CAST(size AS BIGINT)) * 8.0 / 1024 FROM sys.database_files")
+            row = cursor.fetchone()
+            if row and row[0] is not None:
+                if info.get('space') is None:
+                    info['space'] = {}
+                info['space']['database_size_mb'] = round(float(row[0]), 2)
+        except Exception:
+            pass
 
         # Archivos de la BD
         try:

@@ -45,7 +45,7 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.22.18">
+    <link rel="stylesheet" href="css/styles.css?v=1.24.4">
 </head>
 <body>
     <!-- ==================== MASTERPAGE LAYOUT ==================== -->
@@ -374,6 +374,18 @@
                                 <div class="param-section-grid" id="server-info-grid"></div>
                             </div>
 
+                            <!-- Seccion: Limite Express (solo si aplica) -->
+                            <div class="param-section" id="express-limit-section" style="display: none;">
+                                <div class="param-section-header">
+                                    <span class="param-section-icon">⚠️</span>
+                                    <div class="param-section-info">
+                                        <h3 data-i18n="dbControl.expressLimit">Limite SQL Server Express</h3>
+                                        <p data-i18n="dbControl.expressLimitDesc">Uso de espacio respecto al limite de 10 GB</p>
+                                    </div>
+                                </div>
+                                <div id="express-limit-container"></div>
+                            </div>
+
                             <!-- Seccion: Espacio -->
                             <div class="param-section">
                                 <div class="param-section-header">
@@ -665,13 +677,16 @@
 
         // ==================== RENDERIZAR INFO ====================
         function renderDbInfo(data) {
+            console.log('DB Info:', JSON.stringify({edition: data.edition, database_size_mb: data.space?.database_size_mb}));
             // Servidor
             const serverGrid = document.getElementById('server-info-grid');
             const versionShort = data.version ? data.version.split('\n')[0].split('-')[0].trim() : 'N/A';
+            const editionStr = data.edition || '';
             serverGrid.innerHTML = `
                 ${infoCard(t('dbControl.serverName'), data.server_name || 'N/A')}
                 ${infoCard(t('dbControl.database'), data.database_name || 'N/A')}
                 ${infoCard(t('dbControl.version'), versionShort)}
+                ${editionStr ? infoCard(t('dbControl.edition') || 'Edicion', editionStr) : ''}
                 ${infoCard(t('dbControl.collation'), data.collation || 'N/A')}
                 ${infoCard(t('dbControl.recoveryModel'), data.recovery_model || 'N/A')}
                 ${data.server ? infoCard(t('dbControl.cpuCount'), data.server.cpu_count) : ''}
@@ -680,6 +695,36 @@
                 ${data.objects ? infoCard(t('dbControl.tables'), data.objects.tables) : ''}
                 ${data.objects ? infoCard(t('dbControl.views'), data.objects.views) : ''}
             `;
+
+            // Express limit
+            const isExpress = editionStr.toLowerCase().includes('express');
+            if (isExpress && data.space && data.space.database_size_mb != null) {
+                const EXPRESS_LIMIT_MB = 10240; // 10 GB
+                const usedMb = data.space.database_size_mb;
+                const availableMb = Math.max(0, EXPRESS_LIMIT_MB - usedMb);
+                const pct = Math.min(100, (usedMb / EXPRESS_LIMIT_MB) * 100);
+                const usedGb = (usedMb / 1024).toFixed(2);
+                const availableGb = (availableMb / 1024).toFixed(2);
+                const pctClass = pct >= 90 ? 'danger' : pct >= 75 ? 'warning' : '';
+                const pctColor = pct >= 90 ? '#c62828' : pct >= 75 ? '#e65100' : 'var(--primary)';
+
+                document.getElementById('express-limit-section').style.display = 'block';
+                document.getElementById('express-limit-container').innerHTML = `
+                    <div class="express-limit-card">
+                        <div class="express-limit-header">
+                            <span class="express-label">${t('dbControl.expressUsed') || 'Usado'}: ${usedGb} GB / 10 GB</span>
+                            <span class="express-value" style="color: ${pctColor};">${pct.toFixed(1)}%</span>
+                        </div>
+                        <div class="express-progress-bar">
+                            <div class="express-progress-fill ${pctClass}" style="width: ${pct}%;"></div>
+                        </div>
+                        <div class="express-limit-details">
+                            <span>${t('dbControl.expressAvailable') || 'Disponible'}: ${availableGb} GB</span>
+                            <span>${t('dbControl.expressLimitLabel') || 'Limite Express'}: 10 GB</span>
+                        </div>
+                    </div>
+                `;
+            }
 
             // Espacio
             const spaceGrid = document.getElementById('space-info-grid');
@@ -699,9 +744,12 @@
             // Archivos
             const filesContainer = document.getElementById('files-info-container');
             if (data.files && data.files.length > 0) {
-                let filesHtml = '<div style="overflow-x: auto;"><table class="db-info-table"><thead><tr>';
+                // Tabla desktop
+                let filesHtml = '<div class="db-info-table-wrapper" style="overflow-x: auto;"><table class="db-info-table"><thead><tr>';
                 filesHtml += `<th>${t('dbControl.fileName')}</th><th>${t('dbControl.fileType')}</th><th>${t('dbControl.sizeMb')}</th><th>${t('dbControl.maxSizeMb')}</th><th>${t('dbControl.growth')}</th>`;
                 filesHtml += '</tr></thead><tbody>';
+                // Cards móvil
+                let cardsHtml = '<div class="db-info-cards">';
                 data.files.forEach(f => {
                     const maxSize = f.max_size_mb === -1 ? t('dbControl.unlimited') : (f.max_size_mb === 0 ? t('dbControl.noGrowth') : `${f.max_size_mb.toLocaleString()} MB`);
                     filesHtml += `<tr>
@@ -711,9 +759,18 @@
                         <td>${maxSize}</td>
                         <td>${f.growth}</td>
                     </tr>`;
+                    cardsHtml += `<div class="db-info-card">
+                        <div class="db-info-card-header">${f.name}</div>
+                        <div class="db-info-card-subtitle">${f.physical_name}</div>
+                        <div class="db-info-card-row"><span class="db-info-card-label">${t('dbControl.fileType')}</span><span class="db-info-card-value">${f.type}</span></div>
+                        <div class="db-info-card-row"><span class="db-info-card-label">${t('dbControl.sizeMb')}</span><span class="db-info-card-value">${f.size_mb.toLocaleString()} MB</span></div>
+                        <div class="db-info-card-row"><span class="db-info-card-label">${t('dbControl.maxSizeMb')}</span><span class="db-info-card-value">${maxSize}</span></div>
+                        <div class="db-info-card-row"><span class="db-info-card-label">${t('dbControl.growth')}</span><span class="db-info-card-value">${f.growth}</span></div>
+                    </div>`;
                 });
                 filesHtml += '</tbody></table></div>';
-                filesContainer.innerHTML = filesHtml;
+                cardsHtml += '</div>';
+                filesContainer.innerHTML = filesHtml + cardsHtml;
             } else {
                 filesContainer.innerHTML = '<div class="param-card"><div class="param-info"><p>N/A</p></div></div>';
             }
@@ -721,19 +778,28 @@
             // Top tablas
             const tablesContainer = document.getElementById('tables-info-container');
             if (data.top_tables && data.top_tables.length > 0) {
-                let tablesHtml = '<div style="overflow-x: auto;"><table class="db-info-table"><thead><tr>';
+                // Tabla desktop
+                let tablesHtml = '<div class="db-info-table-wrapper" style="overflow-x: auto;"><table class="db-info-table"><thead><tr>';
                 tablesHtml += `<th>#</th><th>${t('dbControl.tableName')}</th><th>${t('dbControl.rows')}</th><th>${t('dbControl.sizeMb')}</th>`;
                 tablesHtml += '</tr></thead><tbody>';
-                data.top_tables.forEach((t, i) => {
+                // Cards móvil
+                let tCardsHtml = '<div class="db-info-cards">';
+                data.top_tables.forEach((tbl, i) => {
                     tablesHtml += `<tr>
                         <td>${i + 1}</td>
-                        <td><strong>${t.name}</strong></td>
-                        <td>${Number(t.rows).toLocaleString()}</td>
-                        <td>${t.size_mb.toLocaleString()} MB</td>
+                        <td><strong>${tbl.name}</strong></td>
+                        <td>${Number(tbl.rows).toLocaleString()}</td>
+                        <td>${tbl.size_mb.toLocaleString()} MB</td>
                     </tr>`;
+                    tCardsHtml += `<div class="db-info-card">
+                        <div class="db-info-card-header"><span class="db-info-card-rank">${i + 1}</span>${tbl.name}</div>
+                        <div class="db-info-card-row"><span class="db-info-card-label">${t('dbControl.rows')}</span><span class="db-info-card-value">${Number(tbl.rows).toLocaleString()}</span></div>
+                        <div class="db-info-card-row"><span class="db-info-card-label">${t('dbControl.sizeMb')}</span><span class="db-info-card-value">${tbl.size_mb.toLocaleString()} MB</span></div>
+                    </div>`;
                 });
                 tablesHtml += '</tbody></table></div>';
-                tablesContainer.innerHTML = tablesHtml;
+                tCardsHtml += '</div>';
+                tablesContainer.innerHTML = tablesHtml + tCardsHtml;
             } else {
                 tablesContainer.innerHTML = '<div class="param-card"><div class="param-info"><p>N/A</p></div></div>';
             }

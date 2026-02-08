@@ -592,6 +592,12 @@
     "unlimited": "Ilimitado",
     "noGrowth": "Sin crecimiento",
     "tableName": "Tabla",
-    "rows": "Filas"
+    "rows": "Filas",
+    "edition": "Edicion",
+    "expressLimit": "Limite SQL Server Express",
+    "expressLimitDesc": "Uso de espacio respecto al limite de 10 GB",
+    "expressUsed": "Usado",
+    "expressAvailable": "Disponible",
+    "expressLimitLabel": "Limite Express"
   }
 }
