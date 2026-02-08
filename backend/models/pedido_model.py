@@ -26,6 +26,61 @@ logger = logging.getLogger(__name__)
 
 
 class PedidoModel:
+    _has_numpedcli = None  # Cache: None=unknown, True/False
+
+    @classmethod
+    def _check_numpedcli(cls, cursor):
+        """Comprueba si la vista tiene el campo numpedcli (solo una vez)."""
+        if cls._has_numpedcli is None:
+            try:
+                cursor.execute("SELECT COL_LENGTH('view_externos_venped', 'numpedcli')")
+                result = cursor.fetchone()
+                cls._has_numpedcli = result[0] is not None
+            except Exception:
+                cls._has_numpedcli = False
+            logger.info(f'[PEDIDO] view_externos_venped.numpedcli exists: {cls._has_numpedcli}')
+        return cls._has_numpedcli
+
+    @staticmethod
+    def _map_pedido_row(row, has_numpedcli, offset=1):
+        """Mapea una fila de la query paginada a dict. offset=1 para ROW_NUMBER, 0 para get_by_id."""
+        o = offset
+        if has_numpedcli:
+            numpedcli_val = row[16 + o].strip() if row[16 + o] else ''
+            pais_idx = 17 + o
+            prov_idx = 18 + o
+        else:
+            numpedcli_val = ''
+            pais_idx = 16 + o
+            prov_idx = 17 + o
+
+        result = {
+            'empresa': row[0 + o],
+            'anyo': row[1 + o],
+            'pedido': row[2 + o],
+            'fecha': row[3 + o].isoformat() if row[3 + o] else None,
+            'fecha_entrega': row[4 + o].isoformat() if row[4 + o] else None,
+            'cliente': row[5 + o],
+            'cliente_nombre': row[6 + o],
+            'pedido_cliente': row[7 + o],
+            'serie': row[8 + o],
+            'bruto': round(float(row[9 + o]), 2) if row[9 + o] else 0,
+            'importe_dto': round(float(row[10 + o]), 2) if row[10 + o] else 0,
+            'total': round(float(row[11 + o]), 2) if row[11 + o] else 0,
+            'peso': round(float(row[12 + o]), 2) if row[12 + o] else 0,
+            'divisa': row[13 + o],
+            'usuario': row[14 + o],
+            'fecha_alta': row[15 + o].isoformat() if row[15 + o] else None,
+            'numpedcli': numpedcli_val,
+        }
+
+        # pais/provincia only in paginated queries (offset=1)
+        if offset == 1:
+            result['pais_nombre'] = row[pais_idx] if row[pais_idx] else ''
+            result['provincia_nombre'] = row[prov_idx] if row[prov_idx] else ''
+
+        return result
+
     @staticmethod
     def get_by_user(cliente_id, empresa_id=None, anyo=None, fecha_desde=None, fecha_hasta=None, page=1, page_size=50):
         """
@@ -40,6 +95,8 @@ class PedidoModel:
         logger.warning(f'[PERF-MODEL] get_connection: {t1-t0:.3f}s')
 
         cursor = conn.cursor()
+        has_numpedcli = PedidoModel._check_numpedcli(cursor)
+        numpedcli_sql = "RTRIM(ISNULL(v.numpedcli, '')) AS numpedcli," if has_numpedcli else ""
 
         # Build WHERE (prefixed with v. for JOINs)
         where_parts = ["v.cliente = ?"]
@@ -78,7 +135,7 @@ class PedidoModel:
                        ROUND(v.bruto, 2) AS bruto, ROUND(v.importe_dto, 2) AS importe_dto,
                        ROUND(v.total, 2) AS total, ROUND(v.peso, 2) AS peso,
                        v.divisa, v.usuario, v.fecha_alta,
-                       RTRIM(ISNULL(v.numpedcli, '')) AS numpedcli,
+                       {numpedcli_sql}
                        RTRIM(ISNULL(pa.nombre, '')) AS pais_nombre,
                        RTRIM(ISNULL(pr.nombre, '')) AS provincia_nombre
                 FROM view_externos_venped v
@@ -101,29 +158,7 @@ class PedidoModel:
         t5 = time.time()
         logger.warning(f'[PERF-MODEL] fetchall: {t5-t4:.3f}s | rows={len(rows)}')
 
-        pedidos = []
-        for row in rows:
-            pedidos.append({
-                'empresa': row[1],
-                'anyo': row[2],
-                'pedido': row[3],
-                'fecha': row[4].isoformat() if row[4] else None,
-                'fecha_entrega': row[5].isoformat() if row[5] else None,
-                'cliente': row[6],
-                'cliente_nombre': row[7],
-                'pedido_cliente': row[8],
-                'serie': row[9],
-                'bruto': round(float(row[10]), 2) if row[10] else 0,
-                'importe_dto': round(float(row[11]), 2) if row[11] else 0,
-                'total': round(float(row[12]), 2) if row[12] else 0,
-                'peso': round(float(row[13]), 2) if row[13] else 0,
-                'divisa': row[14],
-                'usuario': row[15],
-                'fecha_alta': row[16].isoformat() if row[16] else None,
-                'numpedcli': row[17].strip() if row[17] else '',
-                'pais_nombre': row[18] if row[18] else '',
-                'provincia_nombre': row[19] if row[19] else ''
-            })
+        pedidos = [PedidoModel._map_pedido_row(row, has_numpedcli, offset=1) for row in rows]
 
         t6 = time.time()
         logger.warning(f'[PERF-MODEL] Python mapping: {t6-t5:.3f}s | TOTAL model: {t6-t0:.3f}s')
@@ -146,14 +181,17 @@ class PedidoModel:
         """
         conn = Database.get_connection()
         cursor = conn.cursor()
+        has_numpedcli = PedidoModel._check_numpedcli(cursor)
+        numpedcli_sql = "RTRIM(ISNULL(numpedcli, '')) AS numpedcli," if has_numpedcli else ""
 
-        cursor.execute("""
+        cursor.execute(f"""
             SELECT empresa, anyo, pedido, fecha, fecha_entrega, cliente,
                    cliente_nombre, pedido_cliente, serie,
                    ROUND(bruto, 2) AS bruto, ROUND(importe_dto, 2) AS importe_dto,
                    ROUND(total, 2) AS total, ROUND(peso, 2) AS peso,
                    divisa, usuario, fecha_alta,
-                   RTRIM(ISNULL(numpedcli, '')) AS numpedcli
+                   {numpedcli_sql}
+                   empresa AS _dummy
             FROM view_externos_venped
             WHERE empresa = ? AND anyo = ? AND pedido = ?
         """, (empresa, anyo, pedido))
@@ -163,26 +201,8 @@ class PedidoModel:
             conn.close()
             return None
 
-        pedido_data = {
-            'empresa': row[0],
-            'anyo': row[1],
-            'pedido': row[2],
-            'fecha': row[3].isoformat() if row[3] else None,
-            'fecha_entrega': row[4].isoformat() if row[4] else None,
-            'cliente': row[5],
-            'cliente_nombre': row[6],
-            'pedido_cliente': row[7],
-            'serie': row[8],
-            'bruto': round(float(row[9]), 2) if row[9] else 0,
-            'importe_dto': round(float(row[10]), 2) if row[10] else 0,
-            'total': round(float(row[11]), 2) if row[11] else 0,
-            'peso': round(float(row[12]), 2) if row[12] else 0,
-            'divisa': row[13],
-            'usuario': row[14],
-            'fecha_alta': row[15].isoformat() if row[15] else None,
-            'numpedcli': row[16].strip() if row[16] else '',
-            'lineas': []
-        }
+        pedido_data = PedidoModel._map_pedido_row(row, has_numpedcli, offset=0)
+        pedido_data['lineas'] = []
 
         cursor.execute("""
             SELECT l.linea, l.articulo, l.descripcion, l.formato, l.calidad, l.tono,
@@ -233,6 +253,8 @@ class PedidoModel:
         logger.warning(f'[PERF-MODEL] get_connection: {t1-t0:.3f}s')
 
         cursor = conn.cursor()
+        has_numpedcli = PedidoModel._check_numpedcli(cursor)
+        numpedcli_sql = "RTRIM(ISNULL(v.numpedcli, '')) AS numpedcli," if has_numpedcli else ""
 
         # Build WHERE (prefixed with v. for JOINs)
         where_parts = ["1=1"]
@@ -280,7 +302,7 @@ class PedidoModel:
                        ROUND(v.bruto, 2) AS bruto, ROUND(v.importe_dto, 2) AS importe_dto,
                        ROUND(v.total, 2) AS total, ROUND(v.peso, 2) AS peso,
                        v.divisa, v.usuario, v.fecha_alta,
-                       RTRIM(ISNULL(v.numpedcli, '')) AS numpedcli,
+                       {numpedcli_sql}
                        RTRIM(ISNULL(pa.nombre, '')) AS pais_nombre,
                        RTRIM(ISNULL(pr.nombre, '')) AS provincia_nombre
                 FROM view_externos_venped v
@@ -303,29 +325,7 @@ class PedidoModel:
         t5 = time.time()
         logger.warning(f'[PERF-MODEL] fetchall: {t5-t4:.3f}s | rows={len(rows)}')
 
-        pedidos = []
-        for row in rows:
-            pedidos.append({
-                'empresa': row[1],
-                'anyo': row[2],
-                'pedido': row[3],
-                'fecha': row[4].isoformat() if row[4] else None,
-                'fecha_entrega': row[5].isoformat() if row[5] else None,
-                'cliente': row[6],
-                'cliente_nombre': row[7],
-                'pedido_cliente': row[8],
-                'serie': row[9],
-                'bruto': round(float(row[10]), 2) if row[10] else 0,
-                'importe_dto': round(float(row[11]), 2) if row[11] else 0,
-                'total': round(float(row[12]), 2) if row[12] else 0,
-                'peso': round(float(row[13]), 2) if row[13] else 0,
-                'divisa': row[14],
-                'usuario': row[15],
-                'fecha_alta': row[16].isoformat() if row[16] else None,
-                'numpedcli': row[17].strip() if row[17] else '',
-                'pais_nombre': row[18] if row[18] else '',
-                'provincia_nombre': row[19] if row[19] else ''
-            })
+        pedidos = [PedidoModel._map_pedido_row(row, has_numpedcli, offset=1) for row in rows]
 
         t6 = time.time()
         logger.warning(f'[PERF-MODEL] Python mapping: {t6-t5:.3f}s | TOTAL model: {t6-t0:.3f}s')
