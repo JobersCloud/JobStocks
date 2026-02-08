@@ -668,7 +668,7 @@
                                 <div class="proposal-line-info">
                                     <div class="proposal-line-header">
                                         <span class="proposal-line-code">${line.codigo}</span>
-                                        <span class="proposal-line-qty">${line.cantidad_solicitada} ${line.unidad}</span>
+                                        <span class="proposal-line-qty">${Number(line.cantidad_solicitada).toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${line.unidad}</span>
                                     </div>
                                     <div class="proposal-line-desc">${line.descripcion}</div>
                                     <div class="proposal-line-details">

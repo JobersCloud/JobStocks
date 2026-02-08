@@ -2629,7 +2629,7 @@ async function verDetalle(stock) {
     try { fetch(`${API_URL}/api/stocks/${encodeURIComponent(stock.codigo)}/view`, { method: 'POST', credentials: 'include' }); } catch(e) {}
 
     // Formatear existencias con separador de miles
-    const existenciasFormatted = parseFloat(stock.existencias).toLocaleString('en-US', {
+    const existenciasFormatted = parseFloat(stock.existencias).toLocaleString('es-ES', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     });
@@ -2704,7 +2704,7 @@ async function verDetalle(stock) {
                     const decimalesUnidadesCaja = getDecimalPlaces(stock.unidadescaja);
                     const unidadesPallet = stock.unidadescaja * stock.cajaspallet;
                     const unidadesPalletRedondeado = redondearADecimales(unidadesPallet, decimalesUnidadesCaja);
-                    return parseFloat(unidadesPalletRedondeado).toLocaleString('en-US', {
+                    return parseFloat(unidadesPalletRedondeado).toLocaleString('es-ES', {
                         minimumFractionDigits: decimalesUnidadesCaja,
                         maximumFractionDigits: decimalesUnidadesCaja
                     });
@@ -2717,7 +2717,7 @@ async function verDetalle(stock) {
                     <div class="detail-packaging-icon">⚖️</div>
                     <div class="detail-packaging-info">
                         <div class="detail-packaging-label">${t('detail.weightPerBox')}</div>
-                        <div class="detail-packaging-value">${stock.pesocaja.toLocaleString('en-US', {
+                        <div class="detail-packaging-value">${stock.pesocaja.toLocaleString('es-ES', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                 })} kg</div>
@@ -2729,7 +2729,7 @@ async function verDetalle(stock) {
                     <div class="detail-packaging-icon">🏋️</div>
                     <div class="detail-packaging-info">
                         <div class="detail-packaging-label">${t('detail.weightPerPallet')}</div>
-                        <div class="detail-packaging-value">${stock.pesopallet.toLocaleString('en-US', {
+                        <div class="detail-packaging-value">${stock.pesopallet.toLocaleString('es-ES', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                 })} kg</div>
@@ -3094,7 +3094,7 @@ function getBadgeWithUnit(existencias, unidad) {
 
     const unidadText = unidad ? ` ${unidad}` : '';
     // Formatear con separador de miles
-    const numFormatted = num.toLocaleString('en-US', {
+    const numFormatted = num.toLocaleString('es-ES', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     });
@@ -3102,7 +3102,7 @@ function getBadgeWithUnit(existencias, unidad) {
 }
 
 function formatNumber(num) {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('es-ES', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     }).format(num);
@@ -3176,7 +3176,7 @@ function formatearCantidadEmpaquetado(cantidad) {
     const decimales = getDecimalPlaces(cantidad);
 
     // Formatear con los decimales detectados
-    return parseFloat(cantidad).toLocaleString('en-US', {
+    return parseFloat(cantidad).toLocaleString('es-ES', {
         minimumFractionDigits: decimales,
         maximumFractionDigits: decimales
     });
@@ -3193,7 +3193,7 @@ function redondearADecimales(numero, decimales) {
 
 // Modal para pedir cantidad con botones + y -
 function mostrarModalCantidad(stock) {
-    const existenciasFormatted = parseFloat(stock.existencias).toLocaleString('en-US', {
+    const existenciasFormatted = parseFloat(stock.existencias).toLocaleString('es-ES', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     });
@@ -3496,11 +3496,11 @@ function verCarrito() {
 
     carrito.forEach((item, index) => {
         // Formatear existencias y cantidad con separador de miles
-        const existenciasFormatted = parseFloat(item.existencias).toLocaleString('en-US', {
+        const existenciasFormatted = parseFloat(item.existencias).toLocaleString('es-ES', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
-        const cantidadFormatted = parseFloat(item.cantidad_solicitada).toLocaleString('en-US', {
+        const cantidadFormatted = parseFloat(item.cantidad_solicitada).toLocaleString('es-ES', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
