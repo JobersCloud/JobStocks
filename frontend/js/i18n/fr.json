@@ -262,6 +262,7 @@
     "audit": "Audit",
     "changePassword": "Changer le Mot de Passe",
     "allOrders": "Commandes",
+    "dbControl": "Contrôle BD",
     "logout": "Déconnexion"
   },
   "orders": {
@@ -289,7 +290,11 @@
     "filterClient": "Client",
     "noOrdersAdmin": "Aucune commande",
     "noAddress": "Aucune adresse disponible pour ce client",
-    "viewLocation": "Voir l'emplacement"
+    "viewLocation": "Voir l'emplacement",
+    "image": "Image",
+    "format": "Format",
+    "filterCountry": "Pays",
+    "filterProvince": "Province"
   },
   "empresaLogo": {
     "title": "Logo d'Entreprise",
@@ -550,5 +555,43 @@
     "opOnOrBefore": "Jusqu'à",
     "records": "enregistrements",
     "filteredFrom": "filtrés sur"
+  },
+  "dbControl": {
+    "title": "Contrôle de Base de Données",
+    "errorLoading": "Erreur lors du chargement des infos BD",
+    "serverInfo": "Serveur",
+    "serverInfoDesc": "Informations du serveur SQL Server",
+    "spaceInfo": "Espace",
+    "spaceInfoDesc": "Utilisation de l'espace disque",
+    "filesInfo": "Fichiers",
+    "filesInfoDesc": "Fichiers de la base de données",
+    "topTables": "Tables les plus grandes",
+    "topTablesDesc": "Les 10 tables les plus volumineuses",
+    "versionFull": "Version complète",
+    "serverName": "Serveur",
+    "database": "Base de données",
+    "version": "Version",
+    "collation": "Collation",
+    "recoveryModel": "Modèle de récupération",
+    "cpuCount": "CPUs",
+    "memory": "Mémoire RAM",
+    "startTime": "Démarrage du serveur",
+    "tables": "Tables",
+    "views": "Vues",
+    "databaseSize": "Taille BD",
+    "unallocated": "Non alloué",
+    "reserved": "Réservé",
+    "dataUsed": "Données",
+    "indexSize": "Index",
+    "unused": "Inutilisé",
+    "fileName": "Nom",
+    "fileType": "Type",
+    "sizeMb": "Taille (Mo)",
+    "maxSizeMb": "Max (Mo)",
+    "growth": "Croissance",
+    "unlimited": "Illimité",
+    "noGrowth": "Pas de croissance",
+    "tableName": "Table",
+    "rows": "Lignes"
   }
 }

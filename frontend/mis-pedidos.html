@@ -45,7 +45,7 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.22.18">
+    <link rel="stylesheet" href="css/styles.css?v=1.23.0">
 </head>
 <body>
     <div class="app-layout">
@@ -303,6 +303,16 @@
                             </span>
                             <span class="sidebar-item-text" data-i18n="menu.companyLogo">Logo</span>
                         </a>
+                        <a class="sidebar-item" data-page="control-bd.html" data-tooltip="Control BD" onclick="SidebarNav.navigateTo('control-bd.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.dbControl">Control BD</span>
+                        </a>
                     </div>
                 </div>
             </nav>
@@ -413,6 +423,8 @@
                 columns: [
                     { key: 'pedido', label: '# Pedido', tipo: 'numero' },
                     { key: 'fecha', label: t('orders.date') || 'Fecha', tipo: 'texto' },
+                    { key: 'pais_nombre', label: t('orders.filterCountry') || 'Pais', tipo: 'texto' },
+                    { key: 'provincia_nombre', label: t('orders.filterProvince') || 'Provincia', tipo: 'texto' },
                     { key: 'total', label: t('orders.total') || 'Total', tipo: 'numero', align: 'right' },
                     { key: 'serie', label: 'Serie', tipo: 'texto' },
                     { key: 'peso', label: 'Peso', tipo: 'numero', align: 'right' },
@@ -423,6 +435,7 @@
                         case 'pedido': return `<strong>${item.anyo}/${item.pedido}</strong>`;
                         case 'fecha': return PageCommon.formatDate(item.fecha);
                         case 'total': return `${PageCommon.formatCurrency(item.total)} ${item.divisa || 'EUR'}`;
+                        case 'peso': return item.peso != null ? PageCommon.formatCurrency(item.peso) : '-';
                         case '_actions': return `
                             <div class="action-buttons btn-icon-group">
                                 <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewOrderDetails(${item.empresa}, ${item.anyo}, ${item.pedido})" title="${t('orders.viewDetails')}">
@@ -441,13 +454,21 @@
                             </div>
                             <div class="proposal-card-date">${PageCommon.formatDate(item.fecha)}</div>
                             <div class="proposal-card-info">
+                                ${item.pais_nombre ? `<div class="proposal-card-info-item">
+                                    <label>${t('orders.filterCountry')}</label>
+                                    <span>${item.pais_nombre}</span>
+                                </div>` : ''}
+                                ${item.provincia_nombre ? `<div class="proposal-card-info-item">
+                                    <label>${t('orders.filterProvince')}</label>
+                                    <span>${item.provincia_nombre}</span>
+                                </div>` : ''}
                                 <div class="proposal-card-info-item">
                                     <label>Serie</label>
                                     <span>${item.serie || '-'}</span>
                                 </div>
                                 <div class="proposal-card-info-item">
                                     <label>Peso</label>
-                                    <span>${item.peso || '-'}</span>
+                                    <span>${item.peso != null ? PageCommon.formatCurrency(item.peso) : '-'}</span>
                                 </div>
                             </div>
                             <div class="proposal-card-actions btn-icon-group" style="justify-content: center;">
@@ -544,17 +565,21 @@
                         <div class="table-scroll-container">
                             <table class="proposals-table" style="min-width: auto;">
                                 <thead><tr>
+                                    <th style="width:60px;">${t('orders.image')}</th>
                                     <th>${t('orders.article')}</th>
                                     <th>${t('orders.description')}</th>
+                                    <th>${t('orders.format')}</th>
                                     <th class="text-right">${t('orders.quantity')}</th>
                                     <th class="text-right">${t('orders.price')}</th>
                                     <th class="text-right">${t('orders.amount')}</th>
                                 </tr></thead>
                                 <tbody>
                                     ${lines.map(line => `<tr>
+                                        <td>${line.thumbnail ? `<img src="data:image/jpeg;base64,${line.thumbnail}" class="order-line-thumb" alt="">` : '<span class="order-line-no-img">—</span>'}</td>
                                         <td><strong>${line.articulo}</strong></td>
                                         <td>${line.descripcion}</td>
-                                        <td class="text-right">${line.cantidad}</td>
+                                        <td>${line.formato_abreviado || line.formato || '-'}</td>
+                                        <td class="text-right">${PageCommon.formatCurrency(line.cantidad)}</td>
                                         <td class="text-right">${PageCommon.formatCurrency(line.precio)}</td>
                                         <td class="text-right">${PageCommon.formatCurrency(line.importe)}</td>
                                     </tr>`).join('')}
@@ -565,15 +590,24 @@
                     <div class="order-lines-cards">
                         ${lines.map(line => `
                             <div class="order-line-card">
-                                <div class="order-line-card-header">
-                                    <span class="order-line-card-code">${line.articulo}</span>
-                                    <span class="order-line-card-amount">${PageCommon.formatCurrency(line.importe)}</span>
+                                <div class="order-line-card-top">
+                                    ${line.thumbnail ? `<img src="data:image/jpeg;base64,${line.thumbnail}" class="order-line-card-thumb" alt="">` : ''}
+                                    <div class="order-line-card-top-info">
+                                        <div class="order-line-card-header">
+                                            <span class="order-line-card-code">${line.articulo}</span>
+                                            <span class="order-line-card-amount">${PageCommon.formatCurrency(line.importe)}</span>
+                                        </div>
+                                        <div class="order-line-card-desc">${line.descripcion}</div>
+                                    </div>
                                 </div>
-                                <div class="order-line-card-desc">${line.descripcion}</div>
                                 <div class="order-line-card-details">
                                     <div class="order-line-card-detail">
+                                        <span class="detail-label">${t('orders.format')}</span>
+                                        <span class="detail-value">${line.formato_abreviado || line.formato || '-'}</span>
+                                    </div>
+                                    <div class="order-line-card-detail">
                                         <span class="detail-label">${t('orders.quantity')}</span>
-                                        <span class="detail-value">${line.cantidad}</span>
+                                        <span class="detail-value">${PageCommon.formatCurrency(line.cantidad)}</span>
                                     </div>
                                     <div class="order-line-card-detail">
                                         <span class="detail-label">${t('orders.price')}</span>

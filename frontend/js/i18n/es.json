@@ -262,6 +262,7 @@
     "audit": "Auditoría",
     "changePassword": "Cambiar Contraseña",
     "allOrders": "Pedidos",
+    "dbControl": "Control BD",
     "logout": "Cerrar Sesión"
   },
   "orders": {
@@ -289,7 +290,11 @@
     "filterClient": "Cliente",
     "noOrdersAdmin": "No hay pedidos",
     "noAddress": "No hay dirección disponible para este cliente",
-    "viewLocation": "Ver ubicación"
+    "viewLocation": "Ver ubicación",
+    "image": "Imagen",
+    "format": "Formato",
+    "filterCountry": "Pais",
+    "filterProvince": "Provincia"
   },
   "empresaLogo": {
     "title": "Logo de Empresa",
@@ -550,5 +555,43 @@
     "opOnOrBefore": "Hasta",
     "records": "registros",
     "filteredFrom": "filtrados de"
+  },
+  "dbControl": {
+    "title": "Control de Base de Datos",
+    "errorLoading": "Error al cargar informacion de la BD",
+    "serverInfo": "Servidor",
+    "serverInfoDesc": "Informacion del servidor SQL Server",
+    "spaceInfo": "Espacio",
+    "spaceInfoDesc": "Uso de espacio en disco",
+    "filesInfo": "Archivos",
+    "filesInfoDesc": "Archivos de la base de datos",
+    "topTables": "Tablas mas grandes",
+    "topTablesDesc": "Las 10 tablas que ocupan mas espacio",
+    "versionFull": "Version completa",
+    "serverName": "Servidor",
+    "database": "Base de datos",
+    "version": "Version",
+    "collation": "Collation",
+    "recoveryModel": "Modelo de recuperacion",
+    "cpuCount": "CPUs",
+    "memory": "Memoria RAM",
+    "startTime": "Inicio del servidor",
+    "tables": "Tablas",
+    "views": "Vistas",
+    "databaseSize": "Tamano BD",
+    "unallocated": "Sin asignar",
+    "reserved": "Reservado",
+    "dataUsed": "Datos",
+    "indexSize": "Indices",
+    "unused": "Sin usar",
+    "fileName": "Nombre",
+    "fileType": "Tipo",
+    "sizeMb": "Tamano (MB)",
+    "maxSizeMb": "Max (MB)",
+    "growth": "Crecimiento",
+    "unlimited": "Ilimitado",
+    "noGrowth": "Sin crecimiento",
+    "tableName": "Tabla",
+    "rows": "Filas"
   }
 }

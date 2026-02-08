@@ -36,6 +36,7 @@ from routes.user_session_routes import user_session_bp
 from routes.empresa_routes import empresa_bp
 from routes.audit_routes import audit_bp
 from routes.pedido_routes import pedido_bp
+from routes.db_info_routes import db_info_bp
 from database.users_db import verify_user, get_user_by_id
 from models.user import User
 from models.user_session_model import UserSessionModel
@@ -136,7 +137,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.22.18'
+APP_VERSION = 'v1.24.3'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -267,6 +268,7 @@ app.register_blueprint(user_session_bp)
 app.register_blueprint(empresa_bp)
 app.register_blueprint(audit_bp)
 app.register_blueprint(pedido_bp)
+app.register_blueprint(db_info_bp)
 
 # ==================== RUTAS DE AUTENTICACIÓN ====================
 
@@ -349,6 +351,11 @@ def empresa_logo_page():
 @login_required
 def auditoria_page():
     return send_from_directory(FRONTEND_DIR, 'auditoria.html')
+
+@app.route('/control-bd.html')
+@login_required
+def control_bd_page():
+    return send_from_directory(FRONTEND_DIR, 'control-bd.html')
 
 @app.route('/api/login', methods=['POST'])
 @limiter.limit("5 per minute")  # Máximo 5 intentos por minuto por IP

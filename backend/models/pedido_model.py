@@ -41,27 +41,27 @@ class PedidoModel:
 
         cursor = conn.cursor()
 
-        # Build WHERE
-        where_parts = ["cliente = ?"]
+        # Build WHERE (prefixed with v. for JOINs)
+        where_parts = ["v.cliente = ?"]
         params = [cliente_id]
 
         if empresa_id:
-            where_parts.append("empresa = ?")
+            where_parts.append("v.empresa = ?")
             params.append(empresa_id)
         if anyo:
-            where_parts.append("anyo = ?")
+            where_parts.append("v.anyo = ?")
             params.append(anyo)
         if fecha_desde:
-            where_parts.append("fecha >= ?")
+            where_parts.append("v.fecha >= ?")
             params.append(fecha_desde)
         if fecha_hasta:
-            where_parts.append("fecha <= ?")
+            where_parts.append("v.fecha <= ?")
             params.append(fecha_hasta)
 
         where = " AND ".join(where_parts)
 
         # 1. Count total
-        cursor.execute(f"SELECT COUNT(*) FROM view_externos_venped WHERE {where}", params)
+        cursor.execute(f"SELECT COUNT(*) FROM view_externos_venped v WHERE {where}", params)
         total = cursor.fetchone()[0]
         t2 = time.time()
         logger.warning(f'[PERF-MODEL] COUNT: {t2-t1:.3f}s | total={total}')
@@ -72,11 +72,17 @@ class PedidoModel:
 
         data_query = f"""
             SELECT * FROM (
-                SELECT ROW_NUMBER() OVER (ORDER BY fecha DESC, pedido DESC) AS rn,
-                       empresa, anyo, pedido, fecha, fecha_entrega, cliente,
-                       cliente_nombre, pedido_cliente, serie, bruto, importe_dto,
-                       total, peso, divisa, usuario, fecha_alta
-                FROM view_externos_venped
+                SELECT ROW_NUMBER() OVER (ORDER BY v.fecha DESC, v.pedido DESC) AS rn,
+                       v.empresa, v.anyo, v.pedido, v.fecha, v.fecha_entrega, v.cliente,
+                       v.cliente_nombre, v.pedido_cliente, v.serie, v.bruto, v.importe_dto,
+                       v.total, v.peso, v.divisa, v.usuario, v.fecha_alta,
+                       RTRIM(ISNULL(pa.nombre, '')) AS pais_nombre,
+                       RTRIM(ISNULL(pr.nombre, '')) AS provincia_nombre
+                FROM view_externos_venped v
+                LEFT JOIN cristal.dbo.genter g ON v.cliente = g.codigo AND g.tipoter = 'C'
+                LEFT JOIN cristal.dbo.paises pa ON RTRIM(ISNULL(g.pais, '')) = RTRIM(ISNULL(pa.pais, ''))
+                LEFT JOIN cristal.dbo.provincias pr ON RTRIM(ISNULL(g.pais, '')) = RTRIM(ISNULL(pr.pais, ''))
+                    AND RTRIM(ISNULL(g.provincia, '')) = RTRIM(ISNULL(pr.provincia, ''))
                 WHERE {where}
             ) sub
             WHERE rn BETWEEN ? AND ?
@@ -110,7 +116,9 @@ class PedidoModel:
                 'peso': float(row[13]) if row[13] else 0,
                 'divisa': row[14],
                 'usuario': row[15],
-                'fecha_alta': row[16].isoformat() if row[16] else None
+                'fecha_alta': row[16].isoformat() if row[16] else None,
+                'pais_nombre': row[17] if row[17] else '',
+                'provincia_nombre': row[18] if row[18] else ''
             })
 
         t6 = time.time()
@@ -169,12 +177,14 @@ class PedidoModel:
         }
 
         cursor.execute("""
-            SELECT linea, articulo, descripcion, formato, calidad, tono,
-                   calibre, cantidad, precio, importe, pallets, cajas,
-                   fecha_pedido, fecha_entrega, situacion
-            FROM view_externos_venliped
-            WHERE empresa = ? AND anyo = ? AND pedido = ?
-            ORDER BY linea
+            SELECT l.linea, l.articulo, l.descripcion, l.formato, l.calidad, l.tono,
+                   l.calibre, l.cantidad, l.precio, l.importe, l.pallets, l.cajas,
+                   l.fecha_pedido, l.fecha_entrega, l.situacion,
+                   f.abreviado
+            FROM view_externos_venliped l
+            LEFT JOIN cristal.dbo.formatos f ON f.empresa = l.empresa AND f.codigo = l.formato
+            WHERE l.empresa = ? AND l.anyo = ? AND l.pedido = ?
+            ORDER BY l.linea
         """, (empresa, anyo, pedido))
 
         for row in cursor.fetchall():
@@ -193,14 +203,15 @@ class PedidoModel:
                 'cajas': float(row[11]) if row[11] else 0,
                 'fecha_pedido': row[12].isoformat() if row[12] else None,
                 'fecha_entrega': row[13].isoformat() if row[13] else None,
-                'situacion': row[14]
+                'situacion': row[14],
+                'formato_abreviado': row[15].strip() if row[15] else None
             })
 
         conn.close()
         return pedido_data
 
     @staticmethod
-    def get_all(empresa_id=None, anyo=None, fecha_desde=None, fecha_hasta=None, cliente=None, page=1, page_size=50):
+    def get_all(empresa_id=None, anyo=None, fecha_desde=None, fecha_hasta=None, cliente=None, pais=None, provincia=None, page=1, page_size=50):
         """
         Obtiene todos los pedidos con paginacion servidor (para administradores).
 
@@ -214,30 +225,36 @@ class PedidoModel:
 
         cursor = conn.cursor()
 
-        # Build WHERE
+        # Build WHERE (prefixed with v. for JOINs)
         where_parts = ["1=1"]
         params = []
 
         if empresa_id:
-            where_parts.append("empresa = ?")
+            where_parts.append("v.empresa = ?")
             params.append(empresa_id)
         if anyo:
-            where_parts.append("anyo = ?")
+            where_parts.append("v.anyo = ?")
             params.append(anyo)
         if fecha_desde:
-            where_parts.append("fecha >= ?")
+            where_parts.append("v.fecha >= ?")
             params.append(fecha_desde)
         if fecha_hasta:
-            where_parts.append("fecha <= ?")
+            where_parts.append("v.fecha <= ?")
             params.append(fecha_hasta)
         if cliente:
-            where_parts.append("cliente = ?")
+            where_parts.append("v.cliente = ?")
             params.append(cliente)
+        if pais:
+            where_parts.append("v.cliente IN (SELECT codigo FROM cristal.dbo.genter WHERE tipoter = 'C' AND RTRIM(ISNULL(pais, '')) = ?)")
+            params.append(pais)
+        if provincia:
+            where_parts.append("v.cliente IN (SELECT codigo FROM cristal.dbo.genter WHERE tipoter = 'C' AND RTRIM(ISNULL(provincia, '')) = ?)")
+            params.append(provincia)
 
         where = " AND ".join(where_parts)
 
         # 1. Count total
-        cursor.execute(f"SELECT COUNT(*) FROM view_externos_venped WHERE {where}", params)
+        cursor.execute(f"SELECT COUNT(*) FROM view_externos_venped v WHERE {where}", params)
         total = cursor.fetchone()[0]
         t2 = time.time()
         logger.warning(f'[PERF-MODEL] COUNT: {t2-t1:.3f}s | total={total}')
@@ -248,11 +265,17 @@ class PedidoModel:
 
         data_query = f"""
             SELECT * FROM (
-                SELECT ROW_NUMBER() OVER (ORDER BY fecha DESC, pedido DESC) AS rn,
-                       empresa, anyo, pedido, fecha, fecha_entrega, cliente,
-                       cliente_nombre, pedido_cliente, serie, bruto, importe_dto,
-                       total, peso, divisa, usuario, fecha_alta
-                FROM view_externos_venped
+                SELECT ROW_NUMBER() OVER (ORDER BY v.fecha DESC, v.pedido DESC) AS rn,
+                       v.empresa, v.anyo, v.pedido, v.fecha, v.fecha_entrega, v.cliente,
+                       v.cliente_nombre, v.pedido_cliente, v.serie, v.bruto, v.importe_dto,
+                       v.total, v.peso, v.divisa, v.usuario, v.fecha_alta,
+                       RTRIM(ISNULL(pa.nombre, '')) AS pais_nombre,
+                       RTRIM(ISNULL(pr.nombre, '')) AS provincia_nombre
+                FROM view_externos_venped v
+                LEFT JOIN cristal.dbo.genter g ON v.cliente = g.codigo AND g.tipoter = 'C'
+                LEFT JOIN cristal.dbo.paises pa ON RTRIM(ISNULL(g.pais, '')) = RTRIM(ISNULL(pa.pais, ''))
+                LEFT JOIN cristal.dbo.provincias pr ON RTRIM(ISNULL(g.pais, '')) = RTRIM(ISNULL(pr.pais, ''))
+                    AND RTRIM(ISNULL(g.provincia, '')) = RTRIM(ISNULL(pr.provincia, ''))
                 WHERE {where}
             ) sub
             WHERE rn BETWEEN ? AND ?
@@ -286,7 +309,9 @@ class PedidoModel:
                 'peso': float(row[13]) if row[13] else 0,
                 'divisa': row[14],
                 'usuario': row[15],
-                'fecha_alta': row[16].isoformat() if row[16] else None
+                'fecha_alta': row[16].isoformat() if row[16] else None,
+                'pais_nombre': row[17] if row[17] else '',
+                'provincia_nombre': row[18] if row[18] else ''
             })
 
         t6 = time.time()
@@ -312,12 +337,14 @@ class PedidoModel:
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT linea, articulo, descripcion, formato, calidad, tono,
-                   calibre, cantidad, precio, importe, pallets, cajas,
-                   fecha_pedido, fecha_entrega, situacion
-            FROM view_externos_venliped
-            WHERE empresa = ? AND anyo = ? AND pedido = ?
-            ORDER BY linea
+            SELECT l.linea, l.articulo, l.descripcion, l.formato, l.calidad, l.tono,
+                   l.calibre, l.cantidad, l.precio, l.importe, l.pallets, l.cajas,
+                   l.fecha_pedido, l.fecha_entrega, l.situacion,
+                   f.abreviado
+            FROM view_externos_venliped l
+            LEFT JOIN cristal.dbo.formatos f ON f.empresa = l.empresa AND f.codigo = l.formato
+            WHERE l.empresa = ? AND l.anyo = ? AND l.pedido = ?
+            ORDER BY l.linea
         """, (empresa, anyo, pedido))
 
         lineas = []
@@ -337,7 +364,8 @@ class PedidoModel:
                 'cajas': float(row[11]) if row[11] else 0,
                 'fecha_pedido': row[12].isoformat() if row[12] else None,
                 'fecha_entrega': row[13].isoformat() if row[13] else None,
-                'situacion': row[14]
+                'situacion': row[14],
+                'formato_abreviado': row[15].strip() if row[15] else None
             })
 
         conn.close()

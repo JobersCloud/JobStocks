@@ -262,6 +262,7 @@
     "audit": "Audit",
     "changePassword": "Change Password",
     "allOrders": "Orders",
+    "dbControl": "DB Control",
     "logout": "Logout"
   },
   "orders": {
@@ -289,7 +290,11 @@
     "filterClient": "Customer",
     "noOrdersAdmin": "No orders found",
     "noAddress": "No address available for this customer",
-    "viewLocation": "View location"
+    "viewLocation": "View location",
+    "image": "Image",
+    "format": "Format",
+    "filterCountry": "Country",
+    "filterProvince": "Province"
   },
   "empresaLogo": {
     "title": "Company Logo",
@@ -550,5 +555,43 @@
     "opOnOrBefore": "On or before",
     "records": "records",
     "filteredFrom": "filtered from"
+  },
+  "dbControl": {
+    "title": "Database Control",
+    "errorLoading": "Error loading database info",
+    "serverInfo": "Server",
+    "serverInfoDesc": "SQL Server information",
+    "spaceInfo": "Space",
+    "spaceInfoDesc": "Disk space usage",
+    "filesInfo": "Files",
+    "filesInfoDesc": "Database files",
+    "topTables": "Largest tables",
+    "topTablesDesc": "Top 10 tables by disk usage",
+    "versionFull": "Full version",
+    "serverName": "Server",
+    "database": "Database",
+    "version": "Version",
+    "collation": "Collation",
+    "recoveryModel": "Recovery model",
+    "cpuCount": "CPUs",
+    "memory": "RAM Memory",
+    "startTime": "Server start time",
+    "tables": "Tables",
+    "views": "Views",
+    "databaseSize": "Database size",
+    "unallocated": "Unallocated",
+    "reserved": "Reserved",
+    "dataUsed": "Data",
+    "indexSize": "Indexes",
+    "unused": "Unused",
+    "fileName": "Name",
+    "fileType": "Type",
+    "sizeMb": "Size (MB)",
+    "maxSizeMb": "Max (MB)",
+    "growth": "Growth",
+    "unlimited": "Unlimited",
+    "noGrowth": "No growth",
+    "tableName": "Table",
+    "rows": "Rows"
   }
 }

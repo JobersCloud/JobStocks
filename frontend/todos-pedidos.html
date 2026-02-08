@@ -45,7 +45,7 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.22.18">
+    <link rel="stylesheet" href="css/styles.css?v=1.23.0">
 </head>
 <body>
     <div class="app-layout">
@@ -303,6 +303,16 @@
                             </span>
                             <span class="sidebar-item-text" data-i18n="menu.companyLogo">Logo</span>
                         </a>
+                        <a class="sidebar-item" data-page="control-bd.html" data-tooltip="Control BD" onclick="SidebarNav.navigateTo('control-bd.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.dbControl">Control BD</span>
+                        </a>
                     </div>
                 </div>
             </nav>
@@ -341,6 +351,18 @@
                         <div class="form-group">
                             <label data-i18n="orders.filterDateTo">Hasta</label>
                             <input type="date" id="filter-fecha-hasta">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="orders.filterCountry">Pais</label>
+                            <select id="filter-pais">
+                                <option value="">Todos</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="orders.filterProvince">Provincia</label>
+                            <select id="filter-provincia">
+                                <option value="">Todas</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label data-i18n="orders.filterClient">Cliente</label>
@@ -446,6 +468,9 @@
             await PageCommon.checkAuth('administrador');
             await PageCommon.obtenerCsrfToken();
 
+            // Cargar filtros de ubicacion
+            await loadLocationFilters();
+
             // Crear grid
             grid = new DataGrid({
                 el: '#orders-grid',
@@ -453,6 +478,8 @@
                     { key: 'pedido', label: '# Pedido', tipo: 'numero' },
                     { key: 'fecha', label: t('orders.date') || 'Fecha', tipo: 'texto' },
                     { key: 'cliente_nombre', label: t('orders.client') || 'Cliente', tipo: 'texto' },
+                    { key: 'pais_nombre', label: t('orders.filterCountry') || 'Pais', tipo: 'texto' },
+                    { key: 'provincia_nombre', label: t('orders.filterProvince') || 'Provincia', tipo: 'texto' },
                     { key: 'total', label: t('orders.total') || 'Total', tipo: 'numero', align: 'right' },
                     { key: 'serie', label: 'Serie', tipo: 'texto' },
                     { key: 'peso', label: 'Peso', tipo: 'numero', align: 'right' },
@@ -464,6 +491,7 @@
                         case 'fecha': return PageCommon.formatDate(item.fecha);
                         case 'cliente_nombre': return item.cliente_nombre || item.cliente;
                         case 'total': return `${PageCommon.formatCurrency(item.total)} ${item.divisa || 'EUR'}`;
+                        case 'peso': return item.peso != null ? PageCommon.formatCurrency(item.peso) : '-';
                         case '_actions': {
                             const codSafe = String(item.cliente || '').replace(/'/g, "\\'");
                             const nomSafe = String(item.cliente_nombre || item.cliente || '').replace(/'/g, "\\'");
@@ -495,6 +523,14 @@
                                     <label>${t('orders.client')}</label>
                                     <span>${item.cliente_nombre || item.cliente}</span>
                                 </div>
+                                ${item.pais_nombre ? `<div class="proposal-card-info-item">
+                                    <label>${t('orders.filterCountry')}</label>
+                                    <span>${item.pais_nombre}</span>
+                                </div>` : ''}
+                                ${item.provincia_nombre ? `<div class="proposal-card-info-item">
+                                    <label>${t('orders.filterProvince')}</label>
+                                    <span>${item.provincia_nombre}</span>
+                                </div>` : ''}
                             </div>
                             <div class="proposal-card-actions btn-icon-group" style="justify-content: center;">
                                 <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewOrderDetails(${item.empresa}, ${item.anyo}, ${item.pedido})" title="${t('orders.viewDetails')}">
@@ -516,6 +552,45 @@
 
             initClientAutocompletePedidos();
             await loadOrders();
+        });
+
+        // ==================== FILTROS UBICACION ====================
+        async function loadLocationFilters(selectedPais) {
+            try {
+                let url = `${API_URL}/api/pedidos/filtros-ubicacion`;
+                if (selectedPais) url += `?pais=${encodeURIComponent(selectedPais)}`;
+                const response = await fetch(url, { credentials: 'include' });
+                if (!response.ok) return;
+                const data = await response.json();
+                if (!data.success) return;
+
+                // Paises (value=codigo, text=nombre)
+                if (!selectedPais) {
+                    const selectPais = document.getElementById('filter-pais');
+                    const currentVal = selectPais.value;
+                    selectPais.innerHTML = '<option value="">Todos</option>' +
+                        data.paises.map(p => `<option value="${p.codigo}"${p.codigo === currentVal ? ' selected' : ''}>${p.nombre}</option>`).join('');
+                }
+
+                // Provincias (value=codigo, text=nombre)
+                const selectProv = document.getElementById('filter-provincia');
+                const currentProvVal = selectProv.value;
+                selectProv.innerHTML = '<option value="">Todas</option>' +
+                    data.provincias.map(p => `<option value="${p.codigo}"${p.codigo === currentProvVal ? ' selected' : ''}>${p.nombre}</option>`).join('');
+            } catch (e) {
+                console.error('Error loading location filters:', e);
+            }
+        }
+
+        document.getElementById('filter-pais').addEventListener('change', function() {
+            // Recargar provincias segun pais seleccionado
+            document.getElementById('filter-provincia').value = '';
+            loadLocationFilters(this.value || null);
+            loadOrders();
+        });
+
+        document.getElementById('filter-provincia').addEventListener('change', function() {
+            loadOrders();
         });
 
         // ==================== AYUDA CLIENTES ====================
@@ -601,12 +676,16 @@
                 const fechaDesde = document.getElementById('filter-fecha-desde').value;
                 const fechaHasta = document.getElementById('filter-fecha-hasta').value;
                 const cliente = document.getElementById('filter-cliente').value.trim();
+                const pais = document.getElementById('filter-pais').value;
+                const provincia = document.getElementById('filter-provincia').value;
 
                 let url = `${API_URL}/api/pedidos?page=${page}&page_size=50&`;
                 if (anyo) url += `anyo=${anyo}&`;
                 if (fechaDesde) url += `fecha_desde=${fechaDesde}&`;
                 if (fechaHasta) url += `fecha_hasta=${fechaHasta}&`;
                 if (cliente) url += `cliente=${encodeURIComponent(cliente)}&`;
+                if (pais) url += `pais=${encodeURIComponent(pais)}&`;
+                if (provincia) url += `provincia=${encodeURIComponent(provincia)}&`;
 
                 console.log('[PEDIDOS] Cargando:', url);
 
@@ -636,7 +715,10 @@
             document.getElementById('filter-anyo').value = '';
             document.getElementById('filter-fecha-desde').value = '';
             document.getElementById('filter-fecha-hasta').value = '';
+            document.getElementById('filter-pais').value = '';
+            document.getElementById('filter-provincia').value = '';
             clearClientSelectionPedidos(false);
+            loadLocationFilters(null);
             loadOrders();
         }
 
@@ -669,8 +751,10 @@
                             <table class="proposals-table" style="min-width: auto;">
                                 <thead>
                                     <tr>
+                                        <th style="width:60px;">${t('orders.image')}</th>
                                         <th>${t('orders.article')}</th>
                                         <th>${t('orders.description')}</th>
+                                        <th>${t('orders.format')}</th>
                                         <th class="text-right">${t('orders.quantity')}</th>
                                         <th class="text-right">${t('orders.price')}</th>
                                         <th class="text-right">${t('orders.amount')}</th>
@@ -679,9 +763,11 @@
                                 <tbody>
                                     ${lines.map(line => `
                                         <tr>
+                                            <td>${line.thumbnail ? `<img src="data:image/jpeg;base64,${line.thumbnail}" class="order-line-thumb" alt="">` : '<span class="order-line-no-img">—</span>'}</td>
                                             <td><strong>${line.articulo}</strong></td>
                                             <td>${line.descripcion}</td>
-                                            <td class="text-right">${line.cantidad}</td>
+                                            <td>${line.formato_abreviado || line.formato || '-'}</td>
+                                            <td class="text-right">${PageCommon.formatCurrency(line.cantidad)}</td>
                                             <td class="text-right">${PageCommon.formatCurrency(line.precio)}</td>
                                             <td class="text-right">${PageCommon.formatCurrency(line.importe)}</td>
                                         </tr>
@@ -693,15 +779,24 @@
                     <div class="order-lines-cards">
                         ${lines.map(line => `
                             <div class="order-line-card">
-                                <div class="order-line-card-header">
-                                    <span class="order-line-card-code">${line.articulo}</span>
-                                    <span class="order-line-card-amount">${PageCommon.formatCurrency(line.importe)}</span>
+                                <div class="order-line-card-top">
+                                    ${line.thumbnail ? `<img src="data:image/jpeg;base64,${line.thumbnail}" class="order-line-card-thumb" alt="">` : ''}
+                                    <div class="order-line-card-top-info">
+                                        <div class="order-line-card-header">
+                                            <span class="order-line-card-code">${line.articulo}</span>
+                                            <span class="order-line-card-amount">${PageCommon.formatCurrency(line.importe)}</span>
+                                        </div>
+                                        <div class="order-line-card-desc">${line.descripcion}</div>
+                                    </div>
                                 </div>
-                                <div class="order-line-card-desc">${line.descripcion}</div>
                                 <div class="order-line-card-details">
                                     <div class="order-line-card-detail">
+                                        <span class="detail-label">${t('orders.format')}</span>
+                                        <span class="detail-value">${line.formato_abreviado || line.formato || '-'}</span>
+                                    </div>
+                                    <div class="order-line-card-detail">
                                         <span class="detail-label">${t('orders.quantity')}</span>
-                                        <span class="detail-value">${line.cantidad}</span>
+                                        <span class="detail-value">${PageCommon.formatCurrency(line.cantidad)}</span>
                                     </div>
                                     <div class="order-line-card-detail">
                                         <span class="detail-label">${t('orders.price')}</span>

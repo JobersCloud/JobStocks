@@ -21,11 +21,72 @@ import logging
 from flask import Blueprint, jsonify, request, session
 from flask_login import login_required, current_user
 from utils.auth import api_key_or_login_required, administrador_required
+from config.database import Database
 from models.pedido_model import PedidoModel
+from models.imagen_model import ImagenModel
 
 logger = logging.getLogger(__name__)
 
 pedido_bp = Blueprint('pedido', __name__, url_prefix='/api/pedidos')
+
+
+@pedido_bp.route('/filtros-ubicacion', methods=['GET'])
+@login_required
+@administrador_required
+def get_filtros_ubicacion():
+    """
+    Obtener valores distintos de pais y provincia para filtros.
+    ---
+    tags:
+      - Pedidos
+    """
+    try:
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+
+        # Paises: JOIN con cristal.dbo.paises para obtener nombre
+        cursor.execute("""
+            SELECT DISTINCT RTRIM(ISNULL(g.pais, '')) AS codigo,
+                   RTRIM(ISNULL(p.nombre, RTRIM(ISNULL(g.pais, '')))) AS nombre
+            FROM cristal.dbo.genter g
+            LEFT JOIN cristal.dbo.paises p ON RTRIM(ISNULL(g.pais, '')) = RTRIM(ISNULL(p.pais, ''))
+            WHERE g.tipoter = 'C' AND ISNULL(g.pais, '') <> ''
+            ORDER BY nombre
+        """)
+        paises = [{'codigo': row[0], 'nombre': row[1]} for row in cursor.fetchall()]
+
+        # Provincias: JOIN con cristal.dbo.provincias (PK compuesta: pais, provincia)
+        provincia_param = request.args.get('pais')
+        prov_query = """
+            SELECT DISTINCT RTRIM(ISNULL(g.provincia, '')) AS codigo,
+                   RTRIM(ISNULL(pr.nombre, RTRIM(ISNULL(g.provincia, '')))) AS nombre
+            FROM cristal.dbo.genter g
+            LEFT JOIN cristal.dbo.provincias pr
+                ON RTRIM(ISNULL(g.pais, '')) = RTRIM(ISNULL(pr.pais, ''))
+                AND RTRIM(ISNULL(g.provincia, '')) = RTRIM(ISNULL(pr.provincia, ''))
+            WHERE g.tipoter = 'C' AND ISNULL(g.provincia, '') <> ''
+        """
+        prov_params = []
+        if provincia_param:
+            prov_query += " AND RTRIM(ISNULL(g.pais, '')) = ?"
+            prov_params.append(provincia_param)
+        prov_query += " ORDER BY nombre"
+
+        cursor.execute(prov_query, prov_params)
+        provincias = [{'codigo': row[0], 'nombre': row[1]} for row in cursor.fetchall()]
+
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'paises': paises,
+            'provincias': provincias
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 
 @pedido_bp.route('/mis-pedidos', methods=['GET'])
@@ -168,10 +229,12 @@ def get_todos_pedidos():
     fecha_desde = request.args.get('fecha_desde')
     fecha_hasta = request.args.get('fecha_hasta')
     cliente = request.args.get('cliente')
+    pais = request.args.get('pais')
+    provincia = request.args.get('provincia')
     page = request.args.get('page', 1, type=int)
     page_size = min(request.args.get('page_size', 50, type=int), 200)
 
-    logger.warning(f'[PERF] GET /api/pedidos empresa={empresa_id} anyo={anyo} cliente={cliente} page={page}')
+    logger.warning(f'[PERF] GET /api/pedidos empresa={empresa_id} anyo={anyo} cliente={cliente} pais={pais} provincia={provincia} page={page}')
 
     try:
         t1 = time.time()
@@ -181,6 +244,8 @@ def get_todos_pedidos():
             fecha_desde=fecha_desde,
             fecha_hasta=fecha_hasta,
             cliente=cliente,
+            pais=pais,
+            provincia=provincia,
             page=page,
             page_size=page_size
         )
@@ -223,6 +288,25 @@ def get_pedido(empresa, anyo, pedido):
                 'success': False,
                 'error': 'Pedido no encontrado'
             }), 404
+
+        # Obtener thumbnails de los artículos (no bloquea si falla)
+        try:
+            codigos = list(set(
+                l['articulo'].strip() for l in pedido_data['lineas']
+                if l.get('articulo') and str(l['articulo']).strip()
+            ))
+            if codigos:
+                thumbnails = ImagenModel.get_thumbnails_batch(codigos)
+                for linea in pedido_data['lineas']:
+                    art = str(linea.get('articulo', '')).strip()
+                    linea['thumbnail'] = thumbnails.get(art) if art else None
+            else:
+                for linea in pedido_data['lineas']:
+                    linea['thumbnail'] = None
+        except Exception as thumb_err:
+            logger.warning(f'Error obteniendo thumbnails para pedido {empresa}/{anyo}/{pedido}: {thumb_err}')
+            for linea in pedido_data['lineas']:
+                linea['thumbnail'] = None
 
         return jsonify({
             'success': True,

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logo de Empresa - Gestion de Stocks</title>
+    <title>Control BD - Administracion</title>
     <script>
         // Inyectar colores del tema ANTES del CSS para evitar flash
         (function () {
@@ -31,13 +31,11 @@
             document.documentElement.setAttribute('data-theme', theme);
             document.documentElement.setAttribute('data-color-theme', colorTheme);
 
-            // Inyectar colores como CSS inline con !important para ganar especificidad
             const style = document.createElement('style');
             style.id = 'theme-colors-inline';
             style.textContent = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
             document.head.appendChild(style);
 
-            // Favicon
             const faviconUrl = localStorage.getItem('faviconUrl');
             if (faviconUrl) {
                 const link = document.createElement('link');
@@ -56,7 +54,7 @@
         <header class="top-header">
             <div class="top-header-left">
                 <button class="mobile-menu-btn" onclick="toggleSidebarMobile()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                         <line x1="3" y1="12" x2="21" y2="12"></line>
                         <line x1="3" y1="6" x2="21" y2="6"></line>
                         <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -68,7 +66,7 @@
                 </div>
                 <div class="header-divider"></div>
                 <div>
-                    <h1 class="top-header-title" data-i18n="empresaLogo.title">Logo de Empresa</h1>
+                    <h1 class="top-header-title" data-i18n="menu.dbControl">Control BD</h1>
                 </div>
             </div>
             <div class="top-header-right">
@@ -147,7 +145,7 @@
                 <div class="sidebar-section">
                     <a class="sidebar-item" data-page="index.html" data-tooltip="Stocks" onclick="SidebarNav.navigateTo('index.html')">
                         <span class="sidebar-item-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
                             </svg>
@@ -156,7 +154,7 @@
                     </a>
                     <a class="sidebar-item" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')">
                         <span class="sidebar-item-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                 <polyline points="14 2 14 8 20 8"></polyline>
                                 <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -182,7 +180,7 @@
                 <div class="sidebar-accordion expanded" id="sidebar-admin-section" style="display: none;">
                     <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
                         <div class="sidebar-accordion-title">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                 <rect x="3" y="3" width="7" height="7"></rect>
                                 <rect x="14" y="3" width="7" height="7"></rect>
                                 <rect x="14" y="14" width="7" height="7"></rect>
@@ -197,7 +195,7 @@
                     <div class="sidebar-accordion-content">
                         <a class="sidebar-item" data-page="dashboard.html" data-tooltip="Dashboard" onclick="SidebarNav.navigateTo('dashboard.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <line x1="18" y1="20" x2="18" y2="10"></line>
                                     <line x1="12" y1="20" x2="12" y2="4"></line>
                                     <line x1="6" y1="20" x2="6" y2="14"></line>
@@ -207,7 +205,7 @@
                         </a>
                         <a class="sidebar-item" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
                                     <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
                                 </svg>
@@ -227,7 +225,7 @@
                         </a>
                         <a class="sidebar-item" data-page="todas-consultas.html" data-tooltip="Consultas" onclick="SidebarNav.navigateTo('todas-consultas.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"></circle>
                                     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                                     <line x1="12" y1="17" x2="12.01" y2="17"></line>
@@ -237,7 +235,7 @@
                         </a>
                         <a class="sidebar-item" data-page="usuarios.html" data-tooltip="Usuarios" onclick="SidebarNav.navigateTo('usuarios.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                                     <circle cx="9" cy="7" r="4"></circle>
                                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -248,7 +246,7 @@
                         </a>
                         <a class="sidebar-item" data-page="auditoria.html" data-tooltip="Auditoría" onclick="SidebarNav.navigateTo('auditoria.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                                 </svg>
                             </span>
@@ -261,7 +259,7 @@
                 <div class="sidebar-accordion expanded" id="sidebar-config-section" style="display: none;">
                     <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
                         <div class="sidebar-accordion-title">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                 <circle cx="12" cy="12" r="3"></circle>
                                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                             </svg>
@@ -274,7 +272,7 @@
                     <div class="sidebar-accordion-content">
                         <a class="sidebar-item" data-page="email-config.html" data-tooltip="Email" onclick="SidebarNav.navigateTo('email-config.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                                     <polyline points="22,6 12,13 2,6"></polyline>
                                 </svg>
@@ -283,7 +281,7 @@
                         </a>
                         <a class="sidebar-item" data-page="parametros.html" data-tooltip="Parametros" onclick="SidebarNav.navigateTo('parametros.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <line x1="4" y1="21" x2="4" y2="14"></line>
                                     <line x1="4" y1="10" x2="4" y2="3"></line>
                                     <line x1="12" y1="21" x2="12" y2="12"></line>
@@ -297,9 +295,9 @@
                             </span>
                             <span class="sidebar-item-text" data-i18n="menu.parameters">Parametros</span>
                         </a>
-                        <a class="sidebar-item active" data-page="empresa-logo.html" data-tooltip="Logo" onclick="SidebarNav.navigateTo('empresa-logo.html')">
+                        <a class="sidebar-item" data-page="empresa-logo.html" data-tooltip="Logo" onclick="SidebarNav.navigateTo('empresa-logo.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                                     <circle cx="8.5" cy="8.5" r="1.5"></circle>
                                     <polyline points="21 15 16 10 5 21"></polyline>
@@ -307,7 +305,7 @@
                             </span>
                             <span class="sidebar-item-text" data-i18n="menu.companyLogo">Logo</span>
                         </a>
-                        <a class="sidebar-item" data-page="control-bd.html" data-tooltip="Control BD" onclick="SidebarNav.navigateTo('control-bd.html')">
+                        <a class="sidebar-item active" data-page="control-bd.html" data-tooltip="Control BD" onclick="SidebarNav.navigateTo('control-bd.html')">
                             <span class="sidebar-item-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
@@ -325,7 +323,7 @@
             <div class="sidebar-footer">
                 <a class="sidebar-item" data-tooltip="Cerrar Sesion" onclick="logout()">
                     <span class="sidebar-item-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                             <polyline points="16 17 21 12 16 7"></polyline>
                             <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -342,161 +340,93 @@
         <!-- Contenedor Principal -->
         <div class="main-wrapper">
             <main class="main-content-area">
-                <!-- Contenido -->
-                <div class="logo-container">
-                    <div id="alert-container"></div>
-
-                    <div class="empresa-info">
-                        <span data-i18n="empresaLogo.currentEmpresa">Empresa actual:</span>
-                        <strong id="empresa-id-display">-</strong>
-                    </div>
-
-                    <!-- Logo -->
-                    <div class="logo-card">
-                        <h3>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                                <circle cx="8.5" cy="8.5" r="1.5" />
-                                <polyline points="21 15 16 10 5 21" />
-                            </svg>
-                            <span data-i18n="empresaLogo.logo">Logo</span>
-                        </h3>
-                        <div class="logo-preview-container">
-                            <img id="logo-preview" src="" alt="Logo" class="logo-preview" style="display: none;">
-                            <span id="no-logo" class="no-image" data-i18n="empresaLogo.noLogo">No hay logo configurado</span>
-                        </div>
-                        <div class="upload-section btn-icon-group">
-                            <div class="file-input-wrapper">
-                                <button class="btn-icon btn-icon-primary" title="Subir Logo">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                                </button>
-                                <input type="file" id="logo-input" accept="image/*,.svg,image/svg+xml" onchange="handleLogoUpload(this)">
-                            </div>
-                            <button class="btn-icon btn-icon-danger" id="btn-delete-logo" onclick="deleteLogo()" disabled title="Eliminar Logo">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                            </button>
-                        </div>
-                        <p class="info-text" data-i18n="empresaLogo.logoInfo">Formatos recomendados: PNG, SVG. Tamano maximo: 2MB</p>
-                    </div>
-
-                    <!-- Configuracion de Apariencia -->
-                    <div class="logo-card">
-                        <h3>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="3" />
-                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                            </svg>
-                            <span data-i18n="empresaLogo.appearance">Apariencia</span>
-                        </h3>
-                        <div class="config-option">
-                            <div class="config-option-info">
-                                <span class="config-option-label" data-i18n="empresaLogo.invertLogo">Invertir logo en header</span>
-                                <span class="config-option-desc" data-i18n="empresaLogo.invertLogoDesc">Activa esta opcion si el logo tiene letras claras/blancas para que se vea bien sobre el fondo del header</span>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="invertir-logo-switch" onchange="toggleInvertirLogo()">
-                                <span class="toggle-slider"></span>
-                            </label>
+                <div class="params-container">
+                    <div class="params-content">
+                        <!-- Loading state -->
+                        <div class="params-loading" id="db-loading">
+                            <div class="spinner"></div>
+                            <p data-i18n="common.loading">Cargando...</p>
                         </div>
 
-                        <!-- Selector de Tema de Color -->
-                        <div class="theme-selector-section" style="margin-top: 25px;">
-                            <div class="config-option-info" style="margin-bottom: 15px;">
-                                <span class="config-option-label" data-i18n="empresaLogo.colorTheme">Tema de color</span>
-                                <span class="config-option-desc" data-i18n="empresaLogo.colorThemeDesc">Selecciona el tema de colores para los headers y botones</span>
+                        <!-- Error state -->
+                        <div class="params-empty" id="db-error" style="display: none;">
+                            <div class="params-empty-icon">⚠️</div>
+                            <h3 data-i18n="dbControl.errorLoading">Error al cargar informacion</h3>
+                        </div>
+
+                        <!-- Contenido -->
+                        <div id="db-content" style="display: none;">
+                            <!-- Seccion: Servidor -->
+                            <div class="param-section">
+                                <div class="param-section-header">
+                                    <span class="param-section-icon">🖥️</span>
+                                    <div class="param-section-info">
+                                        <h3 data-i18n="dbControl.serverInfo">Servidor</h3>
+                                        <p data-i18n="dbControl.serverInfoDesc">Informacion del servidor SQL Server</p>
+                                    </div>
+                                    <button class="btn-icon btn-icon-secondary" onclick="loadDbInfo()" title="Actualizar" style="margin-left: auto;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                            <polyline points="23 4 23 10 17 10"></polyline>
+                                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="param-section-grid" id="server-info-grid"></div>
                             </div>
-                            <div class="theme-grid" id="theme-grid">
-                                <div class="theme-card" data-theme="rubi" onclick="selectTheme('rubi')">
-                                    <div class="theme-preview" style="background: linear-gradient(135deg, #FF4338 0%, #D32F2F 100%);"></div>
-                                    <span class="theme-name">Rubi</span>
+
+                            <!-- Seccion: Espacio -->
+                            <div class="param-section">
+                                <div class="param-section-header">
+                                    <span class="param-section-icon">💾</span>
+                                    <div class="param-section-info">
+                                        <h3 data-i18n="dbControl.spaceInfo">Espacio</h3>
+                                        <p data-i18n="dbControl.spaceInfoDesc">Uso de espacio en disco</p>
+                                    </div>
                                 </div>
-                                <div class="theme-card" data-theme="zafiro" onclick="selectTheme('zafiro')">
-                                    <div class="theme-preview" style="background: linear-gradient(135deg, #2196F3 0%, #1565C0 100%);"></div>
-                                    <span class="theme-name">Zafiro</span>
+                                <div class="param-section-grid" id="space-info-grid"></div>
+                            </div>
+
+                            <!-- Seccion: Archivos -->
+                            <div class="param-section">
+                                <div class="param-section-header">
+                                    <span class="param-section-icon">📁</span>
+                                    <div class="param-section-info">
+                                        <h3 data-i18n="dbControl.filesInfo">Archivos</h3>
+                                        <p data-i18n="dbControl.filesInfoDesc">Archivos de la base de datos</p>
+                                    </div>
                                 </div>
-                                <div class="theme-card" data-theme="esmeralda" onclick="selectTheme('esmeralda')">
-                                    <div class="theme-preview" style="background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);"></div>
-                                    <span class="theme-name">Esmeralda</span>
+                                <div id="files-info-container"></div>
+                            </div>
+
+                            <!-- Seccion: Tablas mas grandes -->
+                            <div class="param-section">
+                                <div class="param-section-header">
+                                    <span class="param-section-icon">📊</span>
+                                    <div class="param-section-info">
+                                        <h3 data-i18n="dbControl.topTables">Tablas mas grandes</h3>
+                                        <p data-i18n="dbControl.topTablesDesc">Las 10 tablas que ocupan mas espacio</p>
+                                    </div>
                                 </div>
-                                <div class="theme-card" data-theme="amatista" onclick="selectTheme('amatista')">
-                                    <div class="theme-preview" style="background: linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%);"></div>
-                                    <span class="theme-name">Amatista</span>
+                                <div id="tables-info-container"></div>
+                            </div>
+
+                            <!-- Seccion: Version completa -->
+                            <div class="param-section">
+                                <div class="param-section-header">
+                                    <span class="param-section-icon">ℹ️</span>
+                                    <div class="param-section-info">
+                                        <h3 data-i18n="dbControl.versionFull">Version completa</h3>
+                                    </div>
                                 </div>
-                                <div class="theme-card" data-theme="ambar" onclick="selectTheme('ambar')">
-                                    <div class="theme-preview" style="background: linear-gradient(135deg, #FF9800 0%, #E65100 100%);"></div>
-                                    <span class="theme-name">Ambar</span>
-                                </div>
-                                <div class="theme-card" data-theme="grafito" onclick="selectTheme('grafito')">
-                                    <div class="theme-preview" style="background: linear-gradient(135deg, #607D8B 0%, #37474F 100%);"></div>
-                                    <span class="theme-name">Grafito</span>
-                                </div>
-                                <!-- Temas Profesionales -->
-                                <div class="theme-card" data-theme="corporativo" onclick="selectTheme('corporativo')">
-                                    <div class="theme-preview" style="background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 100%);"></div>
-                                    <span class="theme-name">Corporativo</span>
-                                </div>
-                                <div class="theme-card" data-theme="ejecutivo" onclick="selectTheme('ejecutivo')">
-                                    <div class="theme-preview" style="background: linear-gradient(135deg, #2d3436 0%, #1a1d1e 100%);"></div>
-                                    <span class="theme-name">Ejecutivo</span>
-                                </div>
-                                <div class="theme-card" data-theme="oceano" onclick="selectTheme('oceano')">
-                                    <div class="theme-preview" style="background: linear-gradient(135deg, #006994 0%, #004d6d 100%);"></div>
-                                    <span class="theme-name">Oceano</span>
-                                </div>
-                                <div class="theme-card" data-theme="bosque" onclick="selectTheme('bosque')">
-                                    <div class="theme-preview" style="background: linear-gradient(135deg, #1d4e3e 0%, #0f2d23 100%);"></div>
-                                    <span class="theme-name">Bosque</span>
-                                </div>
-                                <div class="theme-card" data-theme="vino" onclick="selectTheme('vino')">
-                                    <div class="theme-preview" style="background: linear-gradient(135deg, #722f37 0%, #4a1f24 100%);"></div>
-                                    <span class="theme-name">Vino</span>
-                                </div>
-                                <div class="theme-card" data-theme="medianoche" onclick="selectTheme('medianoche')">
-                                    <div class="theme-preview" style="background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);"></div>
-                                    <span class="theme-name">Medianoche</span>
-                                </div>
-                                <div class="theme-card" data-theme="titanio" onclick="selectTheme('titanio')">
-                                    <div class="theme-preview" style="background: linear-gradient(135deg, #475569 0%, #1e293b 100%);"></div>
-                                    <span class="theme-name">Titanio</span>
-                                </div>
-                                <div class="theme-card" data-theme="bronce" onclick="selectTheme('bronce')">
-                                    <div class="theme-preview" style="background: linear-gradient(135deg, #8b5a2b 0%, #5c3a1c 100%);"></div>
-                                    <span class="theme-name">Bronce</span>
-                                </div>
-                                <div class="theme-card" data-theme="elegante" onclick="selectTheme('elegante')">
-                                    <div class="theme-preview" style="background: linear-gradient(135deg, #FF4438 0%, #1a1a1a 100%);"></div>
-                                    <span class="theme-name">Elegante</span>
+                                <div class="param-section-grid">
+                                    <div class="param-card" id="version-full-card">
+                                        <div class="param-info">
+                                            <pre id="version-full-text" style="white-space: pre-wrap; word-break: break-word; font-size: 0.8rem; margin: 0; color: var(--text-secondary);"></pre>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Favicon -->
-                    <div class="logo-card">
-                        <h3>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                                <line x1="8" y1="21" x2="16" y2="21" />
-                                <line x1="12" y1="17" x2="12" y2="21" />
-                            </svg>
-                            <span data-i18n="empresaLogo.favicon">Favicon</span>
-                        </h3>
-                        <div class="logo-preview-container">
-                            <img id="favicon-preview" src="" alt="Favicon" class="favicon-preview" style="display: none;">
-                            <span id="no-favicon" class="no-image" data-i18n="empresaLogo.noFavicon">No hay favicon configurado</span>
-                        </div>
-                        <div class="upload-section btn-icon-group">
-                            <div class="file-input-wrapper">
-                                <button class="btn-icon btn-icon-primary" title="Subir Favicon">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                                </button>
-                                <input type="file" id="favicon-input" accept="image/*,.ico" onchange="handleFaviconUpload(this)">
-                            </div>
-                            <button class="btn-icon btn-icon-danger" id="btn-delete-favicon" onclick="deleteFavicon()" disabled title="Eliminar Favicon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                            </button>
-                        </div>
-                        <p class="info-text" data-i18n="empresaLogo.faviconInfo">Formatos recomendados: ICO, PNG 32x32 o 64x64</p>
                     </div>
                 </div>
             </main>
@@ -533,28 +463,22 @@
     <script src="js/i18n/i18n.js"></script>
     <script src="js/sidebar.js?v=20260143"></script>
     <script>
-        const protocol = window.location.protocol;
+        // ==================== CONFIGURACION ====================
         const hostname = window.location.hostname;
-        const port = window.location.port;
-
-        let API_URL;
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            API_URL = `${protocol}//${hostname}:5000`;
-        } else {
-            API_URL = `${protocol}//${hostname}${port ? ':' + port : ''}`;
-        }
+        const protocol = window.location.protocol;
+        const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+        const API_URL = isLocalhost ? `${protocol}//${hostname}:5000` : `${protocol}//${hostname}`;
 
         let currentUser = null;
-        let empresaId = null;
         let csrfToken = null;
 
         // ==================== TEMA ====================
         function loadTheme() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
-            applyThemeMode(savedTheme);
+            applyTheme(savedTheme);
         }
 
-        function applyThemeMode(theme) {
+        function applyTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
             const icon = document.getElementById('theme-icon');
             if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
@@ -564,7 +488,7 @@
             const current = document.documentElement.getAttribute('data-theme');
             const newTheme = current === 'dark' ? 'light' : 'dark';
             localStorage.setItem('theme', newTheme);
-            applyThemeMode(newTheme);
+            applyTheme(newTheme);
         }
 
         // ==================== ACORDEON ====================
@@ -587,326 +511,7 @@
             }
         });
 
-        // ==================== CSRF TOKEN ====================
-        async function obtenerCsrfToken() {
-            try {
-                csrfToken = localStorage.getItem('csrf_token');
-                const response = await fetch(`${API_URL}/api/csrf-token`, { credentials: 'include' });
-                if (response.ok) {
-                    const data = await response.json();
-                    csrfToken = data.csrf_token;
-                    localStorage.setItem('csrf_token', csrfToken);
-                }
-            } catch (e) {
-                console.error('Error obteniendo CSRF token:', e);
-            }
-        }
-
-        // ==================== EMPRESA ID DESDE SESION ====================
-        async function getEmpresaIdFromSession() {
-            try {
-                const response = await fetch(`${API_URL}/api/current-user`, { credentials: 'include' });
-                if (!response.ok) {
-                    window.location.href = 'login.html';
-                    return null;
-                }
-                const user = await response.json();
-                currentUser = user;
-                document.getElementById('user-name-display').textContent = user.full_name || user.username;
-                document.getElementById('menu-user-name').textContent = user.full_name || user.username;
-                document.getElementById('menu-user-rol').textContent = user.rol;
-
-                // Mostrar opción de contexto solo para superusuarios
-                if (user.rol === 'superusuario') {
-                    document.getElementById('menu-item-context').style.display = 'flex';
-                    document.getElementById('menu-divider-context').style.display = 'block';
-                }
-
-                if (user.empresa_nombre) {
-                    document.getElementById('header-company-name').textContent = user.empresa_nombre;
-                }
-
-                if (user.rol !== 'administrador' && user.rol !== 'superusuario') {
-                    alert('No tienes permisos para acceder a esta pagina');
-                    window.location.href = 'index.html';
-                    return null;
-                }
-
-                document.getElementById('sidebar-admin-section').style.display = 'block';
-                document.getElementById('sidebar-config-section').style.display = 'block';
-
-                return user.connection || user.empresa_id || '1';
-            } catch (error) {
-                window.location.href = 'login.html';
-                return null;
-            }
-        }
-
-        // ==================== LOGO HEADER ====================
-        async function cargarLogoHeader() {
-            const logoElements = document.querySelectorAll('#header-logo');
-            try {
-                const configResponse = await fetch(`${API_URL}/api/empresa/${empresaId}/config`);
-                const config = await configResponse.json();
-
-                if (config.tiene_logo) {
-                    const logoUrl = `${API_URL}/api/empresa/${empresaId}/logo?t=${Date.now()}`;
-                    const invertir = config.invertir_logo;
-                    logoElements.forEach(el => {
-                        el.src = logoUrl;
-                        el.style.filter = invertir ? 'brightness(0) invert(1)' : 'none';
-                        el.style.visibility = 'visible';
-                    });
-                } else {
-                    logoElements.forEach(el => {
-                        el.src = 'assets/logo.svg';
-                        el.style.filter = 'brightness(0) invert(1)';
-                        el.style.visibility = 'visible';
-                    });
-                }
-            } catch (error) {
-                logoElements.forEach(el => {
-                    el.src = 'assets/logo.svg';
-                    el.style.filter = 'brightness(0) invert(1)';
-                    el.style.visibility = 'visible';
-                });
-            }
-        }
-
-        async function logout() {
-            try {
-                await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
-            } catch (e) {}
-            localStorage.removeItem('csrf_token');
-            window.location.href = 'login.html';
-        }
-
-        async function showContextInfo() {
-            try {
-                const response = await fetch(`${API_URL}/api/context-info`, { credentials: 'include' });
-                if (!response.ok) throw new Error('No se pudo obtener la información de contexto');
-                const info = await response.json();
-                let html = `<div style="font-family: monospace; font-size: 0.85rem; line-height: 1.6;"><h4 style="margin-bottom: 10px; color: var(--primary);">👤 Usuario</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>ID:</strong> ${info.user.id}</div><div><strong>Username:</strong> ${info.user.username}</div><div><strong>Nombre:</strong> ${info.user.full_name}</div><div><strong>Rol:</strong> ${info.user.rol}</div><div><strong>Cliente ID:</strong> ${info.user.cliente_id || 'N/A'}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🔗 Sesión</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Connection:</strong> ${info.session.connection}</div><div><strong>Empresa ID:</strong> ${info.session.empresa_id}</div><div><strong>Empresa Nombre:</strong> ${info.session.empresa_nombre}</div><div><strong>User ID:</strong> ${info.session.user_id}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🗄️ DB Config</h4><div style="background: ${info.has_db_config ? '#e8f5e9' : '#ffebee'}; padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Cacheado:</strong> ${info.has_db_config ? '✅ Sí' : '❌ No'}</div>${info.has_db_config ? `<div><strong>Server:</strong> ${info.db_config.dbserver}</div><div><strong>Database:</strong> ${info.db_config.dbname}</div>` : ''}</div><h4 style="margin-bottom: 10px; color: var(--primary);">💾 LocalStorage</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px;"><div><strong>connection:</strong> ${localStorage.getItem('connection') || 'N/A'}</div><div><strong>empresa_id:</strong> ${localStorage.getItem('empresa_id') || 'N/A'}</div></div></div>`;
-                const modal = document.createElement('div');
-                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
-                modal.innerHTML = `<div style="background:var(--bg-primary, white);padding:20px;border-radius:12px;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.3);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><h3 style="margin:0;">ℹ️ Info de Contexto</h3><button onclick="this.closest('div').parentElement.remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button></div>${html}</div>`;
-                modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-                document.body.appendChild(modal);
-            } catch (error) { console.error('Error:', error); alert('Error: ' + error.message); }
-        }
-
-        // ==================== ALERTAS ====================
-        function showAlert(message, type = 'success') {
-            const container = document.getElementById('alert-container');
-            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-            setTimeout(() => container.innerHTML = '', 5000);
-        }
-
-        // ==================== CARGAR ESTADO ACTUAL ====================
-        async function loadCurrentState() {
-            document.getElementById('empresa-id-display').textContent = empresaId;
-
-            try {
-                const existsResponse = await fetch(`${API_URL}/api/empresa/${empresaId}/logo/exists`, {
-                    credentials: 'include'
-                });
-                const existsData = await existsResponse.json();
-
-                const logoPreview = document.getElementById('logo-preview');
-                const noLogo = document.getElementById('no-logo');
-                const btnDeleteLogo = document.getElementById('btn-delete-logo');
-
-                if (existsData.exists) {
-                    logoPreview.src = `${API_URL}/api/empresa/${empresaId}/logo?t=${Date.now()}`;
-                    logoPreview.style.display = 'block';
-                    noLogo.style.display = 'none';
-                    btnDeleteLogo.disabled = false;
-
-                    const faviconPreview = document.getElementById('favicon-preview');
-                    const noFavicon = document.getElementById('no-favicon');
-                    const btnDeleteFavicon = document.getElementById('btn-delete-favicon');
-
-                    faviconPreview.src = `${API_URL}/api/empresa/${empresaId}/favicon?t=${Date.now()}`;
-                    faviconPreview.style.display = 'block';
-                    noFavicon.style.display = 'none';
-                    btnDeleteFavicon.disabled = false;
-                } else {
-                    logoPreview.style.display = 'none';
-                    noLogo.style.display = 'block';
-                    btnDeleteLogo.disabled = true;
-
-                    document.getElementById('favicon-preview').style.display = 'none';
-                    document.getElementById('no-favicon').style.display = 'block';
-                    document.getElementById('btn-delete-favicon').disabled = true;
-                }
-            } catch (error) {
-                console.error('Error cargando estado:', error);
-            }
-        }
-
-        // ==================== SUBIR LOGO ====================
-        async function handleLogoUpload(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            if (file.size > 2 * 1024 * 1024) {
-                showAlert(t('empresaLogo.fileTooLarge'), 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const response = await fetch(`${API_URL}/api/empresa/${empresaId}/logo`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-Token': csrfToken
-                        },
-                        credentials: 'include',
-                        body: JSON.stringify({ logo: e.target.result })
-                    });
-
-                    const data = await response.json();
-                    if (response.ok) {
-                        showAlert(t('empresaLogo.logoSaved'), 'success');
-                        loadCurrentState();
-                    } else {
-                        showAlert(data.error || t('empresaLogo.errorSaving'), 'error');
-                    }
-                } catch (error) {
-                    showAlert(t('empresaLogo.errorSaving'), 'error');
-                }
-            };
-            reader.readAsDataURL(file);
-            input.value = '';
-        }
-
-        // ==================== SUBIR FAVICON ====================
-        async function handleFaviconUpload(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            if (file.size > 1 * 1024 * 1024) {
-                showAlert(t('empresaLogo.fileTooLarge'), 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const response = await fetch(`${API_URL}/api/empresa/${empresaId}/favicon`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-Token': csrfToken
-                        },
-                        credentials: 'include',
-                        body: JSON.stringify({ favicon: e.target.result })
-                    });
-
-                    const data = await response.json();
-                    if (response.ok) {
-                        showAlert(t('empresaLogo.faviconSaved'), 'success');
-                        loadCurrentState();
-                    } else {
-                        showAlert(data.error || t('empresaLogo.errorSaving'), 'error');
-                    }
-                } catch (error) {
-                    showAlert(t('empresaLogo.errorSaving'), 'error');
-                }
-            };
-            reader.readAsDataURL(file);
-            input.value = '';
-        }
-
-        // ==================== ELIMINAR LOGO ====================
-        async function deleteLogo() {
-            if (!confirm(t('empresaLogo.confirmDeleteLogo'))) return;
-
-            try {
-                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/logo`, {
-                    method: 'DELETE',
-                    headers: { 'X-CSRF-Token': csrfToken },
-                    credentials: 'include'
-                });
-
-                if (response.ok) {
-                    showAlert(t('empresaLogo.logoDeleted'), 'success');
-                    loadCurrentState();
-                } else {
-                    showAlert(t('empresaLogo.errorDeleting'), 'error');
-                }
-            } catch (error) {
-                showAlert(t('empresaLogo.errorDeleting'), 'error');
-            }
-        }
-
-        // ==================== ELIMINAR FAVICON ====================
-        async function deleteFavicon() {
-            if (!confirm(t('empresaLogo.confirmDeleteFavicon'))) return;
-
-            try {
-                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/favicon`, {
-                    method: 'DELETE',
-                    headers: { 'X-CSRF-Token': csrfToken },
-                    credentials: 'include'
-                });
-
-                if (response.ok) {
-                    showAlert(t('empresaLogo.faviconDeleted'), 'success');
-                    loadCurrentState();
-                } else {
-                    showAlert(t('empresaLogo.errorDeleting'), 'error');
-                }
-            } catch (error) {
-                showAlert(t('empresaLogo.errorDeleting'), 'error');
-            }
-        }
-
-        // ==================== TOGGLE INVERTIR LOGO ====================
-        async function toggleInvertirLogo() {
-            const checkbox = document.getElementById('invertir-logo-switch');
-            const invertir = checkbox.checked;
-
-            try {
-                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/invertir`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({ invertir: invertir })
-                });
-
-                if (response.ok) {
-                    showAlert(t('empresaLogo.configSaved'), 'success');
-                    await cargarLogoHeader();
-                } else {
-                    showAlert(t('empresaLogo.errorSaving'), 'error');
-                    checkbox.checked = !invertir;
-                }
-            } catch (error) {
-                showAlert(t('empresaLogo.errorSaving'), 'error');
-                checkbox.checked = !invertir;
-            }
-        }
-
-        // ==================== CARGAR CONFIG INVERTIR ====================
-        async function loadInvertirConfig() {
-            try {
-                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/invertir`, {
-                    credentials: 'include'
-                });
-                const data = await response.json();
-                document.getElementById('invertir-logo-switch').checked = data.invertir || false;
-            } catch (error) {
-                console.error('Error cargando config invertir:', error);
-            }
-        }
-
-        // ==================== APLICAR TEMA DE COLOR ====================
+        // ==================== LOGO DINAMICO POR EMPRESA ====================
         function applyColorTheme(tema) {
             const themes = {
                 'rubi': { primary: '#FF4338', primaryDark: '#D32F2F', primaryLight: '#FF6B6B' },
@@ -932,67 +537,223 @@
             document.documentElement.style.setProperty('--primary', colors.primary, 'important');
             document.documentElement.style.setProperty('--primary-dark', colors.primaryDark, 'important');
             document.documentElement.style.setProperty('--primary-light', colors.primaryLight, 'important');
-
-            document.querySelectorAll('.theme-card').forEach(card => {
-                card.classList.toggle('selected', card.dataset.theme === tema);
-            });
         }
 
-        // ==================== SELECCIONAR TEMA ====================
-        async function selectTheme(tema) {
+        async function cargarLogoEmpresa() {
+            const connection = localStorage.getItem('connection');
+            if (!connection) {
+                applyColorTheme('rubi');
+                return;
+            }
+            const logoElements = document.querySelectorAll('.logo, #header-logo');
             try {
-                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/tema`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({ tema: tema })
-                });
-
-                if (response.ok) {
-                    applyColorTheme(tema);
-                    showAlert(t('empresaLogo.themeSaved') || 'Tema guardado correctamente', 'success');
+                const configResponse = await fetch(`${API_URL}/api/empresa/${connection}/config`);
+                const config = await configResponse.json();
+                applyColorTheme(config.tema || 'rubi');
+                const invertirFilter = config.invertir_logo ? 'brightness(0) invert(1)' : 'none';
+                if (config.tiene_logo) {
+                    const logoUrl = `${API_URL}/api/empresa/${connection}/logo?t=${Date.now()}`;
+                    logoElements.forEach(el => {
+                        el.src = logoUrl;
+                        el.style.filter = invertirFilter;
+                        el.style.visibility = 'visible';
+                    });
                 } else {
-                    const data = await response.json();
-                    showAlert(data.error || t('empresaLogo.errorSaving'), 'error');
+                    logoElements.forEach(el => {
+                        el.src = 'assets/logo.svg';
+                        el.style.filter = 'brightness(0) invert(1)';
+                        el.style.visibility = 'visible';
+                    });
                 }
             } catch (error) {
-                showAlert(t('empresaLogo.errorSaving'), 'error');
-            }
-        }
-
-        // ==================== CARGAR CONFIG TEMA ====================
-        async function loadThemeConfig() {
-            try {
-                const response = await fetch(`${API_URL}/api/empresa/${empresaId}/config`, {
-                    credentials: 'include'
-                });
-                const config = await response.json();
-                applyColorTheme(config.tema || 'rubi');
-            } catch (error) {
                 applyColorTheme('rubi');
+                logoElements.forEach(el => {
+                    el.src = 'assets/logo.svg';
+                    el.style.filter = 'brightness(0) invert(1)';
+                    el.style.visibility = 'visible';
+                });
             }
         }
 
-        // ==================== INICIALIZAR ====================
-        window.onload = async function() {
+        // ==================== INICIALIZACION ====================
+        document.addEventListener('DOMContentLoaded', async function() {
             loadTheme();
+            await cargarLogoEmpresa();
             await I18n.init();
-
             const langSelector = document.getElementById('lang-selector');
             if (langSelector) langSelector.value = I18n.currentLang;
+            await checkAuth();
+            await loadDbInfo();
+        });
 
-            empresaId = await getEmpresaIdFromSession();
-            if (!empresaId) return;
+        // ==================== AUTENTICACION ====================
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_URL}/api/current-user`, { credentials: 'include' });
+                if (!response.ok) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                currentUser = await response.json();
+                document.getElementById('user-name-display').textContent = currentUser.full_name || currentUser.username;
+                document.getElementById('menu-user-name').textContent = currentUser.full_name || currentUser.username;
+                document.getElementById('menu-user-rol').textContent = currentUser.rol;
 
-            await obtenerCsrfToken();
-            await loadThemeConfig();
-            await cargarLogoHeader();
-            await loadCurrentState();
-            await loadInvertirConfig();
-        };
+                if (currentUser.rol === 'superusuario') {
+                    document.getElementById('menu-item-context').style.display = 'flex';
+                    document.getElementById('menu-divider-context').style.display = 'block';
+                }
+
+                if (currentUser.rol !== 'administrador' && currentUser.rol !== 'superusuario') {
+                    alert('No tienes permisos para acceder a esta pagina');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                document.getElementById('sidebar-admin-section').style.display = 'block';
+                document.getElementById('sidebar-config-section').style.display = 'block';
+            } catch (error) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
+            } catch (e) {}
+            localStorage.removeItem('csrf_token');
+            window.location.href = 'login.html';
+        }
+
+        async function showContextInfo() {
+            try {
+                const response = await fetch(`${API_URL}/api/context-info`, { credentials: 'include' });
+                if (!response.ok) throw new Error('No se pudo obtener la información de contexto');
+                const info = await response.json();
+                let html = `<div style="font-family: monospace; font-size: 0.85rem; line-height: 1.6;"><h4 style="margin-bottom: 10px; color: var(--primary);">👤 Usuario</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>ID:</strong> ${info.user.id}</div><div><strong>Username:</strong> ${info.user.username}</div><div><strong>Nombre:</strong> ${info.user.full_name}</div><div><strong>Rol:</strong> ${info.user.rol}</div><div><strong>Cliente ID:</strong> ${info.user.cliente_id || 'N/A'}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🔗 Sesión</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Connection:</strong> ${info.session.connection}</div><div><strong>Empresa ID:</strong> ${info.session.empresa_id}</div><div><strong>Empresa Nombre:</strong> ${info.session.empresa_nombre}</div><div><strong>User ID:</strong> ${info.session.user_id}</div></div><h4 style="margin-bottom: 10px; color: var(--primary);">🗄️ DB Config</h4><div style="background: ${info.has_db_config ? '#e8f5e9' : '#ffebee'}; padding: 10px; border-radius: 8px; margin-bottom: 15px;"><div><strong>Cacheado:</strong> ${info.has_db_config ? '✅ Sí' : '❌ No'}</div>${info.has_db_config ? `<div><strong>Server:</strong> ${info.db_config.dbserver}</div><div><strong>Database:</strong> ${info.db_config.dbname}</div>` : ''}</div><h4 style="margin-bottom: 10px; color: var(--primary);">💾 LocalStorage</h4><div style="background: var(--bg-secondary, #f5f5f5); padding: 10px; border-radius: 8px;"><div><strong>connection:</strong> ${localStorage.getItem('connection') || 'N/A'}</div><div><strong>empresa_id:</strong> ${localStorage.getItem('empresa_id') || 'N/A'}</div></div></div>`;
+                const modal = document.createElement('div');
+                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;';
+                modal.innerHTML = `<div style="background:var(--bg-primary, white);padding:20px;border-radius:12px;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.3);"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><h3 style="margin:0;">ℹ️ Info de Contexto</h3><button onclick="this.closest('div').parentElement.remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button></div>${html}</div>`;
+                modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+                document.body.appendChild(modal);
+            } catch (error) { console.error('Error:', error); alert('Error: ' + error.message); }
+        }
+
+        // ==================== CARGAR INFO BD ====================
+        async function loadDbInfo() {
+            const loadingEl = document.getElementById('db-loading');
+            const errorEl = document.getElementById('db-error');
+            const contentEl = document.getElementById('db-content');
+
+            loadingEl.style.display = 'flex';
+            errorEl.style.display = 'none';
+            contentEl.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_URL}/api/db-info`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Error loading DB info');
+
+                const data = await response.json();
+                loadingEl.style.display = 'none';
+                contentEl.style.display = 'block';
+                renderDbInfo(data);
+            } catch (error) {
+                loadingEl.style.display = 'none';
+                errorEl.style.display = 'block';
+                console.error('Error loading DB info:', error);
+            }
+        }
+
+        // ==================== RENDERIZAR INFO ====================
+        function renderDbInfo(data) {
+            // Servidor
+            const serverGrid = document.getElementById('server-info-grid');
+            const versionShort = data.version ? data.version.split('\n')[0].split('-')[0].trim() : 'N/A';
+            serverGrid.innerHTML = `
+                ${infoCard(t('dbControl.serverName'), data.server_name || 'N/A')}
+                ${infoCard(t('dbControl.database'), data.database_name || 'N/A')}
+                ${infoCard(t('dbControl.version'), versionShort)}
+                ${infoCard(t('dbControl.collation'), data.collation || 'N/A')}
+                ${infoCard(t('dbControl.recoveryModel'), data.recovery_model || 'N/A')}
+                ${data.server ? infoCard(t('dbControl.cpuCount'), data.server.cpu_count) : ''}
+                ${data.server ? infoCard(t('dbControl.memory'), data.server.physical_memory_mb ? `${Number(data.server.physical_memory_mb).toLocaleString()} MB` : 'N/A') : ''}
+                ${data.server && data.server.start_time ? infoCard(t('dbControl.startTime'), data.server.start_time) : ''}
+                ${data.objects ? infoCard(t('dbControl.tables'), data.objects.tables) : ''}
+                ${data.objects ? infoCard(t('dbControl.views'), data.objects.views) : ''}
+            `;
+
+            // Espacio
+            const spaceGrid = document.getElementById('space-info-grid');
+            if (data.space) {
+                spaceGrid.innerHTML = `
+                    ${infoCard(t('dbControl.databaseSize'), data.space.database_size || 'N/A')}
+                    ${infoCard(t('dbControl.unallocated'), data.space.unallocated_space || 'N/A')}
+                    ${data.space.reserved ? infoCard(t('dbControl.reserved'), data.space.reserved) : ''}
+                    ${data.space.data ? infoCard(t('dbControl.dataUsed'), data.space.data) : ''}
+                    ${data.space.index_size ? infoCard(t('dbControl.indexSize'), data.space.index_size) : ''}
+                    ${data.space.unused ? infoCard(t('dbControl.unused'), data.space.unused) : ''}
+                `;
+            } else {
+                spaceGrid.innerHTML = '<div class="param-card"><div class="param-info"><p>N/A</p></div></div>';
+            }
+
+            // Archivos
+            const filesContainer = document.getElementById('files-info-container');
+            if (data.files && data.files.length > 0) {
+                let filesHtml = '<div style="overflow-x: auto;"><table class="db-info-table"><thead><tr>';
+                filesHtml += `<th>${t('dbControl.fileName')}</th><th>${t('dbControl.fileType')}</th><th>${t('dbControl.sizeMb')}</th><th>${t('dbControl.maxSizeMb')}</th><th>${t('dbControl.growth')}</th>`;
+                filesHtml += '</tr></thead><tbody>';
+                data.files.forEach(f => {
+                    const maxSize = f.max_size_mb === -1 ? t('dbControl.unlimited') : (f.max_size_mb === 0 ? t('dbControl.noGrowth') : `${f.max_size_mb.toLocaleString()} MB`);
+                    filesHtml += `<tr>
+                        <td><strong>${f.name}</strong><br><small style="color: var(--text-secondary);">${f.physical_name}</small></td>
+                        <td>${f.type}</td>
+                        <td>${f.size_mb.toLocaleString()} MB</td>
+                        <td>${maxSize}</td>
+                        <td>${f.growth}</td>
+                    </tr>`;
+                });
+                filesHtml += '</tbody></table></div>';
+                filesContainer.innerHTML = filesHtml;
+            } else {
+                filesContainer.innerHTML = '<div class="param-card"><div class="param-info"><p>N/A</p></div></div>';
+            }
+
+            // Top tablas
+            const tablesContainer = document.getElementById('tables-info-container');
+            if (data.top_tables && data.top_tables.length > 0) {
+                let tablesHtml = '<div style="overflow-x: auto;"><table class="db-info-table"><thead><tr>';
+                tablesHtml += `<th>#</th><th>${t('dbControl.tableName')}</th><th>${t('dbControl.rows')}</th><th>${t('dbControl.sizeMb')}</th>`;
+                tablesHtml += '</tr></thead><tbody>';
+                data.top_tables.forEach((t, i) => {
+                    tablesHtml += `<tr>
+                        <td>${i + 1}</td>
+                        <td><strong>${t.name}</strong></td>
+                        <td>${Number(t.rows).toLocaleString()}</td>
+                        <td>${t.size_mb.toLocaleString()} MB</td>
+                    </tr>`;
+                });
+                tablesHtml += '</tbody></table></div>';
+                tablesContainer.innerHTML = tablesHtml;
+            } else {
+                tablesContainer.innerHTML = '<div class="param-card"><div class="param-info"><p>N/A</p></div></div>';
+            }
+
+            // Version completa
+            document.getElementById('version-full-text').textContent = data.version || 'N/A';
+        }
+
+        function infoCard(label, value) {
+            return `
+                <div class="param-card">
+                    <div class="param-info" style="flex: 1;">
+                        <span class="param-key">${label}</span>
+                    </div>
+                    <div class="param-value-section">
+                        <span class="param-value-readonly">${value}</span>
+                    </div>
+                </div>
+            `;
+        }
 
         // ==================== CAMBIO DE CONTRASENA ====================
         function showChangePasswordModal() {
