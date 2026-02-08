@@ -74,8 +74,10 @@ class PedidoModel:
             SELECT * FROM (
                 SELECT ROW_NUMBER() OVER (ORDER BY v.fecha DESC, v.pedido DESC) AS rn,
                        v.empresa, v.anyo, v.pedido, v.fecha, v.fecha_entrega, v.cliente,
-                       v.cliente_nombre, v.pedido_cliente, v.serie, v.bruto, v.importe_dto,
-                       v.total, v.peso, v.divisa, v.usuario, v.fecha_alta,
+                       v.cliente_nombre, v.pedido_cliente, v.serie,
+                       ROUND(v.bruto, 2) AS bruto, ROUND(v.importe_dto, 2) AS importe_dto,
+                       ROUND(v.total, 2) AS total, ROUND(v.peso, 2) AS peso,
+                       v.divisa, v.usuario, v.fecha_alta,
                        RTRIM(ISNULL(pa.nombre, '')) AS pais_nombre,
                        RTRIM(ISNULL(pr.nombre, '')) AS provincia_nombre
                 FROM view_externos_venped v
@@ -145,8 +147,10 @@ class PedidoModel:
 
         cursor.execute("""
             SELECT empresa, anyo, pedido, fecha, fecha_entrega, cliente,
-                   cliente_nombre, pedido_cliente, serie, bruto, importe_dto,
-                   total, peso, divisa, usuario, fecha_alta
+                   cliente_nombre, pedido_cliente, serie,
+                   ROUND(bruto, 2) AS bruto, ROUND(importe_dto, 2) AS importe_dto,
+                   ROUND(total, 2) AS total, ROUND(peso, 2) AS peso,
+                   divisa, usuario, fecha_alta
             FROM view_externos_venped
             WHERE empresa = ? AND anyo = ? AND pedido = ?
         """, (empresa, anyo, pedido))
@@ -178,7 +182,8 @@ class PedidoModel:
 
         cursor.execute("""
             SELECT l.linea, l.articulo, l.descripcion, l.formato, l.calidad, l.tono,
-                   l.calibre, l.cantidad, l.precio, l.importe, l.pallets, l.cajas,
+                   l.calibre, ROUND(l.cantidad, 2) AS cantidad, ROUND(l.precio, 2) AS precio,
+                   ROUND(l.importe, 2) AS importe, ROUND(l.pallets, 2) AS pallets, ROUND(l.cajas, 2) AS cajas,
                    l.fecha_pedido, l.fecha_entrega, l.situacion,
                    f.abreviado
             FROM view_externos_venliped l
@@ -267,8 +272,10 @@ class PedidoModel:
             SELECT * FROM (
                 SELECT ROW_NUMBER() OVER (ORDER BY v.fecha DESC, v.pedido DESC) AS rn,
                        v.empresa, v.anyo, v.pedido, v.fecha, v.fecha_entrega, v.cliente,
-                       v.cliente_nombre, v.pedido_cliente, v.serie, v.bruto, v.importe_dto,
-                       v.total, v.peso, v.divisa, v.usuario, v.fecha_alta,
+                       v.cliente_nombre, v.pedido_cliente, v.serie,
+                       ROUND(v.bruto, 2) AS bruto, ROUND(v.importe_dto, 2) AS importe_dto,
+                       ROUND(v.total, 2) AS total, ROUND(v.peso, 2) AS peso,
+                       v.divisa, v.usuario, v.fecha_alta,
                        RTRIM(ISNULL(pa.nombre, '')) AS pais_nombre,
                        RTRIM(ISNULL(pr.nombre, '')) AS provincia_nombre
                 FROM view_externos_venped v
@@ -338,7 +345,8 @@ class PedidoModel:
 
         cursor.execute("""
             SELECT l.linea, l.articulo, l.descripcion, l.formato, l.calidad, l.tono,
-                   l.calibre, l.cantidad, l.precio, l.importe, l.pallets, l.cajas,
+                   l.calibre, ROUND(l.cantidad, 2) AS cantidad, ROUND(l.precio, 2) AS precio,
+                   ROUND(l.importe, 2) AS importe, ROUND(l.pallets, 2) AS pallets, ROUND(l.cajas, 2) AS cajas,
                    l.fecha_pedido, l.fecha_entrega, l.situacion,
                    f.abreviado
             FROM view_externos_venliped l
