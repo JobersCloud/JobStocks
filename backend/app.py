@@ -44,10 +44,14 @@ from models.audit_model import AuditModel, AuditAction, AuditResult
 from models.cliente_model import ClienteModel
 from models.dominio_model import DominioModel
 from utils.password_policy import get_policy_info, PASSWORD_POLICY
+from config.database import Database
+from utils.db_migrator import run_pending as run_migrations, needs_check as migrations_need_check, mark_checked as migrations_mark_checked
+from migrations import MIGRATIONS
 
 import os
 import re
 import secrets
+import logging
 from datetime import datetime
 
 
@@ -139,7 +143,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.26.1'
+APP_VERSION = 'v1.27.0'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -477,6 +481,28 @@ def login():
             'dblogin': empresa_info.get('dblogin'),
             'dbpass': empresa_info.get('dbpass')
         }
+
+        # Ejecutar migraciones de BD pendientes (solo si no se verificó ya en esta sesión del servidor)
+        if migrations_need_check(connection, MIGRATIONS):
+            try:
+                mig_conn = Database.get_connection(connection)
+                try:
+                    mig_result = run_migrations(mig_conn, MIGRATIONS)
+                    if mig_result['applied']:
+                        logging.getLogger(__name__).info(
+                            f"Migraciones BD aplicadas para empresa {connection}: {mig_result['applied']}"
+                        )
+                    if mig_result['failed']:
+                        logging.getLogger(__name__).warning(
+                            f"Migración fallida para empresa {connection}: v{mig_result['failed']['version']} - {mig_result['failed']['error']}"
+                        )
+                    else:
+                        # Solo marcar como verificada si no hubo fallos
+                        migrations_mark_checked(connection, MIGRATIONS)
+                finally:
+                    mig_conn.close()
+            except Exception as e:
+                logging.getLogger(__name__).warning(f"Migraciones: {e}")
 
         # Eliminar sesiones anteriores del usuario (solo 1 sesión activa por usuario)
         try:

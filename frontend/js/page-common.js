@@ -468,8 +468,13 @@
     }
 
     function formatCurrency(value) {
-        if (value === null || value === undefined) return '0.00';
-        return new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+        if (value === null || value === undefined) return '0,00';
+        const num = typeof value === 'string' ? parseFloat(value) : Number(value);
+        if (isNaN(num)) return '0,00';
+        const fixed = num.toFixed(2);
+        const [intPart, decPart] = fixed.split('.');
+        const miles = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        return miles + ',' + decPart;
     }
 
     function truncateText(text, maxLength) {

@@ -442,7 +442,7 @@
     <script src="js/sidebar.js?v=20260143"></script>
     <script src="js/grid-filters.js?v=20260207"></script>
     <script src="js/data-grid.js?v=20260208b"></script>
-    <script src="js/page-common.js?v=20260208e"></script>
+    <script src="js/page-common.js?v=20260209a"></script>
 
     <script>
         // ==================== PAGE: TODOS LOS PEDIDOS (Admin) ====================
@@ -493,7 +493,7 @@
                         case 'pedido': return `<strong>${item.anyo}/${item.pedido}</strong>`;
                         case 'fecha': return PageCommon.formatDate(item.fecha);
                         case 'cliente_nombre': return item.cliente_nombre || item.cliente;
-                        case 'total': return `${PageCommon.formatCurrency(item.total)} ${item.divisa || 'EUR'}`;
+                        case 'total': return `${PageCommon.formatCurrency(item.total)} €`;
                         case 'peso': return item.peso != null ? PageCommon.formatCurrency(item.peso) : '-';
                         case '_actions': {
                             const codSafe = String(item.cliente || '').replace(/'/g, "\\'");
@@ -518,7 +518,7 @@
                         <div class="proposal-card">
                             <div class="proposal-card-header">
                                 <span class="proposal-card-id">${item.anyo}/${item.pedido}</span>
-                                <span class="status-badge status-procesada">${PageCommon.formatCurrency(item.total)} ${item.divisa || 'EUR'}</span>
+                                <span class="status-badge status-procesada">${PageCommon.formatCurrency(item.total)} €</span>
                             </div>
                             <div class="proposal-card-date">${PageCommon.formatDate(item.fecha)}</div>
                             <div class="proposal-card-info">
@@ -751,7 +751,7 @@
                         <div class="proposal-info-item"><label>${t('orders.deliveryDate')}</label><span>${order.fecha_entrega ? PageCommon.formatDate(order.fecha_entrega) : '-'}</span></div>
                         <div class="proposal-info-item"><label>${t('orders.client')}</label><span>${order.cliente_nombre || order.cliente}</span></div>
                         ${order.numpedcli ? `<div class="proposal-info-item"><label>${t('orders.reference') || 'Referencia'}</label><span>${order.numpedcli}</span></div>` : ''}
-                        <div class="proposal-info-item"><label>${t('orders.total')}</label><span style="font-weight:600;color:var(--primary);">${PageCommon.formatCurrency(order.total)} ${order.divisa || 'EUR'}</span></div>
+                        <div class="proposal-info-item"><label>${t('orders.total')}</label><span style="font-weight:600;color:var(--primary);">${PageCommon.formatCurrency(order.total)} €</span></div>
                     </div>
                     <h3 class="proposal-lines-title">${t('orders.lines')}</h3>
                     <div class="order-lines-table">

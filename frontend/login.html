@@ -275,6 +275,16 @@
 
         const changelogData = [
             {
+                version: 'v1.27.0',
+                date: '2026-02-09',
+                title: 'Migraciones automaticas de BD',
+                items: [
+                    { type: 'new', text: 'Sistema de migraciones automaticas: la BD se actualiza sola al hacer login' },
+                    { type: 'new', text: 'Tabla schema_migrations para control de versiones de esquema' },
+                    { type: 'improve', text: 'Motor de migraciones reutilizable con validacion de seguridad (nunca hace DROP)' }
+                ]
+            },
+            {
                 version: 'v1.26.1',
                 date: '2026-02-08',
                 title: 'Importes pedidos con CAST',
