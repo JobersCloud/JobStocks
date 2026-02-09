@@ -132,8 +132,8 @@ class PedidoModel:
                 SELECT ROW_NUMBER() OVER (ORDER BY v.fecha DESC, v.pedido DESC) AS rn,
                        v.empresa, v.anyo, v.pedido, v.fecha, v.fecha_entrega, v.cliente,
                        v.cliente_nombre, v.pedido_cliente, v.serie,
-                       ROUND(v.bruto, 2) AS bruto, ROUND(v.importe_dto, 2) AS importe_dto,
-                       ROUND(v.total, 2) AS total, ROUND(v.peso, 2) AS peso,
+                       CAST(v.bruto AS DECIMAL(18,2)) AS bruto, CAST(v.importe_dto AS DECIMAL(18,2)) AS importe_dto,
+                       CAST(v.total AS DECIMAL(18,2)) AS total, CAST(v.peso AS DECIMAL(18,2)) AS peso,
                        v.divisa, v.usuario, v.fecha_alta,
                        {numpedcli_sql}
                        RTRIM(ISNULL(pa.nombre, '')) AS pais_nombre,
@@ -187,8 +187,8 @@ class PedidoModel:
         cursor.execute(f"""
             SELECT empresa, anyo, pedido, fecha, fecha_entrega, cliente,
                    cliente_nombre, pedido_cliente, serie,
-                   ROUND(bruto, 2) AS bruto, ROUND(importe_dto, 2) AS importe_dto,
-                   ROUND(total, 2) AS total, ROUND(peso, 2) AS peso,
+                   CAST(bruto AS DECIMAL(18,2)) AS bruto, CAST(importe_dto AS DECIMAL(18,2)) AS importe_dto,
+                   CAST(total AS DECIMAL(18,2)) AS total, CAST(peso AS DECIMAL(18,2)) AS peso,
                    divisa, usuario, fecha_alta,
                    {numpedcli_sql}
                    empresa AS _dummy
@@ -206,8 +206,8 @@ class PedidoModel:
 
         cursor.execute("""
             SELECT l.linea, l.articulo, l.descripcion, l.formato, l.calidad, l.tono,
-                   l.calibre, ROUND(l.cantidad, 2) AS cantidad, ROUND(l.precio, 2) AS precio,
-                   ROUND(l.importe, 2) AS importe, ROUND(l.pallets, 2) AS pallets, ROUND(l.cajas, 2) AS cajas,
+                   l.calibre, CAST(l.cantidad AS DECIMAL(18,2)) AS cantidad, CAST(l.precio AS DECIMAL(18,2)) AS precio,
+                   CAST(l.importe AS DECIMAL(18,2)) AS importe, l.pallets, l.cajas,
                    l.fecha_pedido, l.fecha_entrega, l.situacion,
                    f.abreviado
             FROM view_externos_venliped l
@@ -228,8 +228,8 @@ class PedidoModel:
                 'cantidad': round(float(row[7]), 2) if row[7] else 0,
                 'precio': round(float(row[8]), 2) if row[8] else 0,
                 'importe': round(float(row[9]), 2) if row[9] else 0,
-                'pallets': round(float(row[10]), 2) if row[10] else 0,
-                'cajas': round(float(row[11]), 2) if row[11] else 0,
+                'pallets': int(row[10]) if row[10] else 0,
+                'cajas': int(row[11]) if row[11] else 0,
                 'fecha_pedido': row[12].isoformat() if row[12] else None,
                 'fecha_entrega': row[13].isoformat() if row[13] else None,
                 'situacion': row[14],
@@ -299,8 +299,8 @@ class PedidoModel:
                 SELECT ROW_NUMBER() OVER (ORDER BY v.fecha DESC, v.pedido DESC) AS rn,
                        v.empresa, v.anyo, v.pedido, v.fecha, v.fecha_entrega, v.cliente,
                        v.cliente_nombre, v.pedido_cliente, v.serie,
-                       ROUND(v.bruto, 2) AS bruto, ROUND(v.importe_dto, 2) AS importe_dto,
-                       ROUND(v.total, 2) AS total, ROUND(v.peso, 2) AS peso,
+                       CAST(v.bruto AS DECIMAL(18,2)) AS bruto, CAST(v.importe_dto AS DECIMAL(18,2)) AS importe_dto,
+                       CAST(v.total AS DECIMAL(18,2)) AS total, CAST(v.peso AS DECIMAL(18,2)) AS peso,
                        v.divisa, v.usuario, v.fecha_alta,
                        {numpedcli_sql}
                        RTRIM(ISNULL(pa.nombre, '')) AS pais_nombre,
@@ -351,8 +351,8 @@ class PedidoModel:
 
         cursor.execute("""
             SELECT l.linea, l.articulo, l.descripcion, l.formato, l.calidad, l.tono,
-                   l.calibre, ROUND(l.cantidad, 2) AS cantidad, ROUND(l.precio, 2) AS precio,
-                   ROUND(l.importe, 2) AS importe, ROUND(l.pallets, 2) AS pallets, ROUND(l.cajas, 2) AS cajas,
+                   l.calibre, CAST(l.cantidad AS DECIMAL(18,2)) AS cantidad, CAST(l.precio AS DECIMAL(18,2)) AS precio,
+                   CAST(l.importe AS DECIMAL(18,2)) AS importe, l.pallets, l.cajas,
                    l.fecha_pedido, l.fecha_entrega, l.situacion,
                    f.abreviado
             FROM view_externos_venliped l
@@ -374,8 +374,8 @@ class PedidoModel:
                 'cantidad': round(float(row[7]), 2) if row[7] else 0,
                 'precio': round(float(row[8]), 2) if row[8] else 0,
                 'importe': round(float(row[9]), 2) if row[9] else 0,
-                'pallets': round(float(row[10]), 2) if row[10] else 0,
-                'cajas': round(float(row[11]), 2) if row[11] else 0,
+                'pallets': int(row[10]) if row[10] else 0,
+                'cajas': int(row[11]) if row[11] else 0,
                 'fecha_pedido': row[12].isoformat() if row[12] else None,
                 'fecha_entrega': row[13].isoformat() if row[13] else None,
                 'situacion': row[14],
