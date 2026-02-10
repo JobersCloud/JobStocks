@@ -113,6 +113,11 @@ class ParametrosModel:
         return ParametrosModel.get_bool('PERMITIR_FIRMA', empresa_id, connection)
 
     @staticmethod
+    def permitir_busqueda_voz(empresa_id, connection=None):
+        """Verifica si la búsqueda por voz está habilitada para una empresa"""
+        return ParametrosModel.get_bool('PERMITIR_BUSQUEDA_VOZ', empresa_id, connection)
+
+    @staticmethod
     def create_if_not_exists(clave, valor, descripcion, empresa_id, connection=None):
         """Crea un parámetro si no existe para la empresa"""
         conn = Database.get_connection(connection)

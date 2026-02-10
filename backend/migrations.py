@@ -712,4 +712,17 @@ MIGRATIONS = [
         ]
     },
 
+    {
+        'version': 33,
+        'description': 'Parametro PERMITIR_BUSQUEDA_VOZ',
+        'app_version': 'v1.28.0',
+        'sql': [
+            """IF NOT EXISTS (SELECT 1 FROM parametros WHERE clave = 'PERMITIR_BUSQUEDA_VOZ' AND empresa_id = '1')
+            BEGIN
+                INSERT INTO parametros (clave, valor, descripcion, empresa_id)
+                VALUES ('PERMITIR_BUSQUEDA_VOZ', '1', 'Habilitar busqueda por voz en pagina de stocks (1=habilitado, 0=deshabilitado)', '1');
+            END""",
+        ]
+    },
+
 ]

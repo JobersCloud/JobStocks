@@ -574,6 +574,19 @@
     "records": "records",
     "filteredFrom": "filtered from"
   },
+  "voice": {
+    "searchByVoice": "Voice search",
+    "listening": "Listening...",
+    "notSupported": "Your browser does not support voice recognition",
+    "error": "Voice recognition error, please try again",
+    "helpTitle": "Voice commands",
+    "helpExamples": "Examples:",
+    "helpEx1": "\"ARES BEIGE 75x120\"",
+    "helpEx2": "\"Do you have MILANO\"",
+    "helpEx3": "\"Search GREY first quality\"",
+    "helpEx4": "\"PORCELAIN 60x60\"",
+    "helpTip": "Say the product name, format, color or quality"
+  },
   "dbControl": {
     "title": "Database Control",
     "errorLoading": "Error loading database info",

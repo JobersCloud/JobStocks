@@ -574,6 +574,19 @@
     "records": "registros",
     "filteredFrom": "filtrados de"
   },
+  "voice": {
+    "searchByVoice": "Búsqueda por voz",
+    "listening": "Escuchando...",
+    "notSupported": "Tu navegador no soporta reconocimiento de voz",
+    "error": "Error en reconocimiento de voz, inténtalo de nuevo",
+    "helpTitle": "Comandos de voz",
+    "helpExamples": "Ejemplos:",
+    "helpEx1": "\"ARES BEIGE 75x120\"",
+    "helpEx2": "\"Tienes stock del MILANO\"",
+    "helpEx3": "\"Busca GRIS primera calidad\"",
+    "helpEx4": "\"PORCELÁNICO 60x60\"",
+    "helpTip": "Di el nombre, formato, color o calidad del producto"
+  },
   "dbControl": {
     "title": "Control de Base de Datos",
     "errorLoading": "Error al cargar informacion de la BD",

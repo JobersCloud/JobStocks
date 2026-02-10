@@ -27,6 +27,7 @@ let propuestasHabilitadas = true;  // Control de funcionalidad de propuestas
 let gridConImagenes = false;  // Control de imágenes en tabla/tarjetas (desactivado por defecto)
 let firmaHabilitada = false;  // Control de funcionalidad de firma de propuestas
 let whatsappConfig = { habilitado: false, numero: null };  // Configuración de WhatsApp
+let busquedaVozHabilitada = false;  // Control de funcionalidad de búsqueda por voz
 let csrfToken = null;  // Token CSRF para protección contra ataques
 
 // ==================== PAGINACIÓN BACKEND ====================
@@ -585,6 +586,224 @@ async function verificarFirmaHabilitada() {
         firmaHabilitada = false;
         return false;
     }
+}
+
+// ==================== BÚSQUEDA POR VOZ ====================
+
+async function verificarBusquedaVozHabilitada() {
+    try {
+        const empresaId = localStorage.getItem('empresa_id') || '1';
+        const resp = await fetch(`${API_URL}/api/parametros/busqueda-voz-habilitada?empresa_id=${empresaId}`);
+        const data = await resp.json();
+        busquedaVozHabilitada = data.habilitado;
+        const wrapper = document.getElementById('voice-search-wrapper');
+        if (wrapper) wrapper.style.display = busquedaVozHabilitada ? '' : 'none';
+        if (busquedaVozHabilitada) inicializarTooltipVoz();
+        console.log(`🎤 Búsqueda por voz habilitada: ${busquedaVozHabilitada}`);
+        return busquedaVozHabilitada;
+    } catch (e) {
+        console.error('Error al verificar búsqueda por voz:', e);
+        busquedaVozHabilitada = false;
+        return false;
+    }
+}
+
+function inicializarTooltipVoz() {
+    const btn = document.getElementById('btn-voice-search');
+    const tooltip = document.getElementById('voice-help-tooltip');
+    if (!btn || !tooltip) return;
+
+    let hideTimeout;
+
+    btn.addEventListener('mouseenter', () => {
+        if (btn.classList.contains('listening')) return;
+        tooltip.innerHTML = `
+            <h4>${t('voice.helpTitle') || 'Comandos de voz'}</h4>
+            <p style="margin:0 0 6px;font-weight:500">${t('voice.helpExamples') || 'Ejemplos:'}</p>
+            <ul>
+                <li><code>${t('voice.helpEx1') || '"ARES BEIGE 75x120"'}</code></li>
+                <li><code>${t('voice.helpEx2') || '"Tienes stock del MILANO"'}</code></li>
+                <li><code>${t('voice.helpEx3') || '"Busca GRIS primera calidad"'}</code></li>
+                <li><code>${t('voice.helpEx4') || '"PORCELÁNICO 60x60"'}</code></li>
+            </ul>
+            <p style="margin:6px 0 0;font-style:italic;color:var(--text-light)">${t('voice.helpTip') || 'Di el nombre, formato, color o calidad del producto'}</p>
+        `;
+        tooltip.style.display = 'block';
+        clearTimeout(hideTimeout);
+    });
+
+    btn.addEventListener('mouseleave', () => {
+        hideTimeout = setTimeout(() => { tooltip.style.display = 'none'; }, 200);
+    });
+
+    tooltip.addEventListener('mouseenter', () => clearTimeout(hideTimeout));
+    tooltip.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+
+    // Móvil: cerrar al tocar fuera del tooltip
+    document.addEventListener('touchstart', (e) => {
+        if (tooltip.style.display === 'block' && !tooltip.contains(e.target) && !btn.contains(e.target)) {
+            tooltip.style.display = 'none';
+        }
+    });
+}
+
+function iniciarBusquedaVoz() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert(t('voice.notSupported') || 'Tu navegador no soporta reconocimiento de voz');
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+    const lang = (typeof I18n !== 'undefined' && I18n.currentLang) || 'es';
+    recognition.lang = lang === 'en' ? 'en-US' : lang === 'fr' ? 'fr-FR' : 'es-ES';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    const btn = document.getElementById('btn-voice-search');
+    btn.classList.add('listening');
+
+    recognition.onresult = (event) => {
+        const texto = event.results[0][0].transcript;
+        console.log('🎤 Voz detectada:', texto);
+        btn.classList.remove('listening');
+        procesarBusquedaVoz(texto);
+    };
+
+    recognition.onerror = (event) => {
+        btn.classList.remove('listening');
+        if (event.error !== 'aborted' && event.error !== 'no-speech') {
+            alert(t('voice.error') || 'Error en reconocimiento de voz');
+        }
+    };
+
+    recognition.onend = () => {
+        btn.classList.remove('listening');
+        const tooltip = document.getElementById('voice-help-tooltip');
+        if (tooltip) tooltip.style.display = 'none';
+    };
+    recognition.start();
+}
+
+function procesarBusquedaVoz(texto) {
+    // 1. Normalizar: mayúsculas, quitar prefijos comunes
+    let limpio = texto.toUpperCase().trim();
+    const prefijos = [
+        'TIENES STOCK DE', 'TIENES STOCK DEL', 'HAY STOCK DE', 'HAY STOCK DEL',
+        'BUSCA', 'BUSCAR', 'BUSCA EL', 'QUIERO', 'QUIERO VER',
+        'MUÉSTRAME', 'MUESTRAME', 'DAME', 'NECESITO',
+        'DO YOU HAVE', 'SEARCH FOR', 'SEARCH', 'FIND', 'SHOW ME', 'I NEED',
+        'CHERCHE', 'CHERCHER', 'MONTRE MOI', 'MONTREZ MOI'
+    ];
+    for (const p of prefijos) {
+        if (limpio.startsWith(p + ' ')) {
+            limpio = limpio.substring(p.length).trim();
+            break;
+        }
+    }
+
+    // 2. Extraer formato (patrón NNxNN, ej: 75x120, 20X20, 75 POR 120)
+    let formato = '';
+    const matchFormato = limpio.match(/(\d{1,3})\s*[Xx×]\s*(\d{1,3})/);
+    if (matchFormato) {
+        formato = matchFormato[1] + 'x' + matchFormato[2];
+        limpio = limpio.replace(matchFormato[0], '').trim();
+    } else {
+        const matchPor = limpio.match(/(\d{1,3})\s+POR\s+(\d{1,3})/i);
+        if (matchPor) {
+            formato = matchPor[1] + 'x' + matchPor[2];
+            limpio = limpio.replace(matchPor[0], '').trim();
+        }
+    }
+
+    // 3. Extraer calidad (si dice "PRIMERA", "SEGUNDA", "CALIDAD A")
+    let calidad = '';
+    const matchCalidad = limpio.match(/\bCALIDAD\s+(\S+)/);
+    if (matchCalidad) {
+        calidad = matchCalidad[1];
+        limpio = limpio.replace(matchCalidad[0], '').trim();
+    } else if (/\bPRIMERA\b/.test(limpio)) {
+        calidad = '1';
+        limpio = limpio.replace(/\bPRIMERA\b/, '').trim();
+    } else if (/\bSEGUNDA\b/.test(limpio)) {
+        calidad = '2';
+        limpio = limpio.replace(/\bSEGUNDA\b/, '').trim();
+    }
+
+    // 4. El resto es la descripción/serie
+    let descripcion = limpio.replace(/\s+/g, ' ').trim();
+
+    // 5. Aplicar filtros a los inputs del DOM
+    limpiarFiltros();
+
+    // Intentar seleccionar formato en el select si existe
+    const selFormato = document.getElementById('filter-formato');
+    if (formato && selFormato) {
+        // Normalizar formato de voz: "120x60" → extraer los dos números
+        const partes = formato.toLowerCase().split('x');
+        const num1 = parseInt(partes[0], 10);
+        const num2 = parseInt(partes[1], 10);
+
+        const opcion = Array.from(selFormato.options).find(o => {
+            if (!o.value) return false;
+            // Normalizar valor del select: "120X060" → extraer números
+            const m = o.value.match(/(\d+)\s*[Xx×]\s*(\d+)/);
+            if (!m) return false;
+            const n1 = parseInt(m[1], 10);
+            const n2 = parseInt(m[2], 10);
+            // Comparar en ambas direcciones (120x60 == 60x120)
+            return (n1 === num1 && n2 === num2) || (n1 === num2 && n2 === num1);
+        });
+        if (opcion) selFormato.value = opcion.value;
+    }
+
+    // Intentar seleccionar serie/modelo si coincide con alguna opción
+    const selSerie = document.getElementById('filter-serie');
+    if (descripcion && selSerie) {
+        const palabras = descripcion.split(' ');
+        for (const palabra of palabras) {
+            if (!palabra) continue;
+            const opcion = Array.from(selSerie.options).find(o =>
+                o.value.toUpperCase() === palabra || o.text.toUpperCase() === palabra
+            );
+            if (opcion && opcion.value) {
+                selSerie.value = opcion.value;
+                descripcion = descripcion.replace(palabra, '').trim();
+                break;
+            }
+        }
+    }
+
+    // Si queda texto, buscar en color
+    const selColor = document.getElementById('filter-color');
+    if (descripcion && selColor) {
+        const palabras = descripcion.split(' ');
+        for (const palabra of palabras) {
+            if (!palabra) continue;
+            const opcion = Array.from(selColor.options).find(o =>
+                o.value.toUpperCase() === palabra || o.text.toUpperCase() === palabra
+            );
+            if (opcion && opcion.value) {
+                selColor.value = opcion.value;
+                descripcion = descripcion.replace(palabra, '').trim();
+                break;
+            }
+        }
+    }
+
+    // Calidad
+    if (calidad) {
+        const selCalidad = document.getElementById('filter-calidad');
+        if (selCalidad) {
+            const opcion = Array.from(selCalidad.options).find(o =>
+                o.value.toUpperCase().includes(calidad)
+            );
+            if (opcion && opcion.value) selCalidad.value = opcion.value;
+        }
+    }
+
+    // 6. Ejecutar búsqueda
+    buscarStocks();
 }
 
 // Cargar configuración de WhatsApp
@@ -4057,6 +4276,7 @@ window.onload = async function () {
 
         await verificarPropuestasHabilitadas();
         await verificarFirmaHabilitada();
+        await verificarBusquedaVozHabilitada();
         await verificarGridConImagenes();
         await cargarConfigPaginacion();
         await cargarConfigWhatsApp();

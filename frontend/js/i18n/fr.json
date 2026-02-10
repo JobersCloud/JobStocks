@@ -574,6 +574,19 @@
     "records": "enregistrements",
     "filteredFrom": "filtrés sur"
   },
+  "voice": {
+    "searchByVoice": "Recherche vocale",
+    "listening": "Écoute en cours...",
+    "notSupported": "Votre navigateur ne prend pas en charge la reconnaissance vocale",
+    "error": "Erreur de reconnaissance vocale, réessayez",
+    "helpTitle": "Commandes vocales",
+    "helpExamples": "Exemples :",
+    "helpEx1": "\"ARES BEIGE 75x120\"",
+    "helpEx2": "\"Cherche MILANO\"",
+    "helpEx3": "\"GRIS première qualité\"",
+    "helpEx4": "\"PORCELAINE 60x60\"",
+    "helpTip": "Dites le nom, format, couleur ou qualité du produit"
+  },
   "dbControl": {
     "title": "Contrôle de Base de Données",
     "errorLoading": "Erreur lors du chargement des infos BD",

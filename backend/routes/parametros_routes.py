@@ -129,6 +129,33 @@ def firma_habilitada():
     return jsonify({'habilitado': habilitado}), 200
 
 
+@parametros_bp.route('/busqueda-voz-habilitada', methods=['GET'])
+def busqueda_voz_habilitada():
+    """
+    Verificar si la búsqueda por voz está habilitada
+    ---
+    tags:
+      - Parámetros
+    parameters:
+      - name: empresa_id
+        in: query
+        type: string
+        required: false
+    responses:
+      200:
+        description: Estado de la búsqueda por voz
+        schema:
+          type: object
+          properties:
+            habilitado:
+              type: boolean
+    """
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+    habilitado = ParametrosModel.permitir_busqueda_voz(empresa_id, connection)
+    return jsonify({'habilitado': habilitado}), 200
+
+
 @parametros_bp.route('/grid-con-imagenes', methods=['GET'])
 def grid_con_imagenes():
     """

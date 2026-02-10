@@ -15020,6 +15020,130 @@ th.dg-drag-over-right {
     fill: none;
 }
 
+/* Botón de búsqueda por voz */
+.btn-icon-voice {
+    position: relative;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+
+.btn-icon-voice:hover {
+    background: var(--bg-tertiary);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-icon-voice svg {
+    stroke: currentColor;
+    fill: none;
+}
+
+.btn-icon-voice.listening {
+    color: #e53e3e;
+    border-color: #e53e3e;
+    animation: voice-pulse 1.5s ease-in-out infinite;
+}
+
+.btn-icon-voice.listening::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid #e53e3e;
+    animation: voice-ring 1.5s ease-out infinite;
+}
+
+@keyframes voice-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes voice-ring {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* Tooltip de ayuda para búsqueda por voz */
+.voice-help-tooltip {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    width: 260px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+}
+
+.voice-help-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--border);
+}
+
+.voice-help-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--bg-primary);
+    z-index: 1;
+}
+
+.voice-help-tooltip h4 {
+    margin: 0 0 8px 0;
+    font-size: 0.85rem;
+    color: var(--primary);
+}
+
+.voice-help-tooltip ul {
+    margin: 0;
+    padding-left: 16px;
+}
+
+.voice-help-tooltip li {
+    margin-bottom: 4px;
+    color: var(--text-secondary);
+}
+
+.voice-help-tooltip code {
+    background: var(--bg-tertiary);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .voice-help-tooltip {
+        position: fixed;
+        top: 120px;
+        bottom: auto;
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100vw - 32px);
+        max-width: 280px;
+    }
+
+    .voice-help-tooltip::after,
+    .voice-help-tooltip::before {
+        display: none;
+    }
+}
+
 /* Tamaños de botones */
 .btn-icon-sm {
     width: 32px;
