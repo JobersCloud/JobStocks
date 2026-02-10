@@ -442,8 +442,8 @@ function setupLoginForm() {
 // Verificar si el registro está habilitado
 async function verificarRegistroHabilitado() {
     try {
-        // Usar connection para la verificación (necesita conectar a BD del cliente)
         const connection = localStorage.getItem('connection');
+        if (!connection) return;
         const response = await fetch(`${API_URL}/api/registro-habilitado?connection=${connection}`);
         const data = await response.json();
 

@@ -125,6 +125,8 @@ def registro_habilitado():
               type: boolean
     """
     connection = get_connection()
+    if not connection:
+        return jsonify({'habilitado': False}), 200
     empresa_id = get_empresa_id_from_connection(connection)
     habilitado = ParametrosModel.permitir_registro(empresa_id, connection)
     return jsonify({'habilitado': habilitado}), 200
@@ -1191,6 +1193,12 @@ def reset_password():
             resultado=AuditResult.SUCCESS
         )
 
+        # Enviar email de confirmación
+        try:
+            enviar_email_confirmacion_reset(email, full_name or username, empresa_id, connection)
+        except Exception as e:
+            print(f"⚠️ No se pudo enviar email de confirmación: {e}")
+
         return jsonify({
             'success': True,
             'message': 'Contraseña cambiada correctamente. Ya puedes iniciar sesión.'
@@ -1349,4 +1357,132 @@ def enviar_email_reset_password(email, nombre, token, empresa_id="1", connection
         server.quit()
     except Exception as e:
         print(f"❌ Error al enviar email de recuperación: {e}")
+        raise
+
+
+def enviar_email_confirmacion_reset(email, nombre, empresa_id="1", connection=None):
+    """Envía email de confirmación tras cambiar contraseña exitosamente"""
+    email_config = EmailConfigModel.get_active_config(empresa_id, connection)
+
+    if not email_config:
+        raise Exception("No hay configuración de email activa")
+
+    base_url = get_base_url()
+    login_url = f"{base_url}/login{'?connection=' + connection if connection else ''}"
+
+    msg = MIMEMultipart()
+    msg['From'] = f"Sistema de Stocks <{email_config['email_from']}>"
+    msg['To'] = email
+    msg['Subject'] = "Contraseña cambiada correctamente - Sistema de Gestión de Stocks"
+    msg['Date'] = formatdate(localtime=True)
+    msg['Message-ID'] = f"<{secrets.token_urlsafe(16)}@jobers.net>"
+    msg['Reply-To'] = email_config['email_from']
+    msg['X-Mailer'] = 'Sistema de Gestión de Stocks v1.0'
+
+    body = f"""
+    <!DOCTYPE html>
+    <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding: 40px 20px;">
+                <tr>
+                    <td align="center">
+                        <!-- Logo/Branding superior -->
+                        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px; margin-bottom: 20px;">
+                            <tr>
+                                <td align="center" style="padding: 20px;">
+                                    <span style="font-size: 32px; font-weight: 700; color: #ffffff; letter-spacing: 2px;">STOCKS</span>
+                                    <span style="display: block; font-size: 11px; color: #FF4338; letter-spacing: 4px; margin-top: 5px;">MANAGEMENT SYSTEM</span>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- Tarjeta principal -->
+                        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.3);">
+                            <!-- Header -->
+                            <tr>
+                                <td style="background: linear-gradient(135deg, #4CAF50 0%, #81C784 50%, #2E7D32 100%); padding: 60px 40px; text-align: center;">
+                                    <div style="width: 100px; height: 100px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 25px; display: inline-block; line-height: 100px; border: 2px solid rgba(255,255,255,0.3);">
+                                        <span style="font-size: 50px; color: #ffffff;">&#9989;</span>
+                                    </div>
+                                    <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">Contrase&#241;a actualizada</h1>
+                                    <p style="color: rgba(255,255,255,0.95); margin: 15px 0 0; font-size: 17px; font-weight: 300;">Tu cambio se ha realizado correctamente</p>
+                                </td>
+                            </tr>
+                            <!-- Contenido -->
+                            <tr>
+                                <td style="padding: 50px 45px;">
+                                    <p style="color: #1a1a2e; font-size: 20px; margin: 0 0 25px; line-height: 1.5;">
+                                        Hola <strong style="color: #4CAF50;">{nombre}</strong>
+                                    </p>
+                                    <p style="color: #4a4a68; font-size: 16px; margin: 0 0 35px; line-height: 1.8;">
+                                        Tu contrase&#241;a en el <strong style="color: #1a1a2e;">Sistema de Gesti&#243;n de Stocks</strong>
+                                        ha sido cambiada correctamente. Ya puedes iniciar sesi&#243;n con tu nueva contrase&#241;a.
+                                    </p>
+                                    <!-- Boton login -->
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td align="center" style="padding: 15px 0 40px;">
+                                                <a href="{login_url}" style="display: inline-block; background-color: #4CAF50; color: #ffffff; padding: 20px 60px; text-decoration: none; border-radius: 50px; font-size: 17px; font-weight: 600; letter-spacing: 0.5px;">
+                                                    &#128274; &nbsp; Iniciar sesi&#243;n
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <!-- Separador -->
+                                    <div style="height: 1px; background: linear-gradient(90deg, transparent, #e5e7eb, transparent); margin: 10px 0 30px;"></div>
+                                    <!-- Aviso de seguridad -->
+                                    <div style="margin-top: 10px; padding: 20px 25px; border-radius: 12px; background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-left: 5px solid #FF9800;">
+                                        <p style="color: #e65100; font-size: 14px; margin: 0; font-weight: 500;">
+                                            &#9888;&#65039; <strong>&#191;No fuiste t&#250;?</strong> Si no realizaste este cambio, contacta con el administrador del sistema inmediatamente.
+                                        </p>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Footer -->
+                            <tr>
+                                <td style="background: linear-gradient(180deg, #f8f9fc 0%, #eef1f5 100%); padding: 35px 40px; border-top: 1px solid #e5e7eb;">
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td align="center">
+                                                <div style="height: 1px; background: linear-gradient(90deg, transparent, #d1d5db, transparent); margin: 0 0 15px;"></div>
+                                                <p style="color: #b0b0b0; font-size: 11px; margin: 0;">
+                                                    &copy; {datetime.now().year} Sistema de Gesti&#243;n de Stocks &bull; Todos los derechos reservados
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- Texto legal exterior -->
+                        <p style="color: rgba(255,255,255,0.5); font-size: 11px; margin: 30px 0 0; text-align: center; max-width: 450px;">
+                            Este es un mensaje autom&#225;tico generado por el sistema.<br>Por favor, no respondas directamente a este correo.
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </body>
+    </html>
+    """
+
+    msg.attach(MIMEText(body, 'html'))
+
+    try:
+        print(f"📧 Enviando email de confirmación de cambio a: {email}")
+
+        if email_config['smtp_port'] == 465:
+            server = smtplib.SMTP_SSL(email_config['smtp_server'], email_config['smtp_port'])
+        else:
+            server = smtplib.SMTP(email_config['smtp_server'], email_config['smtp_port'])
+            server.starttls()
+
+        server.login(email_config['email_from'], email_config['email_password'])
+        server.send_message(msg)
+        print(f"✅ Email de confirmación enviado a {email}")
+        server.quit()
+    except Exception as e:
+        print(f"❌ Error al enviar email de confirmación: {e}")
         raise

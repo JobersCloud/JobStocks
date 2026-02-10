@@ -887,6 +887,10 @@ def serve_login_js():
 def serve_register_js():
     return send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'register.js', mimetype='application/javascript')
 
+@app.route('/js/reset-password.js')
+def serve_reset_password_js():
+    return send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'reset-password.js', mimetype='application/javascript')
+
 @app.route('/js/sidebar.js')
 @login_required
 def serve_sidebar_js():
@@ -980,13 +984,13 @@ def favicon_root():
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login_page', 'login', 'register_page', 'verify_email_page', 'serve_css', 'serve_login_js', 'serve_register_js', 'serve_i18n_js', 'serve_i18n_lang', 'logo', 'logo_png', 'logo_jobers', 'favicon', 'favicon_jobers', 'favicon_root', 'static', 'flasgger.static', 'flasgger.apispec', 'empresa_logo.get_logo', 'empresa_logo.get_favicon', 'empresa_logo.logo_exists', 'empresa_logo.get_config', 'empresa_logo.get_tema', 'empresa_logo.get_invertir', 'get_version']
+    allowed_routes = ['login_page', 'login', 'register_page', 'verify_email_page', 'reset_password_page', 'serve_css', 'serve_login_js', 'serve_register_js', 'serve_reset_password_js', 'serve_i18n_js', 'serve_i18n_lang', 'logo', 'logo_png', 'logo_jobers', 'favicon', 'favicon_jobers', 'favicon_root', 'static', 'flasgger.static', 'flasgger.apispec', 'empresa_logo.get_logo', 'empresa_logo.get_favicon', 'empresa_logo.logo_exists', 'empresa_logo.get_config', 'empresa_logo.get_tema', 'empresa_logo.get_invertir', 'get_version']
     # Permitir acceso a Swagger UI
     if request.path.startswith('/apidocs') or request.path.startswith('/flasgger_static') or request.path.startswith('/apispec'):
         return None
 
     # Permitir rutas de registro, empresa y consultas sin autenticación
-    public_api_routes = ['/api/register', '/api/verify-email', '/api/resend-verification', '/api/paises', '/api/registro-habilitado', '/api/parametros/propuestas-habilitadas', '/api/consultas/whatsapp-config', '/api/empresa/validate', '/api/empresa/init', '/api/empresa/list', '/api/default-connection', '/api/version', '/api/password-policy']
+    public_api_routes = ['/api/register', '/api/verify-email', '/api/resend-verification', '/api/paises', '/api/registro-habilitado', '/api/parametros/propuestas-habilitadas', '/api/consultas/whatsapp-config', '/api/empresa/validate', '/api/empresa/init', '/api/empresa/list', '/api/default-connection', '/api/version', '/api/password-policy', '/api/forgot-password', '/api/reset-password']
     if any(request.path.startswith(route) for route in public_api_routes):
         return None
 

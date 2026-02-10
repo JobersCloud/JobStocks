@@ -193,9 +193,8 @@ async function initResetPassword() {
     }
 
     // Configurar enlace "Volver al login"
-    const loginUrl = `/login${connection ? '?connection=' + connection : ''}`;
     const backLink = document.getElementById('back-to-login-link');
-    if (backLink) backLink.href = loginUrl;
+    if (backLink) backLink.href = '/login';
 
     // Cargar tema y logo
     if (connection) {
@@ -277,9 +276,8 @@ function setupResetForm(token, connection) {
                 form.style.display = 'none';
 
                 // Redirigir al login tras 3 segundos
-                const loginUrl = `/login${connection ? '?connection=' + connection : ''}`;
                 setTimeout(() => {
-                    window.location.href = loginUrl;
+                    window.location.href = '/login';
                 }, 3000);
             } else {
                 showAlert(data.message || t('auth.resetPasswordExpired'), 'error');

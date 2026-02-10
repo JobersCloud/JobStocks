@@ -245,14 +245,7 @@ window.addEventListener('resize', function() {
      * Navegar a una página manteniendo empresa_id
      */
     function navigateTo(page) {
-        const empresaId = localStorage.getItem('empresa_id');
-        let url = page;
-
-        if (empresaId && !page.includes('login')) {
-            url = `${page}?empresa=${empresaId}`;
-        }
-
-        window.location.href = url;
+        window.location.href = page;
     }
 
     // Exponer funciones globales

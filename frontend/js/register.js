@@ -372,8 +372,7 @@ function setupRegisterForm() {
             document.getElementById('register-form').reset();
 
             // Mostrar modal de éxito con mensaje de verificación
-            const connection = localStorage.getItem('connection') || localStorage.getItem('empresa_id') || '1';
-            const loginUrl = `/login.html?connection=${connection}`;
+            const loginUrl = '/login';
 
             const modal = document.createElement('div');
             modal.className = 'register-success-overlay';

@@ -200,7 +200,7 @@
 
         function mostrarExito(mensaje) {
             const content = document.getElementById('verify-content');
-            const loginUrl = `/login?connection=${connection}`;
+            const loginUrl = '/login';
             content.innerHTML = `
                 <div class="verify-icon success">✓</div>
                 <h1 class="verify-title">${t('verification.verified')}</h1>
@@ -211,7 +211,7 @@
 
         function mostrarError(titulo, mensaje) {
             const content = document.getElementById('verify-content');
-            const loginUrl = `/login?connection=${connection}`;
+            const loginUrl = '/login';
             content.innerHTML = `
                 <div class="verify-icon error">✗</div>
                 <h1 class="verify-title">${titulo}</h1>
