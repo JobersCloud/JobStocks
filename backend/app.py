@@ -143,7 +143,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.27.0'
+APP_VERSION = 'v1.27.2'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -300,6 +300,10 @@ def register_page():
 @app.route('/verificar-email')
 def verify_email_page():
     return send_from_directory(FRONTEND_DIR, 'verify-email.html')
+
+@app.route('/reset-password')
+def reset_password_page():
+    return send_from_directory(FRONTEND_DIR, 'reset-password.html')
 
 # ==================== PÁGINAS DEL MENÚ ====================
 

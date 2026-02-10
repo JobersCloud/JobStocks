@@ -515,6 +515,59 @@ async function reenviarVerificacion() {
     }
 }
 
+// ==================== RECUPERACIÓN DE CONTRASEÑA ====================
+
+function mostrarFormularioRecuperacion(e) {
+    e.preventDefault();
+    document.getElementById('forgot-password-form').style.display = 'block';
+    document.getElementById('forgot-email').focus();
+}
+
+function ocultarFormularioRecuperacion() {
+    document.getElementById('forgot-password-form').style.display = 'none';
+    document.getElementById('forgot-email').value = '';
+    document.getElementById('forgot-alert').innerHTML = '';
+}
+
+async function enviarRecuperacion() {
+    const email = document.getElementById('forgot-email').value.trim();
+    const btnForgot = document.getElementById('btn-forgot');
+    const forgotAlert = document.getElementById('forgot-alert');
+
+    if (!email) {
+        forgotAlert.innerHTML = `<div class="alert alert-error">${t('auth.fillAllFields') || 'Por favor ingresa tu email'}</div>`;
+        return;
+    }
+
+    btnForgot.disabled = true;
+    btnForgot.innerHTML = `<span class="loading-spinner"></span>${t('common.loading') || 'Enviando...'}`;
+    forgotAlert.innerHTML = '';
+
+    try {
+        const connection = localStorage.getItem('connection');
+        const response = await fetch(`${API_URL}/api/forgot-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, connection })
+        });
+
+        const data = await response.json();
+
+        forgotAlert.innerHTML = `<div class="alert alert-success">${data.message || t('auth.forgotPasswordSent')}</div>`;
+        setTimeout(() => {
+            ocultarFormularioRecuperacion();
+        }, 5000);
+    } catch (error) {
+        console.error('Error al enviar recuperación:', error);
+        forgotAlert.innerHTML = '<div class="alert alert-error">Error de conexión. Intenta de nuevo.</div>';
+    } finally {
+        btnForgot.disabled = false;
+        btnForgot.textContent = t('auth.forgotPasswordButton') || 'Enviar instrucciones';
+    }
+}
+
 // ==================== MODAL DE CAMBIO DE CONTRASEÑA ====================
 
 // Configurar formulario de cambio de contraseña (llamar una sola vez)

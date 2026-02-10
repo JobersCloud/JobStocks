@@ -13,6 +13,7 @@ class AuditAction:
     LOGIN_FAILED = 'LOGIN_FAILED'
     LOGOUT = 'LOGOUT'
     PASSWORD_CHANGE = 'PASSWORD_CHANGE'
+    PASSWORD_RESET_REQUEST = 'PASSWORD_RESET_REQUEST'
 
     # Sesiones
     SESSION_KILL = 'SESSION_KILL'
@@ -53,7 +54,7 @@ class AuditAction:
     def get_all_actions(cls):
         """Retorna lista de todas las acciones disponibles"""
         return [
-            cls.LOGIN, cls.LOGIN_FAILED, cls.LOGOUT, cls.PASSWORD_CHANGE,
+            cls.LOGIN, cls.LOGIN_FAILED, cls.LOGOUT, cls.PASSWORD_CHANGE, cls.PASSWORD_RESET_REQUEST,
             cls.SESSION_KILL, cls.SESSION_KILL_ALL,
             cls.USER_CREATE, cls.USER_ACTIVATE, cls.USER_DEACTIVATE, cls.USER_ROLE_CHANGE,
             cls.USER_REGISTER, cls.USER_EMAIL_VERIFY, cls.USER_RESEND_VERIFICATION,

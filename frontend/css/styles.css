@@ -13753,6 +13753,28 @@ data-grid {
     background: rgba(255, 255, 255, 0.3);
 }
 
+/* Column drag & drop reorder */
+th[draggable="true"] {
+    cursor: grab;
+}
+
+th[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+th.dg-dragging {
+    opacity: 0.4;
+    cursor: grabbing;
+}
+
+th.dg-drag-over-left {
+    box-shadow: inset 3px 0 0 var(--primary, #FF4338);
+}
+
+th.dg-drag-over-right {
+    box-shadow: inset -3px 0 0 var(--primary, #FF4338);
+}
+
 /* Table */
 .dg-table-wrapper {
     border-radius: 10px;
@@ -14387,17 +14409,14 @@ data-grid {
 .dg-export-btn {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    font-size: 12px;
-    font-weight: 600;
+    justify-content: center;
+    padding: 5px 7px;
     color: #217346;
     background: #e8f5e9;
     border: 1px solid #a5d6a7;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
-    white-space: nowrap;
     margin-left: auto;
 }
 
@@ -14427,8 +14446,7 @@ data-grid {
 
 @media (max-width: 768px) {
     .dg-export-btn {
-        padding: 3px 8px;
-        font-size: 11px;
+        padding: 4px 6px;
     }
 }
 

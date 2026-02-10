@@ -46,6 +46,7 @@ class DataGrid {
         if (!this.el) throw new Error(`DataGrid: elemento '${config.el}' no encontrado`);
 
         this.columns = config.columns || [];
+        this._originalColumns = [...this.columns];
         this.renderCell = config.renderCell || (() => null);
         this.renderCard = config.renderCard || (() => '');
         this.tableClass = config.tableClass || 'proposals-table';
@@ -84,11 +85,15 @@ class DataGrid {
         // Lock the parent .main-content-area to viewport height
         this._lockParentHeight();
 
+        // Restore saved column order
+        this._loadColumnOrder();
+
         // Build
         this._buildDOM();
         this._initGridFilters();
         this._initEventListeners();
         this._initColumnResize();
+        this._initColumnReorder();
 
         // Resize handler for viewport fitting
         this._resizeHandler = () => this._fitToViewport();
@@ -269,6 +274,156 @@ class DataGrid {
                 document.addEventListener('mouseup', onMouseUp);
             });
         });
+    }
+
+    // ==================== COLUMN REORDER (DRAG & DROP) ====================
+
+    _loadColumnOrder() {
+        try {
+            const saved = localStorage.getItem(`${this.storageKey}_colOrder`);
+            if (!saved) return;
+            const order = JSON.parse(saved);
+            const currentKeys = this.columns.map(c => c.key);
+            // Validate saved order matches current columns
+            if (order.length !== currentKeys.length || !order.every(k => currentKeys.includes(k))) return;
+            const colMap = {};
+            this.columns.forEach(c => colMap[c.key] = c);
+            this.columns = order.map(k => colMap[k]);
+        } catch (e) { /* ignore corrupt data */ }
+    }
+
+    _saveColumnOrder() {
+        try {
+            localStorage.setItem(`${this.storageKey}_colOrder`, JSON.stringify(this.columns.map(c => c.key)));
+        } catch (e) { /* ignore */ }
+    }
+
+    _initColumnReorder() {
+        const thead = this.el.querySelector('thead');
+        if (!thead) return;
+        const ths = thead.querySelectorAll('th');
+        this._dragColIndex = null;
+
+        ths.forEach((th, idx) => {
+            th.setAttribute('draggable', 'true');
+
+            th.addEventListener('dragstart', (e) => {
+                // Don't start drag from resize handle
+                if (e.target.closest('.dg-resize-handle')) {
+                    e.preventDefault();
+                    return;
+                }
+                this._dragColIndex = idx;
+                th.classList.add('dg-dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', idx.toString());
+            });
+
+            th.addEventListener('dragover', (e) => {
+                if (this._dragColIndex === null) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                // Visual indicator
+                ths.forEach(t => t.classList.remove('dg-drag-over-left', 'dg-drag-over-right'));
+                const rect = th.getBoundingClientRect();
+                const midX = rect.left + rect.width / 2;
+                if (e.clientX < midX) {
+                    th.classList.add('dg-drag-over-left');
+                } else {
+                    th.classList.add('dg-drag-over-right');
+                }
+            });
+
+            th.addEventListener('dragleave', () => {
+                th.classList.remove('dg-drag-over-left', 'dg-drag-over-right');
+            });
+
+            th.addEventListener('drop', (e) => {
+                e.preventDefault();
+                ths.forEach(t => t.classList.remove('dg-drag-over-left', 'dg-drag-over-right', 'dg-dragging'));
+                const fromIdx = this._dragColIndex;
+                if (fromIdx === null || fromIdx === idx) return;
+
+                // Reorder columns array
+                const [moved] = this.columns.splice(fromIdx, 1);
+                this.columns.splice(idx, 0, moved);
+
+                this._saveColumnOrder();
+                this._rebuildAfterReorder();
+            });
+
+            th.addEventListener('dragend', () => {
+                this._dragColIndex = null;
+                ths.forEach(t => t.classList.remove('dg-dragging', 'dg-drag-over-left', 'dg-drag-over-right'));
+            });
+        });
+    }
+
+    _rebuildAfterReorder() {
+        // Rebuild thead with new column order
+        const sortIconSVG = '<svg class="sort-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 2l4 5H4l4-5zm0 12L4 9h8l-4 5z"/></svg>';
+        const filterIconSVG = '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>';
+
+        const thead = this.el.querySelector('thead tr');
+        thead.innerHTML = this.columns.map(col => {
+            const sortable = col.sortable !== false;
+            const filterable = col.filterable !== false;
+            const alignClass = col.align === 'right' ? ' class="text-right"' : col.align === 'center' ? ' class="text-center"' : '';
+            const widthStyle = col.width ? ` style="width:${col.width};max-width:${col.width};"` : '';
+            const resizeHandle = '<div class="dg-resize-handle"></div>';
+
+            if (!sortable && !filterable) {
+                return `<th${alignClass}${widthStyle} data-column="${col.key}">${col.label}${resizeHandle}</th>`;
+            }
+
+            let inner = '';
+            if (sortable) {
+                inner += `<span class="sortable-header" data-sort="${col.key}">${col.label} ${sortIconSVG}</span>`;
+            } else {
+                inner += `<span>${col.label}</span>`;
+            }
+            if (filterable) {
+                inner += `<button class="column-filter-btn" data-columna="${col.key}" title="Filtrar">${filterIconSVG}</button>`;
+            }
+
+            return `<th data-column="${col.key}"${alignClass ? ' ' + alignClass.trim() : ''}${widthStyle}><div class="column-header-wrapper">${inner}</div>${resizeHandle}</th>`;
+        }).join('');
+
+        // Reorder existing tbody cells
+        const rows = this._refs.tbody.querySelectorAll('tr');
+        const keyToNewIdx = {};
+        this.columns.forEach((col, i) => keyToNewIdx[col.key] = i);
+
+        // Get old column order from _originalColumns or fallback
+        rows.forEach(tr => {
+            const tds = Array.from(tr.querySelectorAll('td'));
+            if (tds.length !== this.columns.length) return;
+            // We need to figure out current order - rebuild from data instead
+        });
+
+        // Simplest: re-render data rows with new column order
+        if (this._filteredData.length > 0 || this._allData.length > 0) {
+            const data = this._filteredData.length > 0 ? this._filteredData : this._allData;
+            this._refs.tbody.innerHTML = data.map(item => {
+                const cells = this.columns.map(col => {
+                    const alignClass = col.align === 'right' ? ' class="text-right"' : col.align === 'center' ? ' class="text-center"' : '';
+                    const content = this.renderCell(item, col);
+                    const cellContent = content !== null && content !== undefined ? content : this._escapeHtml(item[col.key]);
+                    return `<td${alignClass}>${cellContent}</td>`;
+                }).join('');
+                return `<tr>${cells}</tr>`;
+            }).join('');
+        }
+
+        // Re-init resize handles and column reorder
+        this._initColumnResize();
+        this._initColumnReorder();
+        this._updateSortIcons();
+
+        // Re-init GridFilters filter button events
+        if (this._gridFilters) {
+            this._gridFilters.actualizarIconosFiltro();
+        }
     }
 
     // ==================== SORTING ====================
@@ -491,10 +646,9 @@ class DataGrid {
 
     _exportButtonHtml() {
         return `<button class="dg-export-btn" title="Exportar a Excel">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><polyline points="10 9 9 9 8 9"/>
             </svg>
-            Excel
         </button>`;
     }
 

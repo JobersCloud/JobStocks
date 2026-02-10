@@ -409,5 +409,25 @@ function setupRegisterForm() {
     });
 }
 
+// ==================== TOGGLE MOSTRAR/OCULTAR CONTRASEÑA ====================
+
+function togglePassword(inputId, button) {
+    const input = document.getElementById(inputId);
+    const eyeIcon = button.querySelector('.eye-icon');
+    const eyeOffIcon = button.querySelector('.eye-off-icon');
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        eyeIcon.style.display = 'none';
+        eyeOffIcon.style.display = 'block';
+        button.setAttribute('aria-label', 'Ocultar contraseña');
+    } else {
+        input.type = 'password';
+        eyeIcon.style.display = 'block';
+        eyeOffIcon.style.display = 'none';
+        button.setAttribute('aria-label', 'Mostrar contraseña');
+    }
+}
+
 // Inicializar al cargar la página
 initRegister();

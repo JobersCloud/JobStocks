@@ -82,6 +82,7 @@ call :sync_tabla almcolores
 call :sync_tabla pallets
 call :sync_tabla articulos
 call :sync_tabla almlinubica
+call :sync_tabla almlinubica_bloqueo
 call :sync_tabla almartcajas
 call :sync_tabla palarticulo
 call :sync_tabla almcajas
@@ -144,23 +145,23 @@ REM ============================================
 set TABLA=%~1
 <nul set /p="     %TABLA%... "
 
-REM Obtener checksum ORIGEN
-sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT ISNULL(CHECKSUM_AGG(BINARY_CHECKSUM(*)),0) FROM dbo.%TABLA%" > "%DATOS%\chk_o.txt" 2>nul
+REM Obtener checksum ORIGEN (NOLOCK para no bloquear)
+sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT ISNULL(CHECKSUM_AGG(BINARY_CHECKSUM(*)),0) FROM dbo.%TABLA% WITH (NOLOCK)" > "%DATOS%\chk_o.txt" 2>nul
 set /p CHK_O=<"%DATOS%\chk_o.txt"
 
 REM Obtener checksum DESTINO
-sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT ISNULL(CHECKSUM_AGG(BINARY_CHECKSUM(*)),0) FROM dbo.%TABLA%" > "%DATOS%\chk_d.txt" 2>nul
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT ISNULL(CHECKSUM_AGG(BINARY_CHECKSUM(*)),0) FROM dbo.%TABLA% WITH (NOLOCK)" > "%DATOS%\chk_d.txt" 2>nul
 set /p CHK_D=<"%DATOS%\chk_d.txt"
 
 REM Obtener count para mostrar
-sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.%TABLA%" > "%DATOS%\cnt_o.txt" 2>nul
+sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.%TABLA% WITH (NOLOCK)" > "%DATOS%\cnt_o.txt" 2>nul
 set /p CNT_O=<"%DATOS%\cnt_o.txt"
 
 REM Comparar checksums
 if "!CHK_O!"=="!CHK_D!" (
     echo !CNT_O! registros [=]
 ) else (
-    bcp %BD%.dbo.%TABLA% out "%DATOS%\%TABLA%.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
+    bcp "SELECT * FROM %BD%.dbo.%TABLA% WITH (NOLOCK)" queryout "%DATOS%\%TABLA%.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
     sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.%TABLA%" > nul 2>&1
     bcp %BD%.dbo.%TABLA% in "%DATOS%\%TABLA%.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1
     echo !CNT_O! registros [sync]
@@ -173,10 +174,10 @@ REM ============================================
 :sync_imagenes
 <nul set /p="     ps_articulo_imagen... "
 
-sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.ps_articulo_imagen" > "%DATOS%\cnt_o.txt" 2>nul
+sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.ps_articulo_imagen WITH (NOLOCK)" > "%DATOS%\cnt_o.txt" 2>nul
 set /p CNT_O=<"%DATOS%\cnt_o.txt"
 
-sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.ps_articulo_imagen" > "%DATOS%\cnt_d.txt" 2>nul
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.ps_articulo_imagen WITH (NOLOCK)" > "%DATOS%\cnt_d.txt" 2>nul
 set /p CNT_D=<"%DATOS%\cnt_d.txt"
 
 if "!CNT_O!"=="!CNT_D!" (
@@ -184,7 +185,7 @@ if "!CNT_O!"=="!CNT_D!" (
 ) else (
     echo sincronizando...
     <nul set /p="                              exportando... "
-    bcp %BD%.dbo.ps_articulo_imagen out "%DATOS%\ps_articulo_imagen.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
+    bcp "SELECT * FROM %BD%.dbo.ps_articulo_imagen WITH (NOLOCK)" queryout "%DATOS%\ps_articulo_imagen.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
     echo OK
     <nul set /p="                              importando... "
     sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.ps_articulo_imagen" > nul 2>&1
@@ -199,10 +200,10 @@ REM ============================================
 :sync_fichas
 <nul set /p="     articulo_ficha_tecnica... "
 
-sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.articulo_ficha_tecnica" > "%DATOS%\cnt_o.txt" 2>nul
+sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.articulo_ficha_tecnica WITH (NOLOCK)" > "%DATOS%\cnt_o.txt" 2>nul
 set /p CNT_O=<"%DATOS%\cnt_o.txt"
 
-sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.articulo_ficha_tecnica" > "%DATOS%\cnt_d.txt" 2>nul
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.articulo_ficha_tecnica WITH (NOLOCK)" > "%DATOS%\cnt_d.txt" 2>nul
 set /p CNT_D=<"%DATOS%\cnt_d.txt"
 
 if "!CNT_O!"=="!CNT_D!" (
@@ -210,7 +211,7 @@ if "!CNT_O!"=="!CNT_D!" (
 ) else (
     echo sincronizando...
     <nul set /p="                              exportando... "
-    bcp %BD%.dbo.articulo_ficha_tecnica out "%DATOS%\articulo_ficha_tecnica.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
+    bcp "SELECT * FROM %BD%.dbo.articulo_ficha_tecnica WITH (NOLOCK)" queryout "%DATOS%\articulo_ficha_tecnica.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
     echo OK
     <nul set /p="                              importando... "
     sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.articulo_ficha_tecnica" > nul 2>&1
@@ -225,7 +226,8 @@ REM ============================================
 :sync_venped
 <nul set /p="     venped (con lineas)... "
 
-bcp "SELECT * FROM %BD%.dbo.venped WHERE pedido IN (SELECT venliped.pedido FROM %BD%.dbo.venliped WHERE venliped.empresa = venped.empresa AND venliped.anyo = venped.anyo)" queryout "%DATOS%\venped.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
+REM NOLOCK en ambas tablas para no bloquear
+bcp "SELECT * FROM %BD%.dbo.venped WITH (NOLOCK) WHERE pedido IN (SELECT venliped.pedido FROM %BD%.dbo.venliped WITH (NOLOCK) WHERE venliped.empresa = venped.empresa AND venliped.anyo = venped.anyo)" queryout "%DATOS%\venped.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
 
 sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.venped" > nul 2>&1
 bcp %BD%.dbo.venped in "%DATOS%\venped.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1

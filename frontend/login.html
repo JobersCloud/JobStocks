@@ -129,8 +129,28 @@
                     <span data-i18n="auth.noAccount">¿No tienes cuenta?</span> <a href="/register" data-i18n="auth.createAccount">Crear cuenta</a>
                 </div>
 
+                <div id="forgot-password-container" class="login-link" style="margin-top: 10px;">
+                    <a href="#" onclick="mostrarFormularioRecuperacion(event)" data-i18n="auth.forgotPassword">¿No recuerdas tu contraseña?</a>
+                </div>
+
                 <div id="resend-link-container" class="login-link" style="display: none; margin-top: 10px;">
                     <a href="#" onclick="mostrarFormularioReenvio(event)" data-i18n="auth.resendVerification">¿No recibiste el email de verificación?</a>
+                </div>
+
+                <!-- Formulario para recuperar contraseña (oculto por defecto) -->
+                <div id="forgot-password-form" class="resend-form-container" style="display: none;">
+                    <h3 data-i18n="auth.forgotPasswordTitle">Recuperar contraseña</h3>
+                    <p class="login-subtitle" style="margin-bottom: 15px;" data-i18n="auth.forgotPasswordSubtitle">Introduce tu email para recibir instrucciones</p>
+                    <div class="form-group">
+                        <input type="email" id="forgot-email" placeholder="tu@email.com" data-i18n-placeholder="authPlaceholders.email" required>
+                    </div>
+                    <button type="button" class="btn-login" onclick="enviarRecuperacion()" id="btn-forgot" data-i18n="auth.forgotPasswordButton">
+                        Enviar instrucciones
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="ocultarFormularioRecuperacion()" style="margin-left: 10px;" data-i18n="common.cancel">
+                        Cancelar
+                    </button>
+                    <div id="forgot-alert" style="margin-top: 15px;"></div>
                 </div>
 
                 <!-- Formulario para reenviar verificación (oculto por defecto) -->
@@ -274,6 +294,26 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            {
+                version: 'v1.27.2',
+                date: '2026-02-10',
+                title: 'Mejoras DataGrid: icono Excel y mover columnas',
+                items: [
+                    { type: 'improve', text: 'Boton Excel en grid cambiado a icono (sin texto)' },
+                    { type: 'new', text: 'Arrastrar y soltar cabeceras de columna para reordenar' },
+                    { type: 'new', text: 'El orden de columnas se guarda en localStorage' }
+                ]
+            },
+            {
+                version: 'v1.27.1',
+                date: '2026-02-10',
+                title: 'Recuperar contraseña y mejoras registro',
+                items: [
+                    { type: 'new', text: 'Recuperar contraseña: enlace en login para restablecer por email' },
+                    { type: 'new', text: 'Icono ojo para mostrar/ocultar contraseña en registro' },
+                    { type: 'improve', text: 'Email de recuperación con enlace de 1 hora de validez' }
+                ]
+            },
             {
                 version: 'v1.27.0',
                 date: '2026-02-09',

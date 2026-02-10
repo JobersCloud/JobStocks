@@ -958,3 +958,395 @@ def enviar_email_bienvenida(email, nombre, empresa_id="1", connection=None):
     except Exception as e:
         print(f"❌ Error al enviar email de bienvenida: {e}")
         raise
+
+
+# ==================== RECUPERACIÓN DE CONTRASEÑA ====================
+
+@register_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    """
+    Solicitar recuperación de contraseña por email
+    ---
+    tags:
+      - Registro
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - email
+          properties:
+            email:
+              type: string
+              example: usuario@email.com
+            connection:
+              type: string
+              example: "10049"
+    responses:
+      200:
+        description: Instrucciones enviadas (siempre responde OK para evitar enumeración)
+    """
+    connection = get_connection()
+    if not connection:
+        return jsonify({
+            'success': True,
+            'message': 'Si el email existe en nuestro sistema, recibirás instrucciones para restablecer tu contraseña.'
+        }), 200
+
+    empresa_id = get_empresa_id_from_connection(connection)
+    data = request.get_json()
+    email = data.get('email', '').strip().lower()
+
+    if not email:
+        return jsonify({
+            'success': False,
+            'message': 'Email requerido'
+        }), 400
+
+    # Respuesta genérica para evitar enumeración de usuarios
+    generic_response = {
+        'success': True,
+        'message': 'Si el email existe en nuestro sistema, recibirás instrucciones para restablecer tu contraseña.'
+    }
+
+    conn = Database.get_connection(connection)
+    cursor = conn.cursor()
+
+    try:
+        # Buscar usuario activo con ese email
+        cursor.execute("""
+            SELECT id, username, full_name FROM users
+            WHERE email = ? AND active = 1
+        """, (email,))
+
+        row = cursor.fetchone()
+
+        if not row:
+            # No revelar si el email existe o no
+            return jsonify(generic_response), 200
+
+        user_id, username, full_name = row
+
+        # Generar token de reset (reutilizar columnas token_verificacion/token_expiracion)
+        token = secrets.token_urlsafe(32)
+        token_expiracion = datetime.now() + timedelta(hours=1)  # 1 hora (más corto que verificación)
+
+        cursor.execute("""
+            UPDATE users
+            SET token_verificacion = ?, token_expiracion = ?
+            WHERE id = ?
+        """, (token, token_expiracion, user_id))
+
+        conn.commit()
+
+        # Enviar email de recuperación
+        try:
+            enviar_email_reset_password(email, full_name, token, empresa_id, connection)
+        except Exception as e:
+            print(f"❌ Error al enviar email de recuperación: {e}")
+            # No revelar el error al usuario
+            return jsonify(generic_response), 200
+
+        # Log de auditoría
+        AuditModel.log(
+            accion=AuditAction.PASSWORD_RESET_REQUEST,
+            user_id=user_id,
+            username=username,
+            empresa_id=empresa_id,
+            connection_id=connection,
+            recurso='user',
+            recurso_id=str(user_id),
+            ip_address=get_client_ip(),
+            user_agent=request.headers.get('User-Agent'),
+            detalles={'email': email},
+            resultado=AuditResult.SUCCESS
+        )
+
+        return jsonify(generic_response), 200
+
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ Error en forgot_password: {e}")
+        return jsonify(generic_response), 200
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@register_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    """
+    Restablecer contraseña con token
+    ---
+    tags:
+      - Registro
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - token
+            - new_password
+          properties:
+            token:
+              type: string
+            new_password:
+              type: string
+            connection:
+              type: string
+    responses:
+      200:
+        description: Contraseña cambiada correctamente
+      400:
+        description: Token inválido o expirado
+    """
+    connection = get_connection()
+    if not connection:
+        return jsonify({
+            'success': False,
+            'message': 'Connection requerido'
+        }), 400
+
+    empresa_id = get_empresa_id_from_connection(connection)
+    data = request.get_json()
+    token = data.get('token', '').strip()
+    new_password = data.get('new_password', '')
+
+    if not token or not new_password:
+        return jsonify({
+            'success': False,
+            'message': 'Token y nueva contraseña son requeridos'
+        }), 400
+
+    # Validar contraseña contra política de complejidad
+    is_valid, pwd_errors = validate_password(new_password)
+    if not is_valid:
+        return jsonify({
+            'success': False,
+            'message': get_password_error_message(pwd_errors),
+            'password_errors': pwd_errors
+        }), 400
+
+    conn = Database.get_connection(connection)
+    cursor = conn.cursor()
+
+    try:
+        # Buscar usuario por token
+        cursor.execute("""
+            SELECT id, username, email, full_name, token_expiracion FROM users
+            WHERE token_verificacion = ? AND active = 1
+        """, (token,))
+
+        row = cursor.fetchone()
+
+        if not row:
+            return jsonify({
+                'success': False,
+                'message': 'El enlace no es válido o ya ha sido utilizado.'
+            }), 400
+
+        user_id, username, email, full_name, token_expiracion = row
+
+        # Verificar expiración
+        if token_expiracion and datetime.now() > token_expiracion:
+            return jsonify({
+                'success': False,
+                'message': 'El enlace ha expirado. Solicita uno nuevo.'
+            }), 400
+
+        # Cambiar contraseña
+        password_hash = generate_password_hash(new_password)
+        cursor.execute("""
+            UPDATE users
+            SET password_hash = ?, token_verificacion = NULL, token_expiracion = NULL, debe_cambiar_password = 0
+            WHERE id = ?
+        """, (password_hash, user_id))
+
+        # Actualizar fecha_ultimo_cambio_password (puede no existir la columna)
+        try:
+            cursor.execute("""
+                UPDATE users SET fecha_ultimo_cambio_password = GETDATE() WHERE id = ?
+            """, (user_id,))
+        except Exception:
+            pass  # Columna no existe aún
+
+        conn.commit()
+
+        # Log de auditoría
+        AuditModel.log(
+            accion=AuditAction.PASSWORD_CHANGE,
+            user_id=user_id,
+            username=username,
+            empresa_id=empresa_id,
+            connection_id=connection,
+            recurso='user',
+            recurso_id=str(user_id),
+            ip_address=get_client_ip(),
+            user_agent=request.headers.get('User-Agent'),
+            detalles={'method': 'reset_token', 'email': email},
+            resultado=AuditResult.SUCCESS
+        )
+
+        return jsonify({
+            'success': True,
+            'message': 'Contraseña cambiada correctamente. Ya puedes iniciar sesión.'
+        }), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'Error al restablecer contraseña: {str(e)}'
+        }), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def enviar_email_reset_password(email, nombre, token, empresa_id="1", connection=None):
+    """Envía el email de recuperación de contraseña"""
+    email_config = EmailConfigModel.get_active_config(empresa_id, connection)
+
+    if not email_config:
+        raise Exception("No hay configuración de email activa")
+
+    # Construir URL de reset
+    base_url = get_base_url()
+    reset_url = f"{base_url}/reset-password?token={token}&connection={connection}"
+
+    msg = MIMEMultipart()
+    msg['From'] = f"Sistema de Stocks <{email_config['email_from']}>"
+    msg['To'] = email
+    msg['Subject'] = "Restablecer contraseña - Sistema de Gestión de Stocks"
+    msg['Date'] = formatdate(localtime=True)
+    msg['Message-ID'] = f"<{secrets.token_urlsafe(16)}@jobers.net>"
+    msg['Reply-To'] = email_config['email_from']
+    msg['X-Priority'] = '1'
+    msg['X-Mailer'] = 'Sistema de Gestión de Stocks v1.0'
+
+    body = f"""
+    <!DOCTYPE html>
+    <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding: 40px 20px;">
+                <tr>
+                    <td align="center">
+                        <!-- Logo/Branding superior -->
+                        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px; margin-bottom: 20px;">
+                            <tr>
+                                <td align="center" style="padding: 20px;">
+                                    <span style="font-size: 32px; font-weight: 700; color: #ffffff; letter-spacing: 2px;">STOCKS</span>
+                                    <span style="display: block; font-size: 11px; color: #FF4338; letter-spacing: 4px; margin-top: 5px;">MANAGEMENT SYSTEM</span>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- Tarjeta principal -->
+                        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.3);">
+                            <!-- Header -->
+                            <tr>
+                                <td style="background: linear-gradient(135deg, #FF9800 0%, #FFB74D 50%, #E65100 100%); padding: 60px 40px; text-align: center; position: relative;">
+                                    <div style="width: 100px; height: 100px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 25px; display: inline-block; line-height: 100px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.3);">
+                                        <span style="font-size: 50px; color: #ffffff;">&#128274;</span>
+                                    </div>
+                                    <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">Restablecer Contrase&#241;a</h1>
+                                    <p style="color: rgba(255,255,255,0.95); margin: 15px 0 0; font-size: 17px; font-weight: 300;">Hemos recibido tu solicitud</p>
+                                </td>
+                            </tr>
+                            <!-- Contenido principal -->
+                            <tr>
+                                <td style="padding: 50px 45px;">
+                                    <p style="color: #1a1a2e; font-size: 20px; margin: 0 0 25px; line-height: 1.5;">
+                                        Hola <strong style="color: #FF9800;">{nombre}</strong>
+                                    </p>
+                                    <p style="color: #4a4a68; font-size: 16px; margin: 0 0 35px; line-height: 1.8;">
+                                        Hemos recibido una solicitud para restablecer la contrase&#241;a de tu cuenta en el
+                                        <strong style="color: #1a1a2e;">Sistema de Gestion de Stocks</strong>.
+                                        Haz clic en el boton de abajo para crear una nueva contrase&#241;a.
+                                    </p>
+                                    <!-- Boton CTA -->
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td align="center" style="padding: 15px 0 40px;">
+                                                <a href="{reset_url}" style="display: inline-block; background-color: #FF9800; color: #ffffff; padding: 20px 60px; text-decoration: none; border-radius: 50px; font-size: 17px; font-weight: 600; letter-spacing: 0.5px;">
+                                                    &#128274; &nbsp; Restablecer contrase&#241;a
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <!-- Separador decorativo -->
+                                    <div style="height: 1px; background: linear-gradient(90deg, transparent, #e5e7eb, transparent); margin: 10px 0 30px;"></div>
+                                    <!-- Info adicional -->
+                                    <div style="background: linear-gradient(135deg, #f8f9fc 0%, #eef1f5 100%); border-radius: 16px; padding: 25px 30px; border: 1px solid #e5e7eb;">
+                                        <p style="color: #6b7280; font-size: 14px; margin: 0 0 15px; line-height: 1.6;">
+                                            <strong style="color: #4a4a68;">&#128279; Link alternativo</strong><br>
+                                            Si el boton no funciona, copia y pega este enlace:
+                                        </p>
+                                        <p style="color: #FF9800; font-size: 12px; margin: 0; word-break: break-all; background-color: #ffffff; padding: 15px; border-radius: 10px; border: 1px dashed #FF9800; font-family: monospace;">
+                                            {reset_url}
+                                        </p>
+                                    </div>
+                                    <!-- Aviso de expiracion -->
+                                    <div style="margin-top: 30px; padding: 20px 25px; border-radius: 12px; background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border-left: 5px solid #FF9800;">
+                                        <p style="color: #e65100; font-size: 14px; margin: 0; font-weight: 500;">
+                                            &#9200; <strong>Importante:</strong> Este enlace expira en <strong>1 hora</strong>. Si no solicitaste este cambio, ignora este mensaje.
+                                        </p>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Footer -->
+                            <tr>
+                                <td style="background: linear-gradient(180deg, #f8f9fc 0%, #eef1f5 100%); padding: 35px 40px; border-top: 1px solid #e5e7eb;">
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td align="center">
+                                                <p style="color: #9ca3af; font-size: 13px; margin: 0 0 15px;">
+                                                    &#128274; Si no solicitaste restablecer tu contrase&#241;a, ignora este mensaje.
+                                                </p>
+                                                <div style="height: 1px; background: linear-gradient(90deg, transparent, #d1d5db, transparent); margin: 15px 0;"></div>
+                                                <p style="color: #b0b0b0; font-size: 11px; margin: 0;">
+                                                    &copy; {datetime.now().year} Sistema de Gestion de Stocks &bull; Todos los derechos reservados
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <!-- Texto legal exterior -->
+                        <p style="color: rgba(255,255,255,0.5); font-size: 11px; margin: 30px 0 0; text-align: center; max-width: 450px;">
+                            Este es un mensaje automatico generado por el sistema.<br>Por favor, no respondas directamente a este correo.
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </body>
+    </html>
+    """
+
+    msg.attach(MIMEText(body, 'html'))
+
+    # Enviar email
+    try:
+        print(f"📧 Enviando email de recuperación a: {email}")
+
+        if email_config['smtp_port'] == 465:
+            server = smtplib.SMTP_SSL(email_config['smtp_server'], email_config['smtp_port'])
+        else:
+            server = smtplib.SMTP(email_config['smtp_server'], email_config['smtp_port'])
+            server.starttls()
+
+        server.login(email_config['email_from'], email_config['email_password'])
+        server.send_message(msg)
+        print(f"✅ Email de recuperación enviado a {email}")
+        server.quit()
+    except Exception as e:
+        print(f"❌ Error al enviar email de recuperación: {e}")
+        raise
