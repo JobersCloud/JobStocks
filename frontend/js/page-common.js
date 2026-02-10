@@ -114,6 +114,15 @@
                 el.style.visibility = 'visible';
             });
         }
+
+        // Hacer logo clicable -> ir al home
+        const headerLogo = document.querySelector('.header-logo');
+        if (headerLogo) {
+            headerLogo.style.cursor = 'pointer';
+            headerLogo.addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+        }
     }
 
     // ==================== ACORDEON ====================
