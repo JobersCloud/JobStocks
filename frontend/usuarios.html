@@ -807,9 +807,9 @@
 
         async function searchClients(query) {
             const suggestionsEl = document.getElementById('client-suggestions');
-            const connection = localStorage.getItem('connection') || '1';
+            const empresaId = localStorage.getItem('empresa_id') || '1';
             try {
-                const response = await fetch(`${API_URL}/api/clientes/search?empresa=${connection}&razon=${encodeURIComponent(query)}`, { credentials: 'include' });
+                const response = await fetch(`${API_URL}/api/clientes/search?empresa=${empresaId}&razon=${encodeURIComponent(query)}`, { credentials: 'include' });
                 if (!response.ok) return;
                 const clientes = await response.json();
                 if (!clientes || clientes.length === 0) {

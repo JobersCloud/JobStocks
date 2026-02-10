@@ -256,13 +256,14 @@ class DataGrid {
                 e.preventDefault();
                 e.stopPropagation();
                 const th = handle.parentElement;
+                const colIndex = Array.from(th.parentElement.children).indexOf(th);
                 const startX = e.pageX;
                 const startWidth = th.offsetWidth;
 
                 const onMouseMove = (ev) => {
-                    const newWidth = Math.max(40, startWidth + (ev.pageX - startX));
+                    const newWidth = Math.max(30, startWidth + (ev.pageX - startX));
                     th.style.width = newWidth + 'px';
-                    th.style.minWidth = newWidth + 'px';
+                    th.style.maxWidth = newWidth + 'px';
                 };
 
                 const onMouseUp = () => {
@@ -646,8 +647,8 @@ class DataGrid {
 
     _exportButtonHtml() {
         return `<button class="dg-export-btn" title="Exportar a Excel">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><polyline points="10 9 9 9 8 9"/>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M23 1.5q.41 0 .7.3.3.29.3.7v19q0 .41-.3.7-.29.3-.7.3H7q-.41 0-.7-.3-.3-.29-.3-.7V18H1q-.41 0-.7-.3-.3-.29-.3-.7V7q0-.41.3-.7Q.58 6 1 6h5V2.5q0-.41.3-.7.29-.3.7-.3zM1 16.5h5v-9H1zm6-13.5v3h2.5L8 9.25 6 6h1V2.5H7zM14.35 7l-1.9 3.15L14.5 13.4h-2.1l-1.2-2.4-1.2 2.4H7.85l2.05-3.25L8 7h2.1l1.1 2.25L12.3 7zM23 16.5V18h-9v3.5h9zM23 2.5h-9V6h9zM23 7h-9v8h9z"/>
             </svg>
         </button>`;
     }

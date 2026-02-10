@@ -630,9 +630,9 @@
 
         async function searchClientsPedidos(query) {
             const suggestionsEl = document.getElementById('client-suggestions-pedidos');
-            const connection = localStorage.getItem('connection') || '1';
+            const empresaId = localStorage.getItem('empresa_id') || '1';
             try {
-                const response = await fetch(`${API_URL}/api/clientes/search?empresa=${connection}&razon=${encodeURIComponent(query)}`, { credentials: 'include' });
+                const response = await fetch(`${API_URL}/api/clientes/search?empresa=${empresaId}&razon=${encodeURIComponent(query)}`, { credentials: 'include' });
                 if (!response.ok) throw new Error('Error');
                 const clientes = await response.json();
                 if (clientes.length === 0) {
@@ -876,9 +876,9 @@
             }
             if (!_mapComponent) _mapComponent = new MapComponent();
 
-            const connection = localStorage.getItem('connection') || '1';
+            const empresaId = localStorage.getItem('empresa_id') || '1';
             try {
-                const response = await fetch(`${API_URL}/api/clientes/${encodeURIComponent(clienteCodigo)}?empresa=${connection}`, { credentials: 'include' });
+                const response = await fetch(`${API_URL}/api/clientes/${encodeURIComponent(clienteCodigo)}?empresa=${empresaId}`, { credentials: 'include' });
                 if (!response.ok) {
                     const errData = await response.json().catch(() => ({}));
                     throw new Error(errData.error || `HTTP ${response.status}`);

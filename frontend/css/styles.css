@@ -8243,7 +8243,7 @@ tbody tr:hover {
 .users-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 900px;
+    table-layout: fixed;
 }
 
 .users-table th,
@@ -8252,6 +8252,8 @@ tbody tr:hover {
     text-align: left;
     border-bottom: 1px solid #eee;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .users-table th {
@@ -9177,7 +9179,7 @@ tbody tr:hover {
 .proposals-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 800px;
+    table-layout: fixed;
 }
 
 .proposals-table th,
@@ -9186,6 +9188,8 @@ tbody tr:hover {
     text-align: left;
     border-bottom: 1px solid #eee;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .proposals-table th {
@@ -9322,7 +9326,7 @@ tbody tr:hover {
 .action-buttons {
     display: flex;
     gap: 8px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 /* Empty state propuestas */
@@ -10438,7 +10442,7 @@ tbody tr:hover {
 .inquiries-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 800px;
+    table-layout: fixed;
 }
 
 .inquiries-table th,
@@ -10447,6 +10451,8 @@ tbody tr:hover {
     text-align: left;
     border-bottom: 1px solid #eee;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .inquiries-table th {
