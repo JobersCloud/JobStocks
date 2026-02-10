@@ -3056,7 +3056,8 @@ async function verDetalle(stock) {
 
     // Cargar ficha técnica si existe
     try {
-        const fichaTecnicaResponse = await fetch(`${API_URL}/api/stocks/${encodeURIComponent(stock.codigo)}/ficha-tecnica`, {
+        const fichaTecnicaParams = stock.tono ? `?tono=${encodeURIComponent(stock.tono)}` : '';
+        const fichaTecnicaResponse = await fetch(`${API_URL}/api/stocks/${encodeURIComponent(stock.codigo)}/ficha-tecnica${fichaTecnicaParams}`, {
             credentials: 'include'
         });
 

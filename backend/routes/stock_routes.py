@@ -550,7 +550,8 @@ def check_ficha_tecnica(codigo):
     """
     try:
         empresa_id = get_empresa_id()
-        exists = FichaTecnicaModel.exists(codigo, empresa_id)
+        tono = request.args.get('tono')
+        exists = FichaTecnicaModel.exists(codigo, empresa_id, tono)
         return jsonify({'exists': exists}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -600,7 +601,8 @@ def get_ficha_tecnica(codigo):
     """
     try:
         empresa_id = get_empresa_id()
-        ficha = FichaTecnicaModel.get_by_codigo(codigo, empresa_id)
+        tono = request.args.get('tono')
+        ficha = FichaTecnicaModel.get_by_codigo(codigo, empresa_id, tono)
 
         if not ficha:
             return jsonify({'error': 'Ficha tecnica no encontrada'}), 404

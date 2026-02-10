@@ -97,6 +97,7 @@ echo.
 
 call :sync_imagenes
 call :sync_fichas
+call :sync_fichas_tono
 
 echo.
 
@@ -216,6 +217,35 @@ if "!CNT_O!"=="!CNT_D!" (
     <nul set /p="                              importando... "
     sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.articulo_ficha_tecnica" > nul 2>&1
     bcp %BD%.dbo.articulo_ficha_tecnica in "%DATOS%\articulo_ficha_tecnica.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1
+    echo OK [!CNT_O! registros] [sync]
+)
+goto :eof
+
+REM ============================================
+REM FUNCION: sync_fichas_tono (compara COUNT - evita leer blobs)
+REM ============================================
+:sync_fichas_tono
+<nul set /p="     articulo_ficha_tecnica_tono... "
+
+REM Obtener count ORIGEN (NOLOCK)
+sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.articulo_ficha_tecnica_tono WITH (NOLOCK)" > "%DATOS%\cnt_o.txt" 2>nul
+set /p CNT_O=<"%DATOS%\cnt_o.txt"
+
+REM Obtener count DESTINO
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.articulo_ficha_tecnica_tono WITH (NOLOCK)" > "%DATOS%\cnt_d.txt" 2>nul
+set /p CNT_D=<"%DATOS%\cnt_d.txt"
+
+REM Comparar counts
+if "!CNT_O!"=="!CNT_D!" (
+    echo !CNT_O! registros [=]
+) else (
+    echo sincronizando...
+    <nul set /p="                              exportando... "
+    bcp "SELECT * FROM %BD%.dbo.articulo_ficha_tecnica_tono WITH (NOLOCK)" queryout "%DATOS%\articulo_ficha_tecnica_tono.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
+    echo OK
+    <nul set /p="                              importando... "
+    sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.articulo_ficha_tecnica_tono" > nul 2>&1
+    bcp %BD%.dbo.articulo_ficha_tecnica_tono in "%DATOS%\articulo_ficha_tecnica_tono.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1
     echo OK [!CNT_O! registros] [sync]
 )
 goto :eof

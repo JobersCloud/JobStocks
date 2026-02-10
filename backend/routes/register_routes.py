@@ -1045,7 +1045,7 @@ def forgot_password():
 
         # Enviar email de recuperación
         try:
-            enviar_email_reset_password(email, full_name, token, empresa_id, connection)
+            enviar_email_reset_password(email, full_name, username, token, empresa_id, connection)
         except Exception as e:
             print(f"❌ Error al enviar email de recuperación: {e}")
             # No revelar el error al usuario
@@ -1215,7 +1215,7 @@ def reset_password():
         conn.close()
 
 
-def enviar_email_reset_password(email, nombre, token, empresa_id="1", connection=None):
+def enviar_email_reset_password(email, nombre, username, token, empresa_id="1", connection=None):
     """Envía el email de recuperación de contraseña"""
     email_config = EmailConfigModel.get_active_config(empresa_id, connection)
 
@@ -1274,6 +1274,11 @@ def enviar_email_reset_password(email, nombre, token, empresa_id="1", connection
                                     <p style="color: #1a1a2e; font-size: 20px; margin: 0 0 25px; line-height: 1.5;">
                                         Hola <strong style="color: #FF9800;">{nombre}</strong>
                                     </p>
+                                    <div style="background: #f0f4ff; border-radius: 10px; padding: 15px 20px; margin: 0 0 25px; border: 1px solid #d0d9f0;">
+                                        <p style="color: #4a4a68; font-size: 14px; margin: 0;">
+                                            &#128100; Tu nombre de usuario es: <strong style="color: #1a1a2e; font-size: 16px;">{username}</strong>
+                                        </p>
+                                    </div>
                                     <p style="color: #4a4a68; font-size: 16px; margin: 0 0 35px; line-height: 1.8;">
                                         Hemos recibido una solicitud para restablecer la contrase&#241;a de tu cuenta en el
                                         <strong style="color: #1a1a2e;">Sistema de Gestion de Stocks</strong>.
