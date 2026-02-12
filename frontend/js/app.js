@@ -826,16 +826,7 @@ function procesarBusquedaVoz(texto) {
         window._vozDescripcion = descripcion;
     }
 
-    // 8. Log de debug para verificar filtros aplicados
-    console.log('🎤 Filtros voz aplicados:', {
-        formato: document.getElementById('filter-formato').value,
-        serie: document.getElementById('filter-serie').value,
-        color: document.getElementById('filter-color').value,
-        calidad: document.getElementById('filter-calidad').value,
-        descripcionVoz: window._vozDescripcion
-    });
-
-    // 9. Ejecutar búsqueda con pequeño delay para asegurar que DOM se actualice
+    // 8. Ejecutar búsqueda
     setTimeout(() => buscarStocks(), 50);
 }
 
