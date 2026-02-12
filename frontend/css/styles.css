@@ -15144,6 +15144,51 @@ th.dg-drag-over-right {
     }
 }
 
+/* Toast de reconocimiento de voz */
+.voice-toast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-primary);
+    border: 1px solid var(--primary);
+    border-left: 4px solid var(--primary);
+    border-radius: 8px;
+    padding: 10px 18px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    max-width: 90vw;
+    animation: voice-toast-in 0.3s ease-out;
+}
+
+.voice-toast svg {
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.voice-toast span {
+    font-style: italic;
+}
+
+.voice-toast-hide {
+    animation: voice-toast-out 0.3s ease-in forwards;
+}
+
+@keyframes voice-toast-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes voice-toast-out {
+    from { opacity: 1; transform: translateX(-50%) translateY(0); }
+    to { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
+
 /* Tamaños de botones */
 .btn-icon-sm {
     width: 32px;

@@ -686,6 +686,9 @@ function iniciarBusquedaVoz() {
 }
 
 function procesarBusquedaVoz(texto) {
+    // Mostrar toast con lo que se reconoció
+    mostrarToastVoz(texto);
+
     // 1. Normalizar: mayúsculas, quitar prefijos comunes
     let limpio = texto.toUpperCase().trim();
     const prefijos = [
@@ -730,7 +733,7 @@ function procesarBusquedaVoz(texto) {
         limpio = limpio.replace(/\bSEGUNDA\b/, '').trim();
     }
 
-    // 4. El resto es la descripción/serie
+    // 4. El resto es la descripción
     let descripcion = limpio.replace(/\s+/g, ' ').trim();
 
     // 5. Aplicar filtros a los inputs del DOM
@@ -739,33 +742,33 @@ function procesarBusquedaVoz(texto) {
     // Intentar seleccionar formato en el select si existe
     const selFormato = document.getElementById('filter-formato');
     if (formato && selFormato) {
-        // Normalizar formato de voz: "120x60" → extraer los dos números
         const partes = formato.toLowerCase().split('x');
         const num1 = parseInt(partes[0], 10);
         const num2 = parseInt(partes[1], 10);
 
         const opcion = Array.from(selFormato.options).find(o => {
             if (!o.value) return false;
-            // Normalizar valor del select: "120X060" → extraer números
             const m = o.value.match(/(\d+)\s*[Xx×]\s*(\d+)/);
             if (!m) return false;
             const n1 = parseInt(m[1], 10);
             const n2 = parseInt(m[2], 10);
-            // Comparar en ambas direcciones (120x60 == 60x120)
             return (n1 === num1 && n2 === num2) || (n1 === num2 && n2 === num1);
         });
         if (opcion) selFormato.value = opcion.value;
     }
 
-    // Intentar seleccionar serie/modelo si coincide con alguna opción
+    // Intentar seleccionar serie si coincide (parcial: includes)
     const selSerie = document.getElementById('filter-serie');
     if (descripcion && selSerie) {
         const palabras = descripcion.split(' ');
         for (const palabra of palabras) {
-            if (!palabra) continue;
-            const opcion = Array.from(selSerie.options).find(o =>
-                o.value.toUpperCase() === palabra || o.text.toUpperCase() === palabra
-            );
+            if (!palabra || palabra.length < 3) continue;
+            const opcion = Array.from(selSerie.options).find(o => {
+                if (!o.value) return false;
+                const val = o.value.toUpperCase();
+                const txt = o.text.toUpperCase();
+                return val === palabra || txt === palabra || val.includes(palabra) || txt.includes(palabra);
+            });
             if (opcion && opcion.value) {
                 selSerie.value = opcion.value;
                 descripcion = descripcion.replace(palabra, '').trim();
@@ -774,15 +777,18 @@ function procesarBusquedaVoz(texto) {
         }
     }
 
-    // Si queda texto, buscar en color
+    // Intentar seleccionar color (parcial: includes)
     const selColor = document.getElementById('filter-color');
     if (descripcion && selColor) {
         const palabras = descripcion.split(' ');
         for (const palabra of palabras) {
-            if (!palabra) continue;
-            const opcion = Array.from(selColor.options).find(o =>
-                o.value.toUpperCase() === palabra || o.text.toUpperCase() === palabra
-            );
+            if (!palabra || palabra.length < 3) continue;
+            const opcion = Array.from(selColor.options).find(o => {
+                if (!o.value) return false;
+                const val = o.value.toUpperCase();
+                const txt = o.text.toUpperCase();
+                return val === palabra || txt === palabra || val.includes(palabra) || txt.includes(palabra);
+            });
             if (opcion && opcion.value) {
                 selColor.value = opcion.value;
                 descripcion = descripcion.replace(palabra, '').trim();
@@ -802,8 +808,27 @@ function procesarBusquedaVoz(texto) {
         }
     }
 
-    // 6. Ejecutar búsqueda
-    buscarStocks();
+    // 6. Texto restante → buscar como descripción libre en backend
+    descripcion = descripcion.replace(/\s+/g, ' ').trim();
+    buscarStocks(descripcion || null);
+}
+
+function mostrarToastVoz(texto) {
+    // Eliminar toast anterior si existe
+    const prev = document.getElementById('voice-toast');
+    if (prev) prev.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'voice-toast';
+    toast.className = 'voice-toast';
+    toast.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg> <span>"' + texto + '"</span>';
+    document.body.appendChild(toast);
+
+    // Auto-eliminar tras 4 segundos
+    setTimeout(() => {
+        toast.classList.add('voice-toast-hide');
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
 }
 
 // Cargar configuración de WhatsApp
@@ -2515,7 +2540,8 @@ window.addEventListener('scroll', (e) => {
 }, true);  // Capture phase para detectar scroll en cualquier elemento
 
 // Buscar con filtros (panel lateral) - Llama al backend con filtros
-async function buscarStocks() {
+// descripcionVoz: texto libre de búsqueda por voz que no matcheó con selects
+async function buscarStocks(descripcionVoz) {
     try {
         // Obtener filtros del panel lateral
         const formato = document.getElementById('filter-formato').value.trim();
@@ -2525,7 +2551,7 @@ async function buscarStocks() {
         const existencias_min = document.getElementById('filter-existencias').value.trim();
 
         // Verificar si hay algún filtro
-        const hayFiltros = formato || serie || calidad || color || existencias_min;
+        const hayFiltros = formato || serie || calidad || color || existencias_min || descripcionVoz;
 
         // Si no hay filtros, cargar todos los datos
         if (!hayFiltros) {
@@ -2545,6 +2571,7 @@ async function buscarStocks() {
         if (calidad) params.append('calidad', calidad);
         if (color) params.append('color', color);
         if (existencias_min) params.append('existencias_min', existencias_min);
+        if (descripcionVoz) params.append('descripcion', descripcionVoz);
 
         console.log('🔍 Buscando con filtros:', params.toString());
 

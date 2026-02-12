@@ -340,6 +340,11 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.28.4', date: '2026-02-10', title: 'Mejora busqueda por voz', items: [
+                {type: 'improve', text: 'Matching parcial en selects de serie y color (includes en vez de exacto)'},
+                {type: 'new', text: 'Texto no reconocido en selects se envia como descripcion libre al backend'},
+                {type: 'new', text: 'Toast visual mostrando el texto reconocido por voz'}
+            ]},
             { version: 'v1.28.3', date: '2026-02-10', title: 'API Keys y PowerBuilder', items: [
                 {type: 'new', text: 'Pagina de gestion de API Keys en panel de configuracion'},
                 {type: 'fix', text: 'Soporte multi-empresa en autenticacion por API Key (PowerBuilder)'},
