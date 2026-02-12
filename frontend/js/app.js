@@ -815,8 +815,17 @@ function procesarBusquedaVoz(texto) {
         window._vozDescripcion = descripcion;
     }
 
-    // 8. Ejecutar búsqueda (llamada directa, mismo código que el botón)
-    buscarStocks();
+    // 8. Log de debug para verificar filtros aplicados
+    console.log('🎤 Filtros voz aplicados:', {
+        formato: document.getElementById('filter-formato').value,
+        serie: document.getElementById('filter-serie').value,
+        color: document.getElementById('filter-color').value,
+        calidad: document.getElementById('filter-calidad').value,
+        descripcionVoz: window._vozDescripcion
+    });
+
+    // 9. Ejecutar búsqueda con pequeño delay para asegurar que DOM se actualice
+    setTimeout(() => buscarStocks(), 50);
 }
 
 function mostrarToastVoz(texto) {
