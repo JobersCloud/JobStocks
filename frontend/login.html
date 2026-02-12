@@ -65,9 +65,10 @@
                 <h2 data-i18n="header.title">Gestión de Stocks</h2>
                 <p><span data-i18n="header.subtitle">Sistema de consulta de inventario en tiempo real</span></p>
             </div>
-            <div class="sidebar-developer">
+            <div class="sidebar-developer" onclick="openCopyrightModal()" style="cursor: pointer;" title="Propiedad intelectual">
                 <span>Powered by</span>
                 <img src="assets/logojobers.png" alt="Jobers" class="developer-logo">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.5;margin-left:2px"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
             </div>
         </div>
 
@@ -185,9 +186,10 @@
                         </select>
                         <span class="version-indicator-inline" id="version-indicator-mobile" onclick="openChangelogModal()" title="Ver historial de cambios"></span>
                     </div>
-                    <div class="mobile-developer" id="mobile-developer">
+                    <div class="mobile-developer" id="mobile-developer" onclick="openCopyrightModal()" style="cursor: pointer;" title="Propiedad intelectual">
                         <span>Powered by</span>
                         <img src="assets/logojobers.png" alt="Jobers" class="developer-logo">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.5;margin-left:2px"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                     </div>
                 </div>
             </div>
@@ -196,6 +198,50 @@
 
     <!-- Indicador de versión (clicable para ver changelog) -->
     <div class="version-indicator" id="version-indicator" onclick="openChangelogModal()" title="Ver historial de cambios"></div>
+
+    <!-- Modal de Propiedad Intelectual -->
+    <div id="copyright-modal" class="changelog-modal" style="display: none;">
+        <div class="changelog-modal-overlay" onclick="closeCopyrightModal()"></div>
+        <div class="changelog-modal-content" style="max-width: 520px;">
+            <div class="changelog-modal-header">
+                <h2>Propiedad Intelectual</h2>
+                <button class="changelog-modal-close" onclick="closeCopyrightModal()">&times;</button>
+            </div>
+            <div class="changelog-modal-body" style="padding: 24px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <img src="assets/logojobers.png" alt="Jobers" style="max-width: 140px; margin-bottom: 12px;">
+                    <h3 style="margin: 0 0 4px 0; font-size: 1.1rem;">Jobers y Asociados S.L.</h3>
+                    <p style="margin: 0; opacity: 0.6; font-size: 0.85rem;">Derechos reservados</p>
+                </div>
+                <div class="ip-sections" style="display: flex; flex-direction: column; gap: 14px; font-size: 0.85rem; line-height: 1.6;">
+                    <div style="padding: 12px 14px; border-radius: 8px; background: var(--bg-secondary, #f5f5f5); border-left: 3px solid var(--primary, #FF4338);">
+                        <strong style="display: block; margin-bottom: 4px;">Titularidad</strong>
+                        Este software, incluyendo pero no limitado a su codigo fuente, diseno, interfaces de usuario, documentacion, bases de datos y todos los materiales relacionados, es propiedad exclusiva de <strong>Jobers y Asociados S.L.</strong>
+                    </div>
+                    <div style="padding: 12px 14px; border-radius: 8px; background: var(--bg-secondary, #f5f5f5); border-left: 3px solid var(--primary, #FF4338);">
+                        <strong style="display: block; margin-bottom: 4px;">Derechos de Autor</strong>
+                        Todos los derechos de propiedad intelectual e industrial sobre esta aplicacion estan protegidos por las leyes espanolas de propiedad intelectual y los tratados internacionales aplicables.
+                        <div style="margin-top: 8px; padding: 8px 10px; border-radius: 6px; background: rgba(229, 62, 62, 0.08); font-size: 0.82rem;">
+                            Queda prohibida la reproduccion, distribucion, comunicacion publica, transformacion o cualquier otra forma de explotacion de este software sin autorizacion expresa y por escrito del titular.
+                        </div>
+                    </div>
+                    <div style="padding: 12px 14px; border-radius: 8px; background: var(--bg-secondary, #f5f5f5); border-left: 3px solid var(--primary, #FF4338);">
+                        <strong style="display: block; margin-bottom: 4px;">Licencia de Uso</strong>
+                        El acceso a esta aplicacion se concede unicamente bajo licencia de uso limitada, personal e intransferible. Esta licencia no implica en ningun caso la cesion de derechos de propiedad intelectual sobre el software.
+                    </div>
+                    <div style="padding: 12px 14px; border-radius: 8px; background: var(--bg-secondary, #f5f5f5); border-left: 3px solid var(--primary, #FF4338);">
+                        <strong style="display: block; margin-bottom: 4px;">Restricciones</strong>
+                        El usuario se compromete a no realizar ingenieria inversa, descompilar, desensamblar ni intentar derivar el codigo fuente de la aplicacion. Cualquier uso no autorizado constituira una infraccion de los derechos del titular y podra dar lugar a las acciones legales correspondientes.
+                    </div>
+                    <div style="padding: 12px 14px; border-radius: 8px; background: var(--bg-secondary, #f5f5f5); border-left: 3px solid var(--primary, #FF4338);">
+                        <strong style="display: block; margin-bottom: 4px;">Contacto</strong>
+                        Para consultas relacionadas con licencias o permisos de uso, contacte con <strong>Jobers y Asociados S.L.</strong>
+                    </div>
+                </div>
+                <p style="text-align: center; margin: 16px 0 0 0; font-size: 0.8rem; opacity: 0.5;">&copy; 2025-2026 Jobers y Asociados S.L. &middot; CIF: B46917142</p>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal de Changelog -->
     <div id="changelog-modal" class="changelog-modal" style="display: none;">
@@ -294,6 +340,20 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.28.3', date: '2026-02-10', title: 'API Keys y PowerBuilder', items: [
+                {type: 'new', text: 'Pagina de gestion de API Keys en panel de configuracion'},
+                {type: 'fix', text: 'Soporte multi-empresa en autenticacion por API Key (PowerBuilder)'},
+                {type: 'improve', text: 'API Key almacena conexion de empresa automaticamente al crearla'}
+            ]},
+            {
+                version: 'v1.28.2',
+                date: '2026-02-10',
+                title: 'Fix PowerBuilder API Key + multi-empresa',
+                items: [
+                    { type: 'fix', text: 'API Key: soporte para parámetro connection en endpoints con autenticación por API Key (multi-empresa)' },
+                    { type: 'improve', text: 'PowerBuilder: actualizado cliente API REST con soporte de conexión dinámica por empresa' }
+                ]
+            },
             {
                 version: 'v1.28.1',
                 date: '2026-02-10',
@@ -592,10 +652,19 @@
             document.getElementById('changelog-modal').style.display = 'none';
         }
 
+        function openCopyrightModal() {
+            document.getElementById('copyright-modal').style.display = 'flex';
+        }
+
+        function closeCopyrightModal() {
+            document.getElementById('copyright-modal').style.display = 'none';
+        }
+
         // Cerrar con Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeChangelogModal();
+                closeCopyrightModal();
             }
         });
     </script>

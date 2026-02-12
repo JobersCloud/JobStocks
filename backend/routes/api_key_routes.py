@@ -15,7 +15,7 @@
 # ============================================
 # ARCHIVO: routes/api_key_routes.py
 # ============================================
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from flask_login import login_required, current_user
 from utils.auth import csrf_required
 from models.api_key_model import ApiKeyModel
@@ -110,7 +110,9 @@ def create_api_key():
             'message': 'El nombre es requerido'
         }), 400
 
-    api_key = ApiKeyModel.create(current_user.id, nombre)
+    # Guardar la conexión actual para que la API Key herede el contexto de empresa
+    connection = session.get('connection')
+    api_key = ApiKeyModel.create(current_user.id, nombre, connection=connection)
 
     return jsonify({
         'success': True,

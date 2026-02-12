@@ -725,4 +725,20 @@ MIGRATIONS = [
         ]
     },
 
+    # ================================================================
+    # CAMPO CONNECTION EN API_KEYS
+    # ================================================================
+
+    {
+        'version': 34,
+        'description': 'Añadir campo connection a api_keys para multi-empresa',
+        'app_version': 'v1.28.2',
+        'sql': [
+            """IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('api_keys') AND name = 'connection')
+            BEGIN
+                ALTER TABLE api_keys ADD connection VARCHAR(10) NULL;
+            END""",
+        ]
+    },
+
 ]

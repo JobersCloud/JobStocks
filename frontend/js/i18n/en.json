@@ -273,6 +273,7 @@
     "changePassword": "Change Password",
     "allOrders": "Orders",
     "dbControl": "DB Control",
+    "apiKeys": "API Keys",
     "logout": "Logout"
   },
   "orders": {
@@ -630,5 +631,21 @@
     "expressUsed": "Used",
     "expressAvailable": "Available",
     "expressLimitLabel": "Express Limit"
+  },
+  "apiKeys": {
+    "description": "API Keys allow external applications (PowerBuilder, ERP, etc.) to access the API without logging in. Each key is linked to your user and current company.",
+    "createNew": "Create new API Key",
+    "noKeys": "You have no API Keys",
+    "createTitle": "Create API Key",
+    "keyName": "Key name",
+    "create": "Create",
+    "keyCreated": "API Key Created",
+    "copyWarning": "Copy this key now. It will not be shown again.",
+    "copy": "Copy",
+    "copied": "Copied to clipboard",
+    "created": "Created",
+    "lastUsed": "Last used",
+    "active": "Active",
+    "inactive": "Inactive"
   }
 }

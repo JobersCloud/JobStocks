@@ -143,7 +143,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.28.1'
+APP_VERSION = 'v1.28.3'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -341,6 +341,11 @@ def email_config_page():
 @login_required
 def parametros_page():
     return send_from_directory(FRONTEND_DIR, 'parametros.html')
+
+@app.route('/api-keys.html')
+@login_required
+def api_keys_page():
+    return send_from_directory(FRONTEND_DIR, 'api-keys.html')
 
 @app.route('/todas-consultas.html')
 @login_required

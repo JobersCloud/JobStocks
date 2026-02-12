@@ -273,6 +273,7 @@
     "changePassword": "Cambiar Contraseña",
     "allOrders": "Pedidos",
     "dbControl": "Control BD",
+    "apiKeys": "API Keys",
     "logout": "Cerrar Sesión"
   },
   "orders": {
@@ -630,5 +631,21 @@
     "expressUsed": "Usado",
     "expressAvailable": "Disponible",
     "expressLimitLabel": "Limite Express"
+  },
+  "apiKeys": {
+    "description": "Las API Keys permiten a aplicaciones externas (PowerBuilder, ERP, etc.) acceder a la API sin necesidad de iniciar sesion. Cada key esta asociada a tu usuario y a la empresa actual.",
+    "createNew": "Crear nueva API Key",
+    "noKeys": "No tienes API Keys creadas",
+    "createTitle": "Crear API Key",
+    "keyName": "Nombre de la key",
+    "create": "Crear",
+    "keyCreated": "API Key Creada",
+    "copyWarning": "Copia esta key ahora. No se mostrara de nuevo.",
+    "copy": "Copiar",
+    "copied": "Copiada al portapapeles",
+    "created": "Creada",
+    "lastUsed": "Ultimo uso",
+    "active": "Activa",
+    "inactive": "Inactiva"
   }
 }

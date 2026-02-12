@@ -273,6 +273,7 @@
     "changePassword": "Changer le Mot de Passe",
     "allOrders": "Commandes",
     "dbControl": "Contrôle BD",
+    "apiKeys": "Cles API",
     "logout": "Déconnexion"
   },
   "orders": {
@@ -630,5 +631,21 @@
     "expressUsed": "Utilise",
     "expressAvailable": "Disponible",
     "expressLimitLabel": "Limite Express"
+  },
+  "apiKeys": {
+    "description": "Les API Keys permettent aux applications externes (PowerBuilder, ERP, etc.) d'acceder a l'API sans se connecter. Chaque cle est liee a votre utilisateur et a l'entreprise actuelle.",
+    "createNew": "Creer une nouvelle API Key",
+    "noKeys": "Vous n'avez pas de cles API",
+    "createTitle": "Creer une API Key",
+    "keyName": "Nom de la cle",
+    "create": "Creer",
+    "keyCreated": "API Key Creee",
+    "copyWarning": "Copiez cette cle maintenant. Elle ne sera plus affichee.",
+    "copy": "Copier",
+    "copied": "Copiee dans le presse-papiers",
+    "created": "Creee",
+    "lastUsed": "Derniere utilisation",
+    "active": "Active",
+    "inactive": "Inactive"
   }
 }

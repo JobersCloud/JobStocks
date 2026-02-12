@@ -53,10 +53,50 @@ def api_key_or_login_required(f):
         # Opción 2: Verificar API Key en header o query param
         api_key = request.headers.get('X-API-Key') or request.args.get('apikey')
         if api_key:
+            # Configurar conexión ANTES de validar (validate necesita acceso a BD)
+            connection_id = request.args.get('connection')
+            if connection_id and not session.get('db_config'):
+                try:
+                    from models.empresa_cliente_model import EmpresaClienteModel
+                    empresa_info = EmpresaClienteModel.get_by_id(connection_id)
+                    if empresa_info:
+                        session['connection'] = connection_id
+                        session['empresa_id'] = empresa_info.get('empresa_erp', '1')
+                        session['empresa_nombre'] = empresa_info.get('nombre')
+                        session['db_config'] = {
+                            'dbserver': empresa_info.get('dbserver'),
+                            'dbport': empresa_info.get('dbport'),
+                            'dbname': empresa_info.get('dbname'),
+                            'dblogin': empresa_info.get('dblogin'),
+                            'dbpass': empresa_info.get('dbpass')
+                        }
+                except Exception:
+                    pass
+
             user_data = ApiKeyModel.validate(api_key)
             if user_data:
                 g.auth_method = 'api_key'
                 g.auth_user = user_data
+
+                # Si no se pasó ?connection pero la API Key tiene connection guardada
+                if not session.get('db_config') and user_data.get('connection'):
+                    try:
+                        from models.empresa_cliente_model import EmpresaClienteModel
+                        empresa_info = EmpresaClienteModel.get_by_id(user_data['connection'])
+                        if empresa_info:
+                            session['connection'] = user_data['connection']
+                            session['empresa_id'] = empresa_info.get('empresa_erp', '1')
+                            session['empresa_nombre'] = empresa_info.get('nombre')
+                            session['db_config'] = {
+                                'dbserver': empresa_info.get('dbserver'),
+                                'dbport': empresa_info.get('dbport'),
+                                'dbname': empresa_info.get('dbname'),
+                                'dblogin': empresa_info.get('dblogin'),
+                                'dbpass': empresa_info.get('dbpass')
+                            }
+                    except Exception:
+                        pass
+
                 return f(*args, **kwargs)
             else:
                 return jsonify({

@@ -25,7 +25,7 @@ class ApiKeyModel:
         return secrets.token_hex(32)
 
     @staticmethod
-    def create(user_id, nombre):
+    def create(user_id, nombre, connection=None):
         """Crea una nueva API key para un usuario"""
         conn = Database.get_connection()
         cursor = conn.cursor()
@@ -33,9 +33,9 @@ class ApiKeyModel:
         api_key = ApiKeyModel.generate_key()
 
         cursor.execute("""
-            INSERT INTO api_keys (user_id, api_key, nombre)
-            VALUES (?, ?, ?)
-        """, (user_id, api_key, nombre))
+            INSERT INTO api_keys (user_id, api_key, nombre, connection)
+            VALUES (?, ?, ?, ?)
+        """, (user_id, api_key, nombre, connection))
 
         conn.commit()
         cursor.close()
@@ -50,7 +50,7 @@ class ApiKeyModel:
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT ak.id, ak.user_id, ak.nombre, u.username, u.full_name, u.email
+            SELECT ak.id, ak.user_id, ak.nombre, u.username, u.full_name, u.email, ak.connection
             FROM api_keys ak
             INNER JOIN users u ON ak.user_id = u.id
             WHERE ak.api_key = ? AND ak.activo = 1 AND u.active = 1
@@ -71,7 +71,8 @@ class ApiKeyModel:
                 'key_nombre': row[2],
                 'username': row[3],
                 'full_name': row[4],
-                'email': row[5]
+                'email': row[5],
+                'connection': row[6]
             }
         else:
             result = None
