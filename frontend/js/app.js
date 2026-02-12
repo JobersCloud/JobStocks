@@ -736,10 +736,14 @@ function procesarBusquedaVoz(texto) {
     // 4. El resto es la descripción
     let descripcion = limpio.replace(/\s+/g, ' ').trim();
 
-    // 5. Aplicar filtros a los inputs del DOM
-    limpiarFiltros();
+    // 5. Reset solo valores de selects (sin efectos secundarios de limpiarFiltros)
+    document.getElementById('filter-formato').value = '';
+    document.getElementById('filter-serie').value = '';
+    document.getElementById('filter-calidad').value = '';
+    document.getElementById('filter-color').value = '';
+    document.getElementById('filter-existencias').value = '';
 
-    // Intentar seleccionar formato en el select si existe
+    // 6. Aplicar filtros extraídos de la voz
     const selFormato = document.getElementById('filter-formato');
     if (formato && selFormato) {
         const partes = formato.toLowerCase().split('x');
@@ -757,7 +761,6 @@ function procesarBusquedaVoz(texto) {
         if (opcion) selFormato.value = opcion.value;
     }
 
-    // Intentar seleccionar serie si coincide (parcial: includes)
     const selSerie = document.getElementById('filter-serie');
     if (descripcion && selSerie) {
         const palabras = descripcion.split(' ');
@@ -777,7 +780,6 @@ function procesarBusquedaVoz(texto) {
         }
     }
 
-    // Intentar seleccionar color (parcial: includes)
     const selColor = document.getElementById('filter-color');
     if (descripcion && selColor) {
         const palabras = descripcion.split(' ');
@@ -797,7 +799,6 @@ function procesarBusquedaVoz(texto) {
         }
     }
 
-    // Calidad
     if (calidad) {
         const selCalidad = document.getElementById('filter-calidad');
         if (selCalidad) {
@@ -808,19 +809,14 @@ function procesarBusquedaVoz(texto) {
         }
     }
 
-    // 6. Texto restante → guardar para enviar como descripción libre
+    // 7. Texto restante → guardar para enviar como descripción libre
     descripcion = descripcion.replace(/\s+/g, ' ').trim();
     if (descripcion) {
         window._vozDescripcion = descripcion;
     }
 
-    // 7. Disparar búsqueda simulando clic en el botón buscar
-    const btnBuscar = document.querySelector('.btn-icon-primary[onclick*="buscarStocks"]');
-    if (btnBuscar) {
-        btnBuscar.click();
-    } else {
-        buscarStocks();
-    }
+    // 8. Ejecutar búsqueda (llamada directa, mismo código que el botón)
+    buscarStocks();
 }
 
 function mostrarToastVoz(texto) {
