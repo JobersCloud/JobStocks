@@ -691,10 +691,13 @@ function procesarBusquedaVoz(texto) {
 
     // 1. Normalizar: mayúsculas, quitar prefijos comunes
     let limpio = texto.toUpperCase().trim();
+    // Quitar signos de interrogación y exclamación
+    limpio = limpio.replace(/[¿?¡!]/g, '').trim();
     const prefijos = [
         'TIENES STOCK DE', 'TIENES STOCK DEL', 'HAY STOCK DE', 'HAY STOCK DEL',
+        'QUÉ ES ESTO DE', 'QUE ES ESTO DE', 'QUÉ HAY DE', 'QUE HAY DE',
         'BUSCA', 'BUSCAR', 'BUSCA EL', 'QUIERO', 'QUIERO VER',
-        'MUÉSTRAME', 'MUESTRAME', 'DAME', 'NECESITO',
+        'MUÉSTRAME', 'MUESTRAME', 'DAME', 'NECESITO', 'ENSÉÑAME', 'ENSEÑAME',
         'DO YOU HAVE', 'SEARCH FOR', 'SEARCH', 'FIND', 'SHOW ME', 'I NEED',
         'CHERCHE', 'CHERCHER', 'MONTRE MOI', 'MONTREZ MOI'
     ];
@@ -704,6 +707,12 @@ function procesarBusquedaVoz(texto) {
             break;
         }
     }
+
+    // Eliminar stop words (artículos, preposiciones, etc.)
+    const stopWords = ['DE', 'DEL', 'LA', 'EL', 'LAS', 'LOS', 'UN', 'UNA', 'EN', 'CON',
+                       'POR', 'PARA', 'ES', 'ESTO', 'ESTE', 'ESTA', 'ESE', 'ESA', 'QUE', 'QUÉ',
+                       'THE', 'A', 'AN', 'OF', 'FOR', 'IN', 'IS', 'IT', 'LE', 'LES', 'DU', 'DES'];
+    limpio = limpio.split(' ').filter(w => !stopWords.includes(w)).join(' ').trim();
 
     // 2. Extraer formato (patrón NNxNN, ej: 75x120, 20X20, 75 POR 120)
     let formato = '';
@@ -809,8 +818,10 @@ function procesarBusquedaVoz(texto) {
         }
     }
 
-    // 7. Texto restante → guardar para enviar como descripción libre
+    // 7. Texto restante → guardar solo si tiene palabras significativas (no stop words sueltas)
     descripcion = descripcion.replace(/\s+/g, ' ').trim();
+    // Filtrar palabras menores de 3 caracteres que puedan haber quedado
+    descripcion = descripcion.split(' ').filter(w => w.length >= 3).join(' ').trim();
     if (descripcion) {
         window._vozDescripcion = descripcion;
     }
