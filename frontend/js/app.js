@@ -808,9 +808,19 @@ function procesarBusquedaVoz(texto) {
         }
     }
 
-    // 6. Texto restante → buscar como descripción libre en backend
+    // 6. Texto restante → guardar para enviar como descripción libre
     descripcion = descripcion.replace(/\s+/g, ' ').trim();
-    buscarStocks(descripcion || null);
+    if (descripcion) {
+        window._vozDescripcion = descripcion;
+    }
+
+    // 7. Disparar búsqueda simulando clic en el botón buscar
+    const btnBuscar = document.querySelector('.btn-icon-primary[onclick*="buscarStocks"]');
+    if (btnBuscar) {
+        btnBuscar.click();
+    } else {
+        buscarStocks();
+    }
 }
 
 function mostrarToastVoz(texto) {
@@ -2540,8 +2550,7 @@ window.addEventListener('scroll', (e) => {
 }, true);  // Capture phase para detectar scroll en cualquier elemento
 
 // Buscar con filtros (panel lateral) - Llama al backend con filtros
-// descripcionVoz: texto libre de búsqueda por voz que no matcheó con selects
-async function buscarStocks(descripcionVoz) {
+async function buscarStocks() {
     try {
         // Obtener filtros del panel lateral
         const formato = document.getElementById('filter-formato').value.trim();
@@ -2549,6 +2558,10 @@ async function buscarStocks(descripcionVoz) {
         const calidad = document.getElementById('filter-calidad').value.trim();
         const color = document.getElementById('filter-color').value.trim();
         const existencias_min = document.getElementById('filter-existencias').value.trim();
+
+        // Recoger descripción pendiente de búsqueda por voz (si existe)
+        const descripcionVoz = window._vozDescripcion || null;
+        window._vozDescripcion = null;
 
         // Verificar si hay algún filtro
         const hayFiltros = formato || serie || calidad || color || existencias_min || descripcionVoz;
