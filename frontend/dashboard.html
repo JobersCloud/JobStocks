@@ -255,6 +255,24 @@
                             </span>
                             <span class="sidebar-item-text" data-i18n="menu.audit">Auditoría</span>
                         </a>
+                        <a class="sidebar-item" data-page="vista-almacen.html" data-tooltip="Vista Almacén" onclick="SidebarNav.navigateTo('vista-almacen.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.warehouseView">Vista Almacén</span>
+                        </a>
+                        <a class="sidebar-item" data-page="informe-almacen.html" data-tooltip="Informe Almacén" onclick="SidebarNav.navigateTo('informe-almacen.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.warehouseReport">Informe Almacén</span>
+                        </a>
                     </div>
                 </div>
 
@@ -389,6 +407,20 @@
                                 <div class="stat-label" data-i18n="dashboard.totalItemsRequested">Items Solicitados</div>
                             </div>
                         </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(33,150,243,0.1);"><span>📐</span></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="stat-almacen-m2">0</div>
+                                <div class="stat-label" data-i18n="dashboard.warehouseM2">Almacén M2</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(156,39,176,0.1);"><span>🧱</span></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="stat-almacen-piezas">0</div>
+                                <div class="stat-label" data-i18n="dashboard.warehousePieces">Almacén Piezas</div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Primera fila de graficos -->
@@ -452,6 +484,9 @@
                                     <button class="period-btn" onclick="changeViewedPeriod(90, this)">90 dias</button>
                                     <button class="period-btn" onclick="changeViewedPeriod(365, this)">365 dias</button>
                                 </div>
+                            </div>
+                            <div class="chart-container" style="height: 300px; margin-bottom: 20px;">
+                                <canvas id="topViewedChart"></canvas>
                             </div>
                             <div id="top-viewed-container">
                                 <table class="products-table top-viewed-table-desktop">
@@ -523,6 +558,7 @@
         let proposalsByDayChart = null;
         let proposalsByStatusChart = null;
         let proposalsByMonthChart = null;
+        let topViewedChart = null;
         let currentPeriod = 7;
         let currentViewedPeriod = 30;
 
@@ -562,7 +598,7 @@
                 if (val(3)) renderProposalsByStatusChart(val(3));
                 if (val(1)) renderTopProducts(val(1));
                 if (val(4)) renderTopUsers(val(4));
-                if (val(6)) renderTopViewedArticles(val(6));
+                if (val(6)) { renderTopViewedChart(val(6)); renderTopViewedArticles(val(6)); }
                 if (val(5)) renderProposalsByMonthChart(val(5));
             } catch (error) {
                 console.error('Dashboard error:', error);
@@ -582,6 +618,8 @@
             document.getElementById('stat-usuarios-activos').textContent = formatNumber(resumen.usuarios_activos);
             document.getElementById('stat-consultas-pendientes').textContent = formatNumber(resumen.consultas_pendientes);
             document.getElementById('stat-items-solicitados').textContent = formatNumber(resumen.total_items_solicitados);
+            document.getElementById('stat-almacen-m2').textContent = formatNumber(resumen.almacen_m2 || 0);
+            document.getElementById('stat-almacen-piezas').textContent = formatNumber(resumen.almacen_piezas || 0);
         }
 
         function renderProposalsByDayChart(data) {
@@ -650,6 +688,53 @@
             cardsContainer.innerHTML = articulos.map(a => `<div class="top-product-card"><div class="top-product-card-header"><span class="top-product-code">${a.codigo}</span><span class="top-product-times">${a.vistas} ${t('dashboard.views')}</span></div><div class="top-product-desc">${truncate(a.descripcion, 50)}</div><div class="top-product-qty">${t('dashboard.uniqueUsers')}: <strong>${a.usuarios_unicos}</strong> · ${formatDateShort(a.ultima_vista)}</div></div>`).join('');
         }
 
+        function renderTopViewedChart(articulos) {
+            const ctx = document.getElementById('topViewedChart').getContext('2d');
+            if (topViewedChart) topViewedChart.destroy();
+            if (!articulos || articulos.length === 0) {
+                topViewedChart = null;
+                return;
+            }
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#e0e0e0' : '#666';
+            const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#FF4338';
+            const primaryLight = getComputedStyle(document.documentElement).getPropertyValue('--primary-light').trim() || '#FF6B6B';
+            topViewedChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: articulos.map(a => {
+                        const desc = (a.descripcion || a.codigo).trim();
+                        const fmt = a.formato ? a.formato.trim() : '';
+                        return truncate(desc, 20) + (fmt ? ' ' + fmt : '');
+                    }),
+                    datasets: [
+                        { label: t('dashboard.views') || 'Vistas', data: articulos.map(a => a.vistas), backgroundColor: primaryColor + 'CC', borderRadius: 6 },
+                        { label: t('dashboard.uniqueUsers') || 'Usuarios', data: articulos.map(a => a.usuarios_unicos), backgroundColor: primaryLight + 'AA', borderRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: textColor } },
+                        tooltip: {
+                            callbacks: {
+                                title: function(items) {
+                                    const idx = items[0].dataIndex;
+                                    return articulos[idx].descripcion || articulos[idx].codigo;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: textColor }, grid: { color: gridColor } },
+                        x: { ticks: { color: textColor, maxRotation: 45 }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
         async function changeViewedPeriod(dias, btn) {
             const container = btn.closest('.chart-period');
             container.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
@@ -657,6 +742,7 @@
             currentViewedPeriod = dias;
             try {
                 const data = await fetchAPI(`/api/estadisticas/articulos-mas-vistos?limit=10&dias=${dias}`);
+                renderTopViewedChart(data);
                 renderTopViewedArticles(data);
             } catch (error) {}
         }

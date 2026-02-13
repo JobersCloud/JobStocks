@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe Almacén</title>
+    <script>
+        (function () {
+            const themes = {
+                'rubi': { primary: '#FF4338', primaryDark: '#D32F2F', primaryLight: '#FF6B6B' },
+                'zafiro': { primary: '#2196F3', primaryDark: '#1565C0', primaryLight: '#64B5F6' },
+                'esmeralda': { primary: '#4CAF50', primaryDark: '#2E7D32', primaryLight: '#81C784' },
+                'amatista': { primary: '#9C27B0', primaryDark: '#6A1B9A', primaryLight: '#BA68C8' },
+                'ambar': { primary: '#FF9800', primaryDark: '#E65100', primaryLight: '#FFB74D' },
+                'grafito': { primary: '#607D8B', primaryDark: '#37474F', primaryLight: '#90A4AE' },
+                'corporativo': { primary: '#1a365d', primaryDark: '#0d1b2a', primaryLight: '#2c5282' },
+                'ejecutivo': { primary: '#2d3748', primaryDark: '#1a202c', primaryLight: '#4a5568' },
+                'oceano': { primary: '#0077b6', primaryDark: '#023e8a', primaryLight: '#0096c7' },
+                'bosque': { primary: '#2d6a4f', primaryDark: '#1b4332', primaryLight: '#40916c' },
+                'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
+                'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
+                'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
+                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
+                'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
+            };
+            const theme = localStorage.getItem('theme') || 'dark';
+            const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
+            const colors = themes[colorTheme] || themes['rubi'];
+
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-color-theme', colorTheme);
+
+            const style = document.createElement('style');
+            style.id = 'theme-colors-inline';
+            style.textContent = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
+            document.head.appendChild(style);
+
+            const faviconUrl = localStorage.getItem('faviconUrl');
+            if (faviconUrl) {
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                link.href = faviconUrl;
+                document.head.appendChild(link);
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="css/styles.css?v=1.29.5">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ==================== INFORME ALMACEN STYLES ==================== */
+        .wh-report-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+        }
+        .wh-report-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .wh-report-selector select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color, #ddd);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: var(--bg-primary, #fff);
+            color: var(--text-primary, #333);
+            min-width: 200px;
+        }
+        .wh-report-selector .wh-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border: 1px solid var(--border-color, #ddd);
+            border-radius: 8px;
+            background: var(--bg-primary, #fff);
+            color: var(--text-primary, #333);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .wh-report-selector .wh-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .wh-report-selector .wh-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* KPI Cards */
+        .wh-kpi-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 14px;
+        }
+        .wh-kpi-card {
+            background: var(--bg-primary, #fff);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border-color, #e5e5e5);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .wh-kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        .wh-kpi-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+        .wh-kpi-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .wh-kpi-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary, #333);
+            line-height: 1.2;
+        }
+        .wh-kpi-label {
+            font-size: 0.78rem;
+            color: var(--text-secondary, #888);
+            margin-top: 2px;
+        }
+
+        /* Charts Grid */
+        .wh-charts-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .wh-chart-card {
+            background: var(--bg-primary, #fff);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border-color, #e5e5e5);
+        }
+        .wh-chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+        .wh-chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .wh-chart-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary, #333);
+        }
+        .wh-chart-container {
+            position: relative;
+            height: 280px;
+        }
+
+        /* Tables */
+        .wh-report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .wh-report-table thead th {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #fff;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .wh-report-table thead th:first-child {
+            border-radius: 8px 0 0 0;
+        }
+        .wh-report-table thead th:last-child {
+            border-radius: 0 8px 0 0;
+        }
+        .wh-report-table tbody td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color, #eee);
+            color: var(--text-primary, #333);
+        }
+        .wh-report-table tbody tr:hover {
+            background: var(--bg-hover, rgba(0,0,0,0.02));
+        }
+        .wh-report-table .text-right {
+            text-align: right;
+        }
+
+        /* Occupation bar */
+        .occupation-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color, #e5e5e5);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .occupation-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* Mobile cards for tables */
+        .wh-report-cards {
+            display: none;
+        }
+        .wh-report-card {
+            background: var(--bg-primary, #fff);
+            border-radius: 10px;
+            padding: 14px;
+            border: 1px solid var(--border-color, #e5e5e5);
+            margin-bottom: 10px;
+        }
+        .wh-report-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .wh-report-card-title {
+            font-weight: 600;
+            color: var(--text-primary, #333);
+        }
+        .wh-report-card-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .wh-report-card-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            padding: 3px 0;
+            color: var(--text-secondary, #666);
+        }
+        .wh-report-card-row strong {
+            color: var(--text-primary, #333);
+        }
+
+        /* Loading */
+        .wh-report-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            gap: 12px;
+            color: var(--text-secondary, #888);
+        }
+        .wh-report-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary, #888);
+            font-size: 0.9rem;
+        }
+
+        /* Dark mode */
+        [data-theme="dark"] .wh-kpi-card,
+        [data-theme="dark"] .wh-chart-card,
+        [data-theme="dark"] .wh-report-card {
+            background: var(--bg-primary, #1e1e1e);
+            border-color: var(--border-color, #333);
+        }
+        [data-theme="dark"] .wh-report-table tbody td {
+            border-bottom-color: var(--border-color, #333);
+        }
+        [data-theme="dark"] .wh-report-table tbody tr:hover {
+            background: rgba(255,255,255,0.04);
+        }
+        [data-theme="dark"] .wh-report-selector select {
+            background: var(--bg-primary, #1e1e1e);
+            border-color: var(--border-color, #444);
+            color: var(--text-primary, #e0e0e0);
+        }
+        [data-theme="dark"] .wh-report-selector .wh-btn {
+            background: var(--bg-primary, #1e1e1e);
+            border-color: var(--border-color, #444);
+            color: var(--text-primary, #e0e0e0);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .wh-charts-row {
+                grid-template-columns: 1fr;
+            }
+            .wh-kpi-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .wh-report-table-wrapper {
+                display: none;
+            }
+            .wh-report-cards {
+                display: block;
+            }
+            .wh-report-container {
+                padding: 12px;
+                gap: 14px;
+            }
+        }
+        @media (max-width: 480px) {
+            .wh-kpi-cards {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .wh-kpi-card {
+                padding: 12px;
+            }
+            .wh-kpi-value {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ==================== MASTERPAGE LAYOUT ==================== -->
+    <div class="app-layout">
+        <!-- Header Superior FIJO -->
+        <header class="top-header">
+            <div class="top-header-left">
+                <button class="mobile-menu-btn" onclick="toggleSidebarMobile()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="header-logo">
+                    <img src="" alt="Logo" id="header-logo">
+                    <span class="header-logo-text" id="header-company-name">Stocks</span>
+                </div>
+                <div class="header-divider"></div>
+                <div>
+                    <h1 class="top-header-title" data-i18n="warehouseReport.title">Informe Almacén</h1>
+                </div>
+            </div>
+            <div class="top-header-right">
+                <div class="menu-container">
+                    <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
+                        <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span class="user-name-display" id="user-name-display">Usuario</span>
+                    </button>
+                    <div class="menu-dropdown" id="menu-dropdown">
+                        <div class="menu-header">
+                            <div class="user-name" id="menu-user-name">Usuario</div>
+                            <div class="user-rol" id="menu-user-rol">usuario</div>
+                        </div>
+                        <div class="menu-divider" id="menu-divider-context" style="display: none;"></div>
+                        <a class="menu-item" id="menu-item-context" onclick="showContextInfo()" style="display: none;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <span data-i18n="menu.contextInfo">Info de Contexto</span>
+                        </a>
+                        <div class="menu-divider"></div>
+                        <a class="menu-item" onclick="toggleTheme()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                            <span data-i18n="menu.darkMode">Modo oscuro</span>
+                            <span class="menu-theme-icon" id="theme-icon">🌙</span>
+                        </a>
+                        <div class="menu-item menu-item-lang">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                            <select id="lang-selector" class="lang-selector-menu" onchange="I18n.setLanguage(this.value)">
+                                <option value="es">Español</option>
+                                <option value="en">English</option>
+                                <option value="fr">Français</option>
+                            </select>
+                        </div>
+                        <div class="menu-divider"></div>
+                        <a class="menu-item" onclick="showChangePasswordModal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <span data-i18n="menu.changePassword">Cambiar Contrasena</span>
+                        </a>
+                        <div class="menu-divider"></div>
+                        <a class="menu-item menu-item-logout" onclick="logout()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            <span data-i18n="menu.logout">Cerrar Sesión</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-toggle-container">
+                <button class="sidebar-toggle" title="Ctrl+B">☰</button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <!-- Items principales -->
+                <div class="sidebar-section">
+                    <a class="sidebar-item" data-page="index.html" data-tooltip="Stocks" onclick="SidebarNav.navigateTo('index.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.stocks">Stocks</span>
+                    </a>
+                    <a class="sidebar-item" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.myProposals">Mis Propuestas</span>
+                    </a>
+                    <a class="sidebar-item" data-page="mis-pedidos.html" data-tooltip="Mis Pedidos" onclick="SidebarNav.navigateTo('mis-pedidos.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="3" width="15" height="13"></rect>
+                                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.myOrders">Mis Pedidos</span>
+                    </a>
+                </div>
+
+                <!-- Acordeon Administracion -->
+                <div class="sidebar-accordion expanded" id="sidebar-admin-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                            <span data-i18n="menu.administration">Administracion</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="dashboard.html" data-tooltip="Dashboard" onclick="SidebarNav.navigateTo('dashboard.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.dashboard">Dashboard</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allProposals">Propuestas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todos-pedidos.html" data-tooltip="Pedidos" onclick="SidebarNav.navigateTo('todos-pedidos.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="1" y="3" width="15" height="13"></rect>
+                                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allOrders">Pedidos</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-consultas.html" data-tooltip="Consultas" onclick="SidebarNav.navigateTo('todas-consultas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allInquiries">Consultas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="usuarios.html" data-tooltip="Usuarios" onclick="SidebarNav.navigateTo('usuarios.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.users">Usuarios</span>
+                        </a>
+                        <a class="sidebar-item" data-page="auditoria.html" data-tooltip="Auditoría" onclick="SidebarNav.navigateTo('auditoria.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.audit">Auditoría</span>
+                        </a>
+                        <a class="sidebar-item" data-page="vista-almacen.html" data-tooltip="Vista Almacén" onclick="SidebarNav.navigateTo('vista-almacen.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.warehouseView">Vista Almacén</span>
+                        </a>
+                        <a class="sidebar-item active" data-page="informe-almacen.html" data-tooltip="Informe Almacén" onclick="SidebarNav.navigateTo('informe-almacen.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.warehouseReport">Informe Almacén</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Acordeon Configuracion -->
+                <div class="sidebar-accordion" id="sidebar-config-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                            <span data-i18n="menu.settings">Configuracion</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="email-config.html" data-tooltip="Email" onclick="SidebarNav.navigateTo('email-config.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.emailConfig">Email</span>
+                        </a>
+                        <a class="sidebar-item" data-page="parametros.html" data-tooltip="Parametros" onclick="SidebarNav.navigateTo('parametros.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.parameters">Parametros</span>
+                        </a>
+                        <a class="sidebar-item" data-page="api-keys.html" data-tooltip="API Keys" onclick="SidebarNav.navigateTo('api-keys.html')"><span class="sidebar-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg></span><span class="sidebar-item-text" data-i18n="menu.apiKeys">API Keys</span></a>
+                        <a class="sidebar-item" data-page="empresa-logo.html" data-tooltip="Logo" onclick="SidebarNav.navigateTo('empresa-logo.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.companyLogo">Logo</span>
+                        </a>
+                        <a class="sidebar-item" data-page="control-bd.html" data-tooltip="Control BD" onclick="SidebarNav.navigateTo('control-bd.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.dbControl">Control BD</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Footer del Sidebar -->
+            <div class="sidebar-footer">
+                <a class="sidebar-item" data-tooltip="Cerrar Sesion" onclick="logout()">
+                    <span class="sidebar-item-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </span>
+                    <span class="sidebar-item-text" data-i18n="menu.logout">Cerrar Sesion</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Overlay para movil -->
+        <div class="sidebar-overlay"></div>
+
+        <!-- Contenedor Principal -->
+        <div class="main-wrapper">
+            <main class="main-content-area">
+                <!-- Loading state -->
+                <div class="wh-report-loading" id="report-loading">
+                    <div class="spinner"></div>
+                    <p data-i18n="common.loading">Cargando...</p>
+                </div>
+
+                <!-- Contenido del informe -->
+                <div class="wh-report-container" id="report-content" style="display: none;">
+                    <!-- Selector de almacen -->
+                    <div class="wh-report-selector">
+                        <select id="wh-almacen-select">
+                            <option value="" data-i18n="warehouse.selectWarehouse">Seleccionar almacén</option>
+                        </select>
+                        <button class="wh-btn" onclick="loadReport()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                            <span data-i18n="warehouse.reload">Recargar</span>
+                        </button>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div class="wh-report-empty" id="report-empty">
+                        <p data-i18n="warehouseReport.selectToStart">Selecciona un almacén para ver el informe</p>
+                    </div>
+
+                    <!-- Report data (hidden until loaded) -->
+                    <div id="report-data" style="display: none;">
+                        <!-- KPI Cards -->
+                        <div class="wh-kpi-cards">
+                            <div class="wh-kpi-card">
+                                <div class="wh-kpi-icon">📦</div>
+                                <div class="wh-kpi-info">
+                                    <div class="wh-kpi-value" id="kpi-zonas">0</div>
+                                    <div class="wh-kpi-label" data-i18n="warehouseReport.totalZones">Total Zonas</div>
+                                </div>
+                            </div>
+                            <div class="wh-kpi-card">
+                                <div class="wh-kpi-icon">📍</div>
+                                <div class="wh-kpi-info">
+                                    <div class="wh-kpi-value" id="kpi-ubicaciones">0</div>
+                                    <div class="wh-kpi-label" data-i18n="warehouseReport.totalLocations">Total Ubicaciones</div>
+                                </div>
+                            </div>
+                            <div class="wh-kpi-card">
+                                <div class="wh-kpi-icon">✅</div>
+                                <div class="wh-kpi-info">
+                                    <div class="wh-kpi-value" id="kpi-ocupadas">0</div>
+                                    <div class="wh-kpi-label" data-i18n="warehouseReport.occupied">Ocupadas</div>
+                                </div>
+                            </div>
+                            <div class="wh-kpi-card">
+                                <div class="wh-kpi-icon">⬜</div>
+                                <div class="wh-kpi-info">
+                                    <div class="wh-kpi-value" id="kpi-vacias">0</div>
+                                    <div class="wh-kpi-label" data-i18n="warehouseReport.emptyLocations">Vacías</div>
+                                </div>
+                            </div>
+                            <div class="wh-kpi-card">
+                                <div class="wh-kpi-icon">📊</div>
+                                <div class="wh-kpi-info">
+                                    <div class="wh-kpi-value" id="kpi-ocupacion">0%</div>
+                                    <div class="wh-kpi-label" data-i18n="warehouseReport.occupationRate">% Ocupación</div>
+                                </div>
+                            </div>
+                            <div class="wh-kpi-card">
+                                <div class="wh-kpi-icon">📐</div>
+                                <div class="wh-kpi-info">
+                                    <div class="wh-kpi-value" id="kpi-m2">0</div>
+                                    <div class="wh-kpi-label" data-i18n="warehouseReport.totalM2">Total M2</div>
+                                </div>
+                            </div>
+                            <div class="wh-kpi-card">
+                                <div class="wh-kpi-icon">🧱</div>
+                                <div class="wh-kpi-info">
+                                    <div class="wh-kpi-value" id="kpi-piezas">0</div>
+                                    <div class="wh-kpi-label" data-i18n="warehouseReport.totalPieces">Total Piezas</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts row 1: Occupation + Stock by Zone -->
+                        <div class="wh-charts-row">
+                            <div class="wh-chart-card">
+                                <div class="wh-chart-header">
+                                    <span class="wh-chart-title" data-i18n="warehouseReport.globalOccupation">Ocupación Global</span>
+                                </div>
+                                <div class="wh-chart-container">
+                                    <canvas id="chart-occupation"></canvas>
+                                </div>
+                            </div>
+                            <div class="wh-chart-card">
+                                <div class="wh-chart-header">
+                                    <span class="wh-chart-title" data-i18n="warehouseReport.stockByZone">Stock por Zona</span>
+                                </div>
+                                <div class="wh-chart-container">
+                                    <canvas id="chart-stock-zone"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts row 2: Stock levels + Top articles -->
+                        <div class="wh-charts-row">
+                            <div class="wh-chart-card">
+                                <div class="wh-chart-header">
+                                    <span class="wh-chart-title" data-i18n="warehouseReport.stockLevels">Niveles de Stock por Zona</span>
+                                </div>
+                                <div class="wh-chart-container">
+                                    <canvas id="chart-levels"></canvas>
+                                </div>
+                            </div>
+                            <div class="wh-chart-card">
+                                <div class="wh-chart-header">
+                                    <span class="wh-chart-title" data-i18n="warehouseReport.topArticles">Top 10 Artículos</span>
+                                </div>
+                                <div class="wh-chart-container">
+                                    <canvas id="chart-top-articles"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Table: Top articles detail -->
+                        <div class="wh-chart-card full-width">
+                            <div class="wh-chart-header">
+                                <span class="wh-chart-title" data-i18n="warehouseReport.topArticlesDetail">Detalle Top Artículos</span>
+                            </div>
+                            <div class="wh-report-table-wrapper">
+                                <table class="wh-report-table">
+                                    <thead>
+                                        <tr>
+                                            <th data-i18n="warehouse.code">Código</th>
+                                            <th data-i18n="warehouse.description">Descripción</th>
+                                            <th data-i18n="warehouse.format">Formato</th>
+                                            <th class="text-right" data-i18n="warehouse.stock">Existencias</th>
+                                            <th class="text-right" data-i18n="warehouseReport.locationCount">Ubicaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-top-articles"></tbody>
+                                </table>
+                            </div>
+                            <div class="wh-report-cards" id="cards-top-articles"></div>
+                        </div>
+
+                        <!-- Table: Zone summary -->
+                        <div class="wh-chart-card full-width">
+                            <div class="wh-chart-header">
+                                <span class="wh-chart-title" data-i18n="warehouseReport.zoneSummary">Resumen por Zona</span>
+                            </div>
+                            <div class="wh-report-table-wrapper">
+                                <table class="wh-report-table">
+                                    <thead>
+                                        <tr>
+                                            <th data-i18n="warehouse.zone">Zona</th>
+                                            <th class="text-right" data-i18n="warehouse.locations">Ubicaciones</th>
+                                            <th class="text-right" data-i18n="warehouseReport.occupied">Ocupadas</th>
+                                            <th class="text-right" data-i18n="warehouseReport.emptyLocations">Vacías</th>
+                                            <th data-i18n="warehouseReport.occupationRate">% Ocupación</th>
+                                            <th class="text-right" data-i18n="warehouse.stock">Existencias</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-zone-summary"></tbody>
+                                </table>
+                            </div>
+                            <div class="wh-report-cards" id="cards-zone-summary"></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal de Cambio de Contrasena -->
+    <div id="change-password-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2 data-i18n="changePassword.title">Cambiar Contrasena</h2>
+                <button class="modal-close" onclick="hideChangePasswordModal()">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label data-i18n="changePassword.currentPassword">Contrasena Actual</label>
+                    <input type="password" id="current-password" class="form-control">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label data-i18n="changePassword.newPassword">Nueva Contrasena</label>
+                    <input type="password" id="new-password" class="form-control">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label data-i18n="changePassword.confirmPassword">Confirmar Nueva Contrasena</label>
+                    <input type="password" id="confirm-password" class="form-control">
+                </div>
+                <div id="change-password-error" style="color: #dc3545; font-size: 0.85rem; margin-bottom: 10px; display: none;"></div>
+                <div id="change-password-success" style="color: #28a745; font-size: 0.85rem; margin-bottom: 10px; display: none;"></div>
+                <button class="btn-primary" onclick="handleVoluntaryPasswordChange()" id="change-password-btn" style="width: 100%;" data-i18n="changePassword.changeButton">Cambiar Contrasena</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/i18n/i18n.js"></script>
+    <script src="js/sidebar.js?v=20260143"></script>
+    <script src="js/page-common.js?v=20260209a"></script>
+    <script>
+        // ==================== PAGE: INFORME ALMACÉN ====================
+        const API_URL = PageCommon.API_URL;
+
+        let chartOccupation = null;
+        let chartStockZone = null;
+        let chartLevels = null;
+        let chartTopArticles = null;
+
+        // ==================== INICIALIZACION ====================
+        document.addEventListener('DOMContentLoaded', async function() {
+            PageCommon.loadTheme();
+            await PageCommon.cargarLogoEmpresa();
+            await I18n.init();
+            document.getElementById('lang-selector').value = I18n.currentLang;
+
+            await PageCommon.checkAuth('administrador');
+            await PageCommon.obtenerCsrfToken();
+            await loadAlmacenes();
+
+            document.getElementById('report-loading').style.display = 'none';
+            document.getElementById('report-content').style.display = 'flex';
+
+            document.getElementById('wh-almacen-select').addEventListener('change', loadReport);
+        });
+
+        // ==================== LOAD ALMACENES ====================
+        async function loadAlmacenes() {
+            try {
+                const res = await fetch(`${API_URL}/api/almacen/almacenes`, { credentials: 'include' });
+                if (!res.ok) throw new Error('Error cargando almacenes');
+                const almacenes = await res.json();
+                const select = document.getElementById('wh-almacen-select');
+                select.innerHTML = `<option value="">${t('warehouse.selectWarehouse')}</option>`;
+                almacenes.forEach(a => {
+                    const opt = document.createElement('option');
+                    opt.value = a.codigo;
+                    opt.textContent = `${a.codigo} - ${a.descripcion}`;
+                    select.appendChild(opt);
+                });
+            } catch (err) {
+                console.error('Error loading almacenes:', err);
+            }
+        }
+
+        // ==================== LOAD REPORT ====================
+        async function loadReport() {
+            const almacen = document.getElementById('wh-almacen-select').value;
+            const emptyEl = document.getElementById('report-empty');
+            const dataEl = document.getElementById('report-data');
+
+            if (!almacen) {
+                emptyEl.style.display = 'block';
+                dataEl.style.display = 'none';
+                return;
+            }
+
+            emptyEl.style.display = 'none';
+            dataEl.style.display = 'block';
+
+            try {
+                const [ubicacionesRes, mapaRes, resumenRes] = await Promise.all([
+                    fetch(`${API_URL}/api/almacen/ubicaciones?almacen=${almacen}`, { credentials: 'include' }),
+                    fetch(`${API_URL}/api/almacen/mapa?almacen=${almacen}`, { credentials: 'include' }),
+                    fetch(`${API_URL}/api/almacen/resumen?almacen=${almacen}`, { credentials: 'include' })
+                ]);
+
+                if (!ubicacionesRes.ok || !mapaRes.ok || !resumenRes.ok) {
+                    throw new Error('Error al obtener datos del almacén');
+                }
+
+                const ubicacionesData = await ubicacionesRes.json();
+                const mapaData = await mapaRes.json();
+                const resumen = await resumenRes.json();
+
+                const ubicaciones = ubicacionesData.ubicaciones || [];
+
+                // Calculate total slots from mapa (physical grid)
+                let totalSlots = 0;
+                mapaData.forEach(z => {
+                    const filas = z.fila_hasta - z.fila_desde + 1;
+                    const alturas = z.altura_hasta - z.altura_desde + 1;
+                    totalSlots += filas * alturas;
+                });
+
+                // If mapa is empty, fallback to resumen
+                if (totalSlots === 0) totalSlots = resumen.total_ubicaciones;
+
+                // Count UNIQUE occupied slots (zona+fila+altura)
+                // Una celda fisica puede tener varios articulos
+                const occupiedSlots = new Set();
+                ubicaciones.forEach(u => {
+                    if (u.existencias > 0) {
+                        occupiedSlots.add(`${u.zona}|${u.fila}|${u.altura}`);
+                    }
+                });
+                const occupied = occupiedSlots.size;
+                const empty = Math.max(0, totalSlots - occupied);
+                const occupationPct = totalSlots > 0 ? ((occupied / totalSlots) * 100).toFixed(1) : 0;
+
+                // Update KPIs
+                document.getElementById('kpi-zonas').textContent = resumen.total_zonas;
+                document.getElementById('kpi-ubicaciones').textContent = formatNum(totalSlots);
+                document.getElementById('kpi-ocupadas').textContent = formatNum(occupied);
+                document.getElementById('kpi-vacias').textContent = formatNum(empty);
+                document.getElementById('kpi-ocupacion').textContent = occupationPct + '%';
+                document.getElementById('kpi-m2').textContent = formatNum(resumen.total_m2 || 0);
+                document.getElementById('kpi-piezas').textContent = formatNum(resumen.total_piezas || 0);
+
+                // Build zone data
+                const zoneMap = {};
+                // Initialize from mapa
+                mapaData.forEach(z => {
+                    if (!zoneMap[z.zona]) {
+                        zoneMap[z.zona] = { totalSlots: 0, occupied: new Set(), stock: 0 };
+                    }
+                    const filas = z.fila_hasta - z.fila_desde + 1;
+                    const alturas = z.altura_hasta - z.altura_desde + 1;
+                    zoneMap[z.zona].totalSlots += filas * alturas;
+                });
+                // Fill from ubicaciones (unique slots per zone)
+                ubicaciones.forEach(u => {
+                    if (!zoneMap[u.zona]) {
+                        zoneMap[u.zona] = { totalSlots: 0, occupied: new Set(), stock: 0 };
+                    }
+                    if (u.existencias > 0) {
+                        zoneMap[u.zona].occupied.add(`${u.fila}|${u.altura}`);
+                        zoneMap[u.zona].stock += u.existencias;
+                    }
+                });
+                // Convert Sets to counts
+                Object.values(zoneMap).forEach(d => {
+                    d.occupied = d.occupied.size;
+                });
+
+                const zones = Object.keys(zoneMap).sort();
+
+                // Render charts
+                renderOccupationChart(occupied, empty);
+                renderStockByZoneChart(zones, zoneMap);
+                renderStockLevelsChart(zones, zoneMap, ubicaciones);
+                renderTopArticlesChart(ubicaciones);
+
+                // Render tables
+                renderTopArticlesTable(ubicaciones);
+                renderZoneSummaryTable(zones, zoneMap);
+
+            } catch (err) {
+                console.error('Error loading report:', err);
+                document.getElementById('report-data').innerHTML =
+                    `<div class="wh-report-empty"><p style="color: #dc3545;">Error: ${err.message}</p></div>`;
+            }
+        }
+
+        // ==================== CHARTS ====================
+        function getChartColors() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            return {
+                text: isDark ? '#e0e0e0' : '#666',
+                grid: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                primary: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#FF4338',
+                primaryLight: getComputedStyle(document.documentElement).getPropertyValue('--primary-light').trim() || '#FF6B6B'
+            };
+        }
+
+        function renderOccupationChart(occupied, empty) {
+            const ctx = document.getElementById('chart-occupation').getContext('2d');
+            if (chartOccupation) chartOccupation.destroy();
+            const c = getChartColors();
+
+            chartOccupation = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [t('warehouseReport.occupied'), t('warehouseReport.emptyLocations')],
+                    datasets: [{
+                        data: [occupied, empty],
+                        backgroundColor: [c.primary, '#e0e0e0'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: c.text } }
+                    }
+                }
+            });
+        }
+
+        function renderStockByZoneChart(zones, zoneMap) {
+            const ctx = document.getElementById('chart-stock-zone').getContext('2d');
+            if (chartStockZone) chartStockZone.destroy();
+            const c = getChartColors();
+
+            chartStockZone = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: zones.map(z => t('warehouse.zone') + ' ' + z),
+                    datasets: [{
+                        label: t('warehouse.stock'),
+                        data: zones.map(z => zoneMap[z].stock),
+                        backgroundColor: c.primary + 'CC',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, ticks: { color: c.text }, grid: { color: c.grid } },
+                        y: { ticks: { color: c.text }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderStockLevelsChart(zones, zoneMap, ubicaciones) {
+            const ctx = document.getElementById('chart-levels').getContext('2d');
+            if (chartLevels) chartLevels.destroy();
+            const c = getChartColors();
+
+            // Classify per zone by UNIQUE slots: high (>100), medium (10-100), low (1-9), empty (0)
+            // Aggregate stock per unique slot first, then classify
+            const levels = { high: [], medium: [], low: [], empty: [] };
+            zones.forEach(z => {
+                const zoneUbis = ubicaciones.filter(u => u.zona === z);
+                // Sum existencias per unique slot (zona+fila+altura)
+                const slotStock = {};
+                zoneUbis.forEach(u => {
+                    const key = `${u.fila}|${u.altura}`;
+                    slotStock[key] = (slotStock[key] || 0) + u.existencias;
+                });
+                let high = 0, medium = 0, low = 0;
+                Object.values(slotStock).forEach(stock => {
+                    if (stock > 100) high++;
+                    else if (stock >= 10) medium++;
+                    else if (stock > 0) low++;
+                });
+                const totalInZone = zoneMap[z].totalSlots;
+                let emptyCount = totalInZone - high - medium - low;
+                if (emptyCount < 0) emptyCount = 0;
+                levels.high.push(high);
+                levels.medium.push(medium);
+                levels.low.push(low);
+                levels.empty.push(emptyCount);
+            });
+
+            chartLevels = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: zones.map(z => t('warehouse.zone') + ' ' + z),
+                    datasets: [
+                        { label: t('warehouse.stockHigh'), data: levels.high, backgroundColor: '#4CAF50CC', borderRadius: 4 },
+                        { label: t('warehouse.stockMedium'), data: levels.medium, backgroundColor: '#FF9800CC', borderRadius: 4 },
+                        { label: t('warehouse.stockLow'), data: levels.low, backgroundColor: '#f44336CC', borderRadius: 4 },
+                        { label: t('warehouse.empty'), data: levels.empty, backgroundColor: '#e0e0e080', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { color: c.text, boxWidth: 14 } } },
+                    scales: {
+                        x: { stacked: true, ticks: { color: c.text }, grid: { display: false } },
+                        y: { stacked: true, beginAtZero: true, ticks: { color: c.text }, grid: { color: c.grid } }
+                    }
+                }
+            });
+        }
+
+        function renderTopArticlesChart(ubicaciones) {
+            const ctx = document.getElementById('chart-top-articles').getContext('2d');
+            if (chartTopArticles) chartTopArticles.destroy();
+            const c = getChartColors();
+
+            const articleMap = {};
+            ubicaciones.forEach(u => {
+                if (!u.codigo || u.existencias <= 0) return;
+                if (!articleMap[u.codigo]) {
+                    articleMap[u.codigo] = { codigo: u.codigo, descripcion: u.descripcion, formato: u.formato, stock: 0, locations: 0 };
+                }
+                articleMap[u.codigo].stock += u.existencias;
+                articleMap[u.codigo].locations++;
+            });
+
+            const top10 = Object.values(articleMap).sort((a, b) => b.stock - a.stock).slice(0, 10);
+
+            chartTopArticles = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: top10.map(a => truncate(a.descripcion || a.codigo, 18)),
+                    datasets: [{
+                        label: t('warehouse.stock'),
+                        data: top10.map(a => a.stock),
+                        backgroundColor: c.primaryLight + 'CC',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function(items) {
+                                    const idx = items[0].dataIndex;
+                                    return top10[idx].descripcion || top10[idx].codigo;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, ticks: { color: c.text }, grid: { color: c.grid } },
+                        y: { ticks: { color: c.text }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // ==================== TABLES ====================
+        function renderTopArticlesTable(ubicaciones) {
+            const articleMap = {};
+            ubicaciones.forEach(u => {
+                if (!u.codigo || u.existencias <= 0) return;
+                if (!articleMap[u.codigo]) {
+                    articleMap[u.codigo] = { codigo: u.codigo, descripcion: u.descripcion, formato: u.formato, stock: 0, locations: 0 };
+                }
+                articleMap[u.codigo].stock += u.existencias;
+                articleMap[u.codigo].locations++;
+            });
+
+            const top = Object.values(articleMap).sort((a, b) => b.stock - a.stock).slice(0, 15);
+
+            // Desktop table
+            document.getElementById('table-top-articles').innerHTML = top.map(a => `
+                <tr>
+                    <td><strong>${a.codigo}</strong></td>
+                    <td>${truncate(a.descripcion, 40)}</td>
+                    <td>${a.formato || '-'}</td>
+                    <td class="text-right">${formatNum(a.stock)}</td>
+                    <td class="text-right">${a.locations}</td>
+                </tr>
+            `).join('');
+
+            // Mobile cards
+            document.getElementById('cards-top-articles').innerHTML = top.map(a => `
+                <div class="wh-report-card">
+                    <div class="wh-report-card-header">
+                        <span class="wh-report-card-title">${a.codigo}</span>
+                        <span class="wh-report-card-badge" style="background: var(--primary); color: #fff;">${formatNum(a.stock)}</span>
+                    </div>
+                    <div class="wh-report-card-row">${truncate(a.descripcion, 50)}</div>
+                    <div class="wh-report-card-row"><span>${t('warehouse.format')}</span><strong>${a.formato || '-'}</strong></div>
+                    <div class="wh-report-card-row"><span>${t('warehouseReport.locationCount')}</span><strong>${a.locations}</strong></div>
+                </div>
+            `).join('');
+        }
+
+        function renderZoneSummaryTable(zones, zoneMap) {
+            // Desktop table
+            document.getElementById('table-zone-summary').innerHTML = zones.map(z => {
+                const d = zoneMap[z];
+                const emptyCount = d.totalSlots - d.occupied;
+                const pct = d.totalSlots > 0 ? ((d.occupied / d.totalSlots) * 100).toFixed(1) : 0;
+                const barColor = pct > 80 ? '#4CAF50' : pct > 50 ? '#FF9800' : pct > 20 ? '#f44336' : '#e0e0e0';
+                return `
+                    <tr>
+                        <td><strong>${z}</strong></td>
+                        <td class="text-right">${d.totalSlots}</td>
+                        <td class="text-right">${d.occupied}</td>
+                        <td class="text-right">${emptyCount < 0 ? 0 : emptyCount}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="occupation-bar">
+                                    <div class="occupation-bar-fill" style="width: ${pct}%; background: ${barColor};"></div>
+                                </div>
+                                <span style="font-size: 0.8rem; min-width: 40px;">${pct}%</span>
+                            </div>
+                        </td>
+                        <td class="text-right">${formatNum(d.stock)}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Mobile cards
+            document.getElementById('cards-zone-summary').innerHTML = zones.map(z => {
+                const d = zoneMap[z];
+                const emptyCount = Math.max(0, d.totalSlots - d.occupied);
+                const pct = d.totalSlots > 0 ? ((d.occupied / d.totalSlots) * 100).toFixed(1) : 0;
+                const barColor = pct > 80 ? '#4CAF50' : pct > 50 ? '#FF9800' : pct > 20 ? '#f44336' : '#e0e0e0';
+                return `
+                    <div class="wh-report-card">
+                        <div class="wh-report-card-header">
+                            <span class="wh-report-card-title">${t('warehouse.zone')} ${z}</span>
+                            <span class="wh-report-card-badge" style="background: ${barColor}; color: #fff;">${pct}%</span>
+                        </div>
+                        <div class="occupation-bar" style="margin: 6px 0;">
+                            <div class="occupation-bar-fill" style="width: ${pct}%; background: ${barColor};"></div>
+                        </div>
+                        <div class="wh-report-card-row"><span>${t('warehouse.locations')}</span><strong>${d.totalSlots}</strong></div>
+                        <div class="wh-report-card-row"><span>${t('warehouseReport.occupied')}</span><strong>${d.occupied}</strong></div>
+                        <div class="wh-report-card-row"><span>${t('warehouseReport.emptyLocations')}</span><strong>${emptyCount}</strong></div>
+                        <div class="wh-report-card-row"><span>${t('warehouse.stock')}</span><strong>${formatNum(d.stock)}</strong></div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== UTILITY ====================
+        function formatNum(num) {
+            if (num === undefined || num === null) return '0';
+            return Math.round(num).toLocaleString('es-ES');
+        }
+
+        function truncate(str, length) {
+            if (!str) return '';
+            return str.length > length ? str.substring(0, length) + '...' : str;
+        }
+
+        function t(key) {
+            return typeof I18n !== 'undefined' && I18n.t ? I18n.t(key) : key;
+        }
+    </script>
+</body>
+</html>

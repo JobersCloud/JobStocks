@@ -37,6 +37,7 @@ from routes.empresa_routes import empresa_bp
 from routes.audit_routes import audit_bp
 from routes.pedido_routes import pedido_bp
 from routes.db_info_routes import db_info_bp
+from routes.almacen_routes import almacen_bp
 from database.users_db import verify_user, get_user_by_id
 from models.user import User
 from models.user_session_model import UserSessionModel
@@ -143,7 +144,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.28.4'
+APP_VERSION = 'v1.29.7'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -275,6 +276,7 @@ app.register_blueprint(empresa_bp)
 app.register_blueprint(audit_bp)
 app.register_blueprint(pedido_bp)
 app.register_blueprint(db_info_bp)
+app.register_blueprint(almacen_bp)
 
 # ==================== RUTAS DE AUTENTICACIÓN ====================
 
@@ -371,6 +373,16 @@ def auditoria_page():
 @login_required
 def control_bd_page():
     return send_from_directory(FRONTEND_DIR, 'control-bd.html')
+
+@app.route('/vista-almacen.html')
+@login_required
+def vista_almacen_page():
+    return send_from_directory(FRONTEND_DIR, 'vista-almacen.html')
+
+@app.route('/informe-almacen.html')
+@login_required
+def informe_almacen_page():
+    return send_from_directory(FRONTEND_DIR, 'informe-almacen.html')
 
 @app.route('/api/login', methods=['POST'])
 @limiter.limit("5 per minute")  # Máximo 5 intentos por minuto por IP

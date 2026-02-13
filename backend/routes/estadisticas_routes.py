@@ -327,5 +327,6 @@ def get_articulos_mas_vistos():
     try:
         articulos = EstadisticasModel.get_articulos_mas_vistos(empresa_id, limit, dias)
         return jsonify(articulos)
-    except Exception:
+    except Exception as e:
+        print(f"Error en articulos-mas-vistos: {e}")
         return jsonify([])

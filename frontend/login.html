@@ -340,6 +340,38 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.29.7', date: '2026-02-13', title: 'Fix M2/Piezas en informe almacen', items: [
+                {type: 'fix', text: 'Fix desglose M2/Piezas mostraba 0: fallback a columna tipo_unidad'},
+                {type: 'improve', text: 'Script SQL actualizado: tipo_unidad renombrado a unidad en vista'}
+            ]},
+            { version: 'v1.29.6', date: '2026-02-13', title: 'Desglose M2 y Piezas en almacen', items: [
+                {type: 'new', text: 'Informe Almacen: KPIs separados para M2 (unidad=1) y Piezas (unidad=0)'},
+                {type: 'new', text: 'Dashboard: tarjetas de Almacen M2 y Almacen Piezas en resumen general'},
+                {type: 'fix', text: 'Fix ocupacion negativa por multiples articulos en misma ubicacion'}
+            ]},
+            { version: 'v1.29.5', date: '2026-02-13', title: 'Informe Almacen y fix 3D movil', items: [
+                {type: 'new', text: 'Nueva pagina Informe Almacen con KPIs, graficos y tablas de ocupacion'},
+                {type: 'fix', text: 'Fix modelo 3D se movia solo en dispositivos moviles'}
+            ]},
+            { version: 'v1.29.2', date: '2026-02-13', title: 'Navegacion 3D mejorada en Almacen', items: [
+                {type: 'new', text: 'Modo Paseo: caminar en primera persona con WASD y arrastrar para mirar'},
+                {type: 'new', text: 'Selector de zonas desplegable para saltar a cualquier zona'},
+                {type: 'new', text: 'Doble clic en rack para hacer zoom directo'},
+                {type: 'new', text: 'D-Pad de navegacion para moverse por el almacen'},
+                {type: 'improve', text: 'Transicion animada suave al entrar en modo paseo'}
+            ]},
+            { version: 'v1.29.1', date: '2026-02-12', title: 'Vista Almacen 3D mejorada', items: [
+                {type: 'improve', text: 'Mapa 3D completo del almacen con todos los huecos (vacios y ocupados)'},
+                {type: 'new', text: 'Nuevo endpoint /api/almacen/mapa con vista view_externos_almubimapa'},
+                {type: 'improve', text: 'Estanterias con wireframes, divisiones por nivel y celdas coloreadas'},
+                {type: 'improve', text: 'Navegacion 3D mejorada: orbitar, zoom, pan, reset camara (tecla B)'},
+                {type: 'improve', text: 'Celdas vacias visibles con transparencia para ver estructura completa'}
+            ]},
+            { version: 'v1.28.5', date: '2026-02-12', title: 'Grafico articulos mas vistos', items: [
+                {type: 'new', text: 'Grafico de barras Chart.js en seccion Articulos Mas Vistos del Dashboard'},
+                {type: 'improve', text: 'Barras de vistas y usuarios unicos con colores del tema activo'},
+                {type: 'improve', text: 'Tooltip muestra descripcion completa del articulo al pasar el raton'}
+            ]},
             { version: 'v1.28.4', date: '2026-02-10', title: 'Mejora busqueda por voz', items: [
                 {type: 'improve', text: 'Matching parcial en selects de serie y color (includes en vez de exacto)'},
                 {type: 'new', text: 'Texto no reconocido en selects se envia como descripcion libre al backend'},

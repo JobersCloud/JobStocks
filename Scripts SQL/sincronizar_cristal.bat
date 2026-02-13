@@ -74,6 +74,8 @@ call :sync_tabla almmodelos
 call :sync_tabla almcolores
 call :sync_tabla pallets
 call :sync_tabla articulos
+call :sync_tabla almalmacen
+call :sync_tabla almubimapa
 call :sync_tabla almlinubica
 call :sync_tabla almlinubica_bloqueo
 call :sync_tabla almartcajas

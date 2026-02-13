@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vista Almacén</title>
+    <script>
+        (function () {
+            const themes = {
+                'rubi': { primary: '#FF4338', primaryDark: '#D32F2F', primaryLight: '#FF6B6B' },
+                'zafiro': { primary: '#2196F3', primaryDark: '#1565C0', primaryLight: '#64B5F6' },
+                'esmeralda': { primary: '#4CAF50', primaryDark: '#2E7D32', primaryLight: '#81C784' },
+                'amatista': { primary: '#9C27B0', primaryDark: '#6A1B9A', primaryLight: '#BA68C8' },
+                'ambar': { primary: '#FF9800', primaryDark: '#E65100', primaryLight: '#FFB74D' },
+                'grafito': { primary: '#607D8B', primaryDark: '#37474F', primaryLight: '#90A4AE' },
+                'corporativo': { primary: '#1a365d', primaryDark: '#0d1b2a', primaryLight: '#2c5282' },
+                'ejecutivo': { primary: '#2d3748', primaryDark: '#1a202c', primaryLight: '#4a5568' },
+                'oceano': { primary: '#0077b6', primaryDark: '#023e8a', primaryLight: '#0096c7' },
+                'bosque': { primary: '#2d6a4f', primaryDark: '#1b4332', primaryLight: '#40916c' },
+                'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
+                'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
+                'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
+                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
+                'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
+            };
+            const theme = localStorage.getItem('theme') || 'dark';
+            const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
+            const colors = themes[colorTheme] || themes['rubi'];
+
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-color-theme', colorTheme);
+
+            const style = document.createElement('style');
+            style.id = 'theme-colors-inline';
+            style.textContent = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
+            document.head.appendChild(style);
+
+            const faviconUrl = localStorage.getItem('faviconUrl');
+            if (faviconUrl) {
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                link.href = faviconUrl;
+                document.head.appendChild(link);
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="css/styles.css?v=1.29.2">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Header Superior -->
+        <header class="top-header">
+            <div class="top-header-left">
+                <button class="mobile-menu-btn" onclick="toggleSidebarMobile()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="header-logo">
+                    <img src="" alt="Logo" id="header-logo">
+                    <span class="header-logo-text" id="header-company-name">Stocks</span>
+                </div>
+                <div class="header-divider"></div>
+                <div>
+                    <h1 class="top-header-title" data-i18n="warehouse.title">Vista Almacén</h1>
+                </div>
+            </div>
+            <div class="top-header-right">
+                <div class="menu-container">
+                    <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
+                        <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span class="user-name-display" id="user-name-display">Usuario</span>
+                    </button>
+                    <div class="menu-dropdown" id="menu-dropdown">
+                        <div class="menu-header">
+                            <div class="user-name" id="menu-user-name">Usuario</div>
+                            <div class="user-rol" id="menu-user-rol">usuario</div>
+                        </div>
+                        <div class="menu-divider" id="menu-divider-context" style="display: none;"></div>
+                        <a class="menu-item" id="menu-item-context" onclick="showContextInfo()" style="display: none;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <span data-i18n="menu.contextInfo">Info de Contexto</span>
+                        </a>
+                        <div class="menu-divider"></div>
+                        <a class="menu-item" onclick="toggleTheme()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                            <span data-i18n="menu.darkMode">Modo oscuro</span>
+                            <span class="menu-theme-icon" id="theme-icon">🌙</span>
+                        </a>
+                        <div class="menu-item menu-item-lang">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                            <select id="lang-selector" class="lang-selector-menu" onchange="I18n.setLanguage(this.value)">
+                                <option value="es">Español</option>
+                                <option value="en">English</option>
+                                <option value="fr">Français</option>
+                            </select>
+                        </div>
+                        <div class="menu-divider"></div>
+                        <a class="menu-item" onclick="showChangePasswordModal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <span data-i18n="menu.changePassword">Cambiar Contrasena</span>
+                        </a>
+                        <div class="menu-divider"></div>
+                        <a class="menu-item menu-item-logout" onclick="logout()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            <span data-i18n="menu.logout">Cerrar Sesión</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-toggle-container">
+                <button class="sidebar-toggle" title="Ctrl+B">☰</button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="sidebar-section">
+                    <a class="sidebar-item" data-page="index.html" data-tooltip="Stocks" onclick="SidebarNav.navigateTo('index.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.stocks">Stocks</span>
+                    </a>
+                    <a class="sidebar-item" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.myProposals">Mis Propuestas</span>
+                    </a>
+                    <a class="sidebar-item" data-page="mis-pedidos.html" data-tooltip="Mis Pedidos" onclick="SidebarNav.navigateTo('mis-pedidos.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="3" width="15" height="13"></rect>
+                                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.myOrders">Mis Pedidos</span>
+                    </a>
+                </div>
+
+                <!-- Acordeon Administracion -->
+                <div class="sidebar-accordion expanded" id="sidebar-admin-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                            <span data-i18n="menu.administration">Administracion</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="dashboard.html" data-tooltip="Dashboard" onclick="SidebarNav.navigateTo('dashboard.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.dashboard">Dashboard</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allProposals">Propuestas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todos-pedidos.html" data-tooltip="Pedidos" onclick="SidebarNav.navigateTo('todos-pedidos.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="1" y="3" width="15" height="13"></rect>
+                                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allOrders">Pedidos</span>
+                        </a>
+                        <a class="sidebar-item" data-page="todas-consultas.html" data-tooltip="Consultas" onclick="SidebarNav.navigateTo('todas-consultas.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.allInquiries">Consultas</span>
+                        </a>
+                        <a class="sidebar-item" data-page="usuarios.html" data-tooltip="Usuarios" onclick="SidebarNav.navigateTo('usuarios.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.users">Usuarios</span>
+                        </a>
+                        <a class="sidebar-item" data-page="auditoria.html" data-tooltip="Auditoría" onclick="SidebarNav.navigateTo('auditoria.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.audit">Auditoría</span>
+                        </a>
+                        <a class="sidebar-item active" data-page="vista-almacen.html" data-tooltip="Vista Almacén" onclick="SidebarNav.navigateTo('vista-almacen.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.warehouseView">Vista Almacén</span>
+                        </a>
+                        <a class="sidebar-item" data-page="informe-almacen.html" data-tooltip="Informe Almacén" onclick="SidebarNav.navigateTo('informe-almacen.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.warehouseReport">Informe Almacén</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Acordeon Configuracion -->
+                <div class="sidebar-accordion" id="sidebar-config-section" style="display: none;">
+                    <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
+                        <div class="sidebar-accordion-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                            <span data-i18n="menu.settings">Configuracion</span>
+                        </div>
+                        <svg class="sidebar-accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="sidebar-accordion-content">
+                        <a class="sidebar-item" data-page="email-config.html" data-tooltip="Email" onclick="SidebarNav.navigateTo('email-config.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.emailConfig">Email</span>
+                        </a>
+                        <a class="sidebar-item" data-page="parametros.html" data-tooltip="Parametros" onclick="SidebarNav.navigateTo('parametros.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.parameters">Parametros</span>
+                        </a>
+                        <a class="sidebar-item" data-page="api-keys.html" data-tooltip="API Keys" onclick="SidebarNav.navigateTo('api-keys.html')"><span class="sidebar-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg></span><span class="sidebar-item-text" data-i18n="menu.apiKeys">API Keys</span></a>
+                        <a class="sidebar-item" data-page="empresa-logo.html" data-tooltip="Logo" onclick="SidebarNav.navigateTo('empresa-logo.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.companyLogo">Logo</span>
+                        </a>
+                        <a class="sidebar-item" data-page="control-bd.html" data-tooltip="Control BD" onclick="SidebarNav.navigateTo('control-bd.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.dbControl">Control BD</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Footer del Sidebar -->
+            <div class="sidebar-footer">
+                <a class="sidebar-item" data-tooltip="Cerrar Sesion" onclick="logout()">
+                    <span class="sidebar-item-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </span>
+                    <span class="sidebar-item-text" data-i18n="menu.logout">Cerrar Sesion</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Overlay para movil -->
+        <div class="sidebar-overlay"></div>
+
+        <!-- Contenedor Principal -->
+        <div class="main-wrapper">
+            <main class="main-content-area" style="overflow: hidden; padding: 0; padding-top: 70px;">
+
+                <!-- Barra de controles -->
+                <div class="warehouse-controls">
+                    <select id="wh-almacen-select">
+                        <option value="" data-i18n="warehouse.selectWarehouse">Seleccionar almacén</option>
+                    </select>
+                    <select id="wh-zone-select" style="display:none;" onchange="onZoneSelectChange(this.value)">
+                        <option value="" data-i18n="warehouse.allZones">Todas las zonas</option>
+                    </select>
+                    <button class="wh-btn" onclick="reloadData()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                        <span data-i18n="warehouse.reload">Recargar</span>
+                    </button>
+                    <button class="wh-btn" onclick="resetCamera()" title="Vista cenital">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                        <span data-i18n="warehouse.resetView">Vista Inicial</span>
+                    </button>
+                    <button class="wh-btn" id="btn-labels" onclick="toggleLabels()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                        <span data-i18n="warehouse.labels">Etiquetas</span>
+                    </button>
+                    <button class="wh-btn" id="btn-walk" onclick="toggleWalkMode()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="2"/><path d="M15 7l-3 3-3-3"/><path d="M9 10v5l-2 5"/><path d="M15 10v5l2 5"/><path d="M12 10v7"/></svg>
+                        <span data-i18n="warehouse.walkMode">Modo Paseo</span>
+                    </button>
+                </div>
+
+                <!-- Tarjetas de estadisticas -->
+                <div class="warehouse-stats" id="wh-stats" style="display: none;">
+                    <div class="wh-stat-card">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-zonas">0</div>
+                            <div class="stat-label" data-i18n="warehouse.zones">Zonas</div>
+                        </div>
+                    </div>
+                    <div class="wh-stat-card">
+                        <div class="stat-icon">📍</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-ubicaciones">0</div>
+                            <div class="stat-label" data-i18n="warehouse.locations">Ubicaciones</div>
+                        </div>
+                    </div>
+                    <div class="wh-stat-card">
+                        <div class="stat-icon">🏷️</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-articulos">0</div>
+                            <div class="stat-label" data-i18n="warehouse.articles">Artículos</div>
+                        </div>
+                    </div>
+                    <div class="wh-stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-existencias">0</div>
+                            <div class="stat-label" data-i18n="warehouse.stock">Existencias</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Area principal: 3D + panel info -->
+                <div class="warehouse-main">
+                    <div class="warehouse-canvas-wrap" id="canvas-wrap">
+                        <!-- Loading overlay -->
+                        <div class="warehouse-loading-overlay" id="wh-loading" style="display: none;">
+                            <div class="spinner"></div>
+                            <span data-i18n="warehouse.loading">Cargando datos del almacén...</span>
+                        </div>
+                        <!-- Empty state -->
+                        <div class="warehouse-empty-state" id="wh-empty">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg>
+                            <span data-i18n="warehouse.selectWarehouse">Seleccionar almacén</span>
+                        </div>
+                        <!-- Three.js canvas goes here -->
+                        <!-- D-Pad navigation -->
+                        <div class="wh-nav-dpad" id="nav-dpad" style="display:none;">
+                            <button class="dpad-btn dpad-up" onmousedown="navStart('up')" onmouseup="navStop()" onmouseleave="navStop()" ontouchstart="navStart('up')" ontouchend="navStop()">&#9650;</button>
+                            <button class="dpad-btn dpad-left" onmousedown="navStart('left')" onmouseup="navStop()" onmouseleave="navStop()" ontouchstart="navStart('left')" ontouchend="navStop()">&#9664;</button>
+                            <button class="dpad-btn dpad-right" onmousedown="navStart('right')" onmouseup="navStop()" onmouseleave="navStop()" ontouchstart="navStart('right')" ontouchend="navStop()">&#9654;</button>
+                            <button class="dpad-btn dpad-down" onmousedown="navStart('down')" onmouseup="navStop()" onmouseleave="navStop()" ontouchstart="navStart('down')" ontouchend="navStop()">&#9660;</button>
+                        </div>
+                        <!-- Walk mode hint -->
+                        <div class="wh-walk-hint" id="walk-hint" style="display:none;"></div>
+                        <!-- Zone indicator (walk mode) -->
+                        <div class="wh-zone-indicator" id="zone-indicator" style="display:none;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span id="zone-indicator-text"></span>
+                        </div>
+                    </div>
+                    <!-- Panel info lateral -->
+                    <div class="warehouse-info-panel" id="info-panel">
+                        <div class="wh-info-header">
+                            <h3 data-i18n="warehouse.infoPanel">Detalle de ubicación</h3>
+                            <button class="wh-info-close" onclick="closeInfoPanel()">&times;</button>
+                        </div>
+                        <div id="info-panel-content"></div>
+                    </div>
+                </div>
+
+                <!-- Tooltip flotante -->
+                <div class="warehouse-tooltip" id="wh-tooltip"></div>
+
+                <!-- Leyenda -->
+                <div class="warehouse-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #4caf50;"></div>
+                        <span data-i18n="warehouse.stockHigh">Stock Alto</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ff9800;"></div>
+                        <span data-i18n="warehouse.stockMedium">Stock Medio</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f44336;"></div>
+                        <span data-i18n="warehouse.stockLow">Stock Bajo</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #444;"></div>
+                        <span data-i18n="warehouse.empty">Vacío</span>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal de Cambio de Contrasena -->
+    <div id="change-password-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2 data-i18n="changePassword.title">Cambiar Contrasena</h2>
+                <button class="modal-close" onclick="hideChangePasswordModal()">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label data-i18n="changePassword.currentPassword">Contrasena Actual</label>
+                    <input type="password" id="current-password" class="form-control">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label data-i18n="changePassword.newPassword">Nueva Contrasena</label>
+                    <input type="password" id="new-password" class="form-control">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label data-i18n="changePassword.confirmPassword">Confirmar Nueva Contrasena</label>
+                    <input type="password" id="confirm-password" class="form-control">
+                </div>
+                <div id="change-password-error" style="color: #dc3545; font-size: 0.85rem; margin-bottom: 10px; display: none;"></div>
+                <div id="change-password-success" style="color: #28a745; font-size: 0.85rem; margin-bottom: 10px; display: none;"></div>
+                <button class="btn-primary" onclick="handleVoluntaryPasswordChange()" id="change-password-btn" style="width: 100%;" data-i18n="changePassword.changeButton">Cambiar Contrasena</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js r128 (stable legacy build) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script src="js/i18n/i18n.js"></script>
+    <script src="js/sidebar.js?v=20260212"></script>
+    <script src="js/page-common.js?v=20260212"></script>
+    <script>
+        // ==================== PAGE: VISTA ALMACEN (3D) ====================
+        const API_URL = PageCommon.API_URL;
+
+        // Three.js core
+        let scene, camera, renderer, controls;
+        let warehouseGroup = null;
+        let raycaster, mouse = new THREE.Vector2();
+        let cellMeshes = [];       // all pallet meshes (for raycasting)
+        let cellDataMap = new Map(); // mesh.uuid -> { zona, fila, altura, items, totalStock }
+        let labelSprites = [];
+        let showLabels = true;
+        let hoveredMesh = null;
+        let selectedMesh = null;
+        let originalColors = new Map(); // mesh.uuid -> original color
+
+        // Data
+        let ubicacionesData = [];
+        let mapaData = [];
+        let resumenData = {};
+
+        // Walk mode & navigation
+        let walkMode = false;
+        let walkDragging = false;
+        let walkDragPrev = { x: 0, y: 0 };
+        let keysPressed = {};
+        let touchPrev = null;
+        let touchStartTime = 0;
+        let touchStartPos = { x: 0, y: 0 };
+        let zonePositions = {};
+        let activeZone = null;
+        let navInterval = null;
+        let flyAnimation = null;
+        const WALK_SPEED = 0.15;
+        const NAV_STEP = 1.5;
+        const FLY_DURATION = 600;
+        let walkYaw = 0;
+        let walkPitch = 0;
+
+        // Geometry cache
+        const geoCache = new Map();
+        const matCache = {};
+
+        // Layout constants
+        const CELL_W = 1.2;   // width per fila
+        const CELL_H = 1.0;   // height per altura
+        const CELL_D = 1.0;   // depth
+        const RACK_GAP = 4;   // gap between racks (Z axis)
+
+        // Color thresholds
+        const STOCK_HIGH = 100;
+        const STOCK_LOW = 20;
+
+        const COLORS = {
+            stockHigh:   0x4caf50,
+            stockMedium: 0xff9800,
+            stockLow:    0xf44336,
+            empty:       0x444444,
+            edge:        0x666666,
+            edgeEmpty:   0x333333,
+            selected:    0x00bcd4,
+            hovered:     0xffffff,
+            floor:       0xd0d0d0,
+            floorDark:   0x222233,
+            bgLight:     0xf0f0f0,
+            bgDark:      0x1a1a2e
+        };
+
+        function getStockColor(existencias) {
+            if (existencias <= 0) return COLORS.empty;
+            if (existencias < STOCK_LOW) return COLORS.stockLow;
+            if (existencias < STOCK_HIGH) return COLORS.stockMedium;
+            return COLORS.stockHigh;
+        }
+
+        function getStockBadgeClass(existencias) {
+            if (existencias < STOCK_LOW) return 'low';
+            if (existencias < STOCK_HIGH) return 'medium';
+            return 'high';
+        }
+
+        // ==================== INIT ====================
+        document.addEventListener('DOMContentLoaded', async function () {
+            PageCommon.loadTheme();
+            await PageCommon.cargarLogoEmpresa();
+            await I18n.init();
+            document.getElementById('lang-selector').value = I18n.currentLang;
+            await PageCommon.checkAuth('administrador');
+            await PageCommon.obtenerCsrfToken();
+
+            initThreeJS();
+            loadAlmacenes();
+        });
+
+        // ==================== THREE.JS SETUP ====================
+        function initThreeJS() {
+            const wrap = document.getElementById('canvas-wrap');
+            const w = wrap.clientWidth || 800;
+            const h = wrap.clientHeight || 600;
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(isDark ? COLORS.bgDark : COLORS.bgLight);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 2000);
+            camera.position.set(30, 30, 30);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer.setSize(w, h);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            wrap.appendChild(renderer.domElement);
+
+            // Lights
+            const ambient = new THREE.AmbientLight(0xffffff, 0.65);
+            scene.add(ambient);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+            dirLight.position.set(50, 80, 40);
+            scene.add(dirLight);
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.25);
+            fillLight.position.set(-30, 20, -30);
+            scene.add(fillLight);
+
+            // Floor grid
+            const gridHelper = new THREE.GridHelper(200, 50, 0x888888, 0xcccccc);
+            gridHelper.material.opacity = 0.3;
+            gridHelper.material.transparent = true;
+            gridHelper.name = '__grid__';
+            scene.add(gridHelper);
+
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.08;
+            controls.maxPolarAngle = Math.PI / 2.05;
+            controls.minDistance = 3;
+            controls.maxDistance = 200;
+            controls.zoomSpeed = 1.2;
+            controls.panSpeed = 0.8;
+
+            // Raycaster
+            raycaster = new THREE.Raycaster();
+
+            // Events
+            renderer.domElement.addEventListener('mousemove', onMouseMove);
+            renderer.domElement.addEventListener('click', onMouseClick);
+            renderer.domElement.addEventListener('dblclick', onMouseDblClick);
+            renderer.domElement.addEventListener('touchstart', onTouchStart, { passive: false });
+            renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
+            renderer.domElement.addEventListener('touchend', onTouchEnd);
+            window.addEventListener('resize', onResize);
+
+            // Keyboard
+            window.addEventListener('keydown', function (e) {
+                keysPressed[e.key.toLowerCase()] = true;
+                if (e.key === 'b' || e.key === 'B') { if (!walkMode) resetCamera(); }
+                if (e.key === 'Escape') {
+                    if (walkMode) exitWalkMode();
+                    else { clearSelection(); closeInfoPanel(); }
+                }
+            });
+            window.addEventListener('keyup', function (e) {
+                keysPressed[e.key.toLowerCase()] = false;
+            });
+
+            // Dark mode observer
+            new MutationObserver(() => {
+                const dk = document.documentElement.getAttribute('data-theme') === 'dark';
+                scene.background = new THREE.Color(dk ? COLORS.bgDark : COLORS.bgLight);
+                scene.children.forEach(c => {
+                    if (c.name === '__grid__') {
+                        c.material.opacity = dk ? 0.15 : 0.3;
+                    }
+                });
+            }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+            // Labels button initial state
+            document.getElementById('btn-labels').classList.add('active');
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (walkMode) {
+                updateWalk();
+            } else {
+                if (controls) controls.update();
+            }
+            if (renderer && scene && camera) renderer.render(scene, camera);
+        }
+
+        function onResize() {
+            const wrap = document.getElementById('canvas-wrap');
+            if (!wrap || !camera || !renderer) return;
+            const w = wrap.clientWidth;
+            const h = wrap.clientHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        }
+
+        // ==================== DATA LOADING ====================
+        async function loadAlmacenes() {
+            try {
+                const resp = await fetch(`${API_URL}/api/almacen/almacenes`, { credentials: 'include' });
+                if (!resp.ok) {
+                    document.getElementById('wh-empty').querySelector('span').textContent =
+                        'Error HTTP ' + resp.status;
+                    return;
+                }
+                const almacenes = await resp.json();
+                if (almacenes.error) {
+                    document.getElementById('wh-empty').querySelector('span').textContent = 'Error: ' + almacenes.error;
+                    return;
+                }
+                const select = document.getElementById('wh-almacen-select');
+                select.innerHTML = `<option value="">${t('warehouse.selectWarehouse')}</option>`;
+                almacenes.forEach(a => {
+                    const opt = document.createElement('option');
+                    opt.value = a.codigo;
+                    opt.textContent = a.descripcion ? `${a.codigo} - ${a.descripcion}` : a.codigo;
+                    select.appendChild(opt);
+                });
+                select.addEventListener('change', function () {
+                    if (this.value) loadWarehouseData(this.value);
+                    else clearWarehouse();
+                });
+                if (almacenes.length === 0) {
+                    document.getElementById('wh-empty').querySelector('span').textContent = t('warehouse.noWarehouses');
+                }
+                if (almacenes.length === 1) {
+                    select.value = almacenes[0].codigo;
+                    loadWarehouseData(almacenes[0].codigo);
+                }
+            } catch (e) {
+                console.error('[Almacen]', e);
+                document.getElementById('wh-empty').querySelector('span').textContent = 'Error: ' + e.message;
+            }
+        }
+
+        async function loadWarehouseData(almacen) {
+            const loading = document.getElementById('wh-loading');
+            const empty = document.getElementById('wh-empty');
+            const stats = document.getElementById('wh-stats');
+            loading.style.display = 'flex';
+            empty.style.display = 'none';
+
+            try {
+                const [ubicResp, mapaResp, resumenResp] = await Promise.all([
+                    fetch(`${API_URL}/api/almacen/ubicaciones?almacen=${encodeURIComponent(almacen)}`, { credentials: 'include' }),
+                    fetch(`${API_URL}/api/almacen/mapa?almacen=${encodeURIComponent(almacen)}`, { credentials: 'include' }),
+                    fetch(`${API_URL}/api/almacen/resumen?almacen=${encodeURIComponent(almacen)}`, { credentials: 'include' })
+                ]);
+
+                const ubicData = await ubicResp.json();
+                const mapaRaw = await mapaResp.json();
+                mapaData = Array.isArray(mapaRaw) ? mapaRaw : [];
+                resumenData = await resumenResp.json();
+                ubicacionesData = ubicData.ubicaciones || [];
+
+                // Update stats
+                document.getElementById('stat-zonas').textContent = resumenData.total_zonas || 0;
+                document.getElementById('stat-ubicaciones').textContent = resumenData.total_ubicaciones || 0;
+                document.getElementById('stat-articulos').textContent = resumenData.total_articulos || 0;
+                document.getElementById('stat-existencias').textContent = Math.round(resumenData.total_existencias || 0).toLocaleString();
+                stats.style.display = 'flex';
+
+                if (mapaData.length === 0 && ubicacionesData.length === 0) {
+                    loading.style.display = 'none';
+                    empty.style.display = 'flex';
+                    empty.querySelector('span').textContent = t('warehouse.noData');
+                    return;
+                }
+
+                buildWarehouse3D();
+                loading.style.display = 'none';
+            } catch (e) {
+                console.error('Error loading warehouse:', e);
+                loading.style.display = 'none';
+                empty.style.display = 'flex';
+                empty.querySelector('span').textContent = 'Error: ' + e.message;
+            }
+        }
+
+        function reloadData() {
+            const almacen = document.getElementById('wh-almacen-select').value;
+            if (!almacen) return;
+
+            // Reset all state as if F5
+            if (walkMode) exitWalkMode();
+            clearSelection();
+            closeInfoPanel();
+            hoveredMesh = null;
+            document.getElementById('wh-tooltip').style.display = 'none';
+            document.getElementById('wh-zone-select').value = '';
+            activeZone = null;
+
+            loadWarehouseData(almacen);
+        }
+
+        function clearWarehouse() {
+            if (warehouseGroup) {
+                scene.remove(warehouseGroup);
+                disposeGroup(warehouseGroup);
+                warehouseGroup = null;
+            }
+            cellMeshes = [];
+            cellDataMap.clear();
+            originalColors.clear();
+            labelSprites = [];
+            zonePositions = {};
+            activeZone = null;
+            if (walkMode) exitWalkMode();
+            document.getElementById('wh-stats').style.display = 'none';
+            document.getElementById('wh-empty').style.display = 'flex';
+            document.getElementById('nav-dpad').style.display = 'none';
+            document.getElementById('wh-zone-select').style.display = 'none';
+            closeInfoPanel();
+        }
+
+        // ==================== BUILD 3D WAREHOUSE ====================
+        function buildWarehouse3D() {
+            // Cleanup previous
+            clearWarehouse();
+
+            warehouseGroup = new THREE.Group();
+            warehouseGroup.name = 'warehouse';
+
+            // Build stock lookup: zona -> fila -> altura -> items[]
+            const stockLookup = {};
+            ubicacionesData.forEach(u => {
+                const z = u.zona;
+                if (!stockLookup[z]) stockLookup[z] = {};
+                if (!stockLookup[z][u.fila]) stockLookup[z][u.fila] = {};
+                if (!stockLookup[z][u.fila][u.altura]) stockLookup[z][u.fila][u.altura] = [];
+                stockLookup[z][u.fila][u.altura].push(u);
+            });
+
+            // Group mapa by zona to build racks
+            const zonaMap = {};
+            mapaData.forEach(m => {
+                if (!zonaMap[m.zona]) zonaMap[m.zona] = [];
+                zonaMap[m.zona].push(m);
+            });
+
+            // If mapa is empty, fallback to estructura from ubicaciones
+            let zonas = Object.keys(zonaMap).sort();
+            if (zonas.length === 0) {
+                // Build from ubicaciones data
+                const fromUbic = {};
+                ubicacionesData.forEach(u => {
+                    if (!fromUbic[u.zona]) fromUbic[u.zona] = { minF: Infinity, maxF: 0, minA: Infinity, maxA: 0 };
+                    const z = fromUbic[u.zona];
+                    if (u.fila < z.minF) z.minF = u.fila;
+                    if (u.fila > z.maxF) z.maxF = u.fila;
+                    if (u.altura < z.minA) z.minA = u.altura;
+                    if (u.altura > z.maxA) z.maxA = u.altura;
+                });
+                Object.keys(fromUbic).sort().forEach(zona => {
+                    const z = fromUbic[zona];
+                    zonaMap[zona] = [{
+                        zona: zona,
+                        fila_desde: z.minF,
+                        fila_hasta: z.maxF,
+                        altura_desde: z.minA,
+                        altura_hasta: z.maxA,
+                        largo: 1.0
+                    }];
+                });
+                zonas = Object.keys(zonaMap).sort();
+            }
+
+            let rackZ = 0;
+
+            zonas.forEach((zona, zIdx) => {
+                const entries = zonaMap[zona];
+                // Compute overall range for this zone
+                let minF = Infinity, maxF = 0, minA = Infinity, maxA = 0;
+                entries.forEach(e => {
+                    if (e.fila_desde < minF) minF = e.fila_desde;
+                    if (e.fila_hasta > maxF) maxF = e.fila_hasta;
+                    if (e.altura_desde < minA) minA = e.altura_desde;
+                    if (e.altura_hasta > maxA) maxA = e.altura_hasta;
+                });
+
+                const numFilas = maxF - minF + 1;
+                const numAlturas = maxA - minA + 1;
+                const rackW = numFilas * CELL_W;
+                const rackH = numAlturas * CELL_H;
+
+                // Rack frame (edges)
+                const frameGeo = new THREE.BoxGeometry(rackW + 0.3, rackH + 0.3, CELL_D + 0.3);
+                const edgesGeo = new THREE.EdgesGeometry(frameGeo);
+                const frameMat = new THREE.LineBasicMaterial({ color: 0x888888, transparent: true, opacity: 0.4 });
+                const frame = new THREE.LineSegments(edgesGeo, frameMat);
+                frame.position.set(rackW / 2, rackH / 2, rackZ);
+                frame.name = '__frame__';
+                warehouseGroup.add(frame);
+
+                // Shelf dividers (horizontal lines between levels)
+                for (let a = minA; a <= maxA + 1; a++) {
+                    const y = (a - minA) * CELL_H;
+                    const shelfGeo = new THREE.BufferGeometry().setFromPoints([
+                        new THREE.Vector3(-0.1, y, rackZ - CELL_D / 2 - 0.05),
+                        new THREE.Vector3(rackW + 0.1, y, rackZ - CELL_D / 2 - 0.05),
+                        new THREE.Vector3(rackW + 0.1, y, rackZ + CELL_D / 2 + 0.05),
+                        new THREE.Vector3(-0.1, y, rackZ + CELL_D / 2 + 0.05),
+                        new THREE.Vector3(-0.1, y, rackZ - CELL_D / 2 - 0.05),
+                    ]);
+                    const shelfLine = new THREE.Line(shelfGeo, new THREE.LineBasicMaterial({ color: 0x777777, transparent: true, opacity: 0.3 }));
+                    shelfLine.name = '__shelf__';
+                    warehouseGroup.add(shelfLine);
+                }
+
+                // Cells (pallets)
+                for (let f = minF; f <= maxF; f++) {
+                    for (let a = minA; a <= maxA; a++) {
+                        const items = (stockLookup[zona] && stockLookup[zona][f] && stockLookup[zona][f][a]) || [];
+                        const totalStock = items.reduce((s, i) => s + (i.existencias || 0), 0);
+                        const color = getStockColor(totalStock);
+                        const isEmpty = totalStock <= 0;
+
+                        // Pallet box
+                        const geoKey = `${CELL_W * 0.88}_${CELL_H * 0.85}_${CELL_D * 0.88}`;
+                        let geo = geoCache.get(geoKey);
+                        if (!geo) {
+                            geo = new THREE.BoxGeometry(CELL_W * 0.88, CELL_H * 0.85, CELL_D * 0.88);
+                            geoCache.set(geoKey, geo);
+                        }
+
+                        const mat = new THREE.MeshStandardMaterial({
+                            color: color,
+                            roughness: 0.5,
+                            metalness: 0.05,
+                            transparent: true,
+                            opacity: isEmpty ? 0.15 : 0.85
+                        });
+
+                        const mesh = new THREE.Mesh(geo, mat);
+                        const posX = (f - minF) * CELL_W + CELL_W / 2;
+                        const posY = (a - minA) * CELL_H + CELL_H / 2;
+                        mesh.position.set(posX, posY, rackZ);
+                        mesh.name = 'cell';
+
+                        warehouseGroup.add(mesh);
+                        cellMeshes.push(mesh);
+                        originalColors.set(mesh.uuid, color);
+
+                        cellDataMap.set(mesh.uuid, {
+                            zona: zona,
+                            fila: f,
+                            altura: a,
+                            items: items,
+                            totalStock: totalStock
+                        });
+
+                        // Wireframe edge per cell
+                        const edgeGeo = new THREE.EdgesGeometry(geo);
+                        const edgeMat = new THREE.LineBasicMaterial({
+                            color: isEmpty ? COLORS.edgeEmpty : COLORS.edge,
+                            transparent: true,
+                            opacity: isEmpty ? 0.15 : 0.4
+                        });
+                        const edge = new THREE.LineSegments(edgeGeo, edgeMat);
+                        edge.position.copy(mesh.position);
+                        edge.name = '__edge__';
+                        warehouseGroup.add(edge);
+                    }
+                }
+
+                // Zone label (sprite)
+                const label = makeLabel(`${t('warehouse.zone')} ${zona}`);
+                label.position.set(rackW / 2, rackH + 1.2, rackZ);
+                label.name = '__label__';
+                warehouseGroup.add(label);
+                labelSprites.push(label);
+
+                // Street/aisle floor between this rack and the next
+                if (zIdx < zonas.length - 1) {
+                    const streetZ = rackZ + RACK_GAP / 2;
+                    const streetW = rackW + 2;
+                    const streetD = RACK_GAP - CELL_D - 0.4;
+                    const streetGeo = new THREE.PlaneGeometry(streetW, streetD);
+                    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                    const streetMat = new THREE.MeshStandardMaterial({
+                        color: isDark ? 0x2a3040 : 0xd0d0d0,
+                        roughness: 0.9,
+                        metalness: 0,
+                        transparent: true,
+                        opacity: 0.6
+                    });
+                    const street = new THREE.Mesh(streetGeo, streetMat);
+                    street.rotation.x = -Math.PI / 2;
+                    street.position.set(rackW / 2, 0.01, streetZ);
+                    street.name = '__street__';
+                    warehouseGroup.add(street);
+
+                    // Dashed center line
+                    const dashCount = Math.floor(streetW / 1.2);
+                    for (let d = 0; d < dashCount; d++) {
+                        const dashGeo = new THREE.PlaneGeometry(0.5, 0.08);
+                        const dashMat = new THREE.MeshBasicMaterial({ color: isDark ? 0x556677 : 0xffffff, transparent: true, opacity: 0.7 });
+                        const dash = new THREE.Mesh(dashGeo, dashMat);
+                        dash.rotation.x = -Math.PI / 2;
+                        dash.position.set(d * 1.2 - streetW / 2 + 0.8, 0.02, streetZ);
+                        dash.name = '__street__';
+                        warehouseGroup.add(dash);
+                    }
+                }
+
+                rackZ += RACK_GAP;
+            });
+
+            scene.add(warehouseGroup);
+            document.getElementById('wh-empty').style.display = 'none';
+
+            calcZonePositions();
+            populateZoneSelect(zonas);
+            document.getElementById('nav-dpad').style.display = 'grid';
+
+            resetCamera();
+        }
+
+        function calcZonePositions() {
+            zonePositions = {};
+            const zonaCells = {};
+            cellDataMap.forEach((data, uuid) => {
+                if (!zonaCells[data.zona]) zonaCells[data.zona] = [];
+                const mesh = cellMeshes.find(m => m.uuid === uuid);
+                if (mesh) zonaCells[data.zona].push(mesh);
+            });
+            Object.keys(zonaCells).forEach(zona => {
+                const meshes = zonaCells[zona];
+                const box = new THREE.Box3();
+                meshes.forEach(m => box.expandByObject(m));
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+                zonePositions[zona] = { x: center.x, y: center.y, z: center.z, sizeX: size.x, sizeY: size.y, sizeZ: size.z };
+            });
+        }
+
+        function populateZoneSelect(zonas) {
+            const sel = document.getElementById('wh-zone-select');
+            sel.innerHTML = `<option value="">${t('warehouse.allZones')}</option>`;
+            zonas.forEach(zona => {
+                const opt = document.createElement('option');
+                opt.value = zona;
+                opt.textContent = `${t('warehouse.zone')} ${zona}`;
+                sel.appendChild(opt);
+            });
+            sel.style.display = zonas.length > 1 ? '' : 'none';
+        }
+
+        function onZoneSelectChange(zona) {
+            if (zona) {
+                flyToZone(zona);
+            } else {
+                activeZone = null;
+                resetCamera();
+            }
+        }
+
+        // ==================== WALK MODE (click+drag to look) ====================
+        function toggleWalkMode() {
+            if (walkMode) exitWalkMode();
+            else enterWalkMode();
+        }
+
+        function enterWalkMode() {
+            if (cellMeshes.length === 0) return;
+            if (walkMode) return;
+            walkMode = true;
+
+            controls.enabled = false;
+
+            // Determine target position: use selected zone or general center
+            const zoneSelect = document.getElementById('wh-zone-select');
+            const selZone = zoneSelect ? zoneSelect.value : '';
+            let targetX, targetZ;
+
+            if (selZone && zonePositions[selZone]) {
+                const zp = zonePositions[selZone];
+                targetX = zp.x;
+                targetZ = zp.z - zp.sizeZ / 2 - 2;
+                activeZone = selZone;
+            } else {
+                const box = new THREE.Box3();
+                cellMeshes.forEach(m => box.expandByObject(m));
+                const center = box.getCenter(new THREE.Vector3());
+                targetX = center.x;
+                targetZ = box.min.z - 2;
+            }
+
+            // UI
+            document.getElementById('btn-walk').classList.add('active');
+            const hint = document.getElementById('walk-hint');
+            hint.textContent = t('warehouse.walkHint');
+            hint.style.display = 'block';
+            document.getElementById('zone-indicator').style.display = 'flex';
+            document.getElementById('wh-tooltip').style.display = 'none';
+            updateZoneIndicator();
+
+            // Remove orbit mouse events
+            renderer.domElement.removeEventListener('mousemove', onMouseMove);
+            renderer.domElement.removeEventListener('click', onMouseClick);
+
+            // Add walk mouse events (click+drag to look around)
+            renderer.domElement.style.cursor = 'grab';
+            renderer.domElement.addEventListener('mousedown', onWalkMouseDown);
+            renderer.domElement.addEventListener('mousemove', onWalkMouseMove);
+            renderer.domElement.addEventListener('mouseup', onWalkMouseUp);
+            renderer.domElement.addEventListener('mouseleave', onWalkMouseUp);
+
+            // Smooth animated transition to walk position
+            const startPos = camera.position.clone();
+            const endPos = new THREE.Vector3(targetX, 1.7, targetZ);
+            const startQuat = camera.quaternion.clone();
+            walkYaw = 0;
+            walkPitch = 0;
+            const endQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'YXZ'));
+            const tStart = performance.now();
+            const tDuration = 600;
+
+            function transitionStep(now) {
+                const elapsed = now - tStart;
+                const p = Math.min(elapsed / tDuration, 1);
+                const ease = 1 - Math.pow(1 - p, 3);
+                camera.position.lerpVectors(startPos, endPos, ease);
+                THREE.Quaternion.slerp(startQuat, endQuat, camera.quaternion, ease);
+                if (p < 1) {
+                    requestAnimationFrame(transitionStep);
+                } else {
+                    updateWalkCamera();
+                }
+            }
+            requestAnimationFrame(transitionStep);
+        }
+
+        function exitWalkMode() {
+            if (!walkMode) return;
+            walkMode = false;
+            walkDragging = false;
+            keysPressed = {};
+
+            // Re-enable OrbitControls
+            controls.enabled = true;
+            const dir = new THREE.Vector3(0, 0, -1);
+            dir.applyQuaternion(camera.quaternion);
+            controls.target.copy(camera.position).add(dir.multiplyScalar(5));
+            controls.update();
+
+            // UI
+            document.getElementById('btn-walk').classList.remove('active');
+            document.getElementById('walk-hint').style.display = 'none';
+            document.getElementById('zone-indicator').style.display = 'none';
+
+            // Remove walk mouse events
+            renderer.domElement.style.cursor = '';
+            renderer.domElement.removeEventListener('mousedown', onWalkMouseDown);
+            renderer.domElement.removeEventListener('mousemove', onWalkMouseMove);
+            renderer.domElement.removeEventListener('mouseup', onWalkMouseUp);
+            renderer.domElement.removeEventListener('mouseleave', onWalkMouseUp);
+
+            // Restore orbit mouse events
+            renderer.domElement.addEventListener('mousemove', onMouseMove);
+            renderer.domElement.addEventListener('click', onMouseClick);
+        }
+
+        function onWalkMouseDown(e) {
+            if (!walkMode || e.button !== 0) return;
+            walkDragging = true;
+            walkDragPrev = { x: e.clientX, y: e.clientY };
+            renderer.domElement.style.cursor = 'grabbing';
+        }
+
+        function onWalkMouseMove(e) {
+            if (!walkMode || !walkDragging) return;
+            const dx = e.clientX - walkDragPrev.x;
+            const dy = e.clientY - walkDragPrev.y;
+            walkDragPrev = { x: e.clientX, y: e.clientY };
+            const sensitivity = 0.003;
+            walkYaw -= dx * sensitivity;
+            walkPitch -= dy * sensitivity;
+            walkPitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, walkPitch));
+            updateWalkCamera();
+        }
+
+        function onWalkMouseUp() {
+            if (!walkMode) return;
+            walkDragging = false;
+            renderer.domElement.style.cursor = 'grab';
+        }
+
+        function updateWalkCamera() {
+            const euler = new THREE.Euler(walkPitch, walkYaw, 0, 'YXZ');
+            camera.quaternion.setFromEuler(euler);
+        }
+
+        function updateWalk() {
+            const forward = new THREE.Vector3(0, 0, -1);
+            forward.applyQuaternion(camera.quaternion);
+            forward.y = 0;
+            forward.normalize();
+
+            const right = new THREE.Vector3(1, 0, 0);
+            right.applyQuaternion(camera.quaternion);
+            right.y = 0;
+            right.normalize();
+
+            const move = new THREE.Vector3(0, 0, 0);
+            if (keysPressed['w'] || keysPressed['arrowup']) move.add(forward);
+            if (keysPressed['s'] || keysPressed['arrowdown']) move.sub(forward);
+            if (keysPressed['d'] || keysPressed['arrowright']) move.add(right);
+            if (keysPressed['a'] || keysPressed['arrowleft']) move.sub(right);
+
+            if (move.lengthSq() > 0) {
+                move.normalize().multiplyScalar(WALK_SPEED);
+                camera.position.add(move);
+                updateZoneIndicator();
+            }
+            camera.position.y = 1.7;
+        }
+
+        function updateZoneIndicator() {
+            const text = document.getElementById('zone-indicator-text');
+            if (!text) return;
+            let closest = null, closestDist = Infinity;
+            const cx = camera.position.x, cz = camera.position.z;
+            Object.keys(zonePositions).forEach(zona => {
+                const zp = zonePositions[zona];
+                const dx = cx - zp.x, dz = cz - zp.z;
+                const d = dx * dx + dz * dz;
+                if (d < closestDist) { closestDist = d; closest = zona; }
+            });
+            if (closest) {
+                text.textContent = `${t('warehouse.zone')} ${closest}`;
+                activeZone = closest;
+            }
+        }
+
+        // ==================== DOUBLE-CLICK ZOOM ====================
+        function onMouseDblClick(e) {
+            if (walkMode) return;
+            const rect = renderer.domElement.getBoundingClientRect();
+            const mouse = new THREE.Vector2(
+                ((e.clientX - rect.left) / rect.width) * 2 - 1,
+                -((e.clientY - rect.top) / rect.height) * 2 + 1
+            );
+            raycaster.setFromCamera(mouse, camera);
+            const hits = raycaster.intersectObjects(cellMeshes);
+            if (hits.length > 0) {
+                const target = hits[0].object.position.clone();
+                const dist = 5;
+                const targetPos = new THREE.Vector3(target.x + dist * 0.3, target.y + dist * 0.5, target.z + dist * 0.4);
+
+                if (flyAnimation) cancelAnimationFrame(flyAnimation);
+                const startPos = camera.position.clone();
+                const startTarget = controls.target.clone();
+                const startTime = performance.now();
+
+                function animateZoom(now) {
+                    const elapsed = now - startTime;
+                    const progress = Math.min(elapsed / FLY_DURATION, 1);
+                    const t = 1 - Math.pow(1 - progress, 3);
+                    camera.position.lerpVectors(startPos, targetPos, t);
+                    controls.target.lerpVectors(startTarget, target, t);
+                    controls.update();
+                    if (progress < 1) {
+                        flyAnimation = requestAnimationFrame(animateZoom);
+                    } else {
+                        flyAnimation = null;
+                    }
+                }
+                flyAnimation = requestAnimationFrame(animateZoom);
+            }
+        }
+
+        // ==================== D-PAD NAVIGATION ====================
+        function navStart(dir) {
+            navMove(dir);
+            navInterval = setInterval(() => navMove(dir), 80);
+        }
+
+        function navStop() {
+            if (navInterval) { clearInterval(navInterval); navInterval = null; }
+        }
+
+        function navMove(dir) {
+            if (walkMode) {
+                const forward = new THREE.Vector3(0, 0, -1);
+                forward.applyQuaternion(camera.quaternion);
+                forward.y = 0;
+                forward.normalize();
+                const right = new THREE.Vector3(1, 0, 0);
+                right.applyQuaternion(camera.quaternion);
+                right.y = 0;
+                right.normalize();
+
+                const move = new THREE.Vector3();
+                if (dir === 'up') move.add(forward);
+                else if (dir === 'down') move.sub(forward);
+                else if (dir === 'right') move.add(right);
+                else if (dir === 'left') move.sub(right);
+
+                move.normalize().multiplyScalar(WALK_SPEED);
+                camera.position.add(move);
+                camera.position.y = 1.7;
+                updateZoneIndicator();
+            } else {
+                const step = NAV_STEP;
+                if (dir === 'up') controls.target.z -= step;
+                else if (dir === 'down') controls.target.z += step;
+                else if (dir === 'left') controls.target.x -= step;
+                else if (dir === 'right') controls.target.x += step;
+
+                if (dir === 'up') camera.position.z -= step;
+                else if (dir === 'down') camera.position.z += step;
+                else if (dir === 'left') camera.position.x -= step;
+                else if (dir === 'right') camera.position.x += step;
+
+                controls.update();
+            }
+        }
+
+        // ==================== FLY TO ZONE ====================
+        function flyToZone(zona) {
+            const pos = zonePositions[zona];
+            if (!pos) return;
+
+            if (walkMode) exitWalkMode();
+
+            activeZone = zona;
+            const sel = document.getElementById('wh-zone-select');
+            if (sel) sel.value = zona;
+
+            const maxDim = Math.max(pos.sizeX, pos.sizeZ);
+            const dist = Math.max(maxDim * 0.6, 4);
+            const targetPos = new THREE.Vector3(pos.x - dist * 0.3, pos.y + dist * 0.5, pos.z + dist * 0.6);
+            const targetLook = new THREE.Vector3(pos.x, pos.y * 0.5, pos.z);
+
+            if (flyAnimation) cancelAnimationFrame(flyAnimation);
+
+            const startPos = camera.position.clone();
+            const startTarget = controls.target.clone();
+            const startTime = performance.now();
+
+            function animateFly(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / FLY_DURATION, 1);
+                const t = 1 - Math.pow(1 - progress, 3);
+                camera.position.lerpVectors(startPos, targetPos, t);
+                controls.target.lerpVectors(startTarget, targetLook, t);
+                controls.update();
+                if (progress < 1) {
+                    flyAnimation = requestAnimationFrame(animateFly);
+                } else {
+                    flyAnimation = null;
+                }
+            }
+            flyAnimation = requestAnimationFrame(animateFly);
+        }
+
+        // ==================== LABEL SPRITE ====================
+        function makeLabel(text) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, 512, 64);
+            ctx.font = 'bold 40px Inter, Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+            ctx.lineWidth = 4;
+            ctx.strokeText(text, 256, 32);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(text, 256, 32);
+
+            const tex = new THREE.CanvasTexture(canvas);
+            const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+            const sprite = new THREE.Sprite(mat);
+            sprite.scale.set(6, 0.75, 1);
+            return sprite;
+        }
+
+        function toggleLabels() {
+            showLabels = !showLabels;
+            labelSprites.forEach(s => s.visible = showLabels);
+            document.getElementById('btn-labels').classList.toggle('active', showLabels);
+        }
+
+        // ==================== CAMERA ====================
+        function resetCamera() {
+            if (cellMeshes.length === 0) return;
+            if (walkMode) exitWalkMode();
+
+            activeZone = null;
+            const sel = document.getElementById('wh-zone-select');
+            if (sel) sel.value = '';
+
+            const box = new THREE.Box3();
+            cellMeshes.forEach(m => box.expandByObject(m));
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const dist = maxDim * 1.8;
+
+            camera.position.set(center.x + dist * 0.6, center.y + dist * 0.8, center.z + dist * 0.6);
+            controls.target.copy(center);
+            controls.update();
+        }
+
+        // ==================== RAYCASTING ====================
+        function onMouseMove(event) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(cellMeshes);
+            const tooltip = document.getElementById('wh-tooltip');
+
+            // Reset previous hover
+            if (hoveredMesh && hoveredMesh !== selectedMesh) {
+                const origColor = originalColors.get(hoveredMesh.uuid);
+                if (origColor !== undefined) hoveredMesh.material.color.set(origColor);
+                if (hoveredMesh.material.emissive) hoveredMesh.material.emissive.set(0x000000);
+            }
+
+            if (intersects.length > 0) {
+                hoveredMesh = intersects[0].object;
+                const data = cellDataMap.get(hoveredMesh.uuid);
+                if (data && hoveredMesh !== selectedMesh) {
+                    if (hoveredMesh.material.emissive) hoveredMesh.material.emissive.set(0x222222);
+                }
+                if (data) {
+                    const item = data.items[0];
+                    let html = `<div class="tt-code">${t('warehouse.zone')} ${data.zona} &mdash; ${t('warehouse.row')} ${data.fila}, ${t('warehouse.height')} ${data.altura}</div>`;
+                    if (item) {
+                        html += `<div class="tt-desc">${item.codigo} - ${item.descripcion}</div>`;
+                        if (data.items.length > 1) html += `<div class="tt-desc" style="opacity:.7">+${data.items.length - 1} ${t('warehouse.moreArticles')}</div>`;
+                    }
+                    html += `<div class="tt-stock">${t('warehouse.stock')}: ${data.totalStock}</div>`;
+                    tooltip.innerHTML = html;
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (event.clientX + 15) + 'px';
+                    tooltip.style.top = (event.clientY + 15) + 'px';
+                }
+                renderer.domElement.style.cursor = 'pointer';
+            } else {
+                hoveredMesh = null;
+                tooltip.style.display = 'none';
+                renderer.domElement.style.cursor = 'default';
+            }
+        }
+
+        function onMouseClick(event) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(cellMeshes);
+
+            clearSelection();
+
+            if (intersects.length > 0) {
+                selectedMesh = intersects[0].object;
+                selectedMesh.material.color.set(COLORS.selected);
+                if (selectedMesh.material.emissive) selectedMesh.material.emissive.set(0x111111);
+                const data = cellDataMap.get(selectedMesh.uuid);
+                if (data) showInfoPanel(data);
+            } else {
+                closeInfoPanel();
+            }
+        }
+
+        function clearSelection() {
+            if (selectedMesh) {
+                const origColor = originalColors.get(selectedMesh.uuid);
+                if (origColor !== undefined) selectedMesh.material.color.set(origColor);
+                if (selectedMesh.material.emissive) selectedMesh.material.emissive.set(0x000000);
+                selectedMesh = null;
+            }
+        }
+
+        // ==================== TOUCH SUPPORT (mobile) ====================
+        function onTouchStart(e) {
+            if (e.touches.length !== 1) return;
+            const t = e.touches[0];
+            touchStartTime = Date.now();
+            touchStartPos = { x: t.clientX, y: t.clientY };
+
+            if (walkMode) {
+                e.preventDefault();
+                touchPrev = { x: t.clientX, y: t.clientY };
+            } else {
+                touchPrev = null; // let OrbitControls handle rotation/pan
+            }
+        }
+
+        function onTouchMove(e) {
+            if (e.touches.length !== 1) return;
+            const t = e.touches[0];
+
+            if (walkMode && touchPrev) {
+                e.preventDefault();
+                const dx = t.clientX - touchPrev.x;
+                const dy = t.clientY - touchPrev.y;
+                touchPrev = { x: t.clientX, y: t.clientY };
+                const sensitivity = 0.004;
+                walkYaw -= dx * sensitivity;
+                walkPitch -= dy * sensitivity;
+                walkPitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, walkPitch));
+                updateWalkCamera();
+            }
+            // When not in walkMode, do nothing — OrbitControls handles it
+        }
+
+        function onTouchEnd(e) {
+            const elapsed = Date.now() - touchStartTime;
+            const dist = Math.hypot(
+                (e.changedTouches[0]?.clientX || 0) - touchStartPos.x,
+                (e.changedTouches[0]?.clientY || 0) - touchStartPos.y
+            );
+            touchPrev = null;
+
+            // Short tap with little movement = tap (select cell)
+            if (elapsed < 300 && dist < 15 && !walkMode) {
+                const touch = e.changedTouches[0];
+                if (!touch) return;
+                const rect = renderer.domElement.getBoundingClientRect();
+                mouse.x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(cellMeshes);
+                clearSelection();
+                if (intersects.length > 0) {
+                    selectedMesh = intersects[0].object;
+                    selectedMesh.material.color.set(COLORS.selected);
+                    if (selectedMesh.material.emissive) selectedMesh.material.emissive.set(0x111111);
+                    const data = cellDataMap.get(selectedMesh.uuid);
+                    if (data) showInfoPanel(data);
+                } else {
+                    closeInfoPanel();
+                }
+            }
+        }
+
+        // ==================== INFO PANEL ====================
+        function showInfoPanel(data) {
+            const panel = document.getElementById('info-panel');
+            const content = document.getElementById('info-panel-content');
+
+            let html = `
+                <div class="wh-info-row"><span class="label">${t('warehouse.zone')}</span><span class="value">${data.zona}</span></div>
+                <div class="wh-info-row"><span class="label">${t('warehouse.row')}</span><span class="value">${data.fila}</span></div>
+                <div class="wh-info-row"><span class="label">${t('warehouse.height')}</span><span class="value">${data.altura}</span></div>
+                <div class="wh-info-row"><span class="label">${t('warehouse.stock')}</span><span class="value"><span class="wh-info-stock-badge ${getStockBadgeClass(data.totalStock)}">${data.totalStock}</span></span></div>
+            `;
+
+            if (data.items.length > 0) {
+                data.items.forEach((item, i) => {
+                    if (i > 0) html += '<hr style="border:none;border-top:1px dashed var(--border);margin:8px 0;">';
+                    html += `
+                        <div class="wh-info-row"><span class="label">${t('warehouse.code')}</span><span class="value">${item.codigo || ''}</span></div>
+                        <div class="wh-info-row"><span class="label">${t('warehouse.description')}</span><span class="value">${item.descripcion || ''}</span></div>
+                        ${item.formato ? `<div class="wh-info-row"><span class="label">${t('warehouse.format')}</span><span class="value">${item.formato}</span></div>` : ''}
+                        ${item.serie ? `<div class="wh-info-row"><span class="label">${t('warehouse.series')}</span><span class="value">${item.serie}</span></div>` : ''}
+                        ${item.calidad ? `<div class="wh-info-row"><span class="label">${t('warehouse.quality')}</span><span class="value">${item.calidad}</span></div>` : ''}
+                        ${item.tonochar ? `<div class="wh-info-row"><span class="label">${t('warehouse.tone')}</span><span class="value">${item.tonochar}</span></div>` : ''}
+                        ${item.calibre ? `<div class="wh-info-row"><span class="label">${t('warehouse.caliber')}</span><span class="value">${item.calibre}</span></div>` : ''}
+                        ${item.pallet ? `<div class="wh-info-row"><span class="label">${t('warehouse.pallet')}</span><span class="value">${item.pallet}</span></div>` : ''}
+                        ${item.ubicacion ? `<div class="wh-info-row"><span class="label">${t('warehouse.location')}</span><span class="value">${item.ubicacion}</span></div>` : ''}
+                        ${item.sector ? `<div class="wh-info-row"><span class="label">${t('warehouse.sector')}</span><span class="value">${item.sector}</span></div>` : ''}
+                        <div class="wh-info-row"><span class="label">${t('warehouse.stock')}</span><span class="value"><span class="wh-info-stock-badge ${getStockBadgeClass(item.existencias)}">${item.existencias}</span></span></div>
+                    `;
+                });
+            } else {
+                html += `<div style="text-align:center;color:var(--text-secondary);padding:16px 0;font-size:0.85rem;">${t('warehouse.empty')}</div>`;
+            }
+
+            content.innerHTML = html;
+            panel.classList.add('open');
+            setTimeout(onResize, 50);
+        }
+
+        function closeInfoPanel() {
+            document.getElementById('info-panel').classList.remove('open');
+            clearSelection();
+            setTimeout(onResize, 50);
+        }
+
+        // ==================== HELPERS ====================
+        function disposeGroup(group) {
+            group.traverse(obj => {
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) {
+                    if (obj.material.map) obj.material.map.dispose();
+                    obj.material.dispose();
+                }
+            });
+        }
+
+        function t(key) {
+            return typeof I18n !== 'undefined' && I18n.t ? I18n.t(key) : key;
+        }
+    </script>
+</body>
+</html>

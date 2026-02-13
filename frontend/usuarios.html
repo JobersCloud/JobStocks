@@ -254,6 +254,24 @@
                             </span>
                             <span class="sidebar-item-text" data-i18n="menu.audit">Auditoría</span>
                         </a>
+                        <a class="sidebar-item" data-page="vista-almacen.html" data-tooltip="Vista Almacén" onclick="SidebarNav.navigateTo('vista-almacen.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.warehouseView">Vista Almacén</span>
+                        </a>
+                        <a class="sidebar-item" data-page="informe-almacen.html" data-tooltip="Informe Almacén" onclick="SidebarNav.navigateTo('informe-almacen.html')">
+                            <span class="sidebar-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-item-text" data-i18n="menu.warehouseReport">Informe Almacén</span>
+                        </a>
                     </div>
                 </div>
 
@@ -521,7 +539,7 @@
                         case 'full_name': return item.full_name || '-';
                         case 'email': return `<div class="email-cell">${item.email || '-'}${item.email ? (item.email_verificado ? '<span class="email-verified" title="Email verificado">✓</span>' : '<span class="email-not-verified" title="Email no verificado">✗</span>') : ''}</div>`;
                         case 'company_name': return item.company_name || '-';
-                        case 'pais': return item.pais || '-';
+                        case 'pais': return getPaisNombre(item.pais);
                         case 'rol': return getRoleBadge(item.rol);
                         case 'active': return getStatusBadge(item.active);
                         case '_actions': return `<div class="user-actions">${getActionButtons(item)}</div>`;
@@ -542,7 +560,7 @@
                                 <div class="user-card-info-item"><label>Email:</label> ${item.email || '-'}</div>
                                 <div class="user-card-info-item"><label>${t('users.companyName')}:</label> ${item.company_name || '-'}</div>
                                 <div class="user-card-info-item"><label>${t('users.role')}:</label> ${getRoleBadge(item.rol)}</div>
-                                <div class="user-card-info-item"><label>${t('users.country')}:</label> ${item.pais || '-'}</div>
+                                <div class="user-card-info-item"><label>${t('users.country')}:</label> ${getPaisNombre(item.pais)}</div>
                             </div>
                             <div class="user-card-actions">${getActionButtons(item)}</div>
                         </div>`;
@@ -585,9 +603,15 @@
                 if (response.ok) {
                     paises = await response.json();
                     const select = document.getElementById('user-pais');
-                    select.innerHTML = '<option value="">Seleccionar...</option>' + paises.map(p => `<option value="${p.nombre}">${p.nombre}</option>`).join('');
+                    select.innerHTML = '<option value="">Seleccionar...</option>' + paises.map(p => `<option value="${p.alfa2}">${p.nombre}</option>`).join('');
                 }
             } catch (e) { console.error('Error loading countries:', e); }
+        }
+
+        function getPaisNombre(codigo) {
+            if (!codigo) return '-';
+            const p = paises.find(p => p.alfa2 === codigo);
+            return p ? p.nombre : codigo;
         }
 
         // ==================== BADGES Y BOTONES ====================

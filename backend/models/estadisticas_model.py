@@ -65,6 +65,27 @@ class EstadisticasModel:
         """, (empresa_id,))
         total_items_solicitados = cursor.fetchone()[0]
 
+        # Totales almacen desglosados por unidad (M2 y Piezas)
+        # Probar columna 'unidad' y fallback a 'tipo_unidad'
+        almacen_m2 = 0
+        almacen_piezas = 0
+        for col_name in ('unidad', 'tipo_unidad'):
+            try:
+                cursor.execute(f"""
+                    SELECT
+                        ISNULL(SUM(CASE WHEN {col_name} = 1 THEN existencias ELSE 0 END), 0),
+                        ISNULL(SUM(CASE WHEN {col_name} = 0 THEN existencias ELSE 0 END), 0)
+                    FROM view_externos_almlinubica
+                    WHERE empresa = ?
+                """, (empresa_id,))
+                row_alm = cursor.fetchone()
+                if row_alm:
+                    almacen_m2 = float(row_alm[0]) if row_alm[0] else 0
+                    almacen_piezas = float(row_alm[1]) if row_alm[1] else 0
+                break
+            except Exception:
+                continue
+
         conn.close()
 
         return {
@@ -72,7 +93,9 @@ class EstadisticasModel:
             'propuestas_pendientes': propuestas_pendientes,
             'usuarios_activos': usuarios_activos,
             'consultas_pendientes': consultas_pendientes,
-            'total_items_solicitados': float(total_items_solicitados) if total_items_solicitados else 0
+            'total_items_solicitados': float(total_items_solicitados) if total_items_solicitados else 0,
+            'almacen_m2': almacen_m2,
+            'almacen_piezas': almacen_piezas
         }
 
     @staticmethod
@@ -282,34 +305,62 @@ class EstadisticasModel:
         conn = Database.get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("""
-            SELECT TOP (?)
-                a.recurso_id as codigo,
-                COUNT(*) as vistas,
-                COUNT(DISTINCT a.user_id) as usuarios_unicos,
-                MAX(a.fecha) as ultima_vista,
-                s.descripcion
-            FROM audit_log a
-            LEFT JOIN view_externos_stock s ON s.codigo = a.recurso_id AND s.empresa = ?
-            WHERE a.accion = 'ARTICLE_VIEW'
-                AND a.empresa_id = ?
-                AND a.fecha >= DATEADD(DAY, ?, GETDATE())
-            GROUP BY a.recurso_id, s.descripcion
-            ORDER BY vistas DESC
-        """, (limit, empresa_id, empresa_id, -dias))
+        try:
+            # Query solo de audit_log (sin dependencia de vistas externas)
+            cursor.execute("""
+                SELECT TOP (?)
+                    a.recurso_id as codigo,
+                    COUNT(*) as vistas,
+                    COUNT(DISTINCT a.user_id) as usuarios_unicos,
+                    MAX(a.fecha) as ultima_vista
+                FROM audit_log a
+                WHERE a.accion = 'ARTICLE_VIEW'
+                    AND a.empresa_id = ?
+                    AND a.fecha >= DATEADD(DAY, ?, GETDATE())
+                GROUP BY a.recurso_id
+                ORDER BY vistas DESC
+            """, (limit, empresa_id, -dias))
 
-        articulos = []
-        for row in cursor.fetchall():
-            articulos.append({
-                'codigo': row[0],
-                'vistas': row[1],
-                'usuarios_unicos': row[2],
-                'ultima_vista': row[3].isoformat() if row[3] else None,
-                'descripcion': row[4] or row[0]
-            })
+            articulos = []
+            for row in cursor.fetchall():
+                codigo = row[0].strip() if row[0] else row[0]
+                articulos.append({
+                    'codigo': codigo,
+                    'vistas': row[1],
+                    'usuarios_unicos': row[2],
+                    'ultima_vista': row[3].isoformat() if row[3] else None,
+                    'descripcion': codigo
+                })
 
-        conn.close()
-        return articulos
+            # Intentar obtener descripciones y formato de view_externos_stock
+            if articulos:
+                try:
+                    codigos = [a['codigo'] for a in articulos]
+                    placeholders = ','.join(['?' for _ in codigos])
+                    cursor.execute(f"""
+                        SELECT codigo, descripcion, formato FROM view_externos_stock
+                        WHERE codigo IN ({placeholders}) AND empresa = ?
+                    """, codigos + [empresa_id])
+                    desc_map = {}
+                    for row in cursor.fetchall():
+                        key = row[0].strip() if row[0] else row[0]
+                        if key not in desc_map:
+                            desc = row[1].strip() if row[1] else key
+                            fmt = row[2].strip() if row[2] else ''
+                            desc_map[key] = {'descripcion': desc, 'formato': fmt}
+                    for a in articulos:
+                        if a['codigo'] in desc_map:
+                            a['descripcion'] = desc_map[a['codigo']]['descripcion']
+                            a['formato'] = desc_map[a['codigo']]['formato']
+                except Exception:
+                    pass  # Si la vista no existe, usamos el codigo como descripcion
+
+            return articulos
+        except Exception as e:
+            print(f"Error en get_articulos_mas_vistos: {e}")
+            return []
+        finally:
+            conn.close()
 
     @staticmethod
     def get_consultas_por_estado(empresa_id='1'):
