@@ -106,7 +106,9 @@
             try {
                 const coords = await this._geocode(address);
                 if (coords) {
-                    this.map.setView(coords, this.defaultZoom);
+                    const zoom = this._fallbackZoom || this.defaultZoom;
+                    this._fallbackZoom = null;
+                    this.map.setView(coords, zoom);
                     if (this.marker) this.map.removeLayer(this.marker);
                     this.marker = L.marker(coords).addTo(this.map);
                     this.marker.bindPopup(`<strong>${title || ''}</strong><br>${address}`).openPopup();
@@ -140,16 +142,29 @@
         async _geocode(address) {
             if (!address || !address.trim()) return null;
 
-            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
-            const response = await fetch(url, {
-                headers: { 'Accept-Language': 'es' }
-            });
+            // Construir variantes: dirección completa, luego ir quitando la primera parte
+            const parts = address.split(',').map(p => p.trim()).filter(Boolean);
+            const attempts = [];
+            for (let i = 0; i < parts.length; i++) {
+                attempts.push(parts.slice(i).join(', '));
+            }
 
-            if (!response.ok) return null;
-            const results = await response.json();
+            for (const query of attempts) {
+                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+                const response = await fetch(url, {
+                    headers: { 'Accept-Language': 'es' }
+                });
 
-            if (results.length > 0) {
-                return [parseFloat(results[0].lat), parseFloat(results[0].lon)];
+                if (!response.ok) continue;
+                const results = await response.json();
+
+                if (results.length > 0) {
+                    // Ajustar zoom: menos preciso si usamos menos partes
+                    const idx = attempts.indexOf(query);
+                    if (idx > 0) this._fallbackZoom = Math.max(6, this.defaultZoom - (idx * 3));
+                    else this._fallbackZoom = null;
+                    return [parseFloat(results[0].lat), parseFloat(results[0].lon)];
+                }
             }
             return null;
         }
