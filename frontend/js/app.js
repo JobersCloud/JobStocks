@@ -1002,7 +1002,7 @@ async function cargarThumbnailsBatch(codigos) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ codigos: codigos })
+            body: JSON.stringify({ codigos: codigos, quality: gridConImagenes ? 'grid' : 'thumb' })
         });
 
         if (response.ok) {

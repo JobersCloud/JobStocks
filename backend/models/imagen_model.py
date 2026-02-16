@@ -17,9 +17,30 @@
 # ============================================
 from config.database import Database
 import base64
+import io
+from PIL import Image
 
 
 class ImagenModel:
+    @staticmethod
+    def _resize_image(image_data, max_width=400):
+        """Redimensiona una imagen manteniendo proporciones.
+        Devuelve bytes JPEG calidad 85. Si ya es menor que max_width, la devuelve tal cual."""
+        try:
+            img = Image.open(io.BytesIO(image_data))
+            if img.width <= max_width:
+                return image_data
+            ratio = max_width / img.width
+            new_height = int(img.height * ratio)
+            img = img.resize((max_width, new_height), Image.LANCZOS)
+            if img.mode in ('RGBA', 'P'):
+                img = img.convert('RGB')
+            buffer = io.BytesIO()
+            img.save(buffer, format='JPEG', quality=85)
+            return buffer.getvalue()
+        except Exception:
+            return image_data
+
     @staticmethod
     def get_by_codigo(codigo):
         """Obtiene todas las imágenes de un artículo por código"""
@@ -78,9 +99,10 @@ class ImagenModel:
         return imagen
 
     @staticmethod
-    def get_primera_imagen(codigo):
+    def get_primera_imagen(codigo, quality='thumb'):
         """Obtiene el thumbnail de la primera imagen (para grid de tarjetas)
-        Usa el campo thumbnail si existe, sino usa la imagen original"""
+        quality='thumb': usa thumbnail si existe (pequeño, rápido)
+        quality='grid': usa imagen original redimensionada a 400px (nítido para grid)"""
         imagen = None
 
         try:
@@ -96,8 +118,10 @@ class ImagenModel:
 
             row = cursor.fetchone()
             if row:
-                # Preferir thumbnail si existe, sino usar imagen completa
-                img_data = row[2] if row[2] else row[3]
+                if quality == 'grid' and row[3]:
+                    img_data = ImagenModel._resize_image(row[3])
+                else:
+                    img_data = row[2] if row[2] else row[3]
                 if img_data:
                     imagen = {
                         'id': row[0],
@@ -121,10 +145,13 @@ class ImagenModel:
 
                 row = cursor.fetchone()
                 if row and row[2]:
+                    img_data = row[2]
+                    if quality == 'grid':
+                        img_data = ImagenModel._resize_image(img_data)
                     imagen = {
                         'id': row[0],
                         'codigo': row[1],
-                        'imagen': base64.b64encode(row[2]).decode('utf-8')
+                        'imagen': base64.b64encode(img_data).decode('utf-8')
                     }
                 cursor.close()
                 conn.close()
@@ -151,8 +178,10 @@ class ImagenModel:
         return tiene
 
     @staticmethod
-    def get_thumbnails_batch(codigos):
+    def get_thumbnails_batch(codigos, quality='thumb'):
         """Obtiene thumbnails de múltiples artículos en una sola consulta (batch loading)
+        quality='thumb': usa thumbnail si existe (pequeño, rápido)
+        quality='grid': usa imagen original redimensionada a 400px (nítido para grid)
         Retorna un diccionario {codigo: imagen_base64}"""
         if not codigos:
             return {}
@@ -182,7 +211,10 @@ class ImagenModel:
 
             for row in cursor.fetchall():
                 codigo = row[0].strip() if row[0] else row[0]
-                img_data = row[1] if row[1] else row[2]
+                if quality == 'grid' and row[2]:
+                    img_data = ImagenModel._resize_image(row[2])
+                else:
+                    img_data = row[1] if row[1] else row[2]
                 if img_data:
                     thumbnails[codigo] = base64.b64encode(img_data).decode('utf-8')
 
@@ -209,7 +241,10 @@ class ImagenModel:
                 for row in cursor.fetchall():
                     codigo = row[0].strip() if row[0] else row[0]
                     if row[1]:
-                        thumbnails[codigo] = base64.b64encode(row[1]).decode('utf-8')
+                        img_data = row[1]
+                        if quality == 'grid':
+                            img_data = ImagenModel._resize_image(img_data)
+                        thumbnails[codigo] = base64.b64encode(img_data).decode('utf-8')
 
                 cursor.close()
                 conn.close()

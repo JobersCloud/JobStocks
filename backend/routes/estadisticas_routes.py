@@ -142,8 +142,13 @@ def get_propuestas_por_dia():
     """
     empresa_id = get_empresa_id()
     dias = request.args.get('dias', 30, type=int)
-    propuestas = EstadisticasModel.get_propuestas_por_periodo(empresa_id, dias)
-    return jsonify(propuestas)
+    try:
+        propuestas = EstadisticasModel.get_propuestas_por_periodo(empresa_id, dias)
+        print(f"[DEBUG] propuestas-por-dia empresa={empresa_id} dias={dias} -> {len(propuestas)} resultados", flush=True)
+        return jsonify(propuestas)
+    except Exception as e:
+        print(f"[ERROR] propuestas-por-dia empresa={empresa_id} dias={dias}: {e}", flush=True)
+        return jsonify({'error': str(e)}), 500
 
 
 @estadisticas_bp.route('/api/estadisticas/propuestas-por-estado', methods=['GET'])

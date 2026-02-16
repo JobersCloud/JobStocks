@@ -456,7 +456,11 @@ def get_thumbnails_batch():
         if len(codigos) > 50:
             codigos = codigos[:50]
 
-        thumbnails = ImagenModel.get_thumbnails_batch(codigos)
+        quality = data.get('quality', 'thumb')
+        if quality not in ('thumb', 'grid'):
+            quality = 'thumb'
+
+        thumbnails = ImagenModel.get_thumbnails_batch(codigos, quality)
         return jsonify(thumbnails), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500

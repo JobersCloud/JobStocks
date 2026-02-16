@@ -340,6 +340,11 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.29.8', date: '2026-02-16', title: 'Imagenes nitidas en grid con Pillow', items: [
+                {type: 'improve', text: 'Grid con imagenes: thumbnails redimensionados a 400px con Pillow (antes pixelados a 60px)'},
+                {type: 'new', text: 'Nuevo parametro quality (thumb/grid) en endpoint /api/stocks/thumbnails'},
+                {type: 'improve', text: 'Tabla sin imagenes sigue usando thumbnails pequenos (rapido)'}
+            ]},
             { version: 'v1.29.7', date: '2026-02-13', title: 'Fix M2/Piezas en informe almacen', items: [
                 {type: 'fix', text: 'Fix desglose M2/Piezas mostraba 0: fallback a columna tipo_unidad'},
                 {type: 'improve', text: 'Script SQL actualizado: tipo_unidad renombrado a unidad en vista'}

@@ -588,12 +588,17 @@
                     fetchAPI('/api/estadisticas/propuestas-por-mes?meses=12'),
                     fetchAPI(`/api/estadisticas/articulos-mas-vistos?limit=10&dias=${currentViewedPeriod}`)
                 ]);
-                const val = (i) => results[i].status === 'fulfilled' ? results[i].value : null;
+                const val = (i) => {
+                    if (results[i].status === 'fulfilled') return results[i].value;
+                    console.error(`Dashboard API[${i}] error:`, results[i].reason);
+                    return null;
+                };
                 const resumen = val(0);
                 if (!resumen) throw new Error('No se pudo cargar el resumen');
                 loadingEl.style.display = 'none';
                 contentEl.style.display = 'flex';
                 updateStatCards(resumen);
+                console.log('Propuestas por dia data:', JSON.stringify(val(2)));
                 if (val(2)) renderProposalsByDayChart(val(2));
                 if (val(3)) renderProposalsByStatusChart(val(3));
                 if (val(1)) renderTopProducts(val(1));
@@ -622,9 +627,24 @@
             document.getElementById('stat-almacen-piezas').textContent = formatNumber(resumen.almacen_piezas || 0);
         }
 
+        function fillMissingDays(data, dias) {
+            const dataMap = {};
+            data.forEach(d => { if (d.fecha) dataMap[d.fecha] = d.cantidad; });
+            const filled = [];
+            const today = new Date();
+            for (let i = dias - 1; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(d.getDate() - i);
+                const key = d.toISOString().split('T')[0];
+                filled.push({ fecha: key, cantidad: dataMap[key] || 0 });
+            }
+            return filled;
+        }
+
         function renderProposalsByDayChart(data) {
             const ctx = document.getElementById('proposalsByDayChart').getContext('2d');
             if (proposalsByDayChart) proposalsByDayChart.destroy();
+            const filled = fillMissingDays(data, currentPeriod);
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             const textColor = isDark ? '#e0e0e0' : '#666';
             const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
@@ -632,10 +652,10 @@
             proposalsByDayChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: data.map(d => formatDateShort(d.fecha)),
-                    datasets: [{ label: t('dashboard.proposals'), data: data.map(d => d.cantidad), borderColor: primaryColor, backgroundColor: primaryColor + '1A', fill: true, tension: 0.4 }]
+                    labels: filled.map(d => formatDateShort(d.fecha)),
+                    datasets: [{ label: t('dashboard.proposals'), data: filled.map(d => d.cantidad), borderColor: primaryColor, backgroundColor: primaryColor + '33', fill: true, tension: 0.3, pointRadius: 4, pointHoverRadius: 6 }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: textColor }, grid: { color: gridColor } }, x: { ticks: { color: textColor }, grid: { color: gridColor } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: textColor, stepSize: 1 }, grid: { color: gridColor } }, x: { ticks: { color: textColor, maxRotation: 45 }, grid: { color: gridColor } } } }
             });
         }
 
@@ -768,8 +788,11 @@
             currentPeriod = dias;
             try {
                 const data = await fetchAPI(`/api/estadisticas/propuestas-por-dia?dias=${dias}`);
+                console.log(`Propuestas por dia (${dias}d):`, data);
                 renderProposalsByDayChart(data);
-            } catch (error) {}
+            } catch (error) {
+                console.error(`Error propuestas-por-dia (${dias}d):`, error);
+            }
         }
 
         function formatNumber(num) {

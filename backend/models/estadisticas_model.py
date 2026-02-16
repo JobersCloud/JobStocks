@@ -155,18 +155,16 @@ class EstadisticasModel:
         conn = Database.get_connection()
         cursor = conn.cursor()
 
-        fecha_inicio = datetime.now() - timedelta(days=dias)
-
         cursor.execute("""
             SELECT
                 CAST(fecha AS DATE) as dia,
                 COUNT(*) as cantidad,
-                SUM(total_items) as total_items
+                ISNULL(SUM(total_items), 0) as total_items
             FROM propuestas
-            WHERE empresa_id = ? AND fecha >= ?
+            WHERE empresa_id = ? AND fecha >= DATEADD(DAY, -?, GETDATE())
             GROUP BY CAST(fecha AS DATE)
             ORDER BY dia ASC
-        """, (empresa_id, fecha_inicio))
+        """, (empresa_id, dias))
 
         propuestas = []
         for row in cursor.fetchall():
