@@ -11881,11 +11881,55 @@ tbody tr:hover {
     }
 }
 
-/* ==================== FILTER DATES ROW ==================== */
-.filter-dates-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+/* ==================== ORDERS FILTER GRID ==================== */
+.main-content-area .orders-filter-grid {
+    grid-template-columns: auto repeat(5, 1fr) !important;
+    gap: 10px !important;
+    align-items: end;
+}
+
+/* mis-pedidos: solo 3 campos (año + 2 fechas) */
+.main-content-area .orders-filter-grid.orders-filter-3 {
+    grid-template-columns: auto 1fr 1fr !important;
+}
+
+.filter-year select {
+    width: auto;
+    min-width: 0;
+    padding-right: 24px;
+}
+
+.date-range-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 768px) {
+    .main-content-area .orders-filter-grid,
+    .main-content-area .orders-filter-grid.orders-filter-3 {
+        grid-template-columns: 1fr 1fr !important;
+    }
+    .main-content-area .orders-filter-grid .filter-year {
+        grid-column: 1 / -1;
+    }
+}
+
+[data-theme="dark"] .date-range-presets .period-btn {
+    background: var(--bg-tertiary);
+    border-color: var(--border);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .date-range-presets .period-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+[data-theme="dark"] .date-range-presets .period-btn.active {
+    background: var(--primary);
+    color: white;
 }
 
 /* ==================== EXPRESS LIMIT BAR ==================== */

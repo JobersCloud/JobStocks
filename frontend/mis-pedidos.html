@@ -358,20 +358,25 @@
                 <!-- Panel de Filtros -->
                 <div class="filters">
                     <h2 data-i18n="filters.title">Filtros de Busqueda</h2>
-                    <div class="filter-grid">
-                        <div class="form-group">
+                    <div class="filter-grid orders-filter-grid orders-filter-3">
+                        <div class="form-group filter-year">
                             <label data-i18n="orders.filterYear">Año</label>
                             <select id="filter-anyo"></select>
                         </div>
-                        <div class="filter-dates-row">
-                            <div class="form-group">
-                                <label data-i18n="orders.filterDateFrom">Desde</label>
-                                <input type="date" id="filter-fecha-desde">
-                            </div>
-                            <div class="form-group">
-                                <label data-i18n="orders.filterDateTo">Hasta</label>
-                                <input type="date" id="filter-fecha-hasta">
-                            </div>
+                        <div class="form-group">
+                            <label data-i18n="orders.filterDateFrom">Desde</label>
+                            <input type="date" id="filter-fecha-desde">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="orders.filterDateTo">Hasta</label>
+                            <input type="date" id="filter-fecha-hasta">
+                        </div>
+                        <div class="date-range-presets">
+                            <button type="button" class="period-btn" onclick="setDateRange('today')" data-i18n="orders.today">Hoy</button>
+                            <button type="button" class="period-btn" onclick="setDateRange('week')" data-i18n="orders.thisWeek">Esta semana</button>
+                            <button type="button" class="period-btn" onclick="setDateRange('month')" data-i18n="orders.thisMonth">Este mes</button>
+                            <button type="button" class="period-btn" onclick="setDateRange('lastMonth')" data-i18n="orders.lastMonth">Mes anterior</button>
+                            <button type="button" class="period-btn" onclick="setDateRange('quarter')" data-i18n="orders.thisQuarter">Este trimestre</button>
                         </div>
                     </div>
                     <div class="btn-icon-group">
@@ -560,7 +565,58 @@
             document.getElementById('filter-anyo').value = '';
             document.getElementById('filter-fecha-desde').value = '';
             document.getElementById('filter-fecha-hasta').value = '';
+            document.querySelectorAll('.date-range-presets .period-btn').forEach(b => b.classList.remove('active'));
             loadOrders();
+        }
+
+        function setDateRange(preset) {
+            const now = new Date();
+            let desde, hasta;
+            switch (preset) {
+                case 'today':
+                    desde = hasta = formatDateInput(now);
+                    break;
+                case 'week': {
+                    const day = now.getDay();
+                    const diff = day === 0 ? 6 : day - 1;
+                    const monday = new Date(now);
+                    monday.setDate(now.getDate() - diff);
+                    desde = formatDateInput(monday);
+                    hasta = formatDateInput(now);
+                    break;
+                }
+                case 'month':
+                    desde = formatDateInput(new Date(now.getFullYear(), now.getMonth(), 1));
+                    hasta = formatDateInput(now);
+                    break;
+                case 'lastMonth': {
+                    const first = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    const last = new Date(now.getFullYear(), now.getMonth(), 0);
+                    desde = formatDateInput(first);
+                    hasta = formatDateInput(last);
+                    break;
+                }
+                case 'quarter': {
+                    const qMonth = Math.floor(now.getMonth() / 3) * 3;
+                    desde = formatDateInput(new Date(now.getFullYear(), qMonth, 1));
+                    hasta = formatDateInput(now);
+                    break;
+                }
+            }
+            document.getElementById('filter-fecha-desde').value = desde;
+            document.getElementById('filter-fecha-hasta').value = hasta;
+            // Set year to match the desde date
+            const year = desde.substring(0, 4);
+            const selectAnyo = document.getElementById('filter-anyo');
+            selectAnyo.value = [...selectAnyo.options].some(o => o.value === year) ? year : '';
+            // Highlight active preset
+            document.querySelectorAll('.date-range-presets .period-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            applyFilters();
+        }
+
+        function formatDateInput(d) {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         }
 
         // ==================== DETALLE ====================

@@ -308,7 +308,12 @@
     "format": "Formato",
     "filterCountry": "Pais",
     "filterProvince": "Provincia",
-    "reference": "Referencia"
+    "reference": "Referencia",
+    "today": "Hoy",
+    "thisWeek": "Esta semana",
+    "thisMonth": "Este mes",
+    "lastMonth": "Mes anterior",
+    "thisQuarter": "Este trimestre"
   },
   "empresaLogo": {
     "title": "Logo de Empresa",

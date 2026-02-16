@@ -44,31 +44,27 @@ def get_filtros_ubicacion():
         conn = Database.get_connection()
         cursor = conn.cursor()
 
-        # Paises: JOIN con cristal.dbo.paises para obtener nombre
+        # Paises desde view_externos_clientes
         cursor.execute("""
-            SELECT DISTINCT RTRIM(ISNULL(g.pais, '')) AS codigo,
-                   RTRIM(ISNULL(p.nombre, RTRIM(ISNULL(g.pais, '')))) AS nombre
-            FROM cristal.dbo.genter g
-            LEFT JOIN cristal.dbo.paises p ON RTRIM(ISNULL(g.pais, '')) = RTRIM(ISNULL(p.pais, ''))
-            WHERE g.tipoter = 'C' AND ISNULL(g.pais, '') <> ''
+            SELECT DISTINCT RTRIM(ISNULL(pais, '')) AS codigo,
+                   RTRIM(ISNULL(pais, '')) AS nombre
+            FROM view_externos_clientes
+            WHERE ISNULL(pais, '') <> ''
             ORDER BY nombre
         """)
         paises = [{'codigo': row[0], 'nombre': row[1]} for row in cursor.fetchall()]
 
-        # Provincias: JOIN con cristal.dbo.provincias (PK compuesta: pais, provincia)
+        # Provincias desde view_externos_clientes
         provincia_param = request.args.get('pais')
         prov_query = """
-            SELECT DISTINCT RTRIM(ISNULL(g.provincia, '')) AS codigo,
-                   RTRIM(ISNULL(pr.nombre, RTRIM(ISNULL(g.provincia, '')))) AS nombre
-            FROM cristal.dbo.genter g
-            LEFT JOIN cristal.dbo.provincias pr
-                ON RTRIM(ISNULL(g.pais, '')) = RTRIM(ISNULL(pr.pais, ''))
-                AND RTRIM(ISNULL(g.provincia, '')) = RTRIM(ISNULL(pr.provincia, ''))
-            WHERE g.tipoter = 'C' AND ISNULL(g.provincia, '') <> ''
+            SELECT DISTINCT RTRIM(ISNULL(provincia, '')) AS codigo,
+                   RTRIM(ISNULL(provincia, '')) AS nombre
+            FROM view_externos_clientes
+            WHERE ISNULL(provincia, '') <> ''
         """
         prov_params = []
         if provincia_param:
-            prov_query += " AND RTRIM(ISNULL(g.pais, '')) = ?"
+            prov_query += " AND RTRIM(ISNULL(pais, '')) = ?"
             prov_params.append(provincia_param)
         prov_query += " ORDER BY nombre"
 

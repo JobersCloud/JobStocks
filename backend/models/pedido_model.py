@@ -109,10 +109,10 @@ class PedidoModel:
             where_parts.append("v.anyo = ?")
             params.append(anyo)
         if fecha_desde:
-            where_parts.append("v.fecha >= ?")
+            where_parts.append("v.fecha >= CONVERT(datetime, ?, 120)")
             params.append(fecha_desde)
         if fecha_hasta:
-            where_parts.append("v.fecha <= ?")
+            where_parts.append("v.fecha <= CONVERT(datetime, ?, 120)")
             params.append(fecha_hasta)
 
         where = " AND ".join(where_parts)
@@ -136,13 +136,10 @@ class PedidoModel:
                        CAST(v.total AS DECIMAL(18,2)) AS total, CAST(v.peso AS DECIMAL(18,2)) AS peso,
                        v.divisa, v.usuario, v.fecha_alta,
                        {numpedcli_sql}
-                       RTRIM(ISNULL(pa.nombre, '')) AS pais_nombre,
-                       RTRIM(ISNULL(pr.nombre, '')) AS provincia_nombre
+                       RTRIM(ISNULL(g.pais, '')) AS pais_nombre,
+                       RTRIM(ISNULL(g.provincia, '')) AS provincia_nombre
                 FROM view_externos_venped v
-                LEFT JOIN cristal.dbo.genter g ON v.cliente = g.codigo AND g.tipoter = 'C'
-                LEFT JOIN cristal.dbo.paises pa ON RTRIM(ISNULL(g.pais, '')) = RTRIM(ISNULL(pa.pais, ''))
-                LEFT JOIN cristal.dbo.provincias pr ON RTRIM(ISNULL(g.pais, '')) = RTRIM(ISNULL(pr.pais, ''))
-                    AND RTRIM(ISNULL(g.provincia, '')) = RTRIM(ISNULL(pr.provincia, ''))
+                LEFT JOIN view_externos_clientes g ON v.cliente = g.codigo AND v.empresa = g.empresa
                 WHERE {where}
             ) sub
             WHERE rn BETWEEN ? AND ?
@@ -211,7 +208,7 @@ class PedidoModel:
                    l.fecha_pedido, l.fecha_entrega, l.situacion,
                    f.abreviado
             FROM view_externos_venliped l
-            LEFT JOIN cristal.dbo.formatos f ON f.empresa = l.empresa AND f.codigo = l.formato
+            LEFT JOIN view_externos_formatos f ON f.empresa = l.empresa AND f.codigo = l.formato
             WHERE l.empresa = ? AND l.anyo = ? AND l.pedido = ?
             ORDER BY l.linea
         """, (empresa, anyo, pedido))
@@ -267,19 +264,19 @@ class PedidoModel:
             where_parts.append("v.anyo = ?")
             params.append(anyo)
         if fecha_desde:
-            where_parts.append("v.fecha >= ?")
+            where_parts.append("v.fecha >= CONVERT(datetime, ?, 120)")
             params.append(fecha_desde)
         if fecha_hasta:
-            where_parts.append("v.fecha <= ?")
+            where_parts.append("v.fecha <= CONVERT(datetime, ?, 120)")
             params.append(fecha_hasta)
         if cliente:
             where_parts.append("v.cliente = ?")
             params.append(cliente)
         if pais:
-            where_parts.append("v.cliente IN (SELECT codigo FROM cristal.dbo.genter WHERE tipoter = 'C' AND RTRIM(ISNULL(pais, '')) = ?)")
+            where_parts.append("v.cliente IN (SELECT codigo FROM view_externos_clientes WHERE RTRIM(ISNULL(pais, '')) = ?)")
             params.append(pais)
         if provincia:
-            where_parts.append("v.cliente IN (SELECT codigo FROM cristal.dbo.genter WHERE tipoter = 'C' AND RTRIM(ISNULL(provincia, '')) = ?)")
+            where_parts.append("v.cliente IN (SELECT codigo FROM view_externos_clientes WHERE RTRIM(ISNULL(provincia, '')) = ?)")
             params.append(provincia)
 
         where = " AND ".join(where_parts)
@@ -303,13 +300,10 @@ class PedidoModel:
                        CAST(v.total AS DECIMAL(18,2)) AS total, CAST(v.peso AS DECIMAL(18,2)) AS peso,
                        v.divisa, v.usuario, v.fecha_alta,
                        {numpedcli_sql}
-                       RTRIM(ISNULL(pa.nombre, '')) AS pais_nombre,
-                       RTRIM(ISNULL(pr.nombre, '')) AS provincia_nombre
+                       RTRIM(ISNULL(g.pais, '')) AS pais_nombre,
+                       RTRIM(ISNULL(g.provincia, '')) AS provincia_nombre
                 FROM view_externos_venped v
-                LEFT JOIN cristal.dbo.genter g ON v.cliente = g.codigo AND g.tipoter = 'C'
-                LEFT JOIN cristal.dbo.paises pa ON RTRIM(ISNULL(g.pais, '')) = RTRIM(ISNULL(pa.pais, ''))
-                LEFT JOIN cristal.dbo.provincias pr ON RTRIM(ISNULL(g.pais, '')) = RTRIM(ISNULL(pr.pais, ''))
-                    AND RTRIM(ISNULL(g.provincia, '')) = RTRIM(ISNULL(pr.provincia, ''))
+                LEFT JOIN view_externos_clientes g ON v.cliente = g.codigo AND v.empresa = g.empresa
                 WHERE {where}
             ) sub
             WHERE rn BETWEEN ? AND ?
@@ -356,7 +350,7 @@ class PedidoModel:
                    l.fecha_pedido, l.fecha_entrega, l.situacion,
                    f.abreviado
             FROM view_externos_venliped l
-            LEFT JOIN cristal.dbo.formatos f ON f.empresa = l.empresa AND f.codigo = l.formato
+            LEFT JOIN view_externos_formatos f ON f.empresa = l.empresa AND f.codigo = l.formato
             WHERE l.empresa = ? AND l.anyo = ? AND l.pedido = ?
             ORDER BY l.linea
         """, (empresa, anyo, pedido))

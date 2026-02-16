@@ -340,6 +340,11 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.29.9', date: '2026-02-16', title: 'Filtros de fecha mejorados en Pedidos', items: [
+                {type: 'improve', text: 'Año, Desde y Hasta en una sola fila compacta (año ocupa menos espacio)'},
+                {type: 'new', text: 'Botones de rango rapido: Hoy, Esta semana, Este mes, Mes anterior, Este trimestre'},
+                {type: 'fix', text: 'En Todos los Pedidos, el campo Pais ya no se monta sobre las fechas'}
+            ]},
             { version: 'v1.29.8', date: '2026-02-16', title: 'Imagenes nitidas en grid con Pillow', items: [
                 {type: 'improve', text: 'Grid con imagenes: thumbnails redimensionados a 400px con Pillow (antes pixelados a 60px)'},
                 {type: 'new', text: 'Nuevo parametro quality (thumb/grid) en endpoint /api/stocks/thumbnails'},
