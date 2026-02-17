@@ -384,7 +384,7 @@ def resend_verification():
     try:
         # Buscar usuario con email no verificado
         cursor.execute("""
-            SELECT id, full_name, token_verificacion, token_expiracion FROM users
+            SELECT id, username, full_name, token_verificacion, token_expiracion FROM users
             WHERE email = ? AND email_verificado = 0
         """, (email,))
 
@@ -396,7 +396,7 @@ def resend_verification():
                 'message': 'No se encontró una cuenta pendiente de verificación con ese email'
             }), 400
 
-        user_id, full_name, old_token, old_expiracion = row
+        user_id, username, full_name, old_token, old_expiracion = row
 
         # Generar nuevo token (por seguridad)
         new_token = secrets.token_urlsafe(32)
@@ -419,7 +419,7 @@ def resend_verification():
             AuditModel.log(
                 accion=AuditAction.USER_RESEND_VERIFICATION,
                 user_id=user_id,
-                username=email,
+                username=username,
                 empresa_id=empresa_id,
                 connection_id=connection,
                 recurso='user',
@@ -510,7 +510,7 @@ def verify_email():
     try:
         # Buscar usuario con el token
         cursor.execute("""
-            SELECT id, email, full_name, token_expiracion FROM users
+            SELECT id, username, email, full_name, token_expiracion FROM users
             WHERE token_verificacion = ? AND email_verificado = 0
         """, (token,))
 
@@ -522,7 +522,7 @@ def verify_email():
                 'message': 'Token inválido o ya utilizado'
             }), 400
 
-        user_id, email, full_name, token_expiracion = row
+        user_id, username, email, full_name, token_expiracion = row
 
         # Verificar si el token ha expirado
         if token_expiracion and datetime.now() > token_expiracion:
@@ -557,7 +557,7 @@ def verify_email():
         AuditModel.log(
             accion=AuditAction.USER_EMAIL_VERIFY,
             user_id=user_id,
-            username=email,
+            username=username,
             empresa_id=empresa_id,
             connection_id=connection,
             recurso='user',

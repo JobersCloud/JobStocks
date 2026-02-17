@@ -575,6 +575,16 @@
 
             await Promise.all([loadPaises(), loadUsers()]);
             initClientAutocomplete();
+
+            // Aplicar filtro si viene de auditoria con ?buscar=
+            const urlBuscar = new URLSearchParams(window.location.search).get('buscar');
+            if (urlBuscar) {
+                const gf = grid.getFilters();
+                if (gf) {
+                    gf.filtrosColumna.push({ columna: 'username', operador: 'contiene', valorDesde: urlBuscar });
+                    gf._notifyFilterChange();
+                }
+            }
         });
 
         // ==================== CARGAR USUARIOS ====================

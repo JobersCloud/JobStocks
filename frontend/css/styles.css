@@ -7916,6 +7916,17 @@ tbody tr:hover {
     color: #7c3aed;
 }
 
+.audit-email-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 0.85em;
+}
+
+.audit-email-link:hover {
+    text-decoration: underline;
+    color: var(--primary-dark);
+}
+
 .action-badge {
     display: inline-block;
     padding: 3px 8px;

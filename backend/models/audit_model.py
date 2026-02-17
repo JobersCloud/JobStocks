@@ -179,31 +179,32 @@ class AuditModel:
             params = []
 
             if empresa_id:
-                where_conditions.append("empresa_id = ?")
+                where_conditions.append("a.empresa_id = ?")
                 params.append(empresa_id)
 
             if user_id:
-                where_conditions.append("user_id = ?")
+                where_conditions.append("a.user_id = ?")
                 params.append(user_id)
 
             if username:
-                where_conditions.append("username LIKE ?")
+                where_conditions.append("(a.username LIKE ? OR u.email LIKE ?)")
+                params.append(f"%{username}%")
                 params.append(f"%{username}%")
 
             if accion:
-                where_conditions.append("accion = ?")
+                where_conditions.append("a.accion = ?")
                 params.append(accion)
 
             if fecha_desde:
-                where_conditions.append("fecha >= ?")
+                where_conditions.append("a.fecha >= ?")
                 params.append(f"{fecha_desde} 00:00:00")
 
             if fecha_hasta:
-                where_conditions.append("fecha <= ?")
+                where_conditions.append("a.fecha <= ?")
                 params.append(f"{fecha_hasta} 23:59:59")
 
             if resultado:
-                where_conditions.append("resultado = ?")
+                where_conditions.append("a.resultado = ?")
                 params.append(resultado)
 
             where_clause = " AND ".join(where_conditions)
@@ -212,11 +213,13 @@ class AuditModel:
             query = f"""
                 SELECT * FROM (
                     SELECT
-                        id, fecha, user_id, username, empresa_id,
-                        accion, recurso, recurso_id, ip_address, user_agent,
-                        detalles, resultado,
-                        ROW_NUMBER() OVER (ORDER BY fecha DESC) AS row_num
-                    FROM audit_log
+                        a.id, a.fecha, a.user_id, a.username, a.empresa_id,
+                        a.accion, a.recurso, a.recurso_id, a.ip_address, a.user_agent,
+                        a.detalles, a.resultado,
+                        u.email AS user_email,
+                        ROW_NUMBER() OVER (ORDER BY a.fecha DESC) AS row_num
+                    FROM audit_log a
+                    LEFT JOIN users u ON a.user_id = u.id
                     WHERE {where_clause}
                 ) AS numbered
                 WHERE row_num > ? AND row_num <= ?

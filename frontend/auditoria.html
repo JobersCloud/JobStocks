@@ -750,6 +750,7 @@
                 columns: [
                     { key: 'fecha', label: 'Fecha', tipo: 'texto' },
                     { key: 'username', label: 'Usuario', tipo: 'texto' },
+                    { key: 'user_email', label: 'Email', tipo: 'texto' },
                     { key: 'accion', label: 'Accion', tipo: 'texto' },
                     { key: 'recurso', label: 'Recurso', tipo: 'texto', width: '120px' },
                     { key: 'ip_address', label: 'IP', tipo: 'texto' },
@@ -760,6 +761,11 @@
                     switch (col.key) {
                         case 'fecha': return PageCommon.formatDateTime(item.fecha);
                         case 'username': return `<strong>${item.username || '-'}</strong>`;
+                        case 'user_email': {
+                            if (!item.user_email) return '-';
+                            const empresaId = PageCommon.getEmpresaId();
+                            return `<a href="usuarios.html?empresa=${empresaId}&buscar=${encodeURIComponent(item.username || item.user_email)}" class="audit-email-link" title="Ver usuario en mantenimiento">${item.user_email}</a>`;
+                        }
                         case 'accion': return `<span class="action-badge action-${getActionCategory(item.accion)}">${formatActionName(item.accion)}</span>`;
                         case 'recurso': return formatRecurso(item);
                         case 'resultado': return `<span class="result-badge result-${item.resultado.toLowerCase()}">${formatResultName(item.resultado)}</span>`;
@@ -778,6 +784,9 @@
                         ? `<div class="proposal-card-actions btn-icon-group" style="justify-content: center; border-top: 1px solid var(--border-color, #eee); padding-top: 8px; margin-top: 4px;">
                             <button class="btn-action btn-detail-device" onclick="showDeviceDetail(${item.id})" title="Ver dispositivo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Dispositivo</button>
                            </div>` : '';
+                    const emailLink = item.user_email
+                        ? `<a href="usuarios.html?empresa=${PageCommon.getEmpresaId()}&buscar=${encodeURIComponent(item.username || item.user_email)}" class="audit-email-link">${item.user_email}</a>`
+                        : '-';
                     return `<div class="proposal-card">
                         <div class="proposal-card-header">
                             <span class="action-badge action-${getActionCategory(item.accion)}">${formatActionName(item.accion)}</span>
@@ -785,6 +794,7 @@
                         </div>
                         <div class="proposal-card-info">
                             <div class="proposal-card-info-item"><label>Usuario</label><span>${item.username || '-'}</span></div>
+                            <div class="proposal-card-info-item"><label>Email</label><span>${emailLink}</span></div>
                             <div class="proposal-card-info-item"><label>Fecha</label><span>${PageCommon.formatDateTime(item.fecha)}</span></div>
                             <div class="proposal-card-info-item"><label>Recurso</label><span>${formatRecurso(item)}</span></div>
                             <div class="proposal-card-info-item"><label>IP</label><span>${item.ip_address || '-'}</span></div>
