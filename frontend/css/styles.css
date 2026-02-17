@@ -1434,6 +1434,16 @@ a:not(.sidebar-item):not(.btn):hover {
 
 #detail-modal .modal-header h2 {
     color: white;
+    -webkit-text-fill-color: white;
+}
+
+#detail-modal .modal-header .modal-close {
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+#detail-modal .modal-header .modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 [data-theme="dark"] select,
@@ -3986,7 +3996,8 @@ tbody tr:hover {
 }
 
 .modal-header h2 {
-    color: var(--text-primary);
+    color: white;
+    -webkit-text-fill-color: white;
     font-weight: 700;
     font-size: 1.5rem;
     letter-spacing: -0.01em;
