@@ -2698,7 +2698,7 @@ function mostrarTabla(stocks) {
                             <div class="stock-image-card-code">${stock.codigo}</div>
                             <div class="stock-image-card-desc" title="${stock.descripcion}">${stock.descripcion}</div>
                             <div class="stock-image-card-details">
-                                ${stock.formato || '-'} | ${stock.calidad || '-'} | ${stock.tono || '-'}/${stock.calibre || '-'}
+                                ${stock.formato || '-'} | ${stock.calidad || '-'} | ${stock.tono || '-'}/${stock.calibre || '-'}${stock.unidadescaja ? ` | PZ/Caj ${formatearCantidadEmpaquetado(stock.unidadescaja)}` : ''}${stock.pallet ? ` | ${stock.pallet}` : ''}
                             </div>
                             <div class="stock-image-card-stock">
                                 ${getBadgeWithUnit(stock.existencias, stock.unidad)}
