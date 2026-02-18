@@ -18,14 +18,14 @@ GO
 CREATE VIEW [dbo].[view_externos_clientes]
 AS
     SELECT
-        empresa,        -- Identificador de empresa (multi-empresa)
-        codigo,         -- Codigo del cliente
-        razon,          -- Razon social del cliente
-        domicilio,      -- Direccion/calle
-        codpos,         -- Codigo postal
-        poblacion,      -- Ciudad/poblacion
-        provincia,      -- Provincia
-        pais            -- Pais
+        empresa,                    -- Identificador de empresa (multi-empresa)
+        codigo,                     -- Codigo del cliente
+        razon,                      -- Razon social del cliente
+        domicilio,                  -- Direccion/calle
+        cod_postal AS codpos,       -- Codigo postal (alias normalizado)
+        poblacion,                  -- Ciudad/poblacion
+        provincia,                  -- Provincia
+        pais                        -- Pais
     FROM cristal.dbo.genter
     WHERE tipoter = 'C'  -- Solo clientes (tipo tercero = C)
 GO

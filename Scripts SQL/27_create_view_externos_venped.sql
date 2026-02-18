@@ -31,7 +31,7 @@ SELECT
     RTRIM(ISNULL(p.usuario, '')) AS usuario,
     p.falta AS fecha_alta
 FROM cristal.dbo.venped p
-LEFT JOIN cristal.dbo.genter c ON p.cliente = c.codigo AND c.tipoter = 'C'
+LEFT JOIN cristal.dbo.genter c ON p.cliente = c.codigo AND p.empresa = c.empresa AND c.tipoter = 'C'
 WHERE p.empresa IS NOT NULL
   AND p.anyo IS NOT NULL
   AND p.pedido IS NOT NULL;

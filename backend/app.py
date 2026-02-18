@@ -45,6 +45,7 @@ from models.audit_model import AuditModel, AuditAction, AuditResult
 from models.cliente_model import ClienteModel
 from models.dominio_model import DominioModel
 from utils.password_policy import get_policy_info, PASSWORD_POLICY
+from utils.geoip import get_location
 from config.database import Database
 from utils.db_migrator import run_pending as run_migrations, needs_check as migrations_need_check, mark_checked as migrations_mark_checked
 from migrations import MIGRATIONS
@@ -144,7 +145,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.30.1'
+APP_VERSION = 'v1.30.3'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -579,6 +580,9 @@ def login():
                     'nucleos_cpu': device_info.get('hardwareConcurrency')
                 }
             }
+            ubicacion = get_location(ip_address)
+            if ubicacion:
+                detalles_login['ubicacion'] = ubicacion
             AuditModel.log(
                 accion=AuditAction.LOGIN,
                 user_id=user_data['id'],
@@ -612,14 +616,19 @@ def login():
 
     # Registrar audit log de login fallido
     try:
+        failed_ip = get_client_ip()
+        failed_detalles = {'motivo': 'credenciales_invalidas'}
+        ubicacion_failed = get_location(failed_ip)
+        if ubicacion_failed:
+            failed_detalles['ubicacion'] = ubicacion_failed
         AuditModel.log(
             accion=AuditAction.LOGIN_FAILED,
             username=username,
             empresa_id=empresa_id,
             recurso='session',
-            ip_address=get_client_ip(),
+            ip_address=failed_ip,
             user_agent=request.headers.get('User-Agent'),
-            detalles={'motivo': 'credenciales_invalidas'},
+            detalles=failed_detalles,
             resultado=AuditResult.FAILED
         )
     except Exception as e:
@@ -654,6 +663,11 @@ def logout():
     """
     # Registrar audit log de logout antes de limpiar sesión
     try:
+        logout_ip = get_client_ip()
+        logout_detalles = {'metodo': 'manual'}
+        ubicacion_logout = get_location(logout_ip)
+        if ubicacion_logout:
+            logout_detalles['ubicacion'] = ubicacion_logout
         AuditModel.log(
             accion=AuditAction.LOGOUT,
             user_id=current_user.id,
@@ -661,8 +675,9 @@ def logout():
             empresa_id=session.get('empresa_id'),
             recurso='session',
             recurso_id=session.get('session_token'),
-            ip_address=get_client_ip(),
+            ip_address=logout_ip,
             user_agent=request.headers.get('User-Agent'),
+            detalles=logout_detalles,
             resultado=AuditResult.SUCCESS
         )
     except Exception as e:

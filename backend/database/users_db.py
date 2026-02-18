@@ -225,8 +225,30 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
                 'updated_at': row[9].isoformat() if row[9] else None,
                 'empresa_id': row[10],
                 'cliente_id': row[11],
-                'company_name': row[12]
+                'company_name': row[12],
+                'cliente_nombre': None
             })
+
+        # Resolver nombres de clientes en paso separado (no rompe si la vista no existe)
+        cliente_ids = [u['cliente_id'] for u in users if u['cliente_id']]
+        if cliente_ids:
+            try:
+                placeholders = ','.join(['?' for _ in cliente_ids])
+                cursor.execute(f"""
+                    SELECT codigo, razon FROM view_externos_clientes
+                    WHERE codigo IN ({placeholders}) AND empresa = ?
+                """, cliente_ids + [empresa_erp])
+                nombre_map = {}
+                for r in cursor.fetchall():
+                    key = r[0].strip() if r[0] else r[0]
+                    if key not in nombre_map:
+                        nombre_map[key] = r[1].strip() if r[1] else None
+                for u in users:
+                    cid = u['cliente_id'].strip() if u['cliente_id'] else None
+                    if cid and cid in nombre_map:
+                        u['cliente_nombre'] = nombre_map[cid]
+            except Exception as e:
+                print(f"[WARN] No se pudieron resolver nombres de clientes: {e}")
 
         return users
     except Exception as e:
@@ -474,7 +496,7 @@ def get_user_by_id_and_empresa(user_id, empresa_cli_id, empresa_erp):
         row = cursor.fetchone()
 
         if row:
-            return {
+            usuario = {
                 'id': row[0],
                 'username': row[1],
                 'email': row[2],
@@ -485,8 +507,22 @@ def get_user_by_id_and_empresa(user_id, empresa_cli_id, empresa_erp):
                 'email_verificado': row[7],
                 'empresa_id': row[8],
                 'cliente_id': row[9],
-                'company_name': row[10]
+                'company_name': row[10],
+                'cliente_nombre': None
             }
+            # Resolver nombre del cliente en paso separado
+            if usuario['cliente_id']:
+                try:
+                    cursor.execute("""
+                        SELECT razon FROM view_externos_clientes
+                        WHERE codigo = ? AND empresa = ?
+                    """, (usuario['cliente_id'], empresa_erp))
+                    r = cursor.fetchone()
+                    if r:
+                        usuario['cliente_nombre'] = r[0].strip() if r[0] else None
+                except Exception:
+                    pass
+            return usuario
 
         return None
     except Exception as e:

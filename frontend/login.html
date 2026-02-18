@@ -340,6 +340,21 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.30.3', date: '2026-02-17', title: 'Geolocalizacion por IP en Auditoria', items: [
+                {type: 'new', text: 'Nueva columna Ubicacion en auditoria que muestra ciudad y pais con bandera'},
+                {type: 'new', text: 'Al pinchar en la ubicacion se abre el mapa con la posicion del usuario'},
+                {type: 'new', text: 'Modal de detalle ampliado con bloques de Ubicacion, Dispositivo y Otros detalles'},
+                {type: 'improve', text: 'Login, login fallido y logout ahora registran la ubicacion geografica via IP'},
+                {type: 'improve', text: 'Boton de detalle visible en cualquier evento con ubicacion o dispositivo'}
+            ]},
+            { version: 'v1.30.2', date: '2026-02-17', title: 'Mejoras Vista Almacén 3D', items: [
+                {type: 'fix', text: 'Eliminado scroll del navegador al hacer zoom con rueda del ratón en el canvas 3D'},
+                {type: 'fix', text: 'Botón Vista Inicial ahora cancela animaciones en curso y vuelve correctamente'},
+                {type: 'fix', text: 'Seleccionar zona en dropdown ahora encuadra correctamente toda la zona'},
+                {type: 'new', text: 'Al seleccionar zona las celdas se resaltan y el resto se atenúa'},
+                {type: 'improve', text: 'Vista Inicial y cambio de zona con animación suave'},
+                {type: 'fix', text: 'Teclas de dirección ya no provocan scroll de la página'}
+            ]},
             { version: 'v1.30.1', date: '2026-02-16', title: 'Auditoria homogeneizada y email navegable', items: [
                 {type: 'fix', text: 'Campo usuario en auditoria siempre muestra username (antes a veces mostraba email)'},
                 {type: 'new', text: 'Nueva columna Email en auditoria con enlace directo al mantenimiento de usuarios'},

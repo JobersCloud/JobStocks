@@ -127,6 +127,43 @@
         }
 
         /**
+         * Muestra el modal con el mapa en coordenadas directas (sin geocoding)
+         * @param {number} lat - Latitud
+         * @param {number} lon - Longitud
+         * @param {string} title - Titulo del modal
+         * @param {string} subtitle - Subtitulo (opcional)
+         */
+        async showModalCoords(lat, lon, title, subtitle) {
+            const modal = document.getElementById(this.modalId);
+            const titleEl = document.getElementById(this.modalId + '-title');
+            const addressEl = document.getElementById(this.modalId + '-address');
+            const mapEl = document.getElementById(this.modalId + '-map');
+            const errorEl = document.getElementById(this.modalId + '-error');
+
+            titleEl.textContent = title || 'Ubicacion';
+            addressEl.textContent = subtitle || `${lat}, ${lon}`;
+            mapEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            modal.style.display = 'flex';
+
+            await this._delay(100);
+
+            if (!this.map) {
+                this.map = L.map(mapEl).setView([lat, lon], this.defaultZoom);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                    maxZoom: 19
+                }).addTo(this.map);
+            }
+
+            this.map.invalidateSize();
+            this.map.setView([lat, lon], this.defaultZoom);
+            if (this.marker) this.map.removeLayer(this.marker);
+            this.marker = L.marker([lat, lon]).addTo(this.map);
+            this.marker.bindPopup(`<strong>${title || ''}</strong><br>${subtitle || ''}`).openPopup();
+        }
+
+        /**
          * Oculta el modal
          */
         hideModal() {

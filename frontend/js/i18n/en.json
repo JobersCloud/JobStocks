@@ -415,6 +415,8 @@
     "createUser": "Create User",
     "editUser": "Edit User",
     "newUser": "New User",
+    "companyName": "Company name",
+    "companyNameHelp": "Shown on proposals if no client is assigned",
     "client": "Client",
     "clientHelp": "Type at least 3 characters to search",
     "noClientsFound": "No clients found",

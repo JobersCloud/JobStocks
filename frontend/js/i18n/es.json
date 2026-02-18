@@ -415,6 +415,8 @@
     "createUser": "Crear Usuario",
     "editUser": "Editar Usuario",
     "newUser": "Nuevo Usuario",
+    "companyName": "Nombre empresa",
+    "companyNameHelp": "Se mostrará en las propuestas si no tiene cliente asignado",
     "client": "Cliente",
     "clientHelp": "Escribe al menos 3 caracteres para buscar",
     "noClientsFound": "No se encontraron clientes",

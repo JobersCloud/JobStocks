@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 class PedidoModel:
     _has_numpedcli = None  # Cache: None=unknown, True/False
+    _has_clientes_dir = None  # Cache: view_externos_clientes tiene pais/provincia
 
     @classmethod
     def _check_numpedcli(cls, cursor):
@@ -40,6 +41,19 @@ class PedidoModel:
                 cls._has_numpedcli = False
             logger.info(f'[PEDIDO] view_externos_venped.numpedcli exists: {cls._has_numpedcli}')
         return cls._has_numpedcli
+
+    @classmethod
+    def _check_clientes_dir(cls, cursor):
+        """Comprueba si view_externos_clientes tiene campos pais/provincia."""
+        if cls._has_clientes_dir is None:
+            try:
+                cursor.execute("SELECT COL_LENGTH('view_externos_clientes', 'pais')")
+                result = cursor.fetchone()
+                cls._has_clientes_dir = result[0] is not None
+            except Exception:
+                cls._has_clientes_dir = False
+            logger.info(f'[PEDIDO] view_externos_clientes.pais exists: {cls._has_clientes_dir}')
+        return cls._has_clientes_dir
 
     @staticmethod
     def _map_pedido_row(row, has_numpedcli, offset=1):
@@ -96,7 +110,14 @@ class PedidoModel:
 
         cursor = conn.cursor()
         has_numpedcli = PedidoModel._check_numpedcli(cursor)
+        has_clientes_dir = PedidoModel._check_clientes_dir(cursor)
         numpedcli_sql = "RTRIM(ISNULL(v.numpedcli, '')) AS numpedcli," if has_numpedcli else ""
+        if has_clientes_dir:
+            location_sql = "RTRIM(ISNULL(g.pais, '')) AS pais_nombre, RTRIM(ISNULL(g.provincia, '')) AS provincia_nombre"
+            join_sql = "OUTER APPLY (SELECT TOP 1 c.pais, c.provincia FROM view_externos_clientes c WHERE c.codigo = v.cliente AND c.empresa = v.empresa) g"
+        else:
+            location_sql = "'' AS pais_nombre, '' AS provincia_nombre"
+            join_sql = ""
 
         # Build WHERE (prefixed with v. for JOINs)
         where_parts = ["v.cliente = ?"]
@@ -136,10 +157,9 @@ class PedidoModel:
                        CAST(v.total AS DECIMAL(18,2)) AS total, CAST(v.peso AS DECIMAL(18,2)) AS peso,
                        v.divisa, v.usuario, v.fecha_alta,
                        {numpedcli_sql}
-                       RTRIM(ISNULL(g.pais, '')) AS pais_nombre,
-                       RTRIM(ISNULL(g.provincia, '')) AS provincia_nombre
+                       {location_sql}
                 FROM view_externos_venped v
-                LEFT JOIN view_externos_clientes g ON v.cliente = g.codigo AND v.empresa = g.empresa
+                {join_sql}
                 WHERE {where}
             ) sub
             WHERE rn BETWEEN ? AND ?
@@ -251,7 +271,14 @@ class PedidoModel:
 
         cursor = conn.cursor()
         has_numpedcli = PedidoModel._check_numpedcli(cursor)
+        has_clientes_dir = PedidoModel._check_clientes_dir(cursor)
         numpedcli_sql = "RTRIM(ISNULL(v.numpedcli, '')) AS numpedcli," if has_numpedcli else ""
+        if has_clientes_dir:
+            location_sql = "RTRIM(ISNULL(g.pais, '')) AS pais_nombre, RTRIM(ISNULL(g.provincia, '')) AS provincia_nombre"
+            join_sql = "OUTER APPLY (SELECT TOP 1 c.pais, c.provincia FROM view_externos_clientes c WHERE c.codigo = v.cliente AND c.empresa = v.empresa) g"
+        else:
+            location_sql = "'' AS pais_nombre, '' AS provincia_nombre"
+            join_sql = ""
 
         # Build WHERE (prefixed with v. for JOINs)
         where_parts = ["1=1"]
@@ -272,10 +299,10 @@ class PedidoModel:
         if cliente:
             where_parts.append("v.cliente = ?")
             params.append(cliente)
-        if pais:
+        if pais and has_clientes_dir:
             where_parts.append("v.cliente IN (SELECT codigo FROM view_externos_clientes WHERE RTRIM(ISNULL(pais, '')) = ?)")
             params.append(pais)
-        if provincia:
+        if provincia and has_clientes_dir:
             where_parts.append("v.cliente IN (SELECT codigo FROM view_externos_clientes WHERE RTRIM(ISNULL(provincia, '')) = ?)")
             params.append(provincia)
 
@@ -300,10 +327,9 @@ class PedidoModel:
                        CAST(v.total AS DECIMAL(18,2)) AS total, CAST(v.peso AS DECIMAL(18,2)) AS peso,
                        v.divisa, v.usuario, v.fecha_alta,
                        {numpedcli_sql}
-                       RTRIM(ISNULL(g.pais, '')) AS pais_nombre,
-                       RTRIM(ISNULL(g.provincia, '')) AS provincia_nombre
+                       {location_sql}
                 FROM view_externos_venped v
-                LEFT JOIN view_externos_clientes g ON v.cliente = g.codigo AND v.empresa = g.empresa
+                {join_sql}
                 WHERE {where}
             ) sub
             WHERE rn BETWEEN ? AND ?

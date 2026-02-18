@@ -15908,11 +15908,15 @@ th.dg-drag-over-right {
 .warehouse-canvas-wrap {
     flex: 1;
     position: relative;
-    overflow: hidden;
+    min-width: 0;
+    min-height: 0;
 }
 
 .warehouse-canvas-wrap canvas {
     display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100% !important;
     height: 100% !important;
 }
@@ -16095,6 +16099,8 @@ th.dg-drag-over-right {
     color: #888;
     gap: 12px;
     font-size: 0.9rem;
+    position: relative;
+    z-index: 2;
 }
 
 .warehouse-empty-state svg {

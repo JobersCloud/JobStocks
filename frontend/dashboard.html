@@ -704,8 +704,8 @@
                 cardsContainer.innerHTML = `<div class="dashboard-empty-message">${t('dashboard.noData')}</div>`;
                 return;
             }
-            tbody.innerHTML = articulos.map(a => `<tr><td class="product-code">${a.codigo}</td><td>${truncate(a.descripcion, 30)}</td><td class="product-qty">${a.vistas}</td><td class="product-times">${a.usuarios_unicos}</td><td>${formatDateShort(a.ultima_vista)}</td></tr>`).join('');
-            cardsContainer.innerHTML = articulos.map(a => `<div class="top-product-card"><div class="top-product-card-header"><span class="top-product-code">${a.codigo}</span><span class="top-product-times">${a.vistas} ${t('dashboard.views')}</span></div><div class="top-product-desc">${truncate(a.descripcion, 50)}</div><div class="top-product-qty">${t('dashboard.uniqueUsers')}: <strong>${a.usuarios_unicos}</strong> · ${formatDateShort(a.ultima_vista)}</div></div>`).join('');
+            tbody.innerHTML = articulos.map(a => `<tr><td class="product-code">${a.codigo}</td><td>${truncate(a.descripcion || a.codigo, 30)}</td><td class="product-qty">${a.vistas}</td><td class="product-times">${a.usuarios_unicos}</td><td>${formatDateShort(a.ultima_vista)}</td></tr>`).join('');
+            cardsContainer.innerHTML = articulos.map(a => `<div class="top-product-card"><div class="top-product-card-header"><span class="top-product-code">${a.codigo}</span><span class="top-product-times">${a.vistas} ${t('dashboard.views')}</span></div><div class="top-product-desc">${truncate(a.descripcion || a.codigo, 50)}</div><div class="top-product-qty">${t('dashboard.uniqueUsers')}: <strong>${a.usuarios_unicos}</strong> · ${formatDateShort(a.ultima_vista)}</div></div>`).join('');
         }
 
         function renderTopViewedChart(articulos) {

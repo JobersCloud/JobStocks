@@ -46,7 +46,7 @@
     </script>
     <link rel="stylesheet" href="css/styles.css?v=1.29.2">
 </head>
-<body>
+<body style="overflow: hidden; height: 100vh;">
     <div class="app-layout">
         <!-- Header Superior -->
         <header class="top-header">
@@ -628,7 +628,7 @@
 
             // Renderer
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-            renderer.setSize(w, h);
+            renderer.setSize(w, h, false);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             wrap.appendChild(renderer.domElement);
 
@@ -662,6 +662,11 @@
             // Raycaster
             raycaster = new THREE.Raycaster();
 
+            // Prevent browser scroll when zooming on canvas
+            renderer.domElement.addEventListener('wheel', function (e) {
+                e.preventDefault();
+            }, { passive: false });
+
             // Events
             renderer.domElement.addEventListener('mousemove', onMouseMove);
             renderer.domElement.addEventListener('click', onMouseClick);
@@ -673,6 +678,10 @@
 
             // Keyboard
             window.addEventListener('keydown', function (e) {
+                // Prevent arrow keys from scrolling the page
+                if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(e.key.toLowerCase())) {
+                    e.preventDefault();
+                }
                 keysPressed[e.key.toLowerCase()] = true;
                 if (e.key === 'b' || e.key === 'B') { if (!walkMode) resetCamera(); }
                 if (e.key === 'Escape') {
@@ -716,9 +725,11 @@
             if (!wrap || !camera || !renderer) return;
             const w = wrap.clientWidth;
             const h = wrap.clientHeight;
+            if (w <= 0 || h <= 0) return;
             camera.aspect = w / h;
             camera.updateProjectionMatrix();
-            renderer.setSize(w, h);
+            // false = don't set canvas CSS style (CSS handles display size via 100%)
+            renderer.setSize(w, h, false);
         }
 
         // ==================== DATA LOADING ====================
@@ -1077,6 +1088,7 @@
             if (zona) {
                 flyToZone(zona);
             } else {
+                clearZoneHighlight();
                 activeZone = null;
                 resetCamera();
             }
@@ -1349,18 +1361,25 @@
             const pos = zonePositions[zona];
             if (!pos) return;
 
+            if (flyAnimation) { cancelAnimationFrame(flyAnimation); flyAnimation = null; }
             if (walkMode) exitWalkMode();
 
             activeZone = zona;
             const sel = document.getElementById('wh-zone-select');
             if (sel) sel.value = zona;
 
-            const maxDim = Math.max(pos.sizeX, pos.sizeZ);
-            const dist = Math.max(maxDim * 0.6, 4);
-            const targetPos = new THREE.Vector3(pos.x - dist * 0.3, pos.y + dist * 0.5, pos.z + dist * 0.6);
-            const targetLook = new THREE.Vector3(pos.x, pos.y * 0.5, pos.z);
+            // Highlight the selected zone
+            highlightZone(zona);
 
-            if (flyAnimation) cancelAnimationFrame(flyAnimation);
+            // Use full bounding box (including height) for proper framing
+            const maxDim = Math.max(pos.sizeX, pos.sizeY, pos.sizeZ);
+            const dist = Math.max(maxDim * 1.2, 6);
+            const targetPos = new THREE.Vector3(
+                pos.x + dist * 0.5,
+                pos.y + dist * 0.7,
+                pos.z + dist * 0.8
+            );
+            const targetLook = new THREE.Vector3(pos.x, pos.y, pos.z);
 
             const startPos = camera.position.clone();
             const startTarget = controls.target.clone();
@@ -1411,14 +1430,47 @@
             document.getElementById('btn-labels').classList.toggle('active', showLabels);
         }
 
+        // ==================== ZONE HIGHLIGHT ====================
+        function highlightZone(zona) {
+            cellMeshes.forEach(mesh => {
+                const data = cellDataMap.get(mesh.uuid);
+                if (!data) return;
+                if (data.zona === zona) {
+                    // Restore original color with emissive glow
+                    const origColor = originalColors.get(mesh.uuid);
+                    if (origColor !== undefined) mesh.material.color.set(origColor);
+                    mesh.material.opacity = data.totalStock <= 0 ? 0.25 : 0.95;
+                    if (mesh.material.emissive) mesh.material.emissive.set(0x222222);
+                } else {
+                    // Dim other zones
+                    mesh.material.opacity = 0.08;
+                    if (mesh.material.emissive) mesh.material.emissive.set(0x000000);
+                }
+            });
+        }
+
+        function clearZoneHighlight() {
+            cellMeshes.forEach(mesh => {
+                const data = cellDataMap.get(mesh.uuid);
+                if (!data) return;
+                const origColor = originalColors.get(mesh.uuid);
+                if (origColor !== undefined) mesh.material.color.set(origColor);
+                mesh.material.opacity = data.totalStock <= 0 ? 0.15 : 0.85;
+                if (mesh.material.emissive) mesh.material.emissive.set(0x000000);
+            });
+        }
+
         // ==================== CAMERA ====================
         function resetCamera() {
             if (cellMeshes.length === 0) return;
+            if (flyAnimation) { cancelAnimationFrame(flyAnimation); flyAnimation = null; }
             if (walkMode) exitWalkMode();
 
             activeZone = null;
             const sel = document.getElementById('wh-zone-select');
             if (sel) sel.value = '';
+
+            clearZoneHighlight();
 
             const box = new THREE.Box3();
             cellMeshes.forEach(m => box.expandByObject(m));
@@ -1427,9 +1479,28 @@
             const maxDim = Math.max(size.x, size.y, size.z);
             const dist = maxDim * 1.8;
 
-            camera.position.set(center.x + dist * 0.6, center.y + dist * 0.8, center.z + dist * 0.6);
-            controls.target.copy(center);
-            controls.update();
+            const targetPos = new THREE.Vector3(center.x + dist * 0.6, center.y + dist * 0.8, center.z + dist * 0.6);
+            const targetLook = center.clone();
+
+            // Animate smoothly
+            const startPos = camera.position.clone();
+            const startTarget = controls.target.clone();
+            const startTime = performance.now();
+
+            function animateReset(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / FLY_DURATION, 1);
+                const t = 1 - Math.pow(1 - progress, 3);
+                camera.position.lerpVectors(startPos, targetPos, t);
+                controls.target.lerpVectors(startTarget, targetLook, t);
+                controls.update();
+                if (progress < 1) {
+                    flyAnimation = requestAnimationFrame(animateReset);
+                } else {
+                    flyAnimation = null;
+                }
+            }
+            flyAnimation = requestAnimationFrame(animateReset);
         }
 
         // ==================== RAYCASTING ====================
@@ -1611,7 +1682,9 @@
         function closeInfoPanel() {
             document.getElementById('info-panel').classList.remove('open');
             clearSelection();
+            // Delay resize to let flex layout settle after panel closes
             setTimeout(onResize, 50);
+            setTimeout(onResize, 200);
         }
 
         // ==================== HELPERS ====================

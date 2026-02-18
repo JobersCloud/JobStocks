@@ -469,11 +469,11 @@
         </div>
     </div>
 
-    <!-- Modal Detalle de Dispositivo -->
+    <!-- Modal Detalle del Evento -->
     <div id="device-detail-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="max-width: 520px;">
             <div class="modal-header">
-                <h2>Detalle del Dispositivo</h2>
+                <h2>Detalle del Evento</h2>
                 <button class="modal-close" onclick="hideDeviceDetailModal()">&times;</button>
             </div>
             <div id="device-detail-body" style="padding: 20px;"></div>
@@ -491,6 +491,46 @@
         const API_URL = PageCommon.API_URL;
         let sessionsGrid;
         let auditGrid;
+
+        // ==================== MAPA (LAZY LOAD) ====================
+        let _mapComponent = null;
+        let _leafletLoading = null;
+
+        function loadLeafletAndMap() {
+            if (typeof L !== 'undefined' && typeof MapComponent !== 'undefined') return Promise.resolve();
+            if (_leafletLoading) return _leafletLoading;
+            _leafletLoading = new Promise((resolve, reject) => {
+                function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+                if (!document.querySelector('link[href*="leaflet.css"]')) {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+                    document.head.appendChild(link);
+                }
+                const leafletSrc = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+                const p = (typeof L !== 'undefined') ? Promise.resolve() : loadScript(leafletSrc);
+                p.then(() => loadScript('js/map-component.js?v=20260217'))
+                 .then(resolve)
+                 .catch(e => { _leafletLoading = null; reject(e); });
+            });
+            return _leafletLoading;
+        }
+
+        async function showLocationMap(logId) {
+            const log = auditGrid.getData().find(l => l.id === logId);
+            if (!log || !log.detalles || !log.detalles.ubicacion) return;
+            const ub = log.detalles.ubicacion;
+            if (!ub.lat || !ub.lon) return;
+            try {
+                await loadLeafletAndMap();
+                if (!_mapComponent) _mapComponent = new MapComponent();
+                const title = [ub.ciudad, ub.region, ub.pais].filter(Boolean).join(', ');
+                const subtitle = [ub.isp, `IP: ${log.ip_address || ''}`].filter(Boolean).join(' - ');
+                _mapComponent.showModalCoords(ub.lat, ub.lon, title, subtitle);
+            } catch (e) {
+                console.error('Error cargando mapa:', e);
+            }
+        }
 
         // ==================== HELPERS DE FORMATO ====================
         function formatActionName(action) {
@@ -522,6 +562,27 @@
             if (action.startsWith('PROPUESTA')) return 'propuesta';
             if (action.startsWith('CONSULTA')) return 'consulta';
             return 'other';
+        }
+
+        function countryCodeToFlag(code) {
+            if (!code || code === 'LO' || code.length !== 2) return '';
+            const offset = 0x1F1E6;
+            return String.fromCodePoint(code.charCodeAt(0) - 65 + offset, code.charCodeAt(1) - 65 + offset);
+        }
+
+        function formatUbicacion(item) {
+            const ub = item.detalles?.ubicacion;
+            if (!ub) return '-';
+            const flag = countryCodeToFlag(ub.pais_codigo);
+            const parts = [];
+            if (ub.ciudad) parts.push(ub.ciudad);
+            if (ub.pais_codigo && ub.pais_codigo !== 'LO') parts.push(ub.pais_codigo);
+            const text = parts.join(', ') || ub.pais || '-';
+            const hasCoords = ub.lat && ub.lon;
+            if (hasCoords) {
+                return `<span class="location-link" onclick="showLocationMap(${item.id})" title="Ver en mapa" style="cursor:pointer; text-decoration: underline; text-decoration-style: dotted;">${flag} ${text}</span>`;
+            }
+            return `${flag} ${text}`;
         }
 
         function formatRecurso(log) {
@@ -639,43 +700,90 @@
             loadAuditLogs();
         }
 
-        // ==================== DETALLE DISPOSITIVO ====================
+        // ==================== DETALLE DEL EVENTO ====================
         function showDeviceDetail(logId) {
             const log = auditGrid.getData().find(l => l.id === logId);
-            if (!log || !log.detalles || !log.detalles.dispositivo) return;
-            const d = log.detalles.dispositivo;
-            const tipoIcon = d.tipo === 'Mobile' ? '📱' : d.tipo === 'Tablet' ? '📱' : '💻';
-            const tactilText = d.tactil === true ? 'Si' : d.tactil === false ? 'No' : '-';
-            const cookiesText = d.cookies === true ? 'Si' : d.cookies === false ? 'No' : '-';
+            if (!log || !log.detalles) return;
 
-            const html = `
-                <div style="display: flex; flex-direction: column; gap: 16px;">
-                    <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-secondary, #f5f5f5); border-radius: 10px;">
-                        <span style="font-size: 2rem;">${tipoIcon}</span>
-                        <div>
-                            <div style="font-weight: 600; font-size: 1.1rem;">${d.tipo || '-'}</div>
-                            <div style="color: var(--text-secondary, #666); font-size: 0.85rem;">${d.navegador || '-'} / ${d.sistema_operativo || '-'}</div>
+            let html = '<div style="display: flex; flex-direction: column; gap: 16px;">';
+
+            // Bloque Ubicacion
+            const ub = log.detalles.ubicacion;
+            if (ub) {
+                const flag = countryCodeToFlag(ub.pais_codigo);
+                const locationText = [ub.ciudad, ub.region, ub.pais].filter(Boolean).join(', ');
+                const hasCoords = ub.lat && ub.lon;
+                const mapBtn = hasCoords
+                    ? `<button onclick="showLocationMap(${log.id})" style="margin-top: 8px; padding: 6px 14px; background: var(--primary, #FF4338); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        Ver en mapa
+                       </button>` : '';
+                html += `
+                    <div style="padding: 12px; background: var(--bg-secondary, #f5f5f5); border-radius: 10px; border-left: 4px solid var(--primary, #FF4338);">
+                        <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-secondary, #666); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Ubicacion</div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.8rem;">${flag || '📍'}</span>
+                            <div>
+                                <div style="font-weight: 600; font-size: 1rem;">${locationText || '-'}</div>
+                                <div style="color: var(--text-secondary, #666); font-size: 0.85rem;">${ub.isp || ''}</div>
+                                ${hasCoords ? `<div style="color: var(--text-secondary, #999); font-size: 0.75rem; margin-top: 2px;">${ub.lat.toFixed(4)}, ${ub.lon.toFixed(4)}</div>` : ''}
+                            </div>
                         </div>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <div class="device-info-item"><div class="device-info-label">Navegador</div><div class="device-info-value">${d.navegador || '-'}</div></div>
-                        <div class="device-info-item"><div class="device-info-label">Sistema Operativo</div><div class="device-info-value">${d.sistema_operativo || '-'}</div></div>
-                        <div class="device-info-item"><div class="device-info-label">Pantalla</div><div class="device-info-value">${d.pantalla || '-'}</div></div>
-                        <div class="device-info-item"><div class="device-info-label">Viewport</div><div class="device-info-value">${d.viewport || '-'}</div></div>
-                        <div class="device-info-item"><div class="device-info-label">Zona Horaria</div><div class="device-info-value">${d.zona_horaria || '-'}</div></div>
-                        <div class="device-info-item"><div class="device-info-label">Idioma</div><div class="device-info-value">${d.idioma || '-'}</div></div>
-                        <div class="device-info-item"><div class="device-info-label">Plataforma</div><div class="device-info-value">${d.plataforma || '-'}</div></div>
-                        <div class="device-info-item"><div class="device-info-label">Pantalla Tactil</div><div class="device-info-value">${tactilText}</div></div>
-                        <div class="device-info-item"><div class="device-info-label">Cookies</div><div class="device-info-value">${cookiesText}</div></div>
-                        <div class="device-info-item"><div class="device-info-label">Memoria (GB)</div><div class="device-info-value">${d.memoria_gb != null ? d.memoria_gb : '-'}</div></div>
-                        <div class="device-info-item"><div class="device-info-label">Nucleos CPU</div><div class="device-info-value">${d.nucleos_cpu != null ? d.nucleos_cpu : '-'}</div></div>
-                    </div>
-                    <details style="margin-top: 4px;">
-                        <summary style="cursor: pointer; color: var(--text-secondary, #666); font-size: 0.8rem;">User-Agent completo</summary>
-                        <div style="margin-top: 8px; padding: 8px; background: var(--bg-secondary, #f5f5f5); border-radius: 6px; font-family: monospace; font-size: 0.75rem; word-break: break-all; color: var(--text-secondary, #666);">${d.user_agent || '-'}</div>
-                    </details>
-                </div>
-            `;
+                        ${mapBtn}
+                    </div>`;
+            }
+
+            // Bloque Dispositivo
+            const d = log.detalles.dispositivo;
+            if (d) {
+                const tipoIcon = d.tipo === 'Mobile' ? '📱' : d.tipo === 'Tablet' ? '📱' : '💻';
+                const tactilText = d.tactil === true ? 'Si' : d.tactil === false ? 'No' : '-';
+                const cookiesText = d.cookies === true ? 'Si' : d.cookies === false ? 'No' : '-';
+                html += `
+                    <div style="padding: 12px; background: var(--bg-secondary, #f5f5f5); border-radius: 10px; border-left: 4px solid var(--primary-light, #FF6B6B);">
+                        <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-secondary, #666); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Dispositivo</div>
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span style="font-size: 2rem;">${tipoIcon}</span>
+                            <div>
+                                <div style="font-weight: 600; font-size: 1.1rem;">${d.tipo || '-'}</div>
+                                <div style="color: var(--text-secondary, #666); font-size: 0.85rem;">${d.navegador || '-'} / ${d.sistema_operativo || '-'}</div>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div class="device-info-item"><div class="device-info-label">Navegador</div><div class="device-info-value">${d.navegador || '-'}</div></div>
+                            <div class="device-info-item"><div class="device-info-label">Sistema Operativo</div><div class="device-info-value">${d.sistema_operativo || '-'}</div></div>
+                            <div class="device-info-item"><div class="device-info-label">Pantalla</div><div class="device-info-value">${d.pantalla || '-'}</div></div>
+                            <div class="device-info-item"><div class="device-info-label">Viewport</div><div class="device-info-value">${d.viewport || '-'}</div></div>
+                            <div class="device-info-item"><div class="device-info-label">Zona Horaria</div><div class="device-info-value">${d.zona_horaria || '-'}</div></div>
+                            <div class="device-info-item"><div class="device-info-label">Idioma</div><div class="device-info-value">${d.idioma || '-'}</div></div>
+                            <div class="device-info-item"><div class="device-info-label">Plataforma</div><div class="device-info-value">${d.plataforma || '-'}</div></div>
+                            <div class="device-info-item"><div class="device-info-label">Pantalla Tactil</div><div class="device-info-value">${tactilText}</div></div>
+                            <div class="device-info-item"><div class="device-info-label">Cookies</div><div class="device-info-value">${cookiesText}</div></div>
+                            <div class="device-info-item"><div class="device-info-label">Memoria (GB)</div><div class="device-info-value">${d.memoria_gb != null ? d.memoria_gb : '-'}</div></div>
+                            <div class="device-info-item"><div class="device-info-label">Nucleos CPU</div><div class="device-info-value">${d.nucleos_cpu != null ? d.nucleos_cpu : '-'}</div></div>
+                        </div>
+                        <details style="margin-top: 8px;">
+                            <summary style="cursor: pointer; color: var(--text-secondary, #666); font-size: 0.8rem;">User-Agent completo</summary>
+                            <div style="margin-top: 8px; padding: 8px; background: var(--bg-primary, #fff); border-radius: 6px; font-family: monospace; font-size: 0.75rem; word-break: break-all; color: var(--text-secondary, #666);">${d.user_agent || '-'}</div>
+                        </details>
+                    </div>`;
+            }
+
+            // Bloque Otros detalles (motivo, metodo, etc.)
+            const otherKeys = Object.keys(log.detalles).filter(k => k !== 'dispositivo' && k !== 'ubicacion');
+            if (otherKeys.length > 0) {
+                const otherItems = otherKeys.map(k => {
+                    const val = typeof log.detalles[k] === 'object' ? JSON.stringify(log.detalles[k]) : log.detalles[k];
+                    return `<div class="device-info-item"><div class="device-info-label">${k}</div><div class="device-info-value">${val}</div></div>`;
+                }).join('');
+                html += `
+                    <div style="padding: 12px; background: var(--bg-secondary, #f5f5f5); border-radius: 10px;">
+                        <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-secondary, #666); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Otros detalles</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">${otherItems}</div>
+                    </div>`;
+            }
+
+            html += '</div>';
             document.getElementById('device-detail-body').innerHTML = html;
             document.getElementById('device-detail-modal').style.display = 'flex';
         }
@@ -754,6 +862,7 @@
                     { key: 'accion', label: 'Accion', tipo: 'texto' },
                     { key: 'recurso', label: 'Recurso', tipo: 'texto', width: '120px' },
                     { key: 'ip_address', label: 'IP', tipo: 'texto' },
+                    { key: '_ubicacion', label: 'Ubicacion', tipo: 'texto', width: '140px' },
                     { key: 'resultado', label: 'Resultado', tipo: 'texto' },
                     { key: '_detail', label: 'Detalle', sortable: false, filterable: false, align: 'center' }
                 ],
@@ -768,21 +877,23 @@
                         }
                         case 'accion': return `<span class="action-badge action-${getActionCategory(item.accion)}">${formatActionName(item.accion)}</span>`;
                         case 'recurso': return formatRecurso(item);
+                        case '_ubicacion': return formatUbicacion(item);
                         case 'resultado': return `<span class="result-badge result-${item.resultado.toLowerCase()}">${formatResultName(item.resultado)}</span>`;
                         case '_detail': {
-                            const hasDevice = item.accion === 'LOGIN' && item.detalles && item.detalles.dispositivo;
-                            return hasDevice
-                                ? `<button class="btn-action btn-detail-device" onclick="showDeviceDetail(${item.id})" title="Ver dispositivo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></button>`
+                            const hasDetail = item.detalles && (item.detalles.dispositivo || item.detalles.ubicacion);
+                            return hasDetail
+                                ? `<button class="btn-action btn-detail-device" onclick="showDeviceDetail(${item.id})" title="Ver detalle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>`
                                 : '';
                         }
                         default: return null;
                     }
                 },
                 renderCard(item) {
-                    const hasDevice = item.accion === 'LOGIN' && item.detalles && item.detalles.dispositivo;
-                    const detailBtn = hasDevice
+                    const hasDetail = item.detalles && (item.detalles.dispositivo || item.detalles.ubicacion);
+                    const ubicacionText = formatUbicacion(item);
+                    const detailBtn = hasDetail
                         ? `<div class="proposal-card-actions btn-icon-group" style="justify-content: center; border-top: 1px solid var(--border-color, #eee); padding-top: 8px; margin-top: 4px;">
-                            <button class="btn-action btn-detail-device" onclick="showDeviceDetail(${item.id})" title="Ver dispositivo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Dispositivo</button>
+                            <button class="btn-action btn-detail-device" onclick="showDeviceDetail(${item.id})" title="Ver detalle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Detalle</button>
                            </div>` : '';
                     const emailLink = item.user_email
                         ? `<a href="usuarios.html?empresa=${PageCommon.getEmpresaId()}&buscar=${encodeURIComponent(item.username || item.user_email)}" class="audit-email-link">${item.user_email}</a>`
@@ -796,6 +907,7 @@
                             <div class="proposal-card-info-item"><label>Usuario</label><span>${item.username || '-'}</span></div>
                             <div class="proposal-card-info-item"><label>Email</label><span>${emailLink}</span></div>
                             <div class="proposal-card-info-item"><label>Fecha</label><span>${PageCommon.formatDateTime(item.fecha)}</span></div>
+                            <div class="proposal-card-info-item"><label>Ubicacion</label><span>${ubicacionText}</span></div>
                             <div class="proposal-card-info-item"><label>Recurso</label><span>${formatRecurso(item)}</span></div>
                             <div class="proposal-card-info-item"><label>IP</label><span>${item.ip_address || '-'}</span></div>
                         </div>
@@ -827,6 +939,7 @@
             if (e.key === 'Escape') {
                 hideDeviceDetailModal();
                 hideChangePasswordModal();
+                if (_mapComponent) _mapComponent.hideModal();
                 const sf = sessionsGrid?.getFilters();
                 const af = auditGrid?.getFilters();
                 if (sf) sf.cerrarPopupFiltro();

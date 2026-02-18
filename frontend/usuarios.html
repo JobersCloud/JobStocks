@@ -828,14 +828,14 @@
             input.addEventListener('input', function() {
                 clearTimeout(clientSearchTimeout);
                 const query = this.value.trim();
-                if (query.length < 2) { document.getElementById('client-suggestions').innerHTML = ''; return; }
+                if (query.length < 2) { const s = document.getElementById('client-suggestions'); s.innerHTML = ''; s.classList.remove('show'); return; }
                 clientSearchTimeout = setTimeout(() => searchClients(query), 300);
             });
             // Cerrar sugerencias al hacer clic fuera
             document.addEventListener('click', function(e) {
                 const container = document.querySelector('#client-search-wrapper')?.closest('.client-search-container');
                 if (container && !container.contains(e.target)) {
-                    document.getElementById('client-suggestions').innerHTML = '';
+                    const s = document.getElementById('client-suggestions'); s.innerHTML = ''; s.classList.remove('show');
                 }
             });
         }
@@ -843,9 +843,16 @@
         async function searchClients(query) {
             const suggestionsEl = document.getElementById('client-suggestions');
             const empresaId = localStorage.getItem('empresa_id') || '1';
+            suggestionsEl.innerHTML = '<div class="client-suggestions-loading">Buscando...</div>';
+            suggestionsEl.classList.add('show');
             try {
                 const response = await fetch(`${API_URL}/api/clientes/search?empresa=${empresaId}&razon=${encodeURIComponent(query)}`, { credentials: 'include' });
-                if (!response.ok) return;
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    console.error('[ClientSearch] Error', response.status, errData);
+                    suggestionsEl.innerHTML = `<div class="client-suggestions-empty">Error: ${errData.error || response.status}</div>`;
+                    return;
+                }
                 const clientes = await response.json();
                 if (!clientes || clientes.length === 0) {
                     suggestionsEl.innerHTML = '<div class="client-suggestions-empty">Sin resultados</div>';
@@ -858,7 +865,8 @@
                     </div>
                 `).join('');
             } catch (e) {
-                suggestionsEl.innerHTML = '';
+                console.error('[ClientSearch] Exception', e);
+                suggestionsEl.innerHTML = `<div class="client-suggestions-empty">Error: ${e.message}</div>`;
             }
         }
 
@@ -868,7 +876,7 @@
             document.getElementById('selected-client-name').textContent = razon;
             document.getElementById('client-selected').style.display = 'flex';
             document.getElementById('client-search-wrapper').style.display = 'none';
-            document.getElementById('client-suggestions').innerHTML = '';
+            const s = document.getElementById('client-suggestions'); s.innerHTML = ''; s.classList.remove('show');
         }
 
         function clearClientSelection() {

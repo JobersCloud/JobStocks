@@ -19,7 +19,18 @@ from config.database import Database
 
 
 class ClienteModel:
-    COLUMNS = 'empresa, codigo, razon, domicilio, cod_postal, localidad, provincia, pais'
+    COLUMNS_FULL = 'empresa, codigo, razon, domicilio, codpos, poblacion, provincia, pais'
+    COLUMNS_BASIC = 'empresa, codigo, razon'
+
+    @staticmethod
+    def _get_columns(cursor):
+        """Detecta si la vista tiene columnas de dirección (script 32 ejecutado)."""
+        try:
+            cursor.execute("SELECT COL_LENGTH('view_externos_clientes', 'domicilio')")
+            result = cursor.fetchone()
+            return ClienteModel.COLUMNS_FULL if result and result[0] is not None else ClienteModel.COLUMNS_BASIC
+        except Exception:
+            return ClienteModel.COLUMNS_BASIC
 
     @staticmethod
     def _row_to_dict(row):
@@ -48,7 +59,7 @@ class ClienteModel:
         conn = Database.get_connection()
         cursor = conn.cursor()
 
-        query = f"SELECT {ClienteModel.COLUMNS} FROM view_externos_clientes"
+        query = f"SELECT {ClienteModel._get_columns(cursor)} FROM view_externos_clientes"
         params = []
 
         if empresa_id:
@@ -77,7 +88,7 @@ class ClienteModel:
         conn = Database.get_connection()
         cursor = conn.cursor()
 
-        query = f"SELECT {ClienteModel.COLUMNS} FROM view_externos_clientes WHERE codigo = ?"
+        query = f"SELECT {ClienteModel._get_columns(cursor)} FROM view_externos_clientes WHERE codigo = ?"
         params = [codigo]
 
         if empresa_id:
@@ -104,7 +115,7 @@ class ClienteModel:
         conn = Database.get_connection()
         cursor = conn.cursor()
 
-        query = f"SELECT {ClienteModel.COLUMNS} FROM view_externos_clientes WHERE 1=1"
+        query = f"SELECT {ClienteModel._get_columns(cursor)} FROM view_externos_clientes WHERE 1=1"
         params = []
 
         if filtros.get('empresa'):

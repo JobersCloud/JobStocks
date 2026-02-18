@@ -342,10 +342,11 @@ class EstadisticasModel:
                     desc_map = {}
                     for row in cursor.fetchall():
                         key = row[0].strip() if row[0] else row[0]
-                        if key not in desc_map:
-                            desc = row[1].strip() if row[1] else key
-                            fmt = row[2].strip() if row[2] else ''
-                            desc_map[key] = {'descripcion': desc, 'formato': fmt}
+                        desc = (row[1].strip() if row[1] else '') or ''
+                        fmt = row[2].strip() if row[2] else ''
+                        # Guardar solo si tiene descripcion real, o si no hay entrada previa
+                        if key not in desc_map or (desc and not desc_map[key]['descripcion']):
+                            desc_map[key] = {'descripcion': desc or key, 'formato': fmt}
                     for a in articulos:
                         if a['codigo'] in desc_map:
                             a['descripcion'] = desc_map[a['codigo']]['descripcion']
