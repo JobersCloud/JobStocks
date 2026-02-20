@@ -257,6 +257,7 @@
     "stocks": "Stocks",
     "myProposals": "My Proposals",
     "myOrders": "My Orders",
+    "myInquiries": "My Inquiries",
     "allProposals": "All Proposals",
     "allInquiries": "All Inquiries",
     "users": "Users",
@@ -531,7 +532,9 @@
     "confirmClose": "Are you sure you want to close this inquiry?",
     "changeStatus": "Change Status",
     "noPhone": "Not provided",
-    "noProduct": "General inquiry"
+    "noProduct": "General inquiry",
+    "myTitle": "My Inquiries",
+    "myNoInquiries": "You have not made any inquiries"
   },
   "params": {
     "sectionDesign": "Design",

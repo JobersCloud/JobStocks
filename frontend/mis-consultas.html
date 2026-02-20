@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todas las Propuestas - Administracion</title>
+    <title>Mis Consultas - Gestion de Stocks</title>
     <script>
         // Inyectar colores del tema ANTES del CSS para evitar flash
         (function () {
@@ -31,13 +31,11 @@
             document.documentElement.setAttribute('data-theme', theme);
             document.documentElement.setAttribute('data-color-theme', colorTheme);
 
-            // Inyectar colores como CSS inline con !important para ganar especificidad
             const style = document.createElement('style');
             style.id = 'theme-colors-inline';
             style.textContent = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
             document.head.appendChild(style);
 
-            // Favicon
             const faviconUrl = localStorage.getItem('faviconUrl');
             if (faviconUrl) {
                 const link = document.createElement('link');
@@ -47,16 +45,15 @@
             }
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=1.26.0">
+    <link rel="stylesheet" href="css/styles.css?v=1.31.0">
 </head>
 <body>
-    <!-- ==================== MASTERPAGE LAYOUT ==================== -->
     <div class="app-layout">
         <!-- Header Superior FIJO -->
         <header class="top-header">
             <div class="top-header-left">
                 <button class="mobile-menu-btn" onclick="toggleSidebarMobile()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="3" y1="12" x2="21" y2="12"></line>
                         <line x1="3" y1="6" x2="21" y2="6"></line>
                         <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -68,7 +65,7 @@
                 </div>
                 <div class="header-divider"></div>
                 <div>
-                    <h1 class="top-header-title" data-i18n="proposals.allTitle">Todas las Propuestas</h1>
+                    <h1 class="top-header-title" data-i18n="inquiries.myTitle">Mis Consultas</h1>
                 </div>
             </div>
             <div class="top-header-right">
@@ -109,9 +106,9 @@
                                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                             </svg>
                             <select id="lang-selector" class="lang-selector-menu" onchange="I18n.setLanguage(this.value)">
-                                <option value="es">Español</option>
+                                <option value="es">Espanol</option>
                                 <option value="en">English</option>
-                                <option value="fr">Français</option>
+                                <option value="fr">Francais</option>
                             </select>
                         </div>
                         <div class="menu-divider"></div>
@@ -129,7 +126,7 @@
                                 <polyline points="16 17 21 12 16 7"></polyline>
                                 <line x1="21" y1="12" x2="9" y2="12"></line>
                             </svg>
-                            <span data-i18n="menu.logout">Cerrar Sesión</span>
+                            <span data-i18n="menu.logout">Cerrar Sesion</span>
                         </a>
                     </div>
                 </div>
@@ -143,11 +140,10 @@
             </div>
 
             <nav class="sidebar-nav">
-                <!-- Items principales -->
                 <div class="sidebar-section">
                     <a class="sidebar-item" data-page="index.html" data-tooltip="Stocks" onclick="SidebarNav.navigateTo('index.html')">
                         <span class="sidebar-item-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
                             </svg>
@@ -156,7 +152,7 @@
                     </a>
                     <a class="sidebar-item" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')">
                         <span class="sidebar-item-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                 <polyline points="14 2 14 8 20 8"></polyline>
                                 <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -176,7 +172,7 @@
                         </span>
                         <span class="sidebar-item-text" data-i18n="menu.myOrders">Mis Pedidos</span>
                     </a>
-                    <a class="sidebar-item" data-page="mis-consultas.html" data-tooltip="Mis Consultas" onclick="SidebarNav.navigateTo('mis-consultas.html')">
+                    <a class="sidebar-item active" data-page="mis-consultas.html" data-tooltip="Mis Consultas" onclick="SidebarNav.navigateTo('mis-consultas.html')">
                         <span class="sidebar-item-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"></circle>
@@ -189,10 +185,10 @@
                 </div>
 
                 <!-- Acordeon Administracion -->
-                <div class="sidebar-accordion expanded" id="sidebar-admin-section" style="display: none;">
+                <div class="sidebar-accordion" id="sidebar-admin-section" style="display: none;">
                     <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
                         <div class="sidebar-accordion-title">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="3" width="7" height="7"></rect>
                                 <rect x="14" y="3" width="7" height="7"></rect>
                                 <rect x="14" y="14" width="7" height="7"></rect>
@@ -207,7 +203,7 @@
                     <div class="sidebar-accordion-content">
                         <a class="sidebar-item" data-page="dashboard.html" data-tooltip="Dashboard" onclick="SidebarNav.navigateTo('dashboard.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="18" y1="20" x2="18" y2="10"></line>
                                     <line x1="12" y1="20" x2="12" y2="4"></line>
                                     <line x1="6" y1="20" x2="6" y2="14"></line>
@@ -215,9 +211,9 @@
                             </span>
                             <span class="sidebar-item-text" data-i18n="menu.dashboard">Dashboard</span>
                         </a>
-                        <a class="sidebar-item active" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')">
+                        <a class="sidebar-item" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
                                     <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
                                 </svg>
@@ -237,7 +233,7 @@
                         </a>
                         <a class="sidebar-item" data-page="todas-consultas.html" data-tooltip="Consultas" onclick="SidebarNav.navigateTo('todas-consultas.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"></circle>
                                     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                                     <line x1="12" y1="17" x2="12.01" y2="17"></line>
@@ -247,7 +243,7 @@
                         </a>
                         <a class="sidebar-item" data-page="usuarios.html" data-tooltip="Usuarios" onclick="SidebarNav.navigateTo('usuarios.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                                     <circle cx="9" cy="7" r="4"></circle>
                                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -256,15 +252,15 @@
                             </span>
                             <span class="sidebar-item-text" data-i18n="menu.users">Usuarios</span>
                         </a>
-                        <a class="sidebar-item" data-page="auditoria.html" data-tooltip="Auditoría" onclick="SidebarNav.navigateTo('auditoria.html')">
+                        <a class="sidebar-item" data-page="auditoria.html" data-tooltip="Auditoria" onclick="SidebarNav.navigateTo('auditoria.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                                 </svg>
                             </span>
-                            <span class="sidebar-item-text" data-i18n="menu.audit">Auditoría</span>
+                            <span class="sidebar-item-text" data-i18n="menu.audit">Auditoria</span>
                         </a>
-                        <a class="sidebar-item" data-page="vista-almacen.html" data-tooltip="Vista Almacén" onclick="SidebarNav.navigateTo('vista-almacen.html')">
+                        <a class="sidebar-item" data-page="vista-almacen.html" data-tooltip="Vista Almacen" onclick="SidebarNav.navigateTo('vista-almacen.html')">
                             <span class="sidebar-item-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
@@ -272,15 +268,15 @@
                                     <line x1="12" y1="22.08" x2="12" y2="12"></line>
                                 </svg>
                             </span>
-                            <span class="sidebar-item-text" data-i18n="menu.warehouseView">Vista Almacén</span>
+                            <span class="sidebar-item-text" data-i18n="menu.warehouseView">Vista Almacen</span>
                         </a>
-                        <a class="sidebar-item" data-page="informe-almacen.html" data-tooltip="Informe Almacén" onclick="SidebarNav.navigateTo('informe-almacen.html')">
+                        <a class="sidebar-item" data-page="informe-almacen.html" data-tooltip="Informe Almacen" onclick="SidebarNav.navigateTo('informe-almacen.html')">
                             <span class="sidebar-item-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"></path>
                                 </svg>
                             </span>
-                            <span class="sidebar-item-text" data-i18n="menu.warehouseReport">Informe Almacén</span>
+                            <span class="sidebar-item-text" data-i18n="menu.warehouseReport">Informe Almacen</span>
                         </a>
                     </div>
                 </div>
@@ -289,7 +285,7 @@
                 <div class="sidebar-accordion" id="sidebar-config-section" style="display: none;">
                     <div class="sidebar-accordion-header" onclick="toggleAccordion(this)">
                         <div class="sidebar-accordion-title">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="3"></circle>
                                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                             </svg>
@@ -302,7 +298,7 @@
                     <div class="sidebar-accordion-content">
                         <a class="sidebar-item" data-page="email-config.html" data-tooltip="Email" onclick="SidebarNav.navigateTo('email-config.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                                     <polyline points="22,6 12,13 2,6"></polyline>
                                 </svg>
@@ -311,7 +307,7 @@
                         </a>
                         <a class="sidebar-item" data-page="parametros.html" data-tooltip="Parametros" onclick="SidebarNav.navigateTo('parametros.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="4" y1="21" x2="4" y2="14"></line>
                                     <line x1="4" y1="10" x2="4" y2="3"></line>
                                     <line x1="12" y1="21" x2="12" y2="12"></line>
@@ -328,7 +324,7 @@
                         <a class="sidebar-item" data-page="api-keys.html" data-tooltip="API Keys" onclick="SidebarNav.navigateTo('api-keys.html')"><span class="sidebar-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg></span><span class="sidebar-item-text" data-i18n="menu.apiKeys">API Keys</span></a>
                         <a class="sidebar-item" data-page="empresa-logo.html" data-tooltip="Logo" onclick="SidebarNav.navigateTo('empresa-logo.html')">
                             <span class="sidebar-item-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                                     <circle cx="8.5" cy="8.5" r="1.5"></circle>
                                     <polyline points="21 15 16 10 5 21"></polyline>
@@ -350,11 +346,10 @@
                 </div>
             </nav>
 
-            <!-- Footer del Sidebar -->
             <div class="sidebar-footer">
                 <a class="sidebar-item" data-tooltip="Cerrar Sesion" onclick="logout()">
                     <span class="sidebar-item-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                             <polyline points="16 17 21 12 16 7"></polyline>
                             <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -365,7 +360,6 @@
             </div>
         </aside>
 
-        <!-- Overlay para movil -->
         <div class="sidebar-overlay"></div>
 
         <!-- Contenedor Principal -->
@@ -376,23 +370,21 @@
                     <h2 data-i18n="filters.title">Filtros de Busqueda</h2>
                     <div class="filter-grid">
                         <div class="form-group">
-                            <label data-i18n="proposals.filterStatus">Estado</label>
+                            <label data-i18n="inquiries.filterStatus">Estado</label>
                             <select id="filter-estado">
-                                <option value="" data-i18n="proposals.allStatuses">Todos los estados</option>
-                                <option value="Enviada" data-i18n="proposals.statusSent">Enviada</option>
-                                <option value="Procesada" data-i18n="proposals.statusProcessed">Procesada</option>
-                                <option value="Cancelada" data-i18n="proposals.statusCancelled">Cancelada</option>
+                                <option value="" data-i18n="inquiries.allStatuses">Todos los estados</option>
+                                <option value="pendiente" data-i18n="inquiries.statusPending">Pendiente</option>
+                                <option value="respondida" data-i18n="inquiries.statusAnswered">Respondida</option>
+                                <option value="cerrada" data-i18n="inquiries.statusClosed">Cerrada</option>
                             </select>
                         </div>
-                        <div class="filter-dates-row">
-                            <div class="form-group">
-                                <label data-i18n="proposals.filterDateFrom">Desde</label>
-                                <input type="date" id="filter-fecha-desde">
-                            </div>
-                            <div class="form-group">
-                                <label data-i18n="proposals.filterDateTo">Hasta</label>
-                                <input type="date" id="filter-fecha-hasta">
-                            </div>
+                        <div class="form-group">
+                            <label data-i18n="proposals.filterDateFrom">Desde</label>
+                            <input type="date" id="filter-fecha-desde">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="proposals.filterDateTo">Hasta</label>
+                            <input type="date" id="filter-fecha-hasta">
                         </div>
                     </div>
                     <div class="btn-icon-group">
@@ -405,54 +397,20 @@
                     </div>
                 </div>
 
-                <!-- Grid de Propuestas (generado por DataGrid) -->
-                <div id="proposals-grid"></div>
+                <!-- Grid de Consultas -->
+                <div id="inquiries-grid"></div>
             </main>
         </div>
     </div>
 
-    <!-- Modal de detalle de propuesta -->
-    <div id="proposal-detail-modal">
+    <!-- Modal de detalle de consulta -->
+    <div id="inquiry-detail-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 data-i18n="proposals.viewDetails">Ver Detalles</h2>
-                <button class="modal-close" onclick="closeProposalModal()">&times;</button>
+                <h2 data-i18n="inquiries.viewDetail">Detalle de Consulta</h2>
+                <button class="modal-close" onclick="closeInquiryModal()">&times;</button>
             </div>
-            <div class="proposal-detail-content" id="proposal-detail-content"></div>
-        </div>
-    </div>
-
-    <!-- Modal para cambiar estado -->
-    <div id="status-change-modal" class="status-modal" style="display: none;">
-        <div class="status-modal-overlay" onclick="closeStatusModal()"></div>
-        <div class="status-modal-content">
-            <div class="status-modal-header">
-                <h3 data-i18n="proposals.changeStatus">Cambiar Estado</h3>
-                <button class="modal-close" onclick="closeStatusModal()">&times;</button>
-            </div>
-            <div class="status-modal-body">
-                <p class="status-modal-info">
-                    <span data-i18n="proposals.proposal">Propuesta</span> #<span id="status-modal-id"></span>
-                </p>
-                <div class="status-options">
-                    <label class="status-option">
-                        <input type="radio" name="new-status" value="Enviada">
-                        <span class="status-badge status-enviada">Enviada</span>
-                    </label>
-                    <label class="status-option">
-                        <input type="radio" name="new-status" value="Procesada">
-                        <span class="status-badge status-procesada">Procesada</span>
-                    </label>
-                    <label class="status-option">
-                        <input type="radio" name="new-status" value="Cancelada">
-                        <span class="status-badge status-cancelada">Cancelada</span>
-                    </label>
-                </div>
-            </div>
-            <div class="status-modal-footer">
-                <button class="btn-secondary" onclick="closeStatusModal()" data-i18n="common.cancel">Cancelar</button>
-                <button class="btn-primary" onclick="confirmStatusChange()" data-i18n="common.save">Guardar</button>
-            </div>
+            <div class="inquiry-detail-content" id="inquiry-detail-content"></div>
         </div>
     </div>
 
@@ -462,12 +420,11 @@
     <script src="js/data-grid.js?v=20260208b"></script>
     <script src="js/page-common.js?v=20260209a"></script>
     <script>
-        // ==================== PAGE: TODAS LAS PROPUESTAS (Admin) ====================
+        // ==================== PAGE: MIS CONSULTAS (User) ====================
         const API_URL = PageCommon.API_URL;
-        let allProposals = [];
-        let filteredProposals = [];
+        let allInquiries = [];
+        let filteredInquiries = [];
         let grid;
-        let currentStatusProposalId = null;
 
         // ==================== INICIALIZACION ====================
         document.addEventListener('DOMContentLoaded', async function() {
@@ -476,39 +433,30 @@
             await I18n.init();
             document.getElementById('lang-selector').value = I18n.currentLang;
 
-            await PageCommon.checkAuth('administrador');
+            await PageCommon.checkAuth('usuario');
             await PageCommon.obtenerCsrfToken();
 
-            // Crear grid
             grid = new DataGrid({
-                el: '#proposals-grid',
+                el: '#inquiries-grid',
                 columns: [
                     { key: 'id', label: 'ID', tipo: 'numero' },
-                    { key: 'usuario', label: t('proposals.user') || 'Usuario', tipo: 'texto' },
-                    { key: 'fecha', label: t('proposals.date') || 'Fecha', tipo: 'texto' },
-                    { key: 'total_items', label: t('proposals.items') || 'Items', tipo: 'numero' },
+                    { key: 'codigo_producto', label: t('inquiries.product') || 'Producto', tipo: 'texto' },
+                    { key: 'descripcion_producto', label: t('table.description') || 'Descripcion', tipo: 'texto' },
+                    { key: 'fecha_creacion', label: t('proposals.date') || 'Fecha', tipo: 'texto' },
                     { key: 'estado', label: t('proposals.status') || 'Estado', tipo: 'texto' },
-                    { key: 'referencia', label: t('proposals.reference') || 'Referencia', tipo: 'texto' },
                     { key: '_actions', label: 'Acciones', sortable: false, filterable: false }
                 ],
                 renderCell(item, col) {
                     switch (col.key) {
                         case 'id': return `<strong>#${item.id}</strong>`;
-                        case 'usuario': return `<span class="user-badge"><span class="user-badge-icon">👤</span>${item.username || 'Usuario'}</span>`;
-                        case 'fecha': return formatDate(item.fecha);
-                        case 'total_items': return `${item.total_items} ${t('proposals.items').toLowerCase()}`;
+                        case 'codigo_producto': return `<span class="product-badge">${item.codigo_producto}</span>`;
+                        case 'descripcion_producto': return truncate(item.descripcion_producto, 40);
+                        case 'fecha_creacion': return formatDate(item.fecha_creacion);
                         case 'estado': return getStatusBadge(item.estado);
-                        case 'referencia': return item.referencia || '-';
                         case '_actions': return `
                             <div class="action-buttons btn-icon-group">
-                                <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewProposalDetails(${item.id})" title="${t('proposals.viewDetails')}">
+                                <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewInquiryDetails(${item.id})" title="${t('proposals.viewDetails')}">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                </button>
-                                <button class="btn-icon btn-icon-success btn-icon-sm" onclick="downloadExcel(${item.id})" title="${t('proposals.downloadExcel')}">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                </button>
-                                <button class="btn-icon btn-icon-warning btn-icon-sm" onclick="openStatusModal(${item.id}, '${item.estado}')" title="${t('proposals.changeStatus')}">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
                             </div>`;
                         default: return null;
@@ -516,62 +464,44 @@
                 },
                 renderCard(item) {
                     return `
-                        <div class="proposal-card">
-                            <div class="proposal-card-header">
-                                <span class="proposal-card-id">#${item.id}</span>
+                        <div class="inquiry-card">
+                            <div class="inquiry-card-header">
+                                <span class="inquiry-card-product">${item.codigo_producto}</span>
                                 ${getStatusBadge(item.estado)}
                             </div>
-                            <div class="proposal-card-user">
-                                <span class="user-badge"><span class="user-badge-icon">👤</span>${item.username || 'Usuario'}</span>
-                            </div>
-                            <div class="proposal-card-date">${formatDate(item.fecha)}</div>
-                            <div class="proposal-card-info">
-                                <div class="proposal-card-info-item">
-                                    <label>${t('proposals.items')}</label>
-                                    <span>${item.total_items}</span>
-                                </div>
-                                ${item.referencia ? `<div class="proposal-card-info-item"><label>${t('proposals.reference')}</label><span>${item.referencia}</span></div>` : ''}
-                            </div>
-                            <div class="proposal-card-actions">
-                                <div class="btn-icon-group" style="justify-content: center;">
-                                    <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewProposalDetails(${item.id})" title="${t('proposals.viewDetails')}">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                    </button>
-                                    <button class="btn-icon btn-icon-success btn-icon-sm" onclick="downloadExcel(${item.id})" title="${t('proposals.downloadExcel')}">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                    </button>
-                                    <button class="btn-icon btn-icon-warning btn-icon-sm" onclick="openStatusModal(${item.id}, '${item.estado}')" title="${t('proposals.changeStatus')}">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                    </button>
-                                </div>
+                            <div class="inquiry-card-date">${formatDate(item.fecha_creacion)}</div>
+                            <div class="inquiry-card-message">${truncate(item.mensaje, 80)}</div>
+                            <div class="inquiry-card-actions btn-icon-group" style="justify-content: center;">
+                                <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewInquiryDetails(${item.id})" title="${t('proposals.viewDetails')}">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
                             </div>
                         </div>`;
                 },
-                defaultSort: { column: 'fecha', direction: 'DESC' },
-                storageKey: 'filtrosGuardados_propuestas',
-                emptyIcon: '📋',
-                emptyText: t('proposals.noProposals') || 'No hay propuestas',
-                loadingText: t('proposals.loading') || 'Cargando propuestas...'
+                defaultSort: { column: 'fecha_creacion', direction: 'DESC' },
+                storageKey: 'filtrosGuardados_misconsultas',
+                tableClass: 'inquiries-table',
+                emptyIcon: '💬',
+                emptyText: t('inquiries.myNoInquiries') || 'No has realizado consultas',
+                loadingText: t('inquiries.loading') || 'Cargando consultas...'
             });
 
-            await loadProposals();
+            await loadInquiries();
         });
 
-        // ==================== CARGAR PROPUESTAS ====================
-        async function loadProposals() {
+        // ==================== CARGAR CONSULTAS ====================
+        async function loadInquiries() {
             grid.showLoading();
             try {
-                const response = await fetch(`${API_URL}/api/propuestas`, { credentials: 'include' });
-                if (!response.ok) {
-                    if (response.status === 403) { alert('No tienes permisos para ver todas las propuestas'); window.location.href = 'index.html'; return; }
-                    throw new Error('Error loading proposals');
-                }
+                const empresaId = localStorage.getItem('empresa_id');
+                const response = await fetch(`${API_URL}/api/consultas/mis-consultas?empresa_id=${empresaId}`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Error loading inquiries');
                 const data = await response.json();
-                allProposals = (data.propuestas || []).map(p => ({ ...p, usuario: p.username || 'Usuario' }));
-                filteredProposals = [...allProposals];
-                grid.setData(allProposals);
+                allInquiries = data.consultas || [];
+                filteredInquiries = [...allInquiries];
+                grid.setData(allInquiries);
             } catch (error) {
-                console.error('Error loading proposals:', error);
+                console.error('Error loading inquiries:', error);
                 grid.setData([]);
             }
         }
@@ -581,200 +511,87 @@
             const estado = document.getElementById('filter-estado').value;
             const fechaDesde = document.getElementById('filter-fecha-desde').value;
             const fechaHasta = document.getElementById('filter-fecha-hasta').value;
-            filteredProposals = allProposals.filter(p => {
-                if (estado && p.estado !== estado) return false;
-                if (fechaDesde && new Date(p.fecha) < new Date(fechaDesde)) return false;
-                if (fechaHasta) { const d = new Date(fechaHasta); d.setHours(23,59,59,999); if (new Date(p.fecha) > d) return false; }
+            filteredInquiries = allInquiries.filter(inquiry => {
+                if (estado && inquiry.estado !== estado) return false;
+                if (fechaDesde && new Date(inquiry.fecha_creacion) < new Date(fechaDesde)) return false;
+                if (fechaHasta) { const d = new Date(fechaHasta); d.setHours(23,59,59,999); if (new Date(inquiry.fecha_creacion) > d) return false; }
                 return true;
             });
-            grid.setData(filteredProposals);
+            grid.setData(filteredInquiries);
         }
 
         function clearFilters() {
             document.getElementById('filter-estado').value = '';
             document.getElementById('filter-fecha-desde').value = '';
             document.getElementById('filter-fecha-hasta').value = '';
-            filteredProposals = [...allProposals];
-            grid.setData(allProposals);
+            filteredInquiries = [...allInquiries];
+            grid.setData(allInquiries);
         }
 
         // ==================== UTILIDADES ====================
         function formatDate(dateString) {
+            if (!dateString) return '-';
             const date = new Date(dateString);
             return date.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
         }
 
+        function truncate(str, length) { if (!str) return '-'; return str.length > length ? str.substring(0, length) + '...' : str; }
+
         function getStatusBadge(status) {
             const statusMap = {
-                'Enviada': { class: 'status-enviada', key: 'proposals.statusSent' },
-                'Procesada': { class: 'status-procesada', key: 'proposals.statusProcessed' },
-                'Cancelada': { class: 'status-cancelada', key: 'proposals.statusCancelled' }
+                'pendiente': { class: 'status-pendiente', key: 'inquiries.statusPending' },
+                'respondida': { class: 'status-respondida', key: 'inquiries.statusAnswered' },
+                'cerrada': { class: 'status-cerrada', key: 'inquiries.statusClosed' }
             };
-            const statusInfo = statusMap[status] || { class: 'status-enviada', key: 'proposals.statusSent' };
+            const statusInfo = statusMap[status] || { class: 'status-pendiente', key: 'inquiries.statusPending' };
             return `<span class="status-badge ${statusInfo.class}">${t(statusInfo.key)}</span>`;
         }
 
-        // ==================== DESCARGAR EXCEL ====================
-        async function downloadExcel(proposalId) {
-            try {
-                const response = await fetch(`${API_URL}/api/propuestas/${proposalId}/excel`, { credentials: 'include' });
-                if (!response.ok) throw new Error('Error al descargar Excel');
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `propuesta_${proposalId}.xlsx`;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                a.remove();
-            } catch (error) { alert(t('proposals.downloadExcelError')); }
-        }
-
-        // ==================== CAMBIAR ESTADO ====================
-        function openStatusModal(proposalId, currentStatus) {
-            currentStatusProposalId = proposalId;
-            document.getElementById('status-modal-id').textContent = proposalId;
-            document.querySelectorAll('input[name="new-status"]').forEach(r => { r.checked = r.value === currentStatus; });
-            document.getElementById('status-change-modal').style.display = 'flex';
-        }
-
-        function closeStatusModal() {
-            document.getElementById('status-change-modal').style.display = 'none';
-            currentStatusProposalId = null;
-        }
-
-        async function confirmStatusChange() {
-            const selected = document.querySelector('input[name="new-status"]:checked');
-            if (!selected) { alert(t('proposals.selectStatus') || 'Selecciona un estado'); return; }
-            await changeStatus(currentStatusProposalId, selected.value);
-            closeStatusModal();
-        }
-
-        async function changeStatus(proposalId, newStatus) {
-            try {
-                const response = await fetch(`${API_URL}/api/propuestas/${proposalId}/estado`, {
-                    method: 'PUT', credentials: 'include',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() },
-                    body: JSON.stringify({ estado: newStatus })
-                });
-                if (!response.ok) throw new Error('Error changing status');
-                const idx = allProposals.findIndex(p => p.id === proposalId);
-                if (idx !== -1) allProposals[idx].estado = newStatus;
-                const fIdx = filteredProposals.findIndex(p => p.id === proposalId);
-                if (fIdx !== -1) filteredProposals[fIdx].estado = newStatus;
-                grid.refresh();
-            } catch (error) { alert('Error al cambiar el estado'); }
-        }
-
-        // ==================== VER DETALLE ====================
-        async function viewProposalDetails(proposalId) {
-            const modal = document.getElementById('proposal-detail-modal');
-            const content = document.getElementById('proposal-detail-content');
+        // ==================== DETALLE ====================
+        async function viewInquiryDetails(inquiryId) {
+            const modal = document.getElementById('inquiry-detail-modal');
+            const content = document.getElementById('inquiry-detail-content');
             modal.style.display = 'flex';
-            content.innerHTML = '<div class="proposals-loading"><div class="spinner"></div><p>Cargando...</p></div>';
+            content.innerHTML = '<div class="inquiries-loading"><div class="spinner"></div><p>Cargando...</p></div>';
             try {
-                const response = await fetch(`${API_URL}/api/propuestas/${proposalId}`, { credentials: 'include' });
-                if (!response.ok) throw new Error('Error loading proposal details');
+                const empresaId = localStorage.getItem('empresa_id');
+                const response = await fetch(`${API_URL}/api/consultas/${inquiryId}?empresa_id=${empresaId}`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Error loading inquiry details');
                 const data = await response.json();
-                const proposal = data.propuesta;
-                const lines = proposal.lineas || [];
+                const inquiry = data.consulta;
                 content.innerHTML = `
-                    <div class="proposal-info">
-                        <div class="proposal-info-item"><label>ID</label><span>#${proposal.id}</span></div>
-                        <div class="proposal-info-item"><label>${t('proposals.user')}</label><span>${proposal.username || 'Usuario'}</span></div>
-                        <div class="proposal-info-item"><label>${t('proposals.date')}</label><span>${formatDate(proposal.fecha)}</span></div>
-                        <div class="proposal-info-item"><label>${t('proposals.status')}</label><span>${getStatusBadge(proposal.estado)}</span></div>
-                        <div class="proposal-info-item"><label>${t('proposals.items')}</label><span>${proposal.total_items}</span></div>
-                        ${proposal.referencia ? `<div class="proposal-info-item"><label>${t('proposals.reference')}</label><span>${proposal.referencia}</span></div>` : ''}
+                    <div class="inquiry-section">
+                        <h4>📦 ${t('inquiries.product')}</h4>
+                        <div class="inquiry-section-grid">
+                            <div class="inquiry-field"><label>${t('table.code')}</label><span style="color: var(--primary); font-weight: 600;">${inquiry.codigo_producto}</span></div>
+                            <div class="inquiry-field"><label>${t('table.description')}</label><span>${inquiry.descripcion_producto || '-'}</span></div>
+                            <div class="inquiry-field"><label>${t('table.format')}</label><span>${inquiry.formato || '-'}</span></div>
+                            <div class="inquiry-field"><label>${t('table.quality')}</label><span>${inquiry.calidad || '-'}</span></div>
+                            <div class="inquiry-field"><label>${t('table.tone')}</label><span>${inquiry.tono || '-'}</span></div>
+                            <div class="inquiry-field"><label>${t('table.caliber')}</label><span>${inquiry.calibre || '-'}</span></div>
+                        </div>
                     </div>
-                    ${proposal.comentarios ? `<div class="proposal-comments"><h4>${t('proposals.comments')}</h4><p>${proposal.comentarios}</p></div>` : ''}
-                    <h3 class="proposal-lines-title">${t('proposals.items')}</h3>
-                    <div class="proposal-lines-list">
-                        ${lines.map((line, index) => `
-                            <div class="proposal-line-item">
-                                <div class="proposal-line-image" data-img-index="${index}"><div class="no-image loading-img">⏳</div></div>
-                                <div class="proposal-line-info">
-                                    <div class="proposal-line-header">
-                                        <span class="proposal-line-code">${line.codigo}</span>
-                                        <span class="proposal-line-qty">${Number(line.cantidad_solicitada).toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${line.unidad}</span>
-                                    </div>
-                                    <div class="proposal-line-desc">${line.descripcion}</div>
-                                    <div class="proposal-line-details">
-                                        <span class="detail-tag">${line.formato}</span>
-                                        <span class="detail-tag">${line.calidad}</span>
-                                        ${line.color ? `<span class="detail-tag">${line.color}</span>` : ''}
-                                        ${line.tono ? `<span class="detail-tag">T:${line.tono}</span>` : ''}
-                                        ${line.calibre ? `<span class="detail-tag">C:${line.calibre}</span>` : ''}
-                                    </div>
-                                    <div class="proposal-line-packing">
-                                        ${line.pallet ? `<span class="packing-tag">📦 Pallet: ${line.pallet}</span>` : ''}
-                                        ${line.caja ? `<span class="packing-tag">🗃️ Caja: ${line.caja}</span>` : ''}
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('')}
+                    <div class="inquiry-message"><h4>💬 ${t('inquiries.message')}</h4><p>${inquiry.mensaje}</p></div>
+                    <div class="inquiry-section">
+                        <h4>📋 ${t('proposals.status')}</h4>
+                        <div class="inquiry-section-grid">
+                            <div class="inquiry-field"><label>${t('proposals.status')}</label><span>${getStatusBadge(inquiry.estado)}</span></div>
+                            <div class="inquiry-field"><label>${t('inquiries.date')}</label><span>${formatDate(inquiry.fecha_creacion)}</span></div>
+                        </div>
                     </div>
+                    ${inquiry.respuesta ? `<div class="inquiry-response"><h4>✅ ${t('inquiries.response')}</h4><p>${inquiry.respuesta}</p><div class="meta">${inquiry.respondido_por_nombre ? `Por: ${inquiry.respondido_por_nombre}` : ''}${inquiry.fecha_respuesta ? ` - ${formatDate(inquiry.fecha_respuesta)}` : ''}</div></div>` : ''}
                 `;
-                lines.forEach((line, index) => cargarImagenProducto(line.codigo, index));
             } catch (error) { content.innerHTML = '<p style="color: #dc3545; text-align: center;">Error al cargar los detalles</p>'; }
         }
 
-        async function cargarImagenProducto(codigo, index) {
-            const container = document.querySelector(`[data-img-index="${index}"]`);
-            if (!container) return;
-            try {
-                const response = await fetch(`${API_URL}/api/stocks/${encodeURIComponent(codigo)}/imagenes`, { credentials: 'include' });
-                if (response.ok) {
-                    const imagenes = await response.json();
-                    if (imagenes.length > 0 && imagenes[0].imagen) {
-                        const imgBase64 = imagenes[0].imagen;
-                        const totalImgs = imagenes.length;
-                        container.innerHTML = `<img src="data:image/jpeg;base64,${imgBase64}" alt="${codigo}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;cursor:pointer;">
-                            ${totalImgs > 1 ? `<span class="img-count">+${totalImgs - 1}</span>` : ''}`;
-                        container.dataset.imagenes = JSON.stringify(imagenes.map(i => i.imagen));
-                        container.dataset.codigo = codigo;
-                        container.onclick = () => abrirGaleria(container.dataset.imagenes, codigo);
-                    } else { container.innerHTML = '<div class="no-image">📦</div>'; }
-                } else { container.innerHTML = '<div class="no-image">📦</div>'; }
-            } catch (e) { container.innerHTML = '<div class="no-image">📦</div>'; }
-        }
-
-        function abrirGaleria(imagenesJson, codigo) {
-            const imagenes = JSON.parse(imagenesJson);
-            if (!imagenes || imagenes.length === 0) return;
-            let modal = document.getElementById('galeria-modal');
-            if (!modal) {
-                modal = document.createElement('div');
-                modal.id = 'galeria-modal';
-                modal.className = 'galeria-modal';
-                modal.innerHTML = `<div class="galeria-content"><button class="galeria-close" onclick="cerrarGaleria()">&times;</button><div class="galeria-main"><img id="galeria-img-principal" src="" alt="Imagen"></div><div class="galeria-thumbs" id="galeria-thumbs"></div></div>`;
-                document.body.appendChild(modal);
-                modal.addEventListener('click', (e) => { if (e.target === modal) cerrarGaleria(); });
-            }
-            document.getElementById('galeria-img-principal').src = `data:image/jpeg;base64,${imagenes[0]}`;
-            document.getElementById('galeria-thumbs').innerHTML = imagenes.map((img, i) => `<div class="galeria-thumb ${i === 0 ? 'active' : ''}" onclick="seleccionarImagen('${img}', this)"><img src="data:image/jpeg;base64,${img}" alt="Thumb ${i + 1}"></div>`).join('');
-            modal.style.display = 'flex';
-        }
-
-        function seleccionarImagen(imgBase64, thumbEl) {
-            document.getElementById('galeria-img-principal').src = `data:image/jpeg;base64,${imgBase64}`;
-            document.querySelectorAll('.galeria-thumb').forEach(t => t.classList.remove('active'));
-            thumbEl.classList.add('active');
-        }
-
-        function cerrarGaleria() { const m = document.getElementById('galeria-modal'); if (m) m.style.display = 'none'; }
-        function ampliarImagen(imgBase64) { abrirGaleria(JSON.stringify([imgBase64]), ''); }
-
-        function closeProposalModal() { document.getElementById('proposal-detail-modal').style.display = 'none'; }
+        function closeInquiryModal() { document.getElementById('inquiry-detail-modal').style.display = 'none'; }
 
         // ==================== EVENT LISTENERS ====================
-        document.getElementById('proposal-detail-modal').addEventListener('click', function(e) { if (e.target === this) closeProposalModal(); });
+        document.getElementById('inquiry-detail-modal').addEventListener('click', function(e) { if (e.target === this) closeInquiryModal(); });
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                closeProposalModal();
-                closeStatusModal();
+                closeInquiryModal();
                 hideChangePasswordModal();
                 const gf = grid?.getFilters();
                 if (gf) gf.cerrarPopupFiltro();

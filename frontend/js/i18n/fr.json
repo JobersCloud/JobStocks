@@ -257,6 +257,7 @@
     "stocks": "Stocks",
     "myProposals": "Mes Propositions",
     "myOrders": "Mes Commandes",
+    "myInquiries": "Mes Consultations",
     "allProposals": "Toutes les Propositions",
     "allInquiries": "Toutes les Demandes",
     "users": "Utilisateurs",
@@ -531,7 +532,9 @@
     "confirmClose": "Êtes-vous sûr de vouloir fermer cette demande ?",
     "changeStatus": "Changer le Statut",
     "noPhone": "Non fourni",
-    "noProduct": "Demande générale"
+    "noProduct": "Demande générale",
+    "myTitle": "Mes Consultations",
+    "myNoInquiries": "Vous n'avez fait aucune consultation"
   },
   "params": {
     "sectionDesign": "Design",

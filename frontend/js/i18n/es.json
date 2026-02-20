@@ -257,6 +257,7 @@
     "stocks": "Stocks",
     "myProposals": "Mis Propuestas",
     "myOrders": "Mis Pedidos",
+    "myInquiries": "Mis Consultas",
     "allProposals": "Todas las Propuestas",
     "allInquiries": "Todas las Consultas",
     "users": "Usuarios",
@@ -531,7 +532,9 @@
     "confirmClose": "¿Estás seguro de cerrar esta consulta?",
     "changeStatus": "Cambiar Estado",
     "noPhone": "No indicado",
-    "noProduct": "Consulta general"
+    "noProduct": "Consulta general",
+    "myTitle": "Mis Consultas",
+    "myNoInquiries": "No has realizado consultas"
   },
   "params": {
     "sectionDesign": "Diseño",

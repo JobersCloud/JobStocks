@@ -11929,7 +11929,9 @@ tbody tr:hover {
 }
 
 @media (max-width: 768px) {
-    .main-content-area .orders-filter-grid,
+    .main-content-area .orders-filter-grid {
+        grid-template-columns: 1fr !important;
+    }
     .main-content-area .orders-filter-grid.orders-filter-3 {
         grid-template-columns: 1fr 1fr !important;
     }

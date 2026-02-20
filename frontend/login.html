@@ -340,6 +340,18 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.31.1', date: '2026-02-19', title: 'Fix busqueda por voz', items: [
+                {type: 'fix', text: 'Busqueda por voz ahora envia siempre el texto reconocido como descripcion (antes podia quedar vacio)'},
+                {type: 'fix', text: 'Matching de selects (serie, color) mas estricto: exact > startsWith > includes con longitud minima'},
+                {type: 'fix', text: 'Quitado "A" de stop words para no eliminar codigos de calidad como "CALIDAD A"'},
+                {type: 'fix', text: 'Codigos cortos como PZ o 1A ya no se filtran (minimo 2 chars en vez de 3)'}
+            ]},
+            { version: 'v1.31.0', date: '2026-02-18', title: 'Mis Consultas y fix filtros movil', items: [
+                {type: 'new', text: 'Nueva pagina Mis Consultas donde cada usuario ve el estado de sus consultas sobre productos'},
+                {type: 'new', text: 'Menu lateral con enlace a Mis Consultas disponible para todos los usuarios'},
+                {type: 'new', text: 'Detalle de consulta con info del producto, mensaje enviado y respuesta del administrador'},
+                {type: 'fix', text: 'Filtros de pedidos en vista movil ahora se apilan correctamente en una columna'}
+            ]},
             { version: 'v1.30.3', date: '2026-02-17', title: 'Geolocalizacion por IP en Auditoria', items: [
                 {type: 'new', text: 'Nueva columna Ubicacion en auditoria que muestra ciudad y pais con bandera'},
                 {type: 'new', text: 'Al pinchar en la ubicacion se abre el mapa con la posicion del usuario'},

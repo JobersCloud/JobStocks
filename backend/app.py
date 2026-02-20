@@ -145,7 +145,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.30.3'
+APP_VERSION = 'v1.31.1'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -354,6 +354,11 @@ def api_keys_page():
 @login_required
 def todas_consultas_page():
     return send_from_directory(FRONTEND_DIR, 'todas-consultas.html')
+
+@app.route('/mis-consultas.html')
+@login_required
+def mis_consultas_page():
+    return send_from_directory(FRONTEND_DIR, 'mis-consultas.html')
 
 @app.route('/dashboard.html')
 @login_required

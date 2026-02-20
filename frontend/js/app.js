@@ -710,8 +710,8 @@ function procesarBusquedaVoz(texto) {
 
     // Eliminar stop words (artículos, preposiciones, etc.)
     const stopWords = ['DE', 'DEL', 'LA', 'EL', 'LAS', 'LOS', 'UN', 'UNA', 'EN', 'CON',
-                       'POR', 'PARA', 'ES', 'ESTO', 'ESTE', 'ESTA', 'ESE', 'ESA', 'QUE', 'QUÉ',
-                       'THE', 'A', 'AN', 'OF', 'FOR', 'IN', 'IS', 'IT', 'LE', 'LES', 'DU', 'DES'];
+                       'POR', 'PARA', 'ESTO', 'ESTE', 'ESTA', 'ESE', 'ESA', 'QUE', 'QUÉ',
+                       'THE', 'AN', 'OF', 'FOR', 'IN', 'IS', 'IT', 'LE', 'LES', 'DU', 'DES'];
     limpio = limpio.split(' ').filter(w => !stopWords.includes(w)).join(' ').trim();
 
     // 2. Extraer formato (patrón NNxNN, ej: 75x120, 20X20, 75 POR 120)
@@ -770,43 +770,41 @@ function procesarBusquedaVoz(texto) {
         if (opcion) selFormato.value = opcion.value;
     }
 
-    const selSerie = document.getElementById('filter-serie');
-    if (descripcion && selSerie) {
-        const palabras = descripcion.split(' ');
+    // Helper: match select con prioridad exact > startsWith > includes (estricto)
+    function matchSelectVoz(selectId, palabras) {
+        const sel = document.getElementById(selectId);
+        if (!sel || !palabras.length) return;
         for (const palabra of palabras) {
-            if (!palabra || palabra.length < 3) continue;
-            const opcion = Array.from(selSerie.options).find(o => {
+            if (!palabra || palabra.length < 2) continue;
+            // 1. Exact match (val o txt)
+            let opcion = Array.from(sel.options).find(o => {
                 if (!o.value) return false;
-                const val = o.value.toUpperCase();
-                const txt = o.text.toUpperCase();
-                return val === palabra || txt === palabra || val.includes(palabra) || txt.includes(palabra);
+                return o.value.toUpperCase() === palabra || o.text.toUpperCase() === palabra;
             });
+            // 2. startsWith solo si palabra >= 4 chars
+            if (!opcion && palabra.length >= 4) {
+                opcion = Array.from(sel.options).find(o => {
+                    if (!o.value) return false;
+                    return o.value.toUpperCase().startsWith(palabra) || o.text.toUpperCase().startsWith(palabra);
+                });
+            }
+            // 3. includes solo si palabra >= 5 chars (evitar false positives como ARES→OLIVARES)
+            if (!opcion && palabra.length >= 5) {
+                opcion = Array.from(sel.options).find(o => {
+                    if (!o.value) return false;
+                    return o.value.toUpperCase().includes(palabra) || o.text.toUpperCase().includes(palabra);
+                });
+            }
             if (opcion && opcion.value) {
-                selSerie.value = opcion.value;
-                descripcion = descripcion.replace(palabra, '').trim();
-                break;
+                sel.value = opcion.value;
+                break; // No eliminar palabra de descripcion
             }
         }
     }
 
-    const selColor = document.getElementById('filter-color');
-    if (descripcion && selColor) {
-        const palabras = descripcion.split(' ');
-        for (const palabra of palabras) {
-            if (!palabra || palabra.length < 3) continue;
-            const opcion = Array.from(selColor.options).find(o => {
-                if (!o.value) return false;
-                const val = o.value.toUpperCase();
-                const txt = o.text.toUpperCase();
-                return val === palabra || txt === palabra || val.includes(palabra) || txt.includes(palabra);
-            });
-            if (opcion && opcion.value) {
-                selColor.value = opcion.value;
-                descripcion = descripcion.replace(palabra, '').trim();
-                break;
-            }
-        }
-    }
+    const palabrasDesc = descripcion ? descripcion.split(' ') : [];
+    matchSelectVoz('filter-serie', palabrasDesc);
+    matchSelectVoz('filter-color', palabrasDesc);
 
     if (calidad) {
         const selCalidad = document.getElementById('filter-calidad');
@@ -818,10 +816,10 @@ function procesarBusquedaVoz(texto) {
         }
     }
 
-    // 7. Texto restante → guardar solo si tiene palabras significativas (no stop words sueltas)
+    // 7. Guardar SIEMPRE el texto limpio completo como descripción de búsqueda
     descripcion = descripcion.replace(/\s+/g, ' ').trim();
-    // Filtrar palabras menores de 3 caracteres que puedan haber quedado
-    descripcion = descripcion.split(' ').filter(w => w.length >= 3).join(' ').trim();
+    // Filtrar palabras de 1 solo carácter que puedan haber quedado
+    descripcion = descripcion.split(' ').filter(w => w.length >= 2).join(' ').trim();
     if (descripcion) {
         window._vozDescripcion = descripcion;
     }

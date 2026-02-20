@@ -155,6 +155,37 @@ def listar_consultas():
     })
 
 
+@consulta_bp.route('/mis-consultas', methods=['GET'])
+@login_required
+def mis_consultas():
+    """
+    Listar consultas del usuario actual
+    ---
+    tags:
+      - Consultas
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: estado
+        in: query
+        type: string
+        enum: [pendiente, respondida, cerrada]
+    responses:
+      200:
+        description: Lista de consultas del usuario
+    """
+    empresa_id = get_empresa_id()
+    estado = request.args.get('estado')
+
+    consultas = ConsultaModel.get_by_user(current_user.id, empresa_id, estado)
+
+    return jsonify({
+        'success': True,
+        'consultas': consultas,
+        'total': len(consultas)
+    })
+
+
 @consulta_bp.route('/pendientes/count', methods=['GET'])
 @login_required
 @administrador_required
@@ -171,9 +202,8 @@ def contar_pendientes():
 
 @consulta_bp.route('/<int:consulta_id>', methods=['GET'])
 @login_required
-@administrador_required
 def obtener_consulta(consulta_id):
-    """Obtener detalle de una consulta"""
+    """Obtener detalle de una consulta (admin o propietario)"""
     empresa_id = get_empresa_id()
     consulta = ConsultaModel.get_by_id(consulta_id, empresa_id)
 
@@ -182,6 +212,13 @@ def obtener_consulta(consulta_id):
             'success': False,
             'error': 'Consulta no encontrada'
         }), 404
+
+    # Permitir acceso si es admin o si es el propietario de la consulta
+    if current_user.rol not in ('administrador', 'superusuario') and consulta.get('user_id') != current_user.id:
+        return jsonify({
+            'success': False,
+            'error': 'No tienes permisos para ver esta consulta'
+        }), 403
 
     return jsonify({
         'success': True,

@@ -116,6 +116,68 @@ class ConsultaModel:
             return None
 
     @staticmethod
+    def get_by_user(user_id, empresa_id, estado=None):
+        """Obtener consultas de un usuario específico"""
+        try:
+            conn = Database.get_connection()
+            cursor = conn.cursor()
+
+            query = """
+                SELECT
+                    c.id, c.empresa_id, c.codigo_producto, c.descripcion_producto,
+                    c.formato, c.calidad, c.color, c.tono, c.calibre,
+                    c.nombre_cliente, c.email_cliente, c.telefono_cliente,
+                    c.mensaje, c.user_id, c.estado, c.respuesta,
+                    c.fecha_respuesta, c.respondido_por, c.fecha_creacion,
+                    u.username as respondido_por_nombre
+                FROM consultas c
+                LEFT JOIN users u ON c.respondido_por = u.id
+                WHERE c.user_id = ? AND c.empresa_id = ?
+            """
+            params = [user_id, empresa_id]
+
+            if estado:
+                query += " AND c.estado = ?"
+                params.append(estado)
+
+            query += " ORDER BY c.fecha_creacion DESC"
+
+            cursor.execute(query, params)
+
+            consultas = []
+            for row in cursor.fetchall():
+                consultas.append({
+                    'id': row[0],
+                    'empresa_id': row[1],
+                    'codigo_producto': row[2],
+                    'descripcion_producto': row[3],
+                    'formato': row[4],
+                    'calidad': row[5],
+                    'color': row[6],
+                    'tono': row[7],
+                    'calibre': row[8],
+                    'nombre_cliente': row[9],
+                    'email_cliente': row[10],
+                    'telefono_cliente': row[11],
+                    'mensaje': row[12],
+                    'user_id': row[13],
+                    'estado': row[14],
+                    'respuesta': row[15],
+                    'fecha_respuesta': row[16].isoformat() if row[16] else None,
+                    'respondido_por': row[17],
+                    'fecha_creacion': row[18].isoformat() if row[18] else None,
+                    'respondido_por_nombre': row[19]
+                })
+
+            conn.close()
+            return consultas
+
+        except Exception as e:
+            print(f"❌ Error al obtener consultas del usuario: {e}")
+            traceback.print_exc()
+            return []
+
+    @staticmethod
     def get_all_by_empresa(empresa_id, estado=None):
         """Obtener todas las consultas de una empresa"""
         try:
