@@ -340,6 +340,11 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.31.2', date: '2026-02-20', title: 'Auto-vinculacion cliente en registro', items: [
+                {type: 'new', text: 'Al registrarse, el sistema intenta vincular automaticamente al usuario con un cliente del ERP (por CIF/NIF, dominio email o nombre de empresa)'},
+                {type: 'improve', text: 'Si se encuentra exactamente 1 coincidencia, se asigna el cliente_id automaticamente sin intervencion del admin'},
+                {type: 'improve', text: 'La vinculacion es best-effort: si falla o hay ambiguedad, el registro continua normalmente'}
+            ]},
             { version: 'v1.31.1', date: '2026-02-19', title: 'Fix busqueda por voz', items: [
                 {type: 'fix', text: 'Busqueda por voz ahora envia siempre el texto reconocido como descripcion (antes podia quedar vacio)'},
                 {type: 'fix', text: 'Matching de selects (serie, color) mas estricto: exact > startsWith > includes con longitud minima'},

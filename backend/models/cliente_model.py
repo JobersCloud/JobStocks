@@ -132,3 +132,88 @@ class ClienteModel:
         clientes = [ClienteModel._row_to_dict(row) for row in cursor.fetchall()]
         conn.close()
         return clientes
+
+    # Dominios de email genéricos que no sirven para matching
+    DOMINIOS_GENERICOS = {
+        'gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'yahoo.es',
+        'live.com', 'msn.com', 'icloud.com', 'aol.com', 'protonmail.com',
+        'mail.com', 'zoho.com', 'gmx.com', 'yandex.com',
+        'hotmail.es', 'outlook.es', 'gmail.es', 'telefonica.net', 'terra.es',
+        'ono.com', 'wanadoo.es', 'orange.es', 'movistar.es', 'vodafone.es'
+    }
+
+    @staticmethod
+    def buscar_coincidencia(empresa_id, cif_nif=None, company_name=None, email=None, connection_id=None):
+        """
+        Intenta encontrar un cliente en genter que coincida con los datos del usuario.
+        Prioridad: 1) CIF/NIF exacto, 2) dominio email, 3) nombre empresa.
+        Solo retorna si hay exactamente 1 coincidencia.
+
+        Returns: codigo del cliente o None
+        """
+        import unicodedata
+        import re
+
+        conn = Database.get_connection(connection_id)
+        cursor = conn.cursor()
+
+        try:
+            # --- Prioridad 1: CIF/NIF exacto ---
+            if cif_nif and cif_nif.strip():
+                cif_normalizado = cif_nif.strip().upper()
+                cursor.execute("""
+                    SELECT RTRIM(codigo) FROM cristal.dbo.genter
+                    WHERE tipoter = 'C' AND RTRIM(empresa) = ?
+                    AND UPPER(RTRIM(cif)) = ?
+                """, (empresa_id, cif_normalizado))
+                rows = cursor.fetchall()
+                if len(rows) == 1:
+                    return rows[0][0].strip()
+
+            # --- Prioridad 2: Dominio email ---
+            if email and '@' in email:
+                dominio = email.split('@')[1].strip().lower()
+                if dominio not in ClienteModel.DOMINIOS_GENERICOS:
+                    cursor.execute("""
+                        SELECT RTRIM(codigo) FROM cristal.dbo.genter
+                        WHERE tipoter = 'C' AND RTRIM(empresa) = ?
+                        AND RTRIM(e_mail) LIKE ?
+                    """, (empresa_id, f'%@{dominio}'))
+                    rows = cursor.fetchall()
+                    if len(rows) == 1:
+                        return rows[0][0].strip()
+
+            # --- Prioridad 3: Nombre de empresa ---
+            if company_name and company_name.strip():
+                # Normalizar: quitar acentos, mayúsculas, sufijos legales
+                def normalizar(texto):
+                    texto = texto.strip().upper()
+                    # Quitar acentos
+                    texto = ''.join(
+                        c for c in unicodedata.normalize('NFD', texto)
+                        if unicodedata.category(c) != 'Mn'
+                    )
+                    # Quitar sufijos legales comunes
+                    texto = re.sub(r'\b(S\.?L\.?U?\.?|S\.?A\.?|S\.?C\.?|C\.?B\.?|S\.?COOP\.?)\b', '', texto)
+                    texto = texto.strip().rstrip(',').strip()
+                    return texto
+
+                nombre_norm = normalizar(company_name)
+                if len(nombre_norm) >= 3:
+                    cursor.execute("""
+                        SELECT RTRIM(codigo) FROM cristal.dbo.genter
+                        WHERE tipoter = 'C' AND RTRIM(empresa) = ?
+                        AND (UPPER(RTRIM(razon)) LIKE ? OR UPPER(RTRIM(nombre_comercial)) LIKE ?)
+                    """, (empresa_id, f'%{nombre_norm}%', f'%{nombre_norm}%'))
+                    rows = cursor.fetchall()
+                    if len(rows) == 1:
+                        return rows[0][0].strip()
+
+            return None
+
+        except Exception as e:
+            print(f"⚠️ Error en buscar_coincidencia: {e}")
+            return None
+        finally:
+            cursor.close()
+            conn.close()

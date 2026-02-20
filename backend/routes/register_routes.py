@@ -297,7 +297,36 @@ def register():
         conn.commit()
         print(f"✅ Usuario {username} (id: {user_id}) registrado y asignado a empresa {empresa_id}")
 
+        # Intentar vincular con cliente existente (best-effort, nunca falla el registro)
+        cliente_vinculado = None
+        try:
+            from models.cliente_model import ClienteModel
+            cliente_codigo = ClienteModel.buscar_coincidencia(
+                empresa_id=empresa_id,
+                cif_nif=cif_nif,
+                company_name=company_name,
+                email=email,
+                connection_id=connection
+            )
+            if cliente_codigo:
+                conn2 = Database.get_connection(connection)
+                cursor2 = conn2.cursor()
+                cursor2.execute("""
+                    UPDATE users_empresas SET cliente_id = ?
+                    WHERE user_id = ? AND empresa_id = ?
+                """, (cliente_codigo, user_id, empresa_id))
+                conn2.commit()
+                cursor2.close()
+                conn2.close()
+                cliente_vinculado = cliente_codigo
+                print(f"✅ Cliente auto-vinculado: usuario {username} → cliente {cliente_codigo}")
+        except Exception as e:
+            print(f"⚠️ Auto-vinculación cliente falló (no afecta registro): {e}")
+
         # Log de auditoría - registro exitoso
+        audit_detalles = {'email': email, 'full_name': full_name, 'pais': pais}
+        if cliente_vinculado:
+            audit_detalles['cliente_vinculado'] = cliente_vinculado
         AuditModel.log(
             accion=AuditAction.USER_REGISTER,
             user_id=user_id,
@@ -308,7 +337,7 @@ def register():
             recurso_id=str(user_id),
             ip_address=get_client_ip(),
             user_agent=request.headers.get('User-Agent'),
-            detalles={'email': email, 'full_name': full_name, 'pais': pais},
+            detalles=audit_detalles,
             resultado=AuditResult.SUCCESS
         )
 
