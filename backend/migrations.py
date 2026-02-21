@@ -741,4 +741,53 @@ MIGRATIONS = [
         ]
     },
 
+    # ================================================================
+    # TABLA USERS - Lockout (bloqueo de cuenta)
+    # ================================================================
+
+    {
+        'version': 35,
+        'description': 'Campos login_attempts y locked_until para bloqueo de cuenta',
+        'app_version': 'v1.32.0',
+        'sql': [
+            """IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users') AND name = 'login_attempts')
+            BEGIN
+                ALTER TABLE users ADD login_attempts INT DEFAULT 0;
+            END""",
+            """IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users') AND name = 'locked_until')
+            BEGIN
+                ALTER TABLE users ADD locked_until DATETIME NULL;
+            END""",
+        ]
+    },
+
+    # ================================================================
+    # TABLA NOTIFICATIONS
+    # ================================================================
+
+    {
+        'version': 36,
+        'description': 'Crear tabla notifications para sistema de notificaciones',
+        'app_version': 'v1.32.0',
+        'sql': [
+            """IF NOT EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('notifications') AND type = 'U')
+            BEGIN
+                CREATE TABLE notifications (
+                    id INT IDENTITY(1,1) PRIMARY KEY,
+                    user_id INT NOT NULL,
+                    empresa_id VARCHAR(5) NOT NULL,
+                    tipo VARCHAR(50) NOT NULL,
+                    titulo NVARCHAR(200) NOT NULL,
+                    mensaje NVARCHAR(500),
+                    data NVARCHAR(MAX),
+                    leida BIT DEFAULT 0,
+                    fecha_creacion DATETIME DEFAULT GETDATE(),
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                );
+                CREATE INDEX idx_notifications_user ON notifications(user_id, empresa_id, leida);
+                CREATE INDEX idx_notifications_fecha ON notifications(fecha_creacion DESC);
+            END""",
+        ]
+    },
+
 ]
