@@ -27,7 +27,7 @@ ssh ubuntu@51.68.44.136 "sudo chmod -R 755 /opt/ApiRestExternos/frontend"
 
 echo.
 echo [3/4] Reiniciando Docker...
-ssh ubuntu@51.68.44.136 "cd /opt/ApiRestExternos && sudo docker-compose down && sudo docker-compose up -d --build"
+ssh ubuntu@51.68.44.136 "cd /opt/ApiRestExternos && sudo docker compose down && sudo docker compose up -d --build"
 
 if %ERRORLEVEL% NEQ 0 (
     echo ERROR: Fallo al reiniciar Docker
