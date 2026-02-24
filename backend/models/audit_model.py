@@ -47,6 +47,10 @@ class AuditAction:
     CONSULTA_SEND = 'CONSULTA_SEND'
     CONSULTA_RESPOND = 'CONSULTA_RESPOND'
 
+    # Bloqueo de cuenta
+    ACCOUNT_LOCKED = 'ACCOUNT_LOCKED'
+    ACCOUNT_UNLOCKED = 'ACCOUNT_UNLOCKED'
+
     # Articulos
     ARTICLE_VIEW = 'ARTICLE_VIEW'
 
@@ -62,6 +66,7 @@ class AuditAction:
             cls.CONFIG_CHANGE, cls.EMAIL_CONFIG_CHANGE,
             cls.PROPUESTA_SEND, cls.PROPUESTA_STATUS_CHANGE,
             cls.CONSULTA_SEND, cls.CONSULTA_RESPOND,
+            cls.ACCOUNT_LOCKED, cls.ACCOUNT_UNLOCKED,
             cls.ARTICLE_VIEW
         ]
 

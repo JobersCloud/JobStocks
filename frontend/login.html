@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Gestión de Stocks</title>
-    <link rel="icon" type="image/x-icon" href="/assets/faviconjobers.ico">
     <script>
         // Inyectar colores del tema ANTES del CSS para evitar flash
         (function () {
@@ -37,6 +36,26 @@
             style.id = 'theme-colors-inline';
             style.textContent = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
             document.head.appendChild(style);
+
+            // Favicon desde cache
+            var _faviconUrl = localStorage.getItem('faviconUrl');
+            if (_faviconUrl) {
+                var link = document.createElement('link');
+                link.rel = 'icon';
+                link.href = _faviconUrl;
+                document.head.appendChild(link);
+            }
+
+            // Pre-cargar logo del cliente desde cache para evitar flash
+            var _logoUrl = localStorage.getItem('logoUrl');
+            if (_logoUrl) {
+                document.addEventListener('DOMContentLoaded', function() {
+                    var sLogo = document.getElementById('sidebar-logo');
+                    var mLogo = document.getElementById('mobile-logo');
+                    if (sLogo) { sLogo.src = _logoUrl; sLogo.style.visibility = 'visible'; }
+                    if (mLogo) { mLogo.src = _logoUrl; mLogo.style.visibility = 'visible'; }
+                });
+            }
         })();
     </script>
     <link rel="stylesheet" href="css/styles.css?v=1.26.0">
@@ -61,7 +80,7 @@
     <div class="login-wrapper">
         <div class="login-sidebar">
             <div class="sidebar-content">
-                <img id="sidebar-logo" src="assets/logojobers.png" alt="Logo" class="sidebar-logo">
+                <img id="sidebar-logo" src="" alt="Logo" class="sidebar-logo" style="visibility:hidden">
                 <h2 data-i18n="header.title">Gestión de Stocks</h2>
                 <p><span data-i18n="header.subtitle">Sistema de consulta de inventario en tiempo real</span></p>
             </div>
@@ -75,7 +94,7 @@
         <div class="login-container">
             <div class="login-box">
                 <div class="login-header">
-                    <img id="mobile-logo" src="assets/logojobers.png" alt="Logo" class="mobile-logo">
+                    <img id="mobile-logo" src="" alt="Logo" class="mobile-logo" style="visibility:hidden">
                     <h1 data-i18n="auth.loginTitle">Iniciar Sesión</h1>
                     <p class="login-subtitle" data-i18n="auth.loginSubtitle">Accede a tu cuenta para continuar</p>
                 </div>
@@ -340,6 +359,27 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.33.1', date: '2026-02-24', title: 'Control de precios por usuario', items: [
+                {type: 'new', text: 'Control individual de visibilidad de precios por usuario desde gestion de usuarios'},
+                {type: 'new', text: 'Boton toggle ojo/ojo-tachado en acciones de usuario para activar/desactivar precios'},
+                {type: 'new', text: 'Columna "Ver precios" en tabla de usuarios (solo visible si el parametro global esta activo)'},
+                {type: 'improve', text: 'Para ver precios, tanto el parametro global de empresa como el flag del usuario deben estar activos'}
+            ]},
+            { version: 'v1.33.0', date: '2026-02-23', title: 'Precios de articulos en grid y detalle', items: [
+                {type: 'new', text: 'Columna de precio en tabla de stocks (configurable por empresa con parametro MOSTRAR_PRECIOS)'},
+                {type: 'new', text: 'Precio visible en detalle del producto, tarjetas movil y vista con imagenes'},
+                {type: 'new', text: 'Formato EUR con separador de miles (1.234,56 €)'},
+                {type: 'improve', text: 'Vista que consulta precios por formato+calidad desde tabla manual (view_externos_articulos_precios)'}
+            ]},
+            { version: 'v1.32.0', date: '2026-02-21', title: 'Notificaciones, bloqueo de cuenta y limpieza de codigo', items: [
+                {type: 'new', text: 'Sistema de notificaciones con actualizacion cada 30 segundos'},
+                {type: 'new', text: 'Icono de campana en header con contador de notificaciones'},
+                {type: 'new', text: 'Toast visual al recibir nuevas notificaciones'},
+                {type: 'new', text: 'Bloqueo automatico de cuenta tras 5 intentos fallidos de login (15 min)'},
+                {type: 'new', text: 'Indicador de intentos restantes al fallar login'},
+                {type: 'new', text: 'Boton de desbloqueo manual de cuentas para administradores'},
+                {type: 'improve', text: 'Migradas paginas admin a usar page-common.js (menos codigo duplicado)'}
+            ]},
             { version: 'v1.31.2', date: '2026-02-20', title: 'Auto-vinculacion cliente en registro', items: [
                 {type: 'new', text: 'Al registrarse, el sistema intenta vincular automaticamente al usuario con un cliente del ERP (por CIF/NIF, dominio email o nombre de empresa)'},
                 {type: 'improve', text: 'Si se encuentra exactamente 1 coincidencia, se asigna el cliente_id automaticamente sin intervencion del admin'},

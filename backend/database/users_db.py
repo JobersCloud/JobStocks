@@ -74,17 +74,32 @@ def verify_user(username, password, empresa_cli_id, empresa_erp=None):
 
         # Obtener datos de empresa si se proporciona empresa_erp
         if empresa_erp:
-            cursor.execute("""
-                SELECT empresa_id, cliente_id, rol
-                FROM users_empresas
-                WHERE user_id = ? AND empresa_id = ?
-            """, (user['id'], empresa_erp))
+            try:
+                cursor.execute("""
+                    SELECT empresa_id, cliente_id, rol, mostrar_precios
+                    FROM users_empresas
+                    WHERE user_id = ? AND empresa_id = ?
+                """, (user['id'], empresa_erp))
 
-            emp_row = cursor.fetchone()
-            if emp_row:
-                user['empresa_erp'] = emp_row[0]
-                user['cliente_id'] = emp_row[1]
-                user['rol'] = emp_row[2] or 'usuario'
+                emp_row = cursor.fetchone()
+                if emp_row:
+                    user['empresa_erp'] = emp_row[0]
+                    user['cliente_id'] = emp_row[1]
+                    user['rol'] = emp_row[2] or 'usuario'
+                    user['mostrar_precios'] = bool(emp_row[3]) if emp_row[3] is not None else False
+            except Exception:
+                # Columna mostrar_precios puede no existir aún
+                cursor.execute("""
+                    SELECT empresa_id, cliente_id, rol
+                    FROM users_empresas
+                    WHERE user_id = ? AND empresa_id = ?
+                """, (user['id'], empresa_erp))
+
+                emp_row = cursor.fetchone()
+                if emp_row:
+                    user['empresa_erp'] = emp_row[0]
+                    user['cliente_id'] = emp_row[1]
+                    user['rol'] = emp_row[2] or 'usuario'
 
         return user
     except Exception as e:
@@ -136,17 +151,32 @@ def get_user_by_id(user_id, empresa_cli_id, empresa_erp=None):
 
         # Obtener datos de empresa si se proporciona empresa_erp
         if empresa_erp:
-            cursor.execute("""
-                SELECT empresa_id, cliente_id, rol
-                FROM users_empresas
-                WHERE user_id = ? AND empresa_id = ?
-            """, (user_id, empresa_erp))
+            try:
+                cursor.execute("""
+                    SELECT empresa_id, cliente_id, rol, mostrar_precios
+                    FROM users_empresas
+                    WHERE user_id = ? AND empresa_id = ?
+                """, (user_id, empresa_erp))
 
-            emp_row = cursor.fetchone()
-            if emp_row:
-                user['empresa_erp'] = emp_row[0]
-                user['cliente_id'] = emp_row[1]
-                user['rol'] = emp_row[2] or 'usuario'
+                emp_row = cursor.fetchone()
+                if emp_row:
+                    user['empresa_erp'] = emp_row[0]
+                    user['cliente_id'] = emp_row[1]
+                    user['rol'] = emp_row[2] or 'usuario'
+                    user['mostrar_precios'] = bool(emp_row[3]) if emp_row[3] is not None else False
+            except Exception:
+                # Columna mostrar_precios puede no existir aún
+                cursor.execute("""
+                    SELECT empresa_id, cliente_id, rol
+                    FROM users_empresas
+                    WHERE user_id = ? AND empresa_id = ?
+                """, (user_id, empresa_erp))
+
+                emp_row = cursor.fetchone()
+                if emp_row:
+                    user['empresa_erp'] = emp_row[0]
+                    user['cliente_id'] = emp_row[1]
+                    user['rol'] = emp_row[2] or 'usuario'
 
         return user
     except Exception as e:
@@ -198,12 +228,36 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
         print(f"[DEBUG] get_all_users_by_empresa - Conexión obtenida")
         cursor = conn.cursor()
 
-        cursor.execute("""
+        # Intentar incluir campos de lockout (pueden no existir aún)
+        lockout_cols = ''
+        has_lockout = False
+        try:
+            cursor.execute("SELECT TOP 1 login_attempts FROM users")
+            cursor.fetchone()
+            lockout_cols = ', u.login_attempts, u.locked_until'
+            has_lockout = True
+        except Exception:
+            pass
+
+        # Intentar incluir campo mostrar_precios (puede no existir aún)
+        mostrar_precios_col = ''
+        has_mostrar_precios = False
+        try:
+            cursor.execute("SELECT TOP 1 mostrar_precios FROM users_empresas")
+            cursor.fetchone()
+            mostrar_precios_col = ', ue.mostrar_precios'
+            has_mostrar_precios = True
+        except Exception:
+            pass
+
+        cursor.execute(f"""
             SELECT
                 u.id, u.username, u.email, u.full_name, u.pais,
                 ue.rol, u.active, u.email_verificado,
                 u.created_at, u.updated_at,
                 ue.empresa_id, ue.cliente_id, u.company_name
+                {lockout_cols}
+                {mostrar_precios_col}
             FROM users u
             INNER JOIN users_empresas ue ON u.id = ue.user_id
             WHERE ue.empresa_id = ?
@@ -212,7 +266,7 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
 
         users = []
         for row in cursor.fetchall():
-            users.append({
+            user_dict = {
                 'id': row[0],
                 'username': row[1],
                 'email': row[2],
@@ -227,7 +281,15 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
                 'cliente_id': row[11],
                 'company_name': row[12],
                 'cliente_nombre': None
-            })
+            }
+            col_idx = 13
+            if has_lockout:
+                user_dict['login_attempts'] = row[col_idx] or 0
+                user_dict['locked_until'] = row[col_idx + 1].isoformat() if row[col_idx + 1] else None
+                col_idx += 2
+            if has_mostrar_precios:
+                user_dict['mostrar_precios'] = bool(row[col_idx]) if row[col_idx] is not None else False
+            users.append(user_dict)
 
         # Resolver nombres de clientes en paso separado (no rompe si la vista no existe)
         cliente_ids = [u['cliente_id'] for u in users if u['cliente_id']]
@@ -460,6 +522,10 @@ def update_user_full(user_id, data, empresa_cli_id, empresa_erp):
         if 'rol' in data:
             emp_updates.append("rol = ?")
             emp_params.append(data['rol'])
+
+        if 'mostrar_precios' in data:
+            emp_updates.append("mostrar_precios = ?")
+            emp_params.append(1 if data['mostrar_precios'] else 0)
 
         if emp_updates:
             emp_params.extend([user_id, empresa_erp])

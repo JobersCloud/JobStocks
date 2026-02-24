@@ -150,17 +150,20 @@ async function cargarTemaColor(connection) {
 
 // Cargar logo del cliente desde la API
 async function cargarLogoCliente(connection) {
+    const sidebarLogo = document.getElementById('sidebar-logo');
+    const mobileLogo = document.getElementById('mobile-logo');
+
     try {
         const existsResp = await fetch(`${API_URL}/api/empresa/${connection}/logo/exists`);
         const existsData = await existsResp.json().catch(() => ({}));
 
         if (existsData.exists) {
             const logoUrl = `${API_URL}/api/empresa/${connection}/logo`;
-            const sidebarLogo = document.getElementById('sidebar-logo');
-            const mobileLogo = document.getElementById('mobile-logo');
+            // Guardar en cache para evitar flash en próximas cargas
+            localStorage.setItem('logoUrl', logoUrl);
 
-            if (sidebarLogo) sidebarLogo.src = logoUrl;
-            if (mobileLogo) mobileLogo.src = logoUrl;
+            if (sidebarLogo) { sidebarLogo.src = logoUrl; sidebarLogo.style.visibility = 'visible'; }
+            if (mobileLogo) { mobileLogo.src = logoUrl; mobileLogo.style.visibility = 'visible'; }
 
             // Mostrar el "Powered by" del desarrollador (sidebar desktop)
             const devBadge = document.querySelector('.sidebar-developer');
@@ -169,9 +172,31 @@ async function cargarLogoCliente(connection) {
             // Mostrar el "Powered by" del desarrollador (mobile)
             const mobileDevBadge = document.getElementById('mobile-developer');
             if (mobileDevBadge) mobileDevBadge.style.display = 'flex';
+
+            // Guardar favicon si existe
+            if (existsData.tiene_favicon !== undefined) {
+                if (existsData.tiene_favicon) {
+                    const faviconUrl = `${API_URL}/api/empresa/${connection}/favicon`;
+                    localStorage.setItem('faviconUrl', faviconUrl);
+                    let faviconLink = document.querySelector("link[rel='icon']");
+                    if (!faviconLink) {
+                        faviconLink = document.createElement('link');
+                        faviconLink.rel = 'icon';
+                        document.head.appendChild(faviconLink);
+                    }
+                    faviconLink.href = faviconUrl;
+                }
+            }
+        } else {
+            // No hay logo del cliente, mostrar logo por defecto
+            localStorage.removeItem('logoUrl');
+            if (sidebarLogo) { sidebarLogo.src = 'assets/logojobers.png'; sidebarLogo.style.visibility = 'visible'; }
+            if (mobileLogo) { mobileLogo.src = 'assets/logojobers.png'; mobileLogo.style.visibility = 'visible'; }
         }
     } catch (error) {
         console.log('No se pudo cargar logo del cliente, usando logo por defecto');
+        if (sidebarLogo) { sidebarLogo.src = 'assets/logojobers.png'; sidebarLogo.style.visibility = 'visible'; }
+        if (mobileLogo) { mobileLogo.src = 'assets/logojobers.png'; mobileLogo.style.visibility = 'visible'; }
     }
 }
 
@@ -427,8 +452,21 @@ function setupLoginForm() {
                         window.location.replace('/');
                     }, 1000);
                 }
+            } else if (response.status === 423) {
+                // Cuenta bloqueada
+                const mins = data.remaining_minutes || 15;
+                const lockMsg = (t('auth.accountLocked') || 'Cuenta bloqueada.') + ' ' +
+                    (t('auth.tryAgainIn') || 'Intenta de nuevo en') + ' ' + mins + ' ' +
+                    (mins === 1 ? 'minuto' : 'minutos') + '.';
+                showAlert(lockMsg);
+                setLoading(false);
             } else {
-                showAlert(data.message || t('auth.loginError'));
+                // Mostrar intentos restantes si están disponibles
+                let msg = data.message || t('auth.loginError');
+                if (data.attempts_remaining !== undefined && data.attempts_remaining !== null) {
+                    msg += ` (${t('auth.attemptsRemaining') || 'Intentos restantes'}: ${data.attempts_remaining})`;
+                }
+                showAlert(msg);
                 setLoading(false);
             }
         } catch (error) {

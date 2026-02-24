@@ -183,6 +183,47 @@ def grid_con_imagenes():
     return jsonify({'habilitado': habilitado}), 200
 
 
+@parametros_bp.route('/mostrar-precios', methods=['GET'])
+def mostrar_precios():
+    """
+    Verificar si se deben mostrar precios de artículos.
+    Para ver precios, AMBOS deben estar activos: parámetro global de empresa Y flag del usuario.
+    ---
+    tags:
+      - Parámetros
+    parameters:
+      - name: empresa_id
+        in: query
+        type: string
+        required: false
+    responses:
+      200:
+        description: Estado del parámetro mostrar precios
+        schema:
+          type: object
+          properties:
+            habilitado:
+              type: boolean
+            global_habilitado:
+              type: boolean
+              description: Si el parámetro global de empresa está activo
+    """
+    from flask_login import current_user as cu
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+    global_habilitado = ParametrosModel.mostrar_precios(empresa_id, connection)
+
+    # Si hay usuario logueado, comprobar también su flag mostrar_precios
+    habilitado = global_habilitado
+    if global_habilitado and cu and cu.is_authenticated:
+        habilitado = getattr(cu, 'mostrar_precios', False)
+
+    return jsonify({
+        'habilitado': habilitado,
+        'global_habilitado': global_habilitado
+    }), 200
+
+
 @parametros_bp.route('/paginacion-config', methods=['GET'])
 def paginacion_config():
     """

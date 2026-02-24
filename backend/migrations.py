@@ -790,4 +790,54 @@ MIGRATIONS = [
         ]
     },
 
+    # ================================================================
+    # PARAMETRO MOSTRAR_PRECIOS
+    # ================================================================
+
+    {
+        'version': 37,
+        'description': 'Parametro MOSTRAR_PRECIOS para todas las empresas',
+        'app_version': 'v1.33.0',
+        'sql': [
+            """INSERT INTO parametros (clave, valor, descripcion, empresa_id)
+            SELECT 'MOSTRAR_PRECIOS', '0', 'Mostrar precios de articulos en tabla y detalle (0=No, 1=Si)', e.empresa_id
+            FROM (SELECT DISTINCT empresa_id FROM parametros) e
+            WHERE NOT EXISTS (
+                SELECT 1 FROM parametros p2
+                WHERE p2.clave = 'MOSTRAR_PRECIOS' AND p2.empresa_id = e.empresa_id
+            )""",
+        ]
+    },
+
+    {
+        'version': 38,
+        'description': 'Completar MOSTRAR_PRECIOS en empresas que falten (fix v37)',
+        'app_version': 'v1.33.0',
+        'sql': [
+            """INSERT INTO parametros (clave, valor, descripcion, empresa_id)
+            SELECT 'MOSTRAR_PRECIOS', '0', 'Mostrar precios de articulos en tabla y detalle (0=No, 1=Si)', e.empresa_id
+            FROM (SELECT DISTINCT empresa_id FROM parametros) e
+            WHERE NOT EXISTS (
+                SELECT 1 FROM parametros p2
+                WHERE p2.clave = 'MOSTRAR_PRECIOS' AND p2.empresa_id = e.empresa_id
+            )""",
+        ]
+    },
+
+    # ================================================================
+    # CAMPO MOSTRAR_PRECIOS EN USERS_EMPRESAS
+    # ================================================================
+
+    {
+        'version': 39,
+        'description': 'Campo mostrar_precios en users_empresas',
+        'app_version': 'v1.33.1',
+        'sql': [
+            """IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users_empresas') AND name = 'mostrar_precios')
+            BEGIN
+                ALTER TABLE users_empresas ADD mostrar_precios BIT DEFAULT 0;
+            END""",
+        ]
+    },
+
 ]

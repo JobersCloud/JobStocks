@@ -45,6 +45,22 @@
                 link.href = faviconUrl;
                 document.head.appendChild(link);
             }
+            // Pre-cargar logo y nombre empresa desde cache para evitar flash
+            var _logoUrl = localStorage.getItem('logoUrl');
+            var _companyName = localStorage.getItem('companyName');
+            var _logoInvert = localStorage.getItem('logoInvert');
+            if (_logoUrl || _companyName) {
+                document.addEventListener('DOMContentLoaded', function() {
+                    var logo = document.getElementById('header-logo');
+                    if (logo && _logoUrl) {
+                        logo.src = _logoUrl;
+                        logo.style.filter = _logoInvert === 'true' ? 'brightness(0) invert(1)' : 'none';
+                        logo.style.visibility = 'visible';
+                    }
+                    var name = document.getElementById('header-company-name');
+                    if (name && _companyName) name.textContent = _companyName;
+                });
+            }
         })();
     </script>
     <link rel="stylesheet" href="css/styles.css?v=1.26.0">
@@ -63,7 +79,7 @@
                     </svg>
                 </button>
                 <div class="header-logo">
-                    <img src="" alt="Logo" id="header-logo">
+                    <img src="" alt="Logo" id="header-logo" style="visibility:hidden">
                     <span class="header-logo-text" id="header-company-name">Stocks</span>
                 </div>
                 <div class="header-divider"></div>
@@ -72,6 +88,15 @@
                 </div>
             </div>
             <div class="top-header-right">
+                <div class="bell-container">
+                    <button class="bell-btn" onclick="Notifications.showDropdown()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <span class="notification-badge" id="bell-badge">0</span>
+                    </button>
+                </div>
                 <div class="menu-container">
                     <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
                         <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -509,6 +534,7 @@
     <script src="js/grid-filters.js?v=20260207"></script>
     <script src="js/data-grid.js?v=20260208b"></script>
     <script src="js/page-common.js?v=20260209a"></script>
+    <script src="js/notifications.js"></script>
     <script>
         // ==================== PAGE: USUARIOS (Admin) ====================
         const API_URL = PageCommon.API_URL;
@@ -520,6 +546,7 @@
         let paises = [];
         let grid;
         let ordenActual = { columna: 'username', direccion: 'ASC' };
+        let preciosGlobalHabilitado = false;
 
         // ==================== INICIALIZACION ====================
         document.addEventListener('DOMContentLoaded', async function() {
@@ -530,19 +557,34 @@
 
             await PageCommon.checkAuth('administrador');
             await PageCommon.obtenerCsrfToken();
+            Notifications.init();
+
+            // Comprobar si el parámetro global de precios está activo
+            try {
+                const preciosResp = await fetch(`${API_URL}/api/parametros/mostrar-precios`, { credentials: 'include' });
+                if (preciosResp.ok) {
+                    const preciosData = await preciosResp.json();
+                    preciosGlobalHabilitado = preciosData.global_habilitado || false;
+                }
+            } catch (e) { /* ignorar */ }
+
+            const gridColumns = [
+                { key: 'username', label: t('users.username') || 'Usuario', tipo: 'texto' },
+                { key: 'full_name', label: t('users.fullName') || 'Nombre Completo', tipo: 'texto' },
+                { key: 'email', label: 'Email', tipo: 'texto' },
+                { key: 'company_name', label: t('users.companyName') || 'Empresa', tipo: 'texto' },
+                { key: 'pais', label: t('users.country') || 'País', tipo: 'texto' },
+                { key: 'rol', label: t('users.role') || 'Rol', tipo: 'texto' },
+                { key: 'active', label: t('users.status') || 'Estado', tipo: 'texto' },
+            ];
+            if (preciosGlobalHabilitado) {
+                gridColumns.push({ key: 'mostrar_precios', label: t('users.showPrices') || 'Ver precios', tipo: 'texto' });
+            }
+            gridColumns.push({ key: '_actions', label: t('users.actions') || 'Acciones', sortable: false, filterable: false });
 
             grid = new DataGrid({
                 el: '#users-grid',
-                columns: [
-                    { key: 'username', label: t('users.username') || 'Usuario', tipo: 'texto' },
-                    { key: 'full_name', label: t('users.fullName') || 'Nombre Completo', tipo: 'texto' },
-                    { key: 'email', label: 'Email', tipo: 'texto' },
-                    { key: 'company_name', label: t('users.companyName') || 'Empresa', tipo: 'texto' },
-                    { key: 'pais', label: t('users.country') || 'País', tipo: 'texto' },
-                    { key: 'rol', label: t('users.role') || 'Rol', tipo: 'texto' },
-                    { key: 'active', label: t('users.status') || 'Estado', tipo: 'texto' },
-                    { key: '_actions', label: t('users.actions') || 'Acciones', sortable: false, filterable: false }
-                ],
+                columns: gridColumns,
                 renderCell(item, col) {
                     switch (col.key) {
                         case 'username': return `<strong>${item.username}</strong>`;
@@ -551,7 +593,8 @@
                         case 'company_name': return item.company_name || '-';
                         case 'pais': return getPaisNombre(item.pais);
                         case 'rol': return getRoleBadge(item.rol);
-                        case 'active': return getStatusBadge(item.active);
+                        case 'active': return getStatusBadge(item.active, item);
+                        case 'mostrar_precios': return getPreciosBadge(item.mostrar_precios);
                         case '_actions': return `<div class="user-actions">${getActionButtons(item)}</div>`;
                         default: return null;
                     }
@@ -564,13 +607,14 @@
                                     <div class="user-card-name">${item.full_name || item.username}</div>
                                     <div class="user-card-username">@${item.username}</div>
                                 </div>
-                                ${getStatusBadge(item.active)}
+                                ${getStatusBadge(item.active, item)}
                             </div>
                             <div class="user-card-info">
                                 <div class="user-card-info-item"><label>Email:</label> ${item.email || '-'}</div>
                                 <div class="user-card-info-item"><label>${t('users.companyName')}:</label> ${item.company_name || '-'}</div>
                                 <div class="user-card-info-item"><label>${t('users.role')}:</label> ${getRoleBadge(item.rol)}</div>
                                 <div class="user-card-info-item"><label>${t('users.country')}:</label> ${getPaisNombre(item.pais)}</div>
+                                ${preciosGlobalHabilitado ? `<div class="user-card-info-item"><label>${t('users.showPrices')}:</label> ${getPreciosBadge(item.mostrar_precios)}</div>` : ''}
                             </div>
                             <div class="user-card-actions">${getActionButtons(item)}</div>
                         </div>`;
@@ -641,10 +685,21 @@
             return `<span class="role-badge ${cls}">${t(roleMap[role] || 'roles.user')}</span>`;
         }
 
-        function getStatusBadge(isActive) {
-            return isActive
+        function getStatusBadge(isActive, user) {
+            let badge = isActive
                 ? `<span class="status-badge status-active">${t('users.active') || 'Activo'}</span>`
                 : `<span class="status-badge status-inactive">${t('users.inactive') || 'Inactivo'}</span>`;
+            // Show lock icon if account is locked
+            if (user && user.locked_until && new Date(user.locked_until) > new Date()) {
+                badge += ` <span class="status-badge status-locked" title="${t('users.locked') || 'Bloqueado'}">🔒</span>`;
+            }
+            return badge;
+        }
+
+        function getPreciosBadge(mostrarPrecios) {
+            return mostrarPrecios
+                ? `<span class="status-badge status-active">${t('users.showPricesEnabled') || 'Precios habilitados'}</span>`
+                : `<span class="status-badge status-inactive">${t('users.showPricesDisabled') || 'Precios deshabilitados'}</span>`;
         }
 
         function getActionButtons(user) {
@@ -656,8 +711,19 @@
             } else {
                 buttons += `<button class="btn-icon btn-icon-success btn-icon-sm" onclick="activateUser(${user.id})" title="${t('users.activate') || 'Activar'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></button>`;
             }
+            if (user.locked_until && new Date(user.locked_until) > new Date()) {
+                buttons += `<button class="btn-icon btn-icon-warning btn-icon-sm" onclick="unlockUser(${user.id})" title="${t('users.unlockAccount') || 'Desbloquear'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg></button>`;
+            }
             if (user.email && !user.email_verificado) {
                 buttons += `<button class="btn-icon btn-icon-warning btn-icon-sm" onclick="toggleVerification(${user.id}, true)" title="Verificar email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></button>`;
+            }
+            if (preciosGlobalHabilitado) {
+                const preciosTitle = user.mostrar_precios ? (t('users.showPricesDisabled') || 'Desactivar precios') : (t('users.showPricesEnabled') || 'Activar precios');
+                const preciosIcon = user.mostrar_precios
+                    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
+                    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+                const preciosCls = user.mostrar_precios ? 'btn-icon-success' : 'btn-icon-secondary';
+                buttons += `<button class="btn-icon ${preciosCls} btn-icon-sm" onclick="toggleMostrarPrecios(${user.id}, ${user.mostrar_precios ? 'true' : 'false'})" title="${preciosTitle}">${preciosIcon}</button>`;
             }
             buttons += `<button class="btn-icon btn-icon-info btn-icon-sm" onclick="openRoleModal(${user.id}, '${user.rol}')" title="${t('users.changeRole') || 'Cambiar Rol'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></button>`;
             if (currentUser && currentUser.rol === 'superusuario') {
@@ -688,6 +754,35 @@
                 grid.setData(users);
             } catch (error) { alert('Error al desactivar el usuario'); }
         }
+
+        async function unlockUser(userId) {
+            if (!confirm(t('users.confirmUnlock') || '¿Desbloquear la cuenta de este usuario?')) return;
+            try {
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}/desbloquear`, { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() } });
+                if (!response.ok) throw new Error('Error unlocking user');
+                const idx = users.findIndex(u => u.id === userId);
+                if (idx !== -1) { users[idx].locked_until = null; users[idx].login_attempts = 0; }
+                grid.setData(users);
+            } catch (error) { alert('Error al desbloquear el usuario'); }
+        }
+        window.unlockUser = unlockUser;
+
+        async function toggleMostrarPrecios(userId, valorActual) {
+            const nuevoValor = !valorActual;
+            try {
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}/mostrar-precios`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() },
+                    body: JSON.stringify({ mostrar_precios: nuevoValor })
+                });
+                if (!response.ok) throw new Error('Error toggling prices');
+                const idx = users.findIndex(u => u.id === userId);
+                if (idx !== -1) users[idx].mostrar_precios = nuevoValor;
+                grid.setData(users);
+            } catch (error) { alert('Error al cambiar la visibilidad de precios'); }
+        }
+        window.toggleMostrarPrecios = toggleMostrarPrecios;
 
         async function deleteUserCascade(userId, username) {
             const confirmMsg = t('users.confirmDeleteCascade') || `¿Estás seguro de eliminar al usuario "${username}" y TODOS sus datos?`;

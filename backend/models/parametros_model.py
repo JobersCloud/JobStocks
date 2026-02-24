@@ -118,6 +118,11 @@ class ParametrosModel:
         return ParametrosModel.get_bool('PERMITIR_BUSQUEDA_VOZ', empresa_id, connection)
 
     @staticmethod
+    def mostrar_precios(empresa_id, connection=None):
+        """Verifica si se deben mostrar precios de artículos para una empresa"""
+        return ParametrosModel.get_bool('MOSTRAR_PRECIOS', empresa_id, connection)
+
+    @staticmethod
     def create_if_not_exists(clave, valor, descripcion, empresa_id, connection=None):
         """Crea un parámetro si no existe para la empresa"""
         conn = Database.get_connection(connection)

@@ -298,6 +298,23 @@ def responder_consulta(consulta_id):
         except Exception as e:
             print(f"⚠️ No se pudo enviar email de respuesta: {e}")
 
+    # Notificar al usuario propietario de la consulta
+    try:
+        from models.notification_model import NotificationModel
+        if consulta.get('user_id'):
+            connection_id = session.get('connection')
+            NotificationModel.create(
+                user_id=consulta['user_id'],
+                empresa_id=empresa_id,
+                tipo='consulta_respondida',
+                titulo=f'Respuesta a tu consulta sobre {consulta.get("codigo_producto", "")}',
+                mensaje=f'Se ha respondido tu consulta sobre el producto {consulta.get("codigo_producto", "")}.',
+                data={'consulta_id': consulta_id, 'codigo_producto': consulta.get('codigo_producto')},
+                connection_id=connection_id
+            )
+    except Exception as e:
+        print(f"Warning: No se pudo crear notificación: {e}")
+
     return jsonify({
         'success': True,
         'message': 'Respuesta enviada correctamente'

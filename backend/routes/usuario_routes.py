@@ -16,6 +16,7 @@
 # ARCHIVO: routes/usuario_routes.py
 # Endpoints para gestión de usuarios (admin)
 # ============================================
+import logging
 from flask import Blueprint, jsonify, request, session
 from flask_login import login_required, current_user
 from utils.auth import csrf_required
@@ -96,11 +97,8 @@ def listar_usuarios():
     empresa_id = session.get('empresa_id', '1')
     connection = session.get('connection')
 
-    print(f"[DEBUG] listar_usuarios - connection: {connection}, empresa_id: {empresa_id}", flush=True)
-
     try:
         usuarios = get_all_users_by_empresa(empresa_id, connection)
-        print(f"[DEBUG] listar_usuarios - Total usuarios: {len(usuarios)}")
         return jsonify({
             'success': True,
             'total': len(usuarios),
@@ -108,8 +106,7 @@ def listar_usuarios():
         }), 200
     except Exception as e:
         import traceback
-        print(f"[ERROR] listar_usuarios - Error: {e}")
-        print(f"[ERROR] Traceback: {traceback.format_exc()}")
+        logging.getLogger(__name__).error(f"listar_usuarios: {e}\n{traceback.format_exc()}")
         return jsonify({
             'success': False,
             'error': str(e)
@@ -998,6 +995,165 @@ def cambiar_password():
                 'success': False,
                 'error': 'No se pudo cambiar la contraseña'
             }), 500
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@usuario_bp.route('/<int:user_id>/mostrar-precios', methods=['PUT'])
+@login_required
+@csrf_required
+@administrador_required
+def toggle_mostrar_precios(user_id):
+    """
+    Activar/desactivar visibilidad de precios para un usuario (solo administradores)
+    ---
+    tags:
+      - Usuarios
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: user_id
+        in: path
+        type: integer
+        required: true
+        description: ID del usuario
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - mostrar_precios
+          properties:
+            mostrar_precios:
+              type: boolean
+    responses:
+      200:
+        description: Campo actualizado
+      400:
+        description: Datos inválidos
+      404:
+        description: Usuario no encontrado
+    """
+    data = request.json
+    if not data or 'mostrar_precios' not in data:
+        return jsonify({
+            'success': False,
+            'error': 'Campo "mostrar_precios" es requerido'
+        }), 400
+
+    try:
+        from config.database import Database
+        connection = session.get('connection')
+        empresa_id = session.get('empresa_id', '1')
+
+        conn = Database.get_connection(connection)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE users_empresas SET mostrar_precios = ?
+            WHERE user_id = ? AND empresa_id = ?
+        """, (1 if data['mostrar_precios'] else 0, user_id, empresa_id))
+
+        affected = cursor.rowcount
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        if affected == 0:
+            return jsonify({
+                'success': False,
+                'error': 'Usuario no encontrado en esta empresa'
+            }), 404
+
+        estado = 'habilitados' if data['mostrar_precios'] else 'deshabilitados'
+        return jsonify({
+            'success': True,
+            'message': f'Precios {estado} para el usuario'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@usuario_bp.route('/<int:user_id>/desbloquear', methods=['PUT'])
+@login_required
+@csrf_required
+@administrador_required
+def desbloquear_usuario(user_id):
+    """
+    Desbloquear cuenta de un usuario (solo administradores)
+    ---
+    tags:
+      - Usuarios
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: user_id
+        in: path
+        type: integer
+        required: true
+        description: ID del usuario a desbloquear
+    responses:
+      200:
+        description: Usuario desbloqueado correctamente
+      404:
+        description: Usuario no encontrado
+      401:
+        description: No autenticado
+      403:
+        description: No autorizado
+    """
+    try:
+        from config.database import Database
+        connection = session.get('connection')
+        empresa_id = session.get('empresa_id', '1')
+
+        conn = Database.get_connection(connection)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE users SET login_attempts = 0, locked_until = NULL
+            WHERE id = ?
+        """, (user_id,))
+
+        affected = cursor.rowcount
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        if affected == 0:
+            return jsonify({
+                'success': False,
+                'error': 'Usuario no encontrado'
+            }), 404
+
+        # Audit log
+        try:
+            AuditModel.log(
+                accion=AuditAction.ACCOUNT_UNLOCKED,
+                user_id=current_user.id,
+                username=current_user.username,
+                empresa_id=empresa_id,
+                recurso='user',
+                recurso_id=str(user_id),
+                ip_address=get_client_ip(),
+                user_agent=request.headers.get('User-Agent'),
+                detalles={'desbloqueado_por': current_user.username},
+                resultado=AuditResult.SUCCESS
+            )
+        except Exception as e:
+            print(f"Warning: No se pudo registrar audit log: {e}")
+
+        return jsonify({
+            'success': True,
+            'message': 'Usuario desbloqueado correctamente'
+        }), 200
     except Exception as e:
         return jsonify({
             'success': False,

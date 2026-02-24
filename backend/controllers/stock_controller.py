@@ -16,7 +16,18 @@
 # ARCHIVO: controllers/stock_controller.py
 # ============================================
 from flask import jsonify, request, session
+from flask_login import current_user
 from models.stock_model import StockModel
+from models.precio_model import PrecioModel
+from models.parametros_model import ParametrosModel
+
+
+def _precios_habilitados():
+    """Verifica si se deben mostrar precios (global + usuario)"""
+    empresa_id = session.get('empresa_id', '1')
+    if not ParametrosModel.mostrar_precios(empresa_id):
+        return False
+    return getattr(current_user, 'mostrar_precios', False)
 
 
 class StockController:
@@ -25,6 +36,10 @@ class StockController:
         """Obtener todos los stocks (filtrados por empresa de sesión)"""
         try:
             stocks = StockModel.get_all()
+            # Inyectar precios si está habilitado (global + usuario)
+            empresa_id = session.get('empresa_id', '1')
+            if _precios_habilitados():
+                PrecioModel.inyectar_precios(empresa_id, stocks)
             return jsonify(stocks), 200
         except Exception as e:
             # Incluir info de debug en el error
@@ -42,6 +57,10 @@ class StockController:
         try:
             stock = StockModel.get_by_codigo(codigo)
             if stock:
+                # Inyectar precio si está habilitado (global + usuario)
+                empresa_id = session.get('empresa_id', '1')
+                if _precios_habilitados():
+                    PrecioModel.inyectar_precios(empresa_id, [stock])
                 return jsonify(stock), 200
             else:
                 return jsonify({"error": "Stock no encontrado"}), 404
@@ -87,6 +106,11 @@ class StockController:
             # Llamar al modelo con paginación si se proporciona
             result = StockModel.search(filtros, page=page, limit=limit,
                                        order_by=order_by, order_dir=order_dir)
+            # Inyectar precios si está habilitado (global + usuario)
+            empresa_id = session.get('empresa_id', '1')
+            if _precios_habilitados():
+                stocks = result['data'] if isinstance(result, dict) else result
+                PrecioModel.inyectar_precios(empresa_id, stocks)
             return jsonify(result), 200
         except Exception as e:
             # Incluir info de debug en el error

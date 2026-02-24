@@ -75,7 +75,10 @@
     "resetPasswordSuccess": "Mot de passe modifié avec succès. Vous pouvez maintenant vous connecter.",
     "resetPasswordExpired": "Le lien a expiré ou n'est pas valide. Veuillez en demander un nouveau.",
     "registerSuccessTitle": "Inscription terminée",
-    "registerSuccessHint": "Vérifiez votre boîte de réception et votre dossier spam."
+    "registerSuccessHint": "Vérifiez votre boîte de réception et votre dossier spam.",
+    "accountLocked": "Compte bloqué.",
+    "tryAgainIn": "Réessayez dans",
+    "attemptsRemaining": "Tentatives restantes"
   },
   "authPlaceholders": {
     "username": "Entrez votre utilisateur",
@@ -133,7 +136,8 @@
     "view": "Voir",
     "viewDetail": "Voir Détail",
     "add": "Ajouter",
-    "addToCart": "🛒 Ajouter"
+    "addToCart": "🛒 Ajouter",
+    "price": "Prix"
   },
   "detail": {
     "title": "Détail du Stock",
@@ -160,6 +164,8 @@
     "weightPerUnit": "Poids par unité",
     "weightPerBox": "Poids par boîte",
     "weightPerPallet": "Poids par palette",
+    "price": "Prix",
+    "pricePerUnit": "Prix/unité",
     "imageAlt": "Image {number}",
     "loadingImages": "Chargement des images...",
     "noImages": "Aucune image disponible",
@@ -250,7 +256,8 @@
     "tone": "Ton",
     "caliber": "Calibre",
     "viewDetail": "Voir Détail",
-    "addToCart": "🛒 Ajouter"
+    "addToCart": "🛒 Ajouter",
+    "price": "Prix"
   },
   "menu": {
     "main": "Principal",
@@ -449,7 +456,14 @@
     "deleteCascade": "Supprimer l'utilisateur et ses dépendances",
     "confirmDeleteCascade": "Êtes-vous sûr de vouloir supprimer cet utilisateur et TOUTES ses données ?\n\nLes éléments suivants seront supprimés :\n- Toutes ses propositions et lignes\n- Toutes ses demandes\n- Toutes ses clés API\n- Toutes ses sessions\n- Tout son historique d'audit\n\n⚠️ Cette action est IRRÉVERSIBLE.",
     "typeUsernameToConfirm": "Pour confirmer, tapez le nom d'utilisateur :",
-    "usernameNotMatch": "Le nom d'utilisateur ne correspond pas. Suppression annulée."
+    "usernameNotMatch": "Le nom d'utilisateur ne correspond pas. Suppression annulée.",
+    "locked": "Bloqué",
+    "unlocked": "Débloqué",
+    "unlockAccount": "Débloquer",
+    "confirmUnlock": "Débloquer le compte de cet utilisateur ?",
+    "showPrices": "Voir prix",
+    "showPricesEnabled": "Prix activés",
+    "showPricesDisabled": "Prix désactivés"
   },
   "changePassword": {
     "title": "Changer le Mot de Passe",
@@ -723,5 +737,12 @@
     "locationCount": "Emplacements",
     "totalM2": "Total M2",
     "totalPieces": "Total Pièces"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "newNotification": "Nouvelle notification",
+    "newNotifications": "nouvelles notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "noNotifications": "Aucune notification"
   }
 }

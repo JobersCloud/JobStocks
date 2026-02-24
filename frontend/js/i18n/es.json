@@ -75,7 +75,10 @@
     "resetPasswordSuccess": "Contraseña cambiada correctamente. Ya puedes iniciar sesión.",
     "resetPasswordExpired": "El enlace ha expirado o no es válido. Solicita uno nuevo.",
     "registerSuccessTitle": "Registro completado",
-    "registerSuccessHint": "Revisa tu bandeja de entrada y la carpeta de spam."
+    "registerSuccessHint": "Revisa tu bandeja de entrada y la carpeta de spam.",
+    "accountLocked": "Cuenta bloqueada.",
+    "tryAgainIn": "Intenta de nuevo en",
+    "attemptsRemaining": "Intentos restantes"
   },
   "authPlaceholders": {
     "username": "Ingresa tu usuario",
@@ -133,7 +136,8 @@
     "view": "Ver",
     "viewDetail": "Ver Detalle",
     "add": "Agregar",
-    "addToCart": "🛒 Agregar"
+    "addToCart": "🛒 Agregar",
+    "price": "Precio"
   },
   "detail": {
     "title": "Detalle del Stock",
@@ -167,7 +171,9 @@
     "unitsPerPallet": "Unidades por pallet",
     "weightPerUnit": "Peso por unidad",
     "weightPerBox": "Peso por caja",
-    "weightPerPallet": "Peso por pallet"
+    "weightPerPallet": "Peso por pallet",
+    "price": "Precio",
+    "pricePerUnit": "Precio/ud"
   },
   "cart": {
     "title": "Mi Lista de Solicitudes",
@@ -250,7 +256,8 @@
     "tone": "Tono",
     "caliber": "Calibre",
     "viewDetail": "Ver Detalle",
-    "addToCart": "🛒 Agregar"
+    "addToCart": "🛒 Agregar",
+    "price": "Precio"
   },
   "menu": {
     "main": "Principal",
@@ -449,7 +456,14 @@
     "deleteCascade": "Eliminar usuario y dependencias",
     "confirmDeleteCascade": "¿Estás seguro de eliminar este usuario y TODOS sus datos?\n\nSe eliminarán:\n- Todas sus propuestas y líneas\n- Todas sus consultas\n- Todas sus API keys\n- Todas sus sesiones\n- Todo su historial de auditoría\n\n⚠️ Esta acción NO se puede deshacer.",
     "typeUsernameToConfirm": "Para confirmar, escribe el nombre de usuario:",
-    "usernameNotMatch": "El nombre de usuario no coincide. Eliminación cancelada."
+    "usernameNotMatch": "El nombre de usuario no coincide. Eliminación cancelada.",
+    "locked": "Bloqueado",
+    "unlocked": "Desbloqueado",
+    "unlockAccount": "Desbloquear",
+    "confirmUnlock": "¿Desbloquear la cuenta de este usuario?",
+    "showPrices": "Ver precios",
+    "showPricesEnabled": "Precios habilitados",
+    "showPricesDisabled": "Precios deshabilitados"
   },
   "changePassword": {
     "title": "Cambiar Contraseña",
@@ -723,5 +737,12 @@
     "locationCount": "Ubicaciones",
     "totalM2": "Total M2",
     "totalPieces": "Total Piezas"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "newNotification": "Nueva notificación",
+    "newNotifications": "nuevas notificaciones",
+    "markAllRead": "Marcar todas como leídas",
+    "noNotifications": "Sin notificaciones"
   }
 }

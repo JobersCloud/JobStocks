@@ -28,6 +28,7 @@ let gridConImagenes = false;  // Control de imágenes en tabla/tarjetas (desacti
 let firmaHabilitada = false;  // Control de funcionalidad de firma de propuestas
 let whatsappConfig = { habilitado: false, numero: null };  // Configuración de WhatsApp
 let busquedaVozHabilitada = false;  // Control de funcionalidad de búsqueda por voz
+let mostrarPrecios = false;  // Control de visualización de precios de artículos
 let csrfToken = null;  // Token CSRF para protección contra ataques
 
 // ==================== PAGINACIÓN BACKEND ====================
@@ -486,6 +487,7 @@ async function cargarLogoEmpresa() {
         if (response.ok) {
             const data = await response.json();
             if (data.empresa && data.empresa.nombre) {
+                localStorage.setItem('companyName', data.empresa.nombre);
                 const headerName = document.getElementById('header-company-name');
                 if (headerName) {
                     headerName.textContent = data.empresa.nombre;
@@ -945,6 +947,42 @@ async function verificarGridConImagenes() {
         gridConImagenes = false;
         return false;
     }
+}
+
+// ==================== PRECIOS ====================
+
+// Verificar si se deben mostrar precios en la tabla/tarjetas
+async function verificarMostrarPrecios() {
+    try {
+        const params = new URLSearchParams();
+        addEmpresaToParams(params);
+
+        const response = await fetch(`${API_URL}/api/parametros/mostrar-precios?${params}`, {
+            credentials: 'include'
+        });
+        if (!response.ok) {
+            console.warn(`💰 Mostrar precios: endpoint respondió ${response.status}`);
+            mostrarPrecios = false;
+            return false;
+        }
+        const data = await response.json();
+        mostrarPrecios = data.habilitado;
+        console.log(`💰 Mostrar precios: ${mostrarPrecios}`);
+        return mostrarPrecios;
+    } catch (error) {
+        console.error('Error al verificar mostrar precios:', error);
+        mostrarPrecios = false;
+        return false;
+    }
+}
+
+// Formatear precio en formato EUR (1.234,56 €)
+function formatearPrecio(precio) {
+    if (precio == null || precio === undefined) return '-';
+    return parseFloat(precio).toLocaleString('es-ES', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }) + ' \u20AC';
 }
 
 // ==================== PAGINACIÓN (FRONTEND CUANDO HABILITADO) ====================
@@ -2696,10 +2734,11 @@ function mostrarTabla(stocks) {
                             <div class="stock-image-card-code">${stock.codigo}</div>
                             <div class="stock-image-card-desc" title="${stock.descripcion}">${stock.descripcion}</div>
                             <div class="stock-image-card-details">
-                                ${stock.formato || '-'} | ${stock.calidad || '-'} | ${stock.tono || '-'}/${stock.calibre || '-'}${stock.unidadescaja ? ` | PZ/Caj ${formatearCantidadEmpaquetado(stock.unidadescaja)}` : ''}${stock.pallet ? ` | ${stock.pallet}` : ''}
+                                ${stock.formato || '-'} | ${stock.calidad || '-'} | ${stock.tono || '-'}/${stock.calibre || '-'}${stock.unidadescaja ? ` | ${formatearCantidadEmpaquetado(stock.unidadescaja)} ${stock.unidad || 'PZ'}/Caj` : ''}${stock.pallet ? ` | ${stock.pallet}` : ''}
                             </div>
                             <div class="stock-image-card-stock">
                                 ${getBadgeWithUnit(stock.existencias, stock.unidad)}
+                                ${mostrarPrecios && stock.precio != null ? `<span class="badge badge-price">${formatearPrecio(stock.precio)}</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -2733,6 +2772,13 @@ function mostrarTabla(stocks) {
     };
 
     // Mapeo de columnas a labels i18n
+    // Añadir/quitar columna precio dinámicamente según parámetro
+    if (mostrarPrecios && !ordenColumnas.includes('precio')) {
+        ordenColumnas.push('precio');
+    } else if (!mostrarPrecios && ordenColumnas.includes('precio')) {
+        ordenColumnas = ordenColumnas.filter(c => c !== 'precio');
+    }
+
     const columnLabels = {
         'codigo': t('table.code'),
         'descripcion': t('table.description'),
@@ -2743,6 +2789,9 @@ function mostrarTabla(stocks) {
         'calibre': t('table.caliber'),
         'existencias': t('table.stock')
     };
+    if (mostrarPrecios) {
+        columnLabels['precio'] = t('table.price');
+    }
 
     // Función helper para generar header con ordenación, filtro y drag & drop
     const getHeaderConOrden = (columna, label) => {
@@ -2771,6 +2820,7 @@ function mostrarTabla(stocks) {
     const getCellValue = (stock, columna) => {
         if (columna === 'codigo') return `<strong>${stock.codigo}</strong>`;
         if (columna === 'existencias') return getBadgeWithUnit(stock.existencias, stock.unidad);
+        if (columna === 'precio') return stock.precio != null ? `<strong>${formatearPrecio(stock.precio)}</strong>` : '-';
         return stock[columna] || '-';
     };
 
@@ -2858,6 +2908,12 @@ function mostrarTabla(stocks) {
                             <span class="stock-card-label">${t('cards.caliber')}</span>
                             <span class="stock-card-value">${stock.calibre || '-'}</span>
                         </div>
+                        ${mostrarPrecios && stock.precio != null ? `
+                        <div class="stock-card-field">
+                            <span class="stock-card-label">${t('cards.price')}</span>
+                            <span class="stock-card-value"><strong>${formatearPrecio(stock.precio)}</strong></span>
+                        </div>
+                        ` : ''}
                     </div>
                     <div class="stock-card-footer">
                         <button class="btn-icon btn-icon-primary" title="${t('cards.viewDetail')}"
@@ -3056,6 +3112,12 @@ async function verDetalle(stock) {
                     <span class="detail-label">${t('detail.stock')}:</span>
                     <span class="detail-value"><strong>${existenciasFormatted} ${stock.unidad || ''}</strong></span>
                 </div>
+                ${mostrarPrecios && stock.precio != null ? `
+                <div class="detail-item">
+                    <span class="detail-label">${t('detail.price')}:</span>
+                    <span class="detail-value"><strong style="color: var(--primary); font-size: 1.1em;">${formatearPrecio(stock.precio)}</strong></span>
+                </div>
+                ` : ''}
             </div>
         </div>
     `;
@@ -4320,9 +4382,15 @@ window.onload = async function () {
         csrfToken = localStorage.getItem('csrf_token');
         await obtenerCsrfToken();
 
+        // Iniciar sistema de notificaciones
+        if (typeof Notifications !== 'undefined') {
+            Notifications.init();
+        }
+
         await verificarPropuestasHabilitadas();
         await verificarFirmaHabilitada();
         await verificarBusquedaVozHabilitada();
+        await verificarMostrarPrecios();
         await verificarGridConImagenes();
         await cargarConfigPaginacion();
         await cargarConfigWhatsApp();

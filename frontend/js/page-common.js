@@ -92,14 +92,23 @@
             const config = await configResponse.json();
             applyColorTheme(config.tema || 'rubi');
             const invertirFilter = config.invertir_logo ? 'brightness(0) invert(1)' : 'none';
+            localStorage.setItem('logoInvert', config.invertir_logo ? 'true' : 'false');
             if (config.tiene_logo) {
                 const logoUrl = `${API_URL}/api/empresa/${connection}/logo?t=${Date.now()}`;
+                localStorage.setItem('logoUrl', `${API_URL}/api/empresa/${connection}/logo`);
                 logoElements.forEach(el => {
                     el.src = logoUrl;
                     el.style.filter = invertirFilter;
                     el.style.visibility = 'visible';
                 });
+                if (config.tiene_favicon) {
+                    const faviconUrl = `${API_URL}/api/empresa/${connection}/favicon`;
+                    localStorage.setItem('faviconUrl', faviconUrl);
+                } else {
+                    localStorage.removeItem('faviconUrl');
+                }
             } else {
+                localStorage.removeItem('logoUrl');
                 logoElements.forEach(el => {
                     el.src = 'assets/logo.svg';
                     el.style.filter = 'brightness(0) invert(1)';
@@ -113,6 +122,23 @@
                 el.style.filter = 'brightness(0) invert(1)';
                 el.style.visibility = 'visible';
             });
+        }
+
+        // Cargar nombre de la empresa
+        try {
+            const response = await fetch(`${API_URL}/api/empresa/current`, { credentials: 'include' });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.empresa && data.empresa.nombre) {
+                    localStorage.setItem('companyName', data.empresa.nombre);
+                    const headerName = document.getElementById('header-company-name');
+                    if (headerName) {
+                        headerName.textContent = data.empresa.nombre;
+                    }
+                }
+            }
+        } catch (e) {
+            console.log('Error cargando nombre empresa:', e);
         }
 
         // Hacer logo clicable -> ir al home

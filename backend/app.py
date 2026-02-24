@@ -38,6 +38,7 @@ from routes.audit_routes import audit_bp
 from routes.pedido_routes import pedido_bp
 from routes.db_info_routes import db_info_bp
 from routes.almacen_routes import almacen_bp
+from routes.notification_routes import notification_bp
 from database.users_db import verify_user, get_user_by_id
 from models.user import User
 from models.user_session_model import UserSessionModel
@@ -54,6 +55,8 @@ import os
 import re
 import secrets
 import logging
+import time
+import threading
 from datetime import datetime
 
 
@@ -145,7 +148,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.31.2'
+APP_VERSION = 'v1.33.1'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -235,28 +238,23 @@ def load_user(user_id):
     connection = session.get('connection')
     empresa_id = session.get('empresa_id')
 
-    print(f"[DEBUG] load_user - user_id: {user_id}, connection: {connection}, empresa_id: {empresa_id}", flush=True)
-
     if not connection:
-        print(f"[DEBUG] load_user - No connection en sesión, retornando None", flush=True)
         return None
 
     user_data = get_user_by_id(int(user_id), connection, empresa_id)
     if user_data:
-        rol = user_data.get('rol', 'usuario')
-        print(f"[DEBUG] load_user - Usuario encontrado: {user_data.get('username')}, rol: {rol}", flush=True)
         return User(
             id=user_data['id'],
             username=user_data['username'],
             email=user_data.get('email'),
             full_name=user_data.get('full_name'),
-            rol=rol,
+            rol=user_data.get('rol', 'usuario'),
             empresa_id=user_data.get('empresa_id', empresa_id),
             cliente_id=user_data.get('cliente_id'),
             debe_cambiar_password=user_data.get('debe_cambiar_password', False),
-            company_name=user_data.get('company_name')
+            company_name=user_data.get('company_name'),
+            mostrar_precios=user_data.get('mostrar_precios', False)
         )
-    print(f"[DEBUG] load_user - Usuario NO encontrado para id: {user_id}", flush=True)
     return None
 
 # Registrar blueprints
@@ -278,6 +276,7 @@ app.register_blueprint(audit_bp)
 app.register_blueprint(pedido_bp)
 app.register_blueprint(db_info_bp)
 app.register_blueprint(almacen_bp)
+app.register_blueprint(notification_bp)
 
 # ==================== RUTAS DE AUTENTICACIÓN ====================
 
@@ -461,17 +460,102 @@ def login():
         return jsonify({'success': False, 'message': f'Empresa {connection} no encontrada'}), 404
 
     empresa_id = empresa_info.get('empresa_erp')
+    ip_address = get_client_ip()
+    ua_string = request.headers.get('User-Agent', '')
 
-    # Limpiar sesiones expiradas de esta empresa
+    # ==================== LOCKOUT CHECK (1 sola conexión reutilizada) ====================
+    lockout_user_id = None
+    login_conn = None
     try:
-        UserSessionModel.cleanup_expired(connection)
+        login_conn = Database.get_connection(connection)
+        cursor = login_conn.cursor()
+
+        # Limpiar sesiones expiradas (reusar conexión)
+        try:
+            cursor.execute("""
+                DELETE FROM user_sessions
+                WHERE last_activity < DATEADD(HOUR, -24, GETDATE())
+            """)
+            login_conn.commit()
+        except Exception:
+            pass
+
+        # Verificar lockout
+        cursor.execute("""
+            SELECT id, login_attempts, locked_until
+            FROM users WHERE username = ?
+        """, (username,))
+        lockout_row = cursor.fetchone()
+        if lockout_row:
+            lockout_user_id = lockout_row[0]
+            locked_until = lockout_row[2]
+
+            if locked_until and locked_until > datetime.now():
+                remaining_seconds = (locked_until - datetime.now()).total_seconds()
+                remaining_minutes = max(1, int(remaining_seconds / 60) + 1)
+                cursor.close()
+                login_conn.close()
+                return jsonify({
+                    'success': False,
+                    'message': f'Cuenta bloqueada. Intenta de nuevo en {remaining_minutes} minutos.',
+                    'error': 'account_locked',
+                    'remaining_minutes': remaining_minutes
+                }), 423
+        cursor.close()
     except Exception as e:
-        print(f"Warning: No se pudieron limpiar sesiones expiradas: {e}")
+        logging.getLogger(__name__).debug(f"Lockout check: {e}")
+    finally:
+        if login_conn:
+            try:
+                login_conn.close()
+            except Exception:
+                pass
 
     # Verificar usuario con conexión dinámica
     user_data = verify_user(username, password, connection, empresa_id)
 
     if user_data:
+        # ==================== LOGIN EXITOSO (1 sola conexión para todo) ====================
+        post_conn = None
+        session_token = None
+        try:
+            post_conn = Database.get_connection(connection)
+            cursor = post_conn.cursor()
+
+            # Resetear lockout
+            cursor.execute("""
+                UPDATE users SET login_attempts = 0, locked_until = NULL
+                WHERE id = ?
+            """, (user_data['id'],))
+
+            # Eliminar sesiones anteriores del usuario
+            try:
+                cursor.execute("DELETE FROM user_sessions WHERE user_id = ?", (user_data['id'],))
+            except Exception:
+                pass
+
+            # Crear nueva sesión
+            try:
+                import secrets as _secrets
+                session_token = _secrets.token_hex(32)
+                cursor.execute("""
+                    INSERT INTO user_sessions (session_token, user_id, empresa_id, ip_address)
+                    VALUES (?, ?, ?, ?)
+                """, (session_token, user_data['id'], empresa_id, ip_address))
+            except Exception:
+                session_token = None
+
+            post_conn.commit()
+            cursor.close()
+        except Exception as e:
+            logging.getLogger(__name__).warning(f"Post-login operations: {e}")
+        finally:
+            if post_conn:
+                try:
+                    post_conn.close()
+                except Exception:
+                    pass
+
         user = User(
             id=user_data['id'],
             username=user_data['username'],
@@ -493,14 +577,16 @@ def login():
         else:
             app.permanent_session_lifetime = SESSION_LIFETIME_USUARIO
 
-        # ⭐ Guardar connection, empresa_id y carrito en sesión
+        # Guardar datos en sesión
         session['connection'] = connection
         session['empresa_id'] = empresa_id
         session['empresa_nombre'] = empresa_info.get('nombre')
         session['carrito'] = []
         session['user_id'] = user_data['id']
+        if session_token:
+            session['session_token'] = session_token
+        session['_session_check_ts'] = time.time()
 
-        # ⭐ Guardar datos de conexión BD cliente en sesión (para no buscar en BD Central cada vez)
         session['db_config'] = {
             'dbserver': empresa_info.get('dbserver'),
             'dbport': empresa_info.get('dbport'),
@@ -524,84 +610,69 @@ def login():
                             f"Migración fallida para empresa {connection}: v{mig_result['failed']['version']} - {mig_result['failed']['error']}"
                         )
                     else:
-                        # Solo marcar como verificada si no hubo fallos
                         migrations_mark_checked(connection, MIGRATIONS)
                 finally:
                     mig_conn.close()
             except Exception as e:
                 logging.getLogger(__name__).warning(f"Migraciones: {e}")
 
-        # Eliminar sesiones anteriores del usuario (solo 1 sesión activa por usuario)
-        try:
-            UserSessionModel.delete_by_user_id(user_data['id'], connection)
-        except Exception as e:
-            print(f"Warning: No se pudieron eliminar sesiones anteriores: {e}")
-
-        # Crear sesion en BD para tracking
-        try:
-            ip_address = get_client_ip()
-            session_token = UserSessionModel.create(user_data['id'], empresa_id, ip_address, connection)
-            if session_token:
-                session['session_token'] = session_token
-        except Exception as e:
-            print(f"Warning: No se pudo crear sesion en BD: {e}")
-
         # Verificar si debe cambiar la contraseña
         debe_cambiar = user_data.get('debe_cambiar_password', False)
-
-        # Verificar expiración de contraseña
         if not debe_cambiar and PASSWORD_POLICY['expiration_days'] > 0:
             fecha_pwd = user_data.get('fecha_ultimo_cambio_password')
             if fecha_pwd:
                 dias_desde_cambio = (datetime.now() - fecha_pwd).days
                 if dias_desde_cambio > PASSWORD_POLICY['expiration_days']:
                     debe_cambiar = True
-                    print(f"[INFO] Contraseña expirada para {username} ({dias_desde_cambio} días)")
 
         # Generar CSRF token
         csrf_token = secrets.token_hex(32)
         session['csrf_token'] = csrf_token
 
-        # Registrar audit log de login exitoso con info de dispositivo
-        try:
-            ua_string = request.headers.get('User-Agent', '')
-            ua_parsed = parse_user_agent(ua_string)
-            device_info = data.get('device_info', {})
-            detalles_login = {
-                'metodo': 'password',
-                'dispositivo': {
-                    'tipo': ua_parsed['device_type'],
-                    'navegador': ua_parsed['browser'],
-                    'sistema_operativo': ua_parsed['os'],
-                    'user_agent': ua_string,
-                    'pantalla': device_info.get('screen'),
-                    'viewport': device_info.get('viewport'),
-                    'zona_horaria': device_info.get('timezone'),
-                    'idioma': device_info.get('language'),
-                    'plataforma': device_info.get('platform'),
-                    'cookies': device_info.get('cookiesEnabled'),
-                    'tactil': device_info.get('touchscreen'),
-                    'memoria_gb': device_info.get('deviceMemory'),
-                    'nucleos_cpu': device_info.get('hardwareConcurrency')
+        # Audit log en background (no bloquea la respuesta al usuario)
+        _audit_user_id = user_data['id']
+        _audit_username = user.username
+        _audit_session_token = session_token
+        _audit_device_info = data.get('device_info', {})
+        def _log_login_audit():
+            try:
+                ua_parsed = parse_user_agent(ua_string)
+                detalles_login = {
+                    'metodo': 'password',
+                    'dispositivo': {
+                        'tipo': ua_parsed['device_type'],
+                        'navegador': ua_parsed['browser'],
+                        'sistema_operativo': ua_parsed['os'],
+                        'user_agent': ua_string,
+                        'pantalla': _audit_device_info.get('screen'),
+                        'viewport': _audit_device_info.get('viewport'),
+                        'zona_horaria': _audit_device_info.get('timezone'),
+                        'idioma': _audit_device_info.get('language'),
+                        'plataforma': _audit_device_info.get('platform'),
+                        'cookies': _audit_device_info.get('cookiesEnabled'),
+                        'tactil': _audit_device_info.get('touchscreen'),
+                        'memoria_gb': _audit_device_info.get('deviceMemory'),
+                        'nucleos_cpu': _audit_device_info.get('hardwareConcurrency')
+                    }
                 }
-            }
-            ubicacion = get_location(ip_address)
-            if ubicacion:
-                detalles_login['ubicacion'] = ubicacion
-            AuditModel.log(
-                accion=AuditAction.LOGIN,
-                user_id=user_data['id'],
-                username=user.username,
-                empresa_id=empresa_id,
-                recurso='session',
-                recurso_id=session_token if session_token else None,
-                ip_address=ip_address,
-                user_agent=ua_string,
-                detalles=detalles_login,
-                resultado=AuditResult.SUCCESS
-            )
-        except Exception as e:
-            print(f"Warning: No se pudo registrar audit log de login: {e}")
+                ubicacion = get_location(ip_address)
+                if ubicacion:
+                    detalles_login['ubicacion'] = ubicacion
+                AuditModel.log(
+                    accion=AuditAction.LOGIN,
+                    user_id=_audit_user_id,
+                    username=_audit_username,
+                    empresa_id=empresa_id,
+                    recurso='session',
+                    recurso_id=_audit_session_token,
+                    ip_address=ip_address,
+                    user_agent=ua_string,
+                    detalles=detalles_login,
+                    resultado=AuditResult.SUCCESS
+                )
+            except Exception:
+                pass
+        threading.Thread(target=_log_login_audit, daemon=True).start()
 
         return jsonify({
             'success': True,
@@ -619,27 +690,86 @@ def login():
             }
         })
 
-    # Registrar audit log de login fallido
+    # ==================== LOGIN FALLIDO (1 sola conexión para lockout + audit en background) ====================
+    attempts_remaining = None
     try:
-        failed_ip = get_client_ip()
-        failed_detalles = {'motivo': 'credenciales_invalidas'}
-        ubicacion_failed = get_location(failed_ip)
-        if ubicacion_failed:
-            failed_detalles['ubicacion'] = ubicacion_failed
-        AuditModel.log(
-            accion=AuditAction.LOGIN_FAILED,
-            username=username,
-            empresa_id=empresa_id,
-            recurso='session',
-            ip_address=failed_ip,
-            user_agent=request.headers.get('User-Agent'),
-            detalles=failed_detalles,
-            resultado=AuditResult.FAILED
-        )
-    except Exception as e:
-        print(f"Warning: No se pudo registrar audit log de login fallido: {e}")
+        if lockout_user_id:
+            inc_conn = Database.get_connection(connection)
+            inc_cursor = inc_conn.cursor()
+            inc_cursor.execute("""
+                UPDATE users SET login_attempts = ISNULL(login_attempts, 0) + 1
+                WHERE id = ?
+            """, (lockout_user_id,))
+            inc_cursor.execute("SELECT login_attempts FROM users WHERE id = ?", (lockout_user_id,))
+            row = inc_cursor.fetchone()
+            current_attempts = row[0] if row else 0
 
-    return jsonify({'success': False, 'message': 'Credenciales inválidas'}), 401
+            if current_attempts >= 5:
+                inc_cursor.execute("""
+                    UPDATE users SET locked_until = DATEADD(MINUTE, 15, GETDATE())
+                    WHERE id = ?
+                """, (lockout_user_id,))
+
+            inc_conn.commit()
+            inc_cursor.close()
+            inc_conn.close()
+
+            if current_attempts >= 5:
+                # Audit de bloqueo en background
+                _lock_user_id = lockout_user_id
+                _lock_attempts = current_attempts
+                def _log_lockout_audit():
+                    try:
+                        AuditModel.log(
+                            accion=AuditAction.ACCOUNT_LOCKED,
+                            user_id=_lock_user_id,
+                            username=username,
+                            empresa_id=empresa_id,
+                            recurso='user',
+                            recurso_id=str(_lock_user_id),
+                            ip_address=ip_address,
+                            user_agent=ua_string,
+                            detalles={'intentos': _lock_attempts, 'duracion_minutos': 15},
+                            resultado=AuditResult.BLOCKED
+                        )
+                    except Exception:
+                        pass
+                threading.Thread(target=_log_lockout_audit, daemon=True).start()
+            else:
+                attempts_remaining = 5 - current_attempts
+    except Exception as e:
+        logging.getLogger(__name__).debug(f"Lockout increment: {e}")
+
+    # Audit de login fallido en background
+    def _log_failed_audit():
+        try:
+            failed_detalles = {'motivo': 'credenciales_invalidas'}
+            ubicacion_failed = get_location(ip_address)
+            if ubicacion_failed:
+                failed_detalles['ubicacion'] = ubicacion_failed
+            AuditModel.log(
+                accion=AuditAction.LOGIN_FAILED,
+                username=username,
+                empresa_id=empresa_id,
+                recurso='session',
+                ip_address=ip_address,
+                user_agent=ua_string,
+                detalles=failed_detalles,
+                resultado=AuditResult.FAILED
+            )
+        except Exception:
+            pass
+    threading.Thread(target=_log_failed_audit, daemon=True).start()
+
+    response_data = {'success': False, 'message': 'Credenciales inválidas'}
+    if attempts_remaining is not None:
+        response_data['attempts_remaining'] = attempts_remaining
+    elif lockout_user_id:
+        response_data['message'] = 'Cuenta bloqueada por demasiados intentos fallidos. Intenta de nuevo en 15 minutos.'
+        response_data['error'] = 'account_locked'
+        return jsonify(response_data), 423
+
+    return jsonify(response_data), 401
 
 @app.route('/api/logout', methods=['POST'])
 @login_required
@@ -666,41 +796,51 @@ def logout():
       401:
         description: No autenticado
     """
-    # Registrar audit log de logout antes de limpiar sesión
-    try:
-        logout_ip = get_client_ip()
-        logout_detalles = {'metodo': 'manual'}
-        ubicacion_logout = get_location(logout_ip)
-        if ubicacion_logout:
-            logout_detalles['ubicacion'] = ubicacion_logout
-        AuditModel.log(
-            accion=AuditAction.LOGOUT,
-            user_id=current_user.id,
-            username=current_user.username,
-            empresa_id=session.get('empresa_id'),
-            recurso='session',
-            recurso_id=session.get('session_token'),
-            ip_address=logout_ip,
-            user_agent=request.headers.get('User-Agent'),
-            detalles=logout_detalles,
-            resultado=AuditResult.SUCCESS
-        )
-    except Exception as e:
-        print(f"Warning: No se pudo registrar audit log de logout: {e}")
+    # Capturar datos antes de limpiar sesión
+    logout_ip = get_client_ip()
+    logout_ua = request.headers.get('User-Agent', '')
+    logout_user_id = current_user.id
+    logout_username = current_user.username
+    logout_empresa_id = session.get('empresa_id')
+    logout_session_token = session.get('session_token')
 
     # Eliminar sesion de BD
     try:
-        session_token = session.get('session_token')
-        if session_token:
-            UserSessionModel.delete(session_token)
-    except Exception as e:
-        print(f"Warning: No se pudo eliminar sesion de BD: {e}")
+        if logout_session_token:
+            UserSessionModel.delete(logout_session_token)
+    except Exception:
+        pass
 
-    # ⭐ Limpiar carrito y CSRF token al cerrar sesión
+    # Limpiar sesión
     session.pop('carrito', None)
     session.pop('session_token', None)
     session.pop('csrf_token', None)
+    session.pop('_session_check_ts', None)
     logout_user()
+
+    # Audit en background (no bloquea la respuesta)
+    def _log_logout_audit():
+        try:
+            logout_detalles = {'metodo': 'manual'}
+            ubicacion_logout = get_location(logout_ip)
+            if ubicacion_logout:
+                logout_detalles['ubicacion'] = ubicacion_logout
+            AuditModel.log(
+                accion=AuditAction.LOGOUT,
+                user_id=logout_user_id,
+                username=logout_username,
+                empresa_id=logout_empresa_id,
+                recurso='session',
+                recurso_id=logout_session_token,
+                ip_address=logout_ip,
+                user_agent=logout_ua,
+                detalles=logout_detalles,
+                resultado=AuditResult.SUCCESS
+            )
+        except Exception:
+            pass
+    threading.Thread(target=_log_logout_audit, daemon=True).start()
+
     return jsonify({'success': True, 'message': 'Logout exitoso'})
 
 @app.route('/api/current-user')
@@ -982,6 +1122,15 @@ def serve_datepicker_js():
     response.headers['Expires'] = '0'
     return response
 
+@app.route('/js/notifications.js')
+@login_required
+def serve_notifications_js():
+    response = send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'notifications.js', mimetype='application/javascript')
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
 @app.route('/js/i18n/i18n.js')
 def serve_i18n_js():
     return send_from_directory(os.path.join(FRONTEND_DIR, 'js', 'i18n'), 'i18n.js', mimetype='application/javascript')
@@ -1027,7 +1176,7 @@ def require_login():
         return None
 
     # Permitir rutas de registro, empresa y consultas sin autenticación
-    public_api_routes = ['/api/register', '/api/verify-email', '/api/resend-verification', '/api/paises', '/api/registro-habilitado', '/api/parametros/propuestas-habilitadas', '/api/parametros/busqueda-voz-habilitada', '/api/consultas/whatsapp-config', '/api/empresa/validate', '/api/empresa/init', '/api/empresa/list', '/api/default-connection', '/api/version', '/api/password-policy', '/api/forgot-password', '/api/reset-password']
+    public_api_routes = ['/api/register', '/api/verify-email', '/api/resend-verification', '/api/paises', '/api/registro-habilitado', '/api/parametros/propuestas-habilitadas', '/api/parametros/busqueda-voz-habilitada', '/api/parametros/mostrar-precios', '/api/consultas/whatsapp-config', '/api/empresa/validate', '/api/empresa/init', '/api/empresa/list', '/api/default-connection', '/api/version', '/api/password-policy', '/api/forgot-password', '/api/reset-password']
     if any(request.path.startswith(route) for route in public_api_routes):
         return None
 
@@ -1036,19 +1185,23 @@ def require_login():
     is_authenticated = current_user.is_authenticated or api_key
 
     # Verificar si la sesion fue eliminada de BD (matar sesion desde dashboard)
+    # Optimización: solo consultar BD cada 60 segundos, no en cada request
     if current_user.is_authenticated:
         try:
             session_token = session.get('session_token')
             if session_token:
-                if not UserSessionModel.exists(session_token):
-                    # Sesion eliminada de BD, cerrar sesion de Flask
-                    session.pop('carrito', None)
-                    session.pop('session_token', None)
-                    logout_user()
-                    is_authenticated = False
-                else:
-                    # Actualizar ultima actividad
-                    UserSessionModel.update_activity(session_token)
+                now = time.time()
+                last_check = session.get('_session_check_ts', 0)
+                if now - last_check > 60:
+                    if not UserSessionModel.exists(session_token):
+                        session.pop('carrito', None)
+                        session.pop('session_token', None)
+                        session.pop('_session_check_ts', None)
+                        logout_user()
+                        is_authenticated = False
+                    else:
+                        UserSessionModel.update_activity(session_token)
+                        session['_session_check_ts'] = now
         except Exception:
             pass
 

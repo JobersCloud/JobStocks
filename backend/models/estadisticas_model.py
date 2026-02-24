@@ -336,21 +336,21 @@ class EstadisticasModel:
                     codigos = [a['codigo'] for a in articulos]
                     placeholders = ','.join(['?' for _ in codigos])
                     cursor.execute(f"""
-                        SELECT codigo, descripcion, formato FROM view_externos_stock
+                        SELECT DISTINCT codigo, descripcion, formato FROM view_externos_stock
                         WHERE codigo IN ({placeholders}) AND empresa = ?
                     """, codigos + [empresa_id])
                     desc_map = {}
                     for row in cursor.fetchall():
                         key = row[0].strip() if row[0] else row[0]
                         desc = (row[1].strip() if row[1] else '') or ''
-                        fmt = row[2].strip() if row[2] else ''
-                        # Guardar solo si tiene descripcion real, o si no hay entrada previa
-                        if key not in desc_map or (desc and not desc_map[key]['descripcion']):
-                            desc_map[key] = {'descripcion': desc or key, 'formato': fmt}
+                        fmt = (row[2].strip() if row[2] else '') or ''
+                        # Priorizar filas que tengan descripcion real
+                        if key not in desc_map or (desc and desc != key and not desc_map[key].get('has_desc')):
+                            desc_map[key] = {'descripcion': desc or key, 'formato': fmt, 'has_desc': bool(desc and desc != key)}
                     for a in articulos:
                         if a['codigo'] in desc_map:
                             a['descripcion'] = desc_map[a['codigo']]['descripcion']
-                            a['formato'] = desc_map[a['codigo']]['formato']
+                            a['formato'] = desc_map[a['codigo']].get('formato', '')
                 except Exception:
                     pass  # Si la vista no existe, usamos el codigo como descripcion
 

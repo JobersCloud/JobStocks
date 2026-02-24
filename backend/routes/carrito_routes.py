@@ -331,6 +331,23 @@ def enviar_carrito():
         )
         print(f"8️⃣ Propuesta guardada en BD con ID: {propuesta_id}")
 
+        # Notificar a admins de la empresa sobre la nueva propuesta
+        try:
+            from models.notification_model import NotificationModel
+            admin_ids = NotificationModel.get_admin_user_ids(empresa_id)
+            for admin_id in admin_ids:
+                if admin_id != current_user.id:
+                    NotificationModel.create(
+                        user_id=admin_id,
+                        empresa_id=empresa_id,
+                        tipo='nueva_propuesta',
+                        titulo=f'Nueva propuesta de {current_user.full_name or current_user.username}',
+                        mensaje=f'El usuario {current_user.full_name or current_user.username} envió una nueva propuesta (#{propuesta_id}).',
+                        data={'propuesta_id': propuesta_id, 'username': current_user.username}
+                    )
+        except Exception as e:
+            print(f"Warning: No se pudieron crear notificaciones para admins: {e}")
+
         # Limpiar carrito después de enviar
         session['carrito'] = []
         session.modified = True

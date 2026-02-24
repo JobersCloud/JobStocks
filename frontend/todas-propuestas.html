@@ -45,6 +45,23 @@
                 link.href = faviconUrl;
                 document.head.appendChild(link);
             }
+
+            // Pre-cargar logo y nombre empresa desde cache para evitar flash
+            var _logoUrl = localStorage.getItem('logoUrl');
+            var _companyName = localStorage.getItem('companyName');
+            var _logoInvert = localStorage.getItem('logoInvert');
+            if (_logoUrl || _companyName) {
+                document.addEventListener('DOMContentLoaded', function() {
+                    var logo = document.getElementById('header-logo');
+                    if (logo && _logoUrl) {
+                        logo.src = _logoUrl;
+                        logo.style.filter = _logoInvert === 'true' ? 'brightness(0) invert(1)' : 'none';
+                        logo.style.visibility = 'visible';
+                    }
+                    var name = document.getElementById('header-company-name');
+                    if (name && _companyName) name.textContent = _companyName;
+                });
+            }
         })();
     </script>
     <link rel="stylesheet" href="css/styles.css?v=1.26.0">
@@ -63,7 +80,7 @@
                     </svg>
                 </button>
                 <div class="header-logo">
-                    <img src="" alt="Logo" id="header-logo">
+                    <img src="" alt="Logo" id="header-logo" style="visibility:hidden">
                     <span class="header-logo-text" id="header-company-name">Stocks</span>
                 </div>
                 <div class="header-divider"></div>
@@ -72,6 +89,15 @@
                 </div>
             </div>
             <div class="top-header-right">
+                <div class="bell-container">
+                    <button class="bell-btn" onclick="Notifications.showDropdown()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <span class="notification-badge" id="bell-badge">0</span>
+                    </button>
+                </div>
                 <div class="menu-container">
                     <button class="menu-btn" id="menu-btn" onclick="toggleUserMenu()">
                         <svg class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -461,6 +487,7 @@
     <script src="js/grid-filters.js?v=20260207"></script>
     <script src="js/data-grid.js?v=20260208b"></script>
     <script src="js/page-common.js?v=20260209a"></script>
+    <script src="js/notifications.js"></script>
     <script>
         // ==================== PAGE: TODAS LAS PROPUESTAS (Admin) ====================
         const API_URL = PageCommon.API_URL;
@@ -478,6 +505,7 @@
 
             await PageCommon.checkAuth('administrador');
             await PageCommon.obtenerCsrfToken();
+            Notifications.init();
 
             // Crear grid
             grid = new DataGrid({

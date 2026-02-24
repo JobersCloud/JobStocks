@@ -352,6 +352,25 @@ def actualizar_estado(propuesta_id):
                 'error': 'Propuesta no encontrada'
             }), 404
 
+        # Notificar al usuario propietario del cambio de estado
+        try:
+            from models.notification_model import NotificationModel
+            propuesta = PropuestaModel.get_by_id(propuesta_id)
+            if propuesta and propuesta.get('user_id'):
+                empresa_id = session.get('empresa_id')
+                connection_id = session.get('connection')
+                NotificationModel.create(
+                    user_id=propuesta['user_id'],
+                    empresa_id=empresa_id,
+                    tipo='propuesta_cambio_estado',
+                    titulo=f'Propuesta #{propuesta_id} cambió a: {estado}',
+                    mensaje=f'Tu propuesta #{propuesta_id} ha cambiado al estado "{estado}".',
+                    data={'propuesta_id': propuesta_id, 'estado': estado},
+                    connection_id=connection_id
+                )
+        except Exception as e:
+            print(f"Warning: No se pudo crear notificación: {e}")
+
         return jsonify({
             'success': True,
             'message': f'Estado actualizado a "{estado}"',
