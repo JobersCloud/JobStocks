@@ -549,15 +549,28 @@ def get_user_by_id_and_empresa(user_id, empresa_cli_id, empresa_erp):
         conn = Database.get_connection(empresa_cli_id)
         cursor = conn.cursor()
 
-        cursor.execute("""
-            SELECT
-                u.id, u.username, u.email, u.full_name, u.pais,
-                ue.rol, u.active, u.email_verificado,
-                ue.empresa_id, ue.cliente_id, u.company_name
-            FROM users u
-            INNER JOIN users_empresas ue ON u.id = ue.user_id
-            WHERE u.id = ? AND ue.empresa_id = ?
-        """, (user_id, empresa_erp))
+        # Intentar incluir mostrar_precios (puede no existir aún)
+        try:
+            cursor.execute("""
+                SELECT
+                    u.id, u.username, u.email, u.full_name, u.pais,
+                    ue.rol, u.active, u.email_verificado,
+                    ue.empresa_id, ue.cliente_id, u.company_name,
+                    ue.mostrar_precios
+                FROM users u
+                INNER JOIN users_empresas ue ON u.id = ue.user_id
+                WHERE u.id = ? AND ue.empresa_id = ?
+            """, (user_id, empresa_erp))
+        except Exception:
+            cursor.execute("""
+                SELECT
+                    u.id, u.username, u.email, u.full_name, u.pais,
+                    ue.rol, u.active, u.email_verificado,
+                    ue.empresa_id, ue.cliente_id, u.company_name
+                FROM users u
+                INNER JOIN users_empresas ue ON u.id = ue.user_id
+                WHERE u.id = ? AND ue.empresa_id = ?
+            """, (user_id, empresa_erp))
 
         row = cursor.fetchone()
 
@@ -574,7 +587,8 @@ def get_user_by_id_and_empresa(user_id, empresa_cli_id, empresa_erp):
                 'empresa_id': row[8],
                 'cliente_id': row[9],
                 'company_name': row[10],
-                'cliente_nombre': None
+                'cliente_nombre': None,
+                'mostrar_precios': bool(row[11]) if len(row) > 11 and row[11] is not None else False
             }
             # Resolver nombre del cliente en paso separado
             if usuario['cliente_id']:

@@ -463,7 +463,13 @@
     "confirmUnlock": "¿Desbloquear la cuenta de este usuario?",
     "showPrices": "Ver precios",
     "showPricesEnabled": "Precios habilitados",
-    "showPricesDisabled": "Precios deshabilitados"
+    "showPricesDisabled": "Precios deshabilitados",
+    "editUser": "Editar usuario",
+    "deleteUser": "Borrar usuario",
+    "showPricesHelp": "Permite al usuario ver precios en el grid",
+    "enablePrices": "Activar precios",
+    "disablePrices": "Desactivar precios",
+    "verifyEmail": "Verificar email"
   },
   "changePassword": {
     "title": "Cambiar Contraseña",

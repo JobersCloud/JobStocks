@@ -463,7 +463,13 @@
     "confirmUnlock": "Unlock this user's account?",
     "showPrices": "Show prices",
     "showPricesEnabled": "Prices enabled",
-    "showPricesDisabled": "Prices disabled"
+    "showPricesDisabled": "Prices disabled",
+    "editUser": "Edit user",
+    "deleteUser": "Delete user",
+    "showPricesHelp": "Allows user to see prices in the grid",
+    "enablePrices": "Enable prices",
+    "disablePrices": "Disable prices",
+    "verifyEmail": "Verify email"
   },
   "changePassword": {
     "title": "Change Password",
