@@ -16,7 +16,8 @@
     "viewAll": "Ver Todos",
     "showing": "Mostrando",
     "of": "de",
-    "optional": "(opcional)"
+    "optional": "(opcional)",
+    "edit": "Editar"
   },
   "header": {
     "title": "Gestión de Stocks",
@@ -677,7 +678,10 @@
     "totalImages": "Total Imágenes",
     "reindexButton": "Reindexar",
     "reindexStarting": "Iniciando reindexación...",
-    "reindexComplete": "Reindexación completada"
+    "reindexComplete": "Reindexación completada",
+    "clearButton": "Limpiar",
+    "clearConfirm": "Se eliminarán todos los embeddings. Tendrás que reindexar después. ¿Continuar?",
+    "reindexVersionWarning": "Los embeddings almacenados son de una versión anterior. Es necesario limpiar y reindexar."
   },
   "apiKeys": {
     "description": "Las API Keys permiten a aplicaciones externas (PowerBuilder, ERP, etc.) acceder a la API sin necesidad de iniciar sesion. Cada key esta asociada a tu usuario y a la empresa actual.",

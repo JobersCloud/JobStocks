@@ -16,7 +16,8 @@
     "viewAll": "View All",
     "showing": "Showing",
     "of": "of",
-    "optional": "(optional)"
+    "optional": "(optional)",
+    "edit": "Edit"
   },
   "header": {
     "title": "Stock Management",
@@ -677,7 +678,10 @@
     "totalImages": "Total Images",
     "reindexButton": "Reindex",
     "reindexStarting": "Starting reindexing...",
-    "reindexComplete": "Reindexing completed"
+    "reindexComplete": "Reindexing completed",
+    "clearButton": "Clear",
+    "clearConfirm": "All embeddings will be deleted. You will need to reindex afterwards. Continue?",
+    "reindexVersionWarning": "Stored embeddings are from a previous version. You need to clear and reindex."
   },
   "apiKeys": {
     "description": "API Keys allow external applications (PowerBuilder, ERP, etc.) to access the API without logging in. Each key is linked to your user and current company.",

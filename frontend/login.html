@@ -307,6 +307,13 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.35.6', date: '2026-02-26', title: 'Mejora precision Busqueda Magica (CBIR v2)', items: [
+                {type: 'improve', text: 'Busqueda Magica: nuevos descriptores de textura (GLCM, LBP multi-escala, HOG) para mejor discriminacion de patrones'},
+                {type: 'improve', text: 'Busqueda Magica: pesos balanceados entre color (25%), textura (35%), estructura (30%) y bordes (10%)'},
+                {type: 'improve', text: 'Busqueda Magica: filtrado de resultados debiles (umbral absoluto 35% y relativo 50% del mejor)'},
+                {type: 'new', text: 'Deteccion automatica de version de embeddings - avisa si es necesario reindexar'},
+                {type: 'fix', text: 'Grid usuarios: boton "Editar" en panel lateral ahora se muestra correctamente'}
+            ]},
             { version: 'v1.35.5', date: '2026-02-25', title: 'Carrito desde Busqueda Magica y fix loading', items: [
                 {type: 'fix', text: 'Busqueda Magica: agregar al carrito desde detalle ahora muestra modal de cantidad (igual que en Stocks)'},
                 {type: 'fix', text: 'Grid de stocks: corregido texto "common.loading" que aparecia en vez de "Cargando..."'},

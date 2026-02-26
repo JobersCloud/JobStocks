@@ -475,6 +475,10 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- Aviso de version incompatible -->
+                                <div id="reindex-version-warning" style="display: none; margin-top: 12px; padding: 10px 14px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; color: #856404; font-size: 0.85rem;">
+                                    <strong>⚠️</strong> <span data-i18n="dbControl.reindexVersionWarning">Los embeddings almacenados son de una version anterior. Es necesario limpiar y reindexar.</span>
+                                </div>
                                 <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                                     <button class="btn-primary" id="btn-reindex" onclick="reindexImages()" style="display: inline-flex; align-items: center; gap: 8px;">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
@@ -482,6 +486,13 @@
                                             <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
                                         </svg>
                                         <span data-i18n="dbControl.reindexButton">Reindexar</span>
+                                    </button>
+                                    <button class="btn-secondary" id="btn-clear-embeddings" onclick="clearEmbeddings()" style="display: inline-flex; align-items: center; gap: 8px;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                        <span data-i18n="dbControl.clearButton">Limpiar</span>
                                     </button>
                                 </div>
                                 <div id="reindex-progress" style="display: none; margin-top: 12px;">
@@ -885,8 +896,44 @@
                 const data = await response.json();
                 document.getElementById('reindex-stat-indexed').textContent = data.indexed || 0;
                 document.getElementById('reindex-stat-total').textContent = data.total || 0;
+
+                // Mostrar aviso si los embeddings son de version anterior
+                const warningEl = document.getElementById('reindex-version-warning');
+                if (warningEl) {
+                    warningEl.style.display = data.needs_reindex ? 'block' : 'none';
+                }
             } catch (error) {
                 console.error('Error loading reindex status:', error);
+            }
+        }
+
+        async function clearEmbeddings() {
+            if (!confirm(t('dbControl.clearConfirm') || 'Se eliminaran todos los embeddings. Tendras que reindexar despues. ¿Continuar?')) {
+                return;
+            }
+            const btn = document.getElementById('btn-clear-embeddings');
+            btn.disabled = true;
+            try {
+                const response = await fetch(`${API_URL}/api/image-search/clear`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken || localStorage.getItem('csrf_token')
+                    },
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    alert(data.message || 'Embeddings eliminados');
+                    loadReindexStatus();
+                } else {
+                    alert(data.error || 'Error al limpiar');
+                }
+            } catch (error) {
+                console.error('Error clearing embeddings:', error);
+                alert('Error al limpiar embeddings');
+            } finally {
+                btn.disabled = false;
             }
         }
 
@@ -940,20 +987,32 @@
                 }
 
                 const data = await response.json();
-                const indexed = data.indexed || 0;
-                const total = data.total || 0;
-                const percent = total > 0 ? Math.round((indexed / total) * 100) : 0;
 
-                progressFill.style.width = percent + '%';
-                progressText.textContent = `${indexed} / ${total} (${percent}%)`;
-
-                if (!data.reindexing) {
-                    btn.disabled = false;
-                    alert(t('dbControl.reindexComplete') || 'Reindexacion completada');
-                    loadReindexStatus();
-                    setTimeout(() => { progressEl.style.display = 'none'; }, 2000);
-                } else {
+                if (data.reindexing) {
+                    // Usar progreso real del thread, no el conteo de BD
+                    const progress = data.progress || 0;
+                    const total = data.reindex_total || data.total || 0;
+                    const percent = total > 0 ? Math.round((progress / total) * 100) : 0;
+                    progressFill.style.width = percent + '%';
+                    progressText.textContent = `${progress} / ${total} (${percent}%)`;
                     setTimeout(pollReindexProgress, 2000);
+                } else {
+                    // Terminado
+                    const lastError = data.last_reindex_error;
+                    const errorsCount = data.last_reindex_errors_count || 0;
+                    progressFill.style.width = '100%';
+                    btn.disabled = false;
+
+                    if (lastError) {
+                        progressText.textContent = 'Error: ' + lastError;
+                        alert('Error en reindexacion: ' + lastError);
+                    } else {
+                        const indexed = data.indexed || 0;
+                        progressText.textContent = `Completado: ${indexed} imagenes indexadas` + (errorsCount > 0 ? ` (${errorsCount} errores)` : '');
+                        alert(t('dbControl.reindexComplete') || 'Reindexacion completada');
+                    }
+                    loadReindexStatus();
+                    setTimeout(() => { progressEl.style.display = 'none'; }, 3000);
                 }
             } catch (error) {
                 console.error('Error polling reindex status:', error);
