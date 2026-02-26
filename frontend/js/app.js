@@ -652,7 +652,7 @@ function inicializarTooltipVoz() {
 function iniciarBusquedaVoz() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-        alert(t('voice.notSupported') || 'Tu navegador no soporta reconocimiento de voz');
+        UIFeedback.toast(t('voice.notSupported') || 'Tu navegador no soporta reconocimiento de voz', 'warning');
         return;
     }
 
@@ -675,7 +675,7 @@ function iniciarBusquedaVoz() {
     recognition.onerror = (event) => {
         btn.classList.remove('listening');
         if (event.error !== 'aborted' && event.error !== 'no-speech') {
-            alert(t('voice.error') || 'Error en reconocimiento de voz');
+            UIFeedback.toast(t('voice.error') || 'Error en reconocimiento de voz', 'error');
         }
     };
 
@@ -1439,13 +1439,13 @@ async function showContextInfo() {
 
     } catch (error) {
         console.error('Error al obtener info de contexto:', error);
-        alert('Error: ' + error.message);
+        UIFeedback.toast('Error: ' + error.message, 'error');
     }
 }
 
 // Cerrar sesión
 async function logout() {
-    if (confirm(t('auth.logoutConfirm'))) {
+    if (await UIFeedback.confirm({ message: t('auth.logoutConfirm') })) {
         try {
             await fetchWithCsrf(`${API_URL}/api/logout`, {
                 method: 'POST',
@@ -1454,7 +1454,7 @@ async function logout() {
             window.location.href = '/login';
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
-            alert(t('auth.logoutError'));
+            UIFeedback.toast(t('auth.logoutError'), 'error');
         }
     }
 }
@@ -1625,7 +1625,7 @@ function mostrarCargandoInline() {
         container.innerHTML = `
             <div class="inline-loading">
                 <div class="inline-loading-spinner"></div>
-                <p>${t('common.loading') || 'Cargando...'}</p>
+                <p>${(() => { const txt = t('common.loading'); return txt && !txt.includes('.') ? txt : 'Cargando...'; })()}</p>
             </div>
         `;
     }
@@ -2233,7 +2233,7 @@ window.toggleRangoInputs = toggleRangoInputs;
 // Guardar filtros actuales
 function guardarFiltrosActuales() {
     if (filtrosColumna.length === 0) {
-        alert('No hay filtros para guardar');
+        UIFeedback.toast('No hay filtros para guardar', 'warning');
         return;
     }
 
@@ -2250,7 +2250,7 @@ function guardarFiltrosActuales() {
     localStorage.setItem('filtrosGuardados', JSON.stringify(filtrosGuardados));
 
     cerrarPopupFiltro();
-    alert(`Filtros guardados como "${nombre}"`);
+    UIFeedback.toast(`Filtros guardados como "${nombre}"`, 'success');
 }
 window.guardarFiltrosActuales = guardarFiltrosActuales;
 
@@ -2273,8 +2273,8 @@ async function cargarFiltroGuardado(index) {
 window.cargarFiltroGuardado = cargarFiltroGuardado;
 
 // Eliminar filtro guardado
-function eliminarFiltroGuardado(index) {
-    if (!confirm('¿Eliminar este filtro guardado?')) return;
+async function eliminarFiltroGuardado(index) {
+    if (!await UIFeedback.confirm({ message: '¿Eliminar este filtro guardado?', type: 'danger' })) return;
 
     filtrosGuardados.splice(index, 1);
     localStorage.setItem('filtrosGuardados', JSON.stringify(filtrosGuardados));
@@ -3323,14 +3323,14 @@ async function enviarConsulta(event) {
 
     // Validar campos requeridos
     if (!nombre || !email || !mensaje) {
-        alert(t('inquiry.requiredFields'));
+        UIFeedback.toast(t('inquiry.requiredFields'), 'warning');
         return;
     }
 
     // Validar email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        alert(t('inquiry.invalidEmail'));
+        UIFeedback.toast(t('inquiry.invalidEmail'), 'warning');
         return;
     }
 
@@ -3365,15 +3365,15 @@ async function enviarConsulta(event) {
         const data = await response.json();
 
         if (data.success) {
-            alert(t('inquiry.success'));
+            UIFeedback.toast(t('inquiry.success'), 'success');
             cerrarModalConsulta();
             cerrarModal();  // Cerrar también el modal de detalle
         } else {
-            alert(t('inquiry.error') + ': ' + (data.error || ''));
+            UIFeedback.toast(t('inquiry.error') + ': ' + (data.error || ''), 'error');
         }
     } catch (error) {
         console.error('Error al enviar consulta:', error);
-        alert(t('inquiry.error'));
+        UIFeedback.toast(t('inquiry.error'), 'error');
     } finally {
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
@@ -3445,7 +3445,7 @@ function mostrarCargando(mostrar = true) {
             overlay.innerHTML = `
                 <div class="cargando-content">
                     <div class="cargando-spinner"></div>
-                    <p>${t('common.loadingStocks') || 'Cargando stocks...'}</p>
+                    <p>${(() => { const txt = t('common.loadingStocks'); return txt && !txt.includes('.') ? txt : 'Cargando stocks...'; })()}</p>
                 </div>
             `;
             document.body.appendChild(overlay);
@@ -3687,10 +3687,10 @@ function cambiarCantidadPorUnidad(unidades) {
             (unidades > 100 ? t('cart.pallet') : t('cart.box')) :
             (Math.abs(unidades) > 100 ? t('cart.pallet') : t('cart.box'));
 
-        alert(t('cart.exceedsStock', {
+        UIFeedback.toast(t('cart.exceedsStock', {
             requested: newValue,
             available: maxStock
-        }));
+        }), 'warning');
         newValue = maxStock;
     }
 
@@ -3704,7 +3704,7 @@ function setCantidad(cantidad) {
     const maxStock = parseFloat(input.max);
 
     if (cantidad > maxStock) {
-        alert(t('cart.exceedsStock', { requested: cantidad, available: maxStock }));
+        UIFeedback.toast(t('cart.exceedsStock', { requested: cantidad, available: maxStock }), 'warning');
         input.value = maxStock;
     } else {
         input.value = cantidad;
@@ -3729,18 +3729,18 @@ async function confirmarAgregarAlCarrito() {
     const stock = window.stockTemporal;
 
     if (!stock) {
-        alert('Error: No hay producto seleccionado');
+        UIFeedback.toast('Error: No hay producto seleccionado', 'error');
         return;
     }
 
     if (isNaN(cantidadNum) || cantidadNum <= 0) {
-        alert(t('cart.invalidQuantity'));
+        UIFeedback.toast(t('cart.invalidQuantity'), 'warning');
         input.focus();
         return;
     }
 
     if (cantidadNum > stock.existencias) {
-        alert(t('cart.exceedsStock', { requested: cantidadNum, available: stock.existencias }));
+        UIFeedback.toast(t('cart.exceedsStock', { requested: cantidadNum, available: stock.existencias }), 'warning');
         input.focus();
         return;
     }
@@ -3785,13 +3785,13 @@ async function confirmarAgregarAlCarrito() {
                 cerrarModal();
             }
 
-            alert(t('cart.addedSuccess', { quantity: cantidadNum, unit: stock.unidad || '' }));
+            UIFeedback.toast(t('cart.addedSuccess', { quantity: cantidadNum, unit: stock.unidad || '' }), 'success');
         } else {
-            alert(t('cart.addError'));
+            UIFeedback.toast(t('cart.addError'), 'error');
         }
     } catch (error) {
         console.error('Error al agregar al carrito:', error);
-        alert(t('cart.addError'));
+        UIFeedback.toast(t('cart.addError'), 'error');
     }
 }
 
@@ -3812,7 +3812,7 @@ function actualizarContadorCarrito() {
 // Ver carrito
 function verCarrito() {
     if (carrito.length === 0) {
-        alert(t('cart.empty'));
+        UIFeedback.toast(t('cart.empty'), 'warning');
         return;
     }
 
@@ -3871,7 +3871,7 @@ function verCarrito() {
 
 // Eliminar del carrito por índice
 async function eliminarDelCarrito(index) {
-    if (!confirm(t('cart.confirmRemove'))) return;
+    if (!await UIFeedback.confirm({ message: t('cart.confirmRemove'), type: 'danger' })) return;
 
     try {
         const response = await fetchWithCsrf(`${API_URL}/api/carrito/remove/${index}`, {
@@ -3889,22 +3889,22 @@ async function eliminarDelCarrito(index) {
 
             if (carrito.length === 0) {
                 cerrarCarrito();
-                alert(t('cart.emptyNow'));
+                UIFeedback.toast(t('cart.emptyNow'), 'info');
             } else {
                 verCarrito();
             }
         } else {
-            alert(t('cart.removeError'));
+            UIFeedback.toast(t('cart.removeError'), 'error');
         }
     } catch (error) {
         console.error('Error al eliminar del carrito:', error);
-        alert(t('cart.removeError'));
+        UIFeedback.toast(t('cart.removeError'), 'error');
     }
 }
 
 // Vaciar carrito
 async function vaciarCarrito() {
-    if (!confirm(t('cart.confirmClear'))) return;
+    if (!await UIFeedback.confirm({ message: t('cart.confirmClear'), type: 'danger' })) return;
 
     try {
         const response = await fetchWithCsrf(`${API_URL}/api/carrito/clear`, {
@@ -3919,7 +3919,7 @@ async function vaciarCarrito() {
             carrito = [];
             actualizarContadorCarrito();
             cerrarCarrito();
-            alert(t('cart.cleared'));
+            UIFeedback.toast(t('cart.cleared'), 'success');
         }
     } catch (error) {
         console.error('Error al vaciar carrito:', error);
@@ -4035,11 +4035,11 @@ async function enviarSolicitud() {
 
     // Validar firma si está marcado el checkbox
     if (firmarPropuesta && !firmaData) {
-        alert(t('shipping.signatureRequired') || 'Debe firmar la propuesta antes de enviar');
+        UIFeedback.toast(t('shipping.signatureRequired') || 'Debe firmar la propuesta antes de enviar', 'warning');
         return;
     }
 
-    if (!confirm(t('shipping.confirmSend'))) return;
+    if (!await UIFeedback.confirm({ message: t('shipping.confirmSend') })) return;
 
     // Mostrar indicador de envio
     mostrarEnviando(true);
@@ -4066,19 +4066,19 @@ async function enviarSolicitud() {
         mostrarEnviando(false);
 
         if (response.ok) {
-            alert(t('shipping.success'));
+            UIFeedback.toast(t('shipping.success'), 'success');
             carrito = [];
             actualizarContadorCarrito();
             cerrarCarrito();
         } else {
             const error = await response.json();
-            alert(t('shipping.error', { error: error.error }));
+            UIFeedback.toast(t('shipping.error', { error: error.error }), 'error');
         }
     } catch (error) {
         // Ocultar indicador de envio en caso de error
         mostrarEnviando(false);
         console.error('Error al enviar solicitud:', error);
-        alert(t('shipping.sendError'));
+        UIFeedback.toast(t('shipping.sendError'), 'error');
     }
 }
 

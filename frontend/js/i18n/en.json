@@ -469,7 +469,13 @@
     "showPricesHelp": "Allows user to see prices in the grid",
     "enablePrices": "Enable prices",
     "disablePrices": "Disable prices",
-    "verifyEmail": "Verify email"
+    "verifyEmail": "Verify email",
+    "detailInfo": "Info",
+    "detailProposals": "Proposals",
+    "detailOrders": "Orders",
+    "detailInquiries": "Inquiries",
+    "detailSessions": "Sessions",
+    "detailAudit": "Audit"
   },
   "changePassword": {
     "title": "Change Password",
@@ -664,7 +670,14 @@
     "expressLimitDesc": "Space usage against the 10 GB limit",
     "expressUsed": "Used",
     "expressAvailable": "Available",
-    "expressLimitLabel": "Express Limit"
+    "expressLimitLabel": "Express Limit",
+    "reindexImages": "Reindex Images",
+    "reindexDesc": "Regenerate the visual search index (CBIR) for product images",
+    "indexed": "Indexed",
+    "totalImages": "Total Images",
+    "reindexButton": "Reindex",
+    "reindexStarting": "Starting reindexing...",
+    "reindexComplete": "Reindexing completed"
   },
   "apiKeys": {
     "description": "API Keys allow external applications (PowerBuilder, ERP, etc.) to access the API without logging in. Each key is linked to your user and current company.",
@@ -750,5 +763,49 @@
     "newNotifications": "new notifications",
     "markAllRead": "Mark all as read",
     "noNotifications": "No notifications"
+  },
+  "uiFeedback": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "accept": "Accept",
+    "delete": "Delete",
+    "close": "Close"
+  },
+  "userDetail": {
+    "title": "User detail",
+    "info": "Information",
+    "proposals": "Proposals",
+    "orders": "Orders",
+    "inquiries": "Inquiries",
+    "sessions": "Sessions",
+    "audit": "Audit",
+    "noData": "No data"
+  },
+  "magicSearch": {
+    "title": "Magic Search",
+    "subtitle": "Drag an image to find similar products",
+    "dropText": "Drag an image here or click to select",
+    "dropHint": "Formats: JPG, PNG, WEBP - Max 10MB",
+    "previewEmpty": "No image selected",
+    "searchButton": "Search similar products",
+    "searching": "Searching...",
+    "noResults": "No similar products found",
+    "resultsTitle": "Results",
+    "productsFound": "products found",
+    "similarity": "Similarity",
+    "invalidFormat": "Invalid format. Use JPG, PNG or WEBP.",
+    "fileTooLarge": "Image exceeds 10MB.",
+    "searchError": "Error searching for similar products",
+    "adminTitle": "Image Index Status",
+    "indexed": "Indexed",
+    "totalImages": "Total Images",
+    "lastUpdate": "Last Update",
+    "reindexButton": "Reindex Images",
+    "reindexStarting": "Starting reindexing...",
+    "reindexComplete": "Reindexing completed",
+    "reindexError": "Reindexing error",
+    "notIndexed": "Images are not indexed yet. Contact the administrator.",
+    "viewDetail": "View detail",
+    "loadingDetail": "Loading images..."
   }
 }

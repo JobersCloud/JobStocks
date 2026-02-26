@@ -1,0 +1,56 @@
+# ============================================
+# Docker Compose - CRISTAL (10.1.99.4)
+# Todo en network_mode: host
+# ============================================
+
+services:
+  # ==================== REDIS ====================
+  redis:
+    image: redis:7-alpine
+    container_name: apirest-redis
+    restart: unless-stopped
+    network_mode: host
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ==================== BACKEND ====================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: apirest-backend
+    depends_on:
+      redis:
+        condition: service_healthy
+    network_mode: host
+    volumes:
+      - ./frontend:/frontend:ro
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - PYTHONUNBUFFERED=1
+      # ==================== SEGURIDAD ====================
+      - SECRET_KEY=${SECRET_KEY:-crijob-cristal-secret-2026}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      # ==================== RATE LIMITING ====================
+      - REDIS_URL=redis://127.0.0.1:6379
+      # ==================== BD CENTRAL (localhost SQL Server) ====================
+      - DB_CENTRAL_SERVER=127.0.0.1,1433
+      - DB_CENTRAL_NAME=jobers_control_usuarios
+      - DB_CENTRAL_USER=sa
+      - DB_CENTRAL_PASSWORD=Crijob2015Desa
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

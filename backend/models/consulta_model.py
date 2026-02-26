@@ -178,7 +178,7 @@ class ConsultaModel:
             return []
 
     @staticmethod
-    def get_all_by_empresa(empresa_id, estado=None):
+    def get_all_by_empresa(empresa_id, estado=None, user_id=None):
         """Obtener todas las consultas de una empresa"""
         try:
             conn = Database.get_connection()
@@ -201,6 +201,10 @@ class ConsultaModel:
             if estado:
                 query += " AND c.estado = ?"
                 params.append(estado)
+
+            if user_id:
+                query += " AND c.user_id = ?"
+                params.append(user_id)
 
             query += " ORDER BY c.fecha_creacion DESC"
 

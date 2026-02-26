@@ -4,65 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Usuarios - Administración</title>
-    <script>
-        // Inyectar colores del tema ANTES del CSS para evitar flash
-        (function () {
-            const themes = {
-                'rubi': { primary: '#FF4338', primaryDark: '#D32F2F', primaryLight: '#FF6B6B' },
-                'zafiro': { primary: '#2196F3', primaryDark: '#1565C0', primaryLight: '#64B5F6' },
-                'esmeralda': { primary: '#4CAF50', primaryDark: '#2E7D32', primaryLight: '#81C784' },
-                'amatista': { primary: '#9C27B0', primaryDark: '#6A1B9A', primaryLight: '#BA68C8' },
-                'ambar': { primary: '#FF9800', primaryDark: '#E65100', primaryLight: '#FFB74D' },
-                'grafito': { primary: '#607D8B', primaryDark: '#37474F', primaryLight: '#90A4AE' },
-                'corporativo': { primary: '#1a365d', primaryDark: '#0d1b2a', primaryLight: '#2c5282' },
-                'ejecutivo': { primary: '#2d3748', primaryDark: '#1a202c', primaryLight: '#4a5568' },
-                'oceano': { primary: '#0077b6', primaryDark: '#023e8a', primaryLight: '#0096c7' },
-                'bosque': { primary: '#2d6a4f', primaryDark: '#1b4332', primaryLight: '#40916c' },
-                'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
-                'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
-                'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
-                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
-                'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
-            };
-            const theme = localStorage.getItem('theme') || 'dark';
-            const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
-            const colors = themes[colorTheme] || themes['rubi'];
-
-            document.documentElement.setAttribute('data-theme', theme);
-            document.documentElement.setAttribute('data-color-theme', colorTheme);
-
-            // Inyectar colores como CSS inline con !important para ganar especificidad
-            const style = document.createElement('style');
-            style.id = 'theme-colors-inline';
-            style.textContent = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
-            document.head.appendChild(style);
-
-            // Favicon
-            const faviconUrl = localStorage.getItem('faviconUrl');
-            if (faviconUrl) {
-                const link = document.createElement('link');
-                link.rel = 'icon';
-                link.href = faviconUrl;
-                document.head.appendChild(link);
-            }
-            // Pre-cargar logo y nombre empresa desde cache para evitar flash
-            var _logoUrl = localStorage.getItem('logoUrl');
-            var _companyName = localStorage.getItem('companyName');
-            var _logoInvert = localStorage.getItem('logoInvert');
-            if (_logoUrl || _companyName) {
-                document.addEventListener('DOMContentLoaded', function() {
-                    var logo = document.getElementById('header-logo');
-                    if (logo && _logoUrl) {
-                        logo.src = _logoUrl;
-                        logo.style.filter = _logoInvert === 'true' ? 'brightness(0) invert(1)' : 'none';
-                        logo.style.visibility = 'visible';
-                    }
-                    var name = document.getElementById('header-company-name');
-                    if (name && _companyName) name.textContent = _companyName;
-                });
-            }
-        })();
-    </script>
+    <script src="js/theme-init.js?v=1.34.0"></script>
     <link rel="stylesheet" href="css/styles.css?v=1.33.2">
 </head>
 <body>
@@ -210,6 +152,17 @@
                             </svg>
                         </span>
                         <span class="sidebar-item-text" data-i18n="menu.myInquiries">Mis Consultas</span>
+                    </a>
+                    <a class="sidebar-item" data-page="busqueda-magica.html" data-tooltip="Busqueda Magica" onclick="SidebarNav.navigateTo('busqueda-magica.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                <path d="M8 11h6"></path>
+                                <path d="M11 8v6"></path>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="magicSearch.title">Busqueda Magica</span>
                     </a>
                 </div>
 
@@ -406,6 +359,26 @@
         </div>
     </div>
 
+    <!-- Panel Detalle Usuario -->
+    <div class="user-detail-overlay" id="user-detail-overlay" onclick="closeUserDetail()"></div>
+    <aside class="user-detail-panel" id="user-detail-panel">
+        <div class="user-detail-header">
+            <h2 id="user-detail-title">Detalle de Usuario</h2>
+            <button class="user-detail-close" onclick="closeUserDetail()">&times;</button>
+        </div>
+        <div class="user-detail-tabs">
+            <button class="user-detail-tab active" data-tab="info" onclick="switchUserTab('info')" data-i18n="users.detailInfo">Info</button>
+            <button class="user-detail-tab" data-tab="propuestas" onclick="switchUserTab('propuestas')" data-i18n="users.detailProposals">Propuestas</button>
+            <button class="user-detail-tab" data-tab="pedidos" onclick="switchUserTab('pedidos')" data-i18n="users.detailOrders">Pedidos</button>
+            <button class="user-detail-tab" data-tab="consultas" onclick="switchUserTab('consultas')" data-i18n="users.detailInquiries">Consultas</button>
+            <button class="user-detail-tab" data-tab="sesiones" onclick="switchUserTab('sesiones')" data-i18n="users.detailSessions">Sesiones</button>
+            <button class="user-detail-tab" data-tab="auditoria" onclick="switchUserTab('auditoria')" data-i18n="users.detailAudit">Auditoria</button>
+        </div>
+        <div class="user-detail-content" id="user-detail-content">
+            <!-- Content loaded dynamically -->
+        </div>
+    </aside>
+
     <!-- Modal de cambio de rol -->
     <div id="role-modal">
         <div class="modal-content">
@@ -537,6 +510,7 @@
         </div>
     </div>
 
+    <script src="js/ui-feedback.js"></script>
     <script src="js/i18n/i18n.js"></script>
     <script src="js/sidebar.js?v=20260143"></script>
     <script src="js/grid-filters.js?v=20260207"></script>
@@ -651,7 +625,7 @@
             try {
                 const response = await fetch(`${API_URL}/api/usuarios`, { credentials: 'include' });
                 if (!response.ok) {
-                    if (response.status === 403) { alert('No tienes permisos para ver los usuarios'); window.location.href = 'index.html'; return; }
+                    if (response.status === 403) { UIFeedback.toast('No tienes permisos para ver los usuarios', 'error'); window.location.href = 'index.html'; return; }
                     throw new Error('Error loading users');
                 }
                 const data = await response.json();
@@ -831,36 +805,36 @@
 
         // ==================== ACTIVAR/DESACTIVAR ====================
         async function activateUser(userId) {
-            if (!confirm('¿Activar este usuario?')) return;
+            if (!await UIFeedback.confirm({ message: '¿Activar este usuario?', type: 'warning' })) return;
             try {
                 const response = await fetch(`${API_URL}/api/usuarios/${userId}/activar`, { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': PageCommon.getCsrfToken() } });
                 if (!response.ok) throw new Error('Error activating user');
                 const idx = users.findIndex(u => u.id === userId);
                 if (idx !== -1) users[idx].active = true;
                 grid.setData(users);
-            } catch (error) { alert('Error al activar el usuario'); }
+            } catch (error) { UIFeedback.toast('Error al activar el usuario', 'error'); }
         }
 
         async function deactivateUser(userId) {
-            if (!confirm('¿Desactivar este usuario?')) return;
+            if (!await UIFeedback.confirm({ message: '¿Desactivar este usuario?', type: 'danger' })) return;
             try {
                 const response = await fetch(`${API_URL}/api/usuarios/${userId}/desactivar`, { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': PageCommon.getCsrfToken() } });
                 if (!response.ok) throw new Error('Error deactivating user');
                 const idx = users.findIndex(u => u.id === userId);
                 if (idx !== -1) users[idx].active = false;
                 grid.setData(users);
-            } catch (error) { alert('Error al desactivar el usuario'); }
+            } catch (error) { UIFeedback.toast('Error al desactivar el usuario', 'error'); }
         }
 
         async function unlockUser(userId) {
-            if (!confirm(t('users.confirmUnlock') || '¿Desbloquear la cuenta de este usuario?')) return;
+            if (!await UIFeedback.confirm({ message: t('users.confirmUnlock') || '¿Desbloquear la cuenta de este usuario?', type: 'warning' })) return;
             try {
                 const response = await fetch(`${API_URL}/api/usuarios/${userId}/desbloquear`, { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() } });
                 if (!response.ok) throw new Error('Error unlocking user');
                 const idx = users.findIndex(u => u.id === userId);
                 if (idx !== -1) { users[idx].locked_until = null; users[idx].login_attempts = 0; }
                 grid.setData(users);
-            } catch (error) { alert('Error al desbloquear el usuario'); }
+            } catch (error) { UIFeedback.toast('Error al desbloquear el usuario', 'error'); }
         }
         window.unlockUser = unlockUser;
 
@@ -877,25 +851,25 @@
                 const idx = users.findIndex(u => u.id === userId);
                 if (idx !== -1) users[idx].mostrar_precios = nuevoValor;
                 grid.setData(users);
-            } catch (error) { alert('Error al cambiar la visibilidad de precios'); }
+            } catch (error) { UIFeedback.toast('Error al cambiar la visibilidad de precios', 'error'); }
         }
         window.toggleMostrarPrecios = toggleMostrarPrecios;
 
         async function deleteUserCascade(userId, username) {
             const confirmMsg = t('users.confirmDeleteCascade') || `¿Estás seguro de eliminar al usuario "${username}" y TODOS sus datos?`;
-            if (!confirm(confirmMsg)) return;
+            if (!await UIFeedback.confirm({ message: confirmMsg, type: 'danger' })) return;
             const secondConfirm = prompt(t('users.typeUsernameToConfirm') || `Para confirmar, escribe el nombre de usuario: ${username}`);
-            if (secondConfirm !== username) { alert(t('users.usernameNotMatch') || 'El nombre de usuario no coincide.'); return; }
+            if (secondConfirm !== username) { UIFeedback.toast(t('users.usernameNotMatch') || 'El nombre de usuario no coincide.', 'warning'); return; }
             try {
                 const response = await fetch(`${API_URL}/api/usuarios/${userId}`, { method: 'DELETE', credentials: 'include', headers: { 'X-CSRF-Token': PageCommon.getCsrfToken() } });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || 'Error eliminando usuario');
-                let resumen = `Usuario "${username}" eliminado correctamente.\n\nRegistros eliminados:`;
-                if (data.eliminados) { resumen += `\n- Líneas de propuestas: ${data.eliminados.propuestas_lineas}\n- Propuestas: ${data.eliminados.propuestas}\n- Consultas: ${data.eliminados.consultas}\n- API Keys: ${data.eliminados.api_keys}\n- Sesiones: ${data.eliminados.user_sessions}\n- Registros de auditoría: ${data.eliminados.audit_log}`; }
-                alert(resumen);
+                let resumen = `Usuario "${username}" eliminado correctamente.`;
+                if (data.eliminados) { resumen += ` (${data.eliminados.propuestas} propuestas, ${data.eliminados.consultas} consultas, ${data.eliminados.api_keys} API keys)`; }
+                UIFeedback.toast(resumen, 'success');
                 users = users.filter(u => u.id !== userId);
                 grid.setData(users);
-            } catch (error) { alert('Error al eliminar el usuario: ' + error.message); }
+            } catch (error) { UIFeedback.toast('Error al eliminar el usuario: ' + error.message, 'error'); }
         }
 
         async function toggleVerification(userId, verificado) {
@@ -905,15 +879,15 @@
                 const idx = users.findIndex(u => u.id === userId);
                 if (idx !== -1) users[idx].email_verificado = verificado;
                 grid.setData(users);
-            } catch (error) { alert('Error al cambiar la verificación'); }
+            } catch (error) { UIFeedback.toast('Error al cambiar la verificación', 'error'); }
         }
 
         async function resendVerification(email) {
             try {
                 const response = await fetch(`${API_URL}/api/resend-verification`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() }, body: JSON.stringify({ email }) });
-                if (response.ok) alert('Email de verificación reenviado');
-                else alert('Error al reenviar verificación');
-            } catch (error) { alert('Error al reenviar verificación'); }
+                if (response.ok) UIFeedback.toast('Email de verificación reenviado', 'success');
+                else UIFeedback.toast('Error al reenviar verificación', 'error');
+            } catch (error) { UIFeedback.toast('Error al reenviar verificación', 'error'); }
         }
 
         // ==================== ROLES ====================
@@ -934,7 +908,7 @@
                 if (idx !== -1) users[idx].rol = newRole;
                 closeRoleModal();
                 grid.setData(users);
-            } catch (error) { alert('Error al cambiar el rol'); }
+            } catch (error) { UIFeedback.toast('Error al cambiar el rol', 'error'); }
         }
 
         // ==================== CREAR/EDITAR USUARIO ====================
@@ -985,7 +959,7 @@
                     document.getElementById('client-search-wrapper').style.display = 'none';
                 } else { clearClientSelection(); }
                 document.getElementById('user-modal').style.display = 'flex';
-            } catch (error) { alert('Error al cargar los datos del usuario'); }
+            } catch (error) { UIFeedback.toast('Error al cargar los datos del usuario', 'error'); }
         }
 
         function closeUserModal() { document.getElementById('user-modal').style.display = 'none'; editingUserId = null; }
@@ -1016,7 +990,7 @@
                     if (!response.ok) throw new Error(data.error || 'Error al actualizar');
                     closeUserModal();
                     await loadUsers();
-                } catch (error) { alert('Error: ' + error.message); }
+                } catch (error) { UIFeedback.toast('Error: ' + error.message, 'error'); }
             } else {
                 userData.password = password;
                 userData.enviar_email = document.getElementById('user-send-email').checked;
@@ -1026,7 +1000,7 @@
                     if (!response.ok) throw new Error(data.error || 'Error al crear');
                     closeUserModal();
                     await loadUsers();
-                } catch (error) { alert('Error: ' + error.message); }
+                } catch (error) { UIFeedback.toast('Error: ' + error.message, 'error'); }
             }
         }
 
@@ -1103,6 +1077,10 @@
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
+                if (document.getElementById('user-detail-panel').classList.contains('open')) {
+                    closeUserDetail();
+                    return;
+                }
                 closeActionMenu();
                 const gf = grid?.getFilters();
                 if (gf) gf.cerrarPopupFiltro();
@@ -1111,6 +1089,229 @@
                 hideChangePasswordModal();
             }
         });
+
+        // ==================== PANEL DETALLE USUARIO ====================
+        let detailUser = null;
+        const detailCache = {};
+
+        function openUserDetail(userId) {
+            const allUsers = grid.getData();
+            detailUser = allUsers.find(u => u.id == userId);
+            if (!detailUser) return;
+
+            document.getElementById('user-detail-title').textContent = detailUser.full_name || detailUser.username;
+            document.getElementById('user-detail-panel').classList.add('open');
+            document.getElementById('user-detail-overlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+
+            // Reset cache for this user
+            detailCache[userId] = {};
+
+            // Reset tabs
+            document.querySelectorAll('.user-detail-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector('.user-detail-tab[data-tab="info"]').classList.add('active');
+
+            // Load info tab
+            switchUserTab('info');
+        }
+        window.openUserDetail = openUserDetail;
+
+        function closeUserDetail() {
+            document.getElementById('user-detail-panel').classList.remove('open');
+            document.getElementById('user-detail-overlay').classList.remove('open');
+            document.body.style.overflow = '';
+            detailUser = null;
+        }
+        window.closeUserDetail = closeUserDetail;
+
+        function switchUserTab(tabName) {
+            document.querySelectorAll('.user-detail-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.user-detail-tab[data-tab="${tabName}"]`).classList.add('active');
+
+            const content = document.getElementById('user-detail-content');
+            const userId = detailUser?.id;
+            if (!userId) return;
+
+            // Check cache
+            if (detailCache[userId]?.[tabName]) {
+                content.innerHTML = detailCache[userId][tabName];
+                return;
+            }
+
+            content.innerHTML = '<div style="text-align:center;padding:40px;color:#999;"><div class="spinner" style="margin:0 auto 10px;width:30px;height:30px;border:3px solid #eee;border-top:3px solid var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;"></div>Cargando...</div>';
+
+            switch (tabName) {
+                case 'info': loadUserInfo(); break;
+                case 'propuestas': loadUserPropuestas(); break;
+                case 'pedidos': loadUserPedidos(); break;
+                case 'consultas': loadUserConsultas(); break;
+                case 'sesiones': loadUserSesiones(); break;
+                case 'auditoria': loadUserAuditoria(); break;
+            }
+        }
+        window.switchUserTab = switchUserTab;
+
+        function loadUserInfo() {
+            const u = detailUser;
+            const html = `
+                <div class="user-detail-info">
+                    <div class="detail-info-grid">
+                        <div class="detail-info-item"><label>${t('users.username') || 'Usuario'}</label><span>${u.username}</span></div>
+                        <div class="detail-info-item"><label>${t('users.fullName') || 'Nombre'}</label><span>${u.full_name || '-'}</span></div>
+                        <div class="detail-info-item"><label>Email</label><span>${u.email || '-'} ${u.email ? (u.email_verificado ? '<span style="color:green">&#10003;</span>' : '<span style="color:red">&#10007;</span>') : ''}</span></div>
+                        <div class="detail-info-item"><label>${t('users.companyName') || 'Empresa'}</label><span>${u.company_name || '-'}</span></div>
+                        <div class="detail-info-item"><label>${t('users.role') || 'Rol'}</label><span>${getRoleBadge(u.rol)}</span></div>
+                        <div class="detail-info-item"><label>${t('users.status') || 'Estado'}</label><span>${u.active ? '<span class="status-badge status-active">' + (t('users.active') || 'Activo') + '</span>' : '<span class="status-badge status-inactive">' + (t('users.inactive') || 'Inactivo') + '</span>'}</span></div>
+                        <div class="detail-info-item"><label>${t('users.country') || 'Pais'}</label><span>${getPaisNombre(u.pais)}</span></div>
+                        <div class="detail-info-item"><label>Cliente ID</label><span>${u.cliente_id || '-'}</span></div>
+                    </div>
+                    <div style="margin-top:20px;display:flex;gap:10px;">
+                        <button class="btn-icon btn-icon-primary" onclick="closeUserDetail(); openEditUserModal(${u.id})" title="${t('common.edit') || 'Editar'}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            <span>${t('common.edit') || 'Editar'}</span>
+                        </button>
+                    </div>
+                </div>`;
+            document.getElementById('user-detail-content').innerHTML = html;
+            detailCache[detailUser.id] = detailCache[detailUser.id] || {};
+            detailCache[detailUser.id]['info'] = html;
+        }
+
+        async function loadUserPropuestas() {
+            try {
+                const resp = await fetch(`${API_URL}/api/propuestas?user_id=${detailUser.id}`, { credentials: 'include' });
+                const data = await resp.json();
+                const items = data.propuestas || [];
+                let html = '';
+                if (items.length === 0) {
+                    html = '<div class="detail-empty">Sin propuestas</div>';
+                } else {
+                    html = '<div class="detail-mini-table"><table><thead><tr><th>ID</th><th>Fecha</th><th>Estado</th><th>Items</th><th>Ref.</th></tr></thead><tbody>';
+                    items.forEach(p => {
+                        html += `<tr><td>${p.id}</td><td>${PageCommon.formatDate(p.fecha)}</td><td>${getEstadoBadge(p.estado)}</td><td>${p.total_items}</td><td>${p.referencia || '-'}</td></tr>`;
+                    });
+                    html += '</tbody></table></div>';
+                }
+                document.getElementById('user-detail-content').innerHTML = html;
+                detailCache[detailUser.id]['propuestas'] = html;
+            } catch (e) { document.getElementById('user-detail-content').innerHTML = '<div class="detail-empty">Error al cargar</div>'; }
+        }
+
+        async function loadUserPedidos() {
+            const clienteId = detailUser.cliente_id;
+            if (!clienteId) {
+                const html = '<div class="detail-empty">Usuario sin cliente asociado</div>';
+                document.getElementById('user-detail-content').innerHTML = html;
+                detailCache[detailUser.id]['pedidos'] = html;
+                return;
+            }
+            try {
+                const empresa = PageCommon.getEmpresaId();
+                const resp = await fetch(`${API_URL}/api/pedidos?empresa_id=${empresa}&cliente=${clienteId}`, { credentials: 'include' });
+                const data = await resp.json();
+                const items = data.pedidos || [];
+                let html = '';
+                if (items.length === 0) {
+                    html = '<div class="detail-empty">Sin pedidos</div>';
+                } else {
+                    html = '<div class="detail-mini-table"><table><thead><tr><th>Num</th><th>Fecha</th><th>Razon</th><th>Total</th></tr></thead><tbody>';
+                    items.slice(0, 50).forEach(p => {
+                        html += `<tr><td>${p.numero || '-'}</td><td>${PageCommon.formatDate(p.fecha)}</td><td>${p.razon || '-'}</td><td>${p.total != null ? PageCommon.formatCurrency(p.total) : '-'}</td></tr>`;
+                    });
+                    html += '</tbody></table></div>';
+                    if (items.length > 50) html += `<div class="detail-more">Mostrando 50 de ${items.length}</div>`;
+                }
+                document.getElementById('user-detail-content').innerHTML = html;
+                detailCache[detailUser.id]['pedidos'] = html;
+            } catch (e) { document.getElementById('user-detail-content').innerHTML = '<div class="detail-empty">Error al cargar</div>'; }
+        }
+
+        async function loadUserConsultas() {
+            try {
+                const empresa = PageCommon.getEmpresaId();
+                const resp = await fetch(`${API_URL}/api/consultas?user_id=${detailUser.id}&empresa_id=${empresa}`, { credentials: 'include' });
+                const data = await resp.json();
+                const items = data.consultas || [];
+                let html = '';
+                if (items.length === 0) {
+                    html = '<div class="detail-empty">Sin consultas</div>';
+                } else {
+                    html = '<div class="detail-mini-table"><table><thead><tr><th>Producto</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>';
+                    items.forEach(c => {
+                        html += `<tr><td>${c.codigo_producto || c.codigo || '-'}</td><td>${PageCommon.formatDate(c.fecha_creacion || c.fecha)}</td><td>${c.estado || '-'}</td></tr>`;
+                    });
+                    html += '</tbody></table></div>';
+                }
+                document.getElementById('user-detail-content').innerHTML = html;
+                detailCache[detailUser.id]['consultas'] = html;
+            } catch (e) { document.getElementById('user-detail-content').innerHTML = '<div class="detail-empty">Error al cargar</div>'; }
+        }
+
+        async function loadUserSesiones() {
+            try {
+                const resp = await fetch(`${API_URL}/api/sesiones?user_id=${detailUser.id}`, { credentials: 'include' });
+                const data = await resp.json();
+                const items = data.sessions || data.sesiones || [];
+                let html = '';
+                if (items.length === 0) {
+                    html = '<div class="detail-empty">Sin sesiones activas</div>';
+                } else {
+                    html = '<div class="detail-mini-table"><table><thead><tr><th>IP</th><th>Inicio</th><th>Actividad</th></tr></thead><tbody>';
+                    items.forEach(s => {
+                        html += `<tr><td>${s.ip_address || s.ip || '-'}</td><td>${PageCommon.formatDateTime(s.created_at || s.fecha_creacion)}</td><td>${PageCommon.formatDateTime(s.last_activity || s.ultima_actividad)}</td></tr>`;
+                    });
+                    html += '</tbody></table></div>';
+                }
+                document.getElementById('user-detail-content').innerHTML = html;
+                detailCache[detailUser.id]['sesiones'] = html;
+            } catch (e) { document.getElementById('user-detail-content').innerHTML = '<div class="detail-empty">Error al cargar</div>'; }
+        }
+
+        async function loadUserAuditoria() {
+            try {
+                const resp = await fetch(`${API_URL}/api/audit-logs?user_id=${detailUser.id}&limit=50`, { credentials: 'include' });
+                const data = await resp.json();
+                const items = data.logs || [];
+                let html = '';
+                if (items.length === 0) {
+                    html = '<div class="detail-empty">Sin registros de auditoria</div>';
+                } else {
+                    html = '<div class="detail-mini-table"><table><thead><tr><th>Accion</th><th>Resultado</th><th>Fecha</th><th>Detalle</th></tr></thead><tbody>';
+                    items.forEach(a => {
+                        html += `<tr><td>${a.action || a.accion || '-'}</td><td>${a.result || a.resultado || '-'}</td><td>${PageCommon.formatDateTime(a.created_at || a.fecha)}</td><td title="${(a.details || a.detalle || '').replace(/"/g, '&quot;')}">${(a.details || a.detalle || '-').substring(0, 50)}${(a.details || a.detalle || '').length > 50 ? '...' : ''}</td></tr>`;
+                    });
+                    html += '</tbody></table></div>';
+                }
+                document.getElementById('user-detail-content').innerHTML = html;
+                detailCache[detailUser.id]['auditoria'] = html;
+            } catch (e) { document.getElementById('user-detail-content').innerHTML = '<div class="detail-empty">Error al cargar</div>'; }
+        }
+
+        function getEstadoBadge(estado) {
+            const cls = estado === 'Enviada' ? 'status-enviada' : estado === 'Procesada' ? 'status-procesada' : 'status-cancelada';
+            return `<span class="status-badge ${cls}">${estado}</span>`;
+        }
+
+        // Row click handler for grid
+        (function initRowClick() {
+            const gridEl = document.getElementById('users-grid');
+            if (gridEl) {
+                gridEl.addEventListener('click', function(e) {
+                    // Don't open detail if clicking on action buttons or interactive elements
+                    if (e.target.closest('.action-menu-trigger') || e.target.closest('.action-menu-dropdown') ||
+                        e.target.closest('#global-action-menu') || e.target.closest('.btn-icon') ||
+                        e.target.closest('button') || e.target.closest('a') ||
+                        e.target.closest('.dg-column-header') || e.target.closest('.column-header-wrapper') ||
+                        e.target.closest('.column-filter-btn') || e.target.closest('.sortable-header') ||
+                        e.target.closest('thead') || e.target.closest('.dg-resize-handle') ||
+                        e.target.closest('.dg-footer')) return;
+                    const row = e.target.closest('tr[data-id]');
+                    if (row) {
+                        openUserDetail(row.getAttribute('data-id'));
+                    }
+                });
+            }
+        })();
     </script>
 
     <!-- Modal de Cambio de Contrasena -->

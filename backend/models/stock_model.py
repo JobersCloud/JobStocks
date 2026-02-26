@@ -138,6 +138,50 @@ class StockModel:
         conn.close()
         return stock
 
+    @staticmethod
+    def get_by_codigos(codigos):
+        """Obtiene stocks por una lista de códigos. Retorna dict {codigo: stock_dict}"""
+        if not codigos:
+            return {}
+        conn = Database.get_connection()
+        empresa_erp = Database.get_empresa_erp()
+        cursor = conn.cursor()
+
+        placeholders = ','.join(['?' for _ in codigos])
+        params = list(codigos) + [empresa_erp]
+        cursor.execute(f"""
+            SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
+                   formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet
+            FROM view_externos_stock
+            WHERE codigo IN ({placeholders}) AND empresa = ?
+        """, params)
+
+        result = {}
+        for row in cursor.fetchall():
+            result[row[1]] = {
+                'empresa': row[0],
+                'codigo': row[1],
+                'descripcion': row[2],
+                'calidad': row[3],
+                'color': row[4],
+                'tono': row[5],
+                'calibre': row[6],
+                'formato': row[7],
+                'serie': row[8],
+                'unidad': row[9],
+                'pallet': row[10],
+                'caja': row[11],
+                'unidadescaja': float(row[12]) if row[12] else 0,
+                'cajaspallet': float(row[13]) if row[13] else 0,
+                'existencias': float(row[14]) if row[14] else 0.0,
+                'ean13': row[15],
+                'pesocaja': float(row[16]) if row[16] else 0,
+                'pesopallet': float(row[17]) if row[17] else 0
+            }
+
+        conn.close()
+        return result
+
     # Columnas válidas para ordenación (seguridad contra SQL injection)
     VALID_ORDER_COLUMNS = ['codigo', 'descripcion', 'calidad', 'color', 'tono',
                            'calibre', 'formato', 'serie', 'existencias']

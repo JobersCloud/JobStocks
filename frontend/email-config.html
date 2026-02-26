@@ -4,66 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuracion Email - Administracion</title>
-    <script>
-        // Inyectar colores del tema ANTES del CSS para evitar flash
-        (function () {
-            const themes = {
-                'rubi': { primary: '#FF4338', primaryDark: '#D32F2F', primaryLight: '#FF6B6B' },
-                'zafiro': { primary: '#2196F3', primaryDark: '#1565C0', primaryLight: '#64B5F6' },
-                'esmeralda': { primary: '#4CAF50', primaryDark: '#2E7D32', primaryLight: '#81C784' },
-                'amatista': { primary: '#9C27B0', primaryDark: '#6A1B9A', primaryLight: '#BA68C8' },
-                'ambar': { primary: '#FF9800', primaryDark: '#E65100', primaryLight: '#FFB74D' },
-                'grafito': { primary: '#607D8B', primaryDark: '#37474F', primaryLight: '#90A4AE' },
-                'corporativo': { primary: '#1a365d', primaryDark: '#0d1b2a', primaryLight: '#2c5282' },
-                'ejecutivo': { primary: '#2d3748', primaryDark: '#1a202c', primaryLight: '#4a5568' },
-                'oceano': { primary: '#0077b6', primaryDark: '#023e8a', primaryLight: '#0096c7' },
-                'bosque': { primary: '#2d6a4f', primaryDark: '#1b4332', primaryLight: '#40916c' },
-                'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
-                'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
-                'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
-                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
-                'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
-            };
-            const theme = localStorage.getItem('theme') || 'dark';
-            const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
-            const colors = themes[colorTheme] || themes['rubi'];
-
-            document.documentElement.setAttribute('data-theme', theme);
-            document.documentElement.setAttribute('data-color-theme', colorTheme);
-
-            // Inyectar colores como CSS inline con !important para ganar especificidad
-            const style = document.createElement('style');
-            style.id = 'theme-colors-inline';
-            style.textContent = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
-            document.head.appendChild(style);
-
-            // Favicon
-            const faviconUrl = localStorage.getItem('faviconUrl');
-            if (faviconUrl) {
-                const link = document.createElement('link');
-                link.rel = 'icon';
-                link.href = faviconUrl;
-                document.head.appendChild(link);
-            }
-
-            // Pre-cargar logo y nombre empresa desde cache para evitar flash
-            var _logoUrl = localStorage.getItem('logoUrl');
-            var _companyName = localStorage.getItem('companyName');
-            var _logoInvert = localStorage.getItem('logoInvert');
-            if (_logoUrl || _companyName) {
-                document.addEventListener('DOMContentLoaded', function() {
-                    var logo = document.getElementById('header-logo');
-                    if (logo && _logoUrl) {
-                        logo.src = _logoUrl;
-                        logo.style.filter = _logoInvert === 'true' ? 'brightness(0) invert(1)' : 'none';
-                        logo.style.visibility = 'visible';
-                    }
-                    var name = document.getElementById('header-company-name');
-                    if (name && _companyName) name.textContent = _companyName;
-                });
-            }
-        })();
-    </script>
+    <script src="js/theme-init.js?v=1.34.0"></script>
     <link rel="stylesheet" href="css/styles.css?v=1.26.0">
 </head>
 <body>
@@ -211,6 +152,17 @@
                             </svg>
                         </span>
                         <span class="sidebar-item-text" data-i18n="menu.myInquiries">Mis Consultas</span>
+                    </a>
+                    <a class="sidebar-item" data-page="busqueda-magica.html" data-tooltip="Busqueda Magica" onclick="SidebarNav.navigateTo('busqueda-magica.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                <path d="M8 11h6"></path>
+                                <path d="M11 8v6"></path>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="magicSearch.title">Busqueda Magica</span>
                     </a>
                 </div>
 
@@ -521,6 +473,7 @@
         </div>
     </div>
 
+    <script src="js/ui-feedback.js"></script>
     <script src="js/page-common.js?v=20260209a"></script>
     <script src="js/i18n/i18n.js"></script>
     <script src="js/sidebar.js?v=20260143"></script>
@@ -627,7 +580,7 @@
 
         // ==================== ACTIVAR CONFIGURACION ====================
         async function activateConfig(configId) {
-            if (!confirm('Activar esta configuracion de email?')) return;
+            if (!await UIFeedback.confirm({ message: 'Activar esta configuracion de email?', type: 'danger' })) return;
 
             try {
                 const empresaId = localStorage.getItem('empresa_id') || '1';
@@ -642,7 +595,7 @@
 
                 await loadConfigs();
             } catch (error) {
-                alert('Error al activar la configuracion');
+                UIFeedback.toast('Error al activar la configuracion', 'error');
             }
         }
 
@@ -698,7 +651,7 @@
             if (password) {
                 data.email_password = password;
             } else if (isNew) {
-                alert('La contrasena es obligatoria para una nueva configuracion');
+                UIFeedback.toast('La contrasena es obligatoria para una nueva configuracion', 'warning');
                 return;
             }
 
@@ -729,9 +682,9 @@
 
                 closeEditModal();
                 await loadConfigs();
-                alert(isNew ? 'Configuracion creada correctamente' : 'Configuracion actualizada correctamente');
+                UIFeedback.toast(isNew ? 'Configuracion creada correctamente' : 'Configuracion actualizada correctamente', 'success');
             } catch (error) {
-                alert('Error al guardar la configuracion: ' + error.message);
+                UIFeedback.toast('Error al guardar la configuracion: ' + error.message, 'error');
             }
         }
 
@@ -750,12 +703,12 @@
             };
 
             if (!data.smtp_server || !data.smtp_port || !data.email_from) {
-                alert('Por favor, completa los campos de servidor SMTP, puerto y email remitente');
+                UIFeedback.toast('Por favor, completa los campos de servidor SMTP, puerto y email remitente', 'warning');
                 return;
             }
 
             if (!configId && data.email_password === '********') {
-                alert('Debes introducir la contrasena para probar la conexion');
+                UIFeedback.toast('Debes introducir la contrasena para probar la conexion', 'warning');
                 return;
             }
 
@@ -787,11 +740,11 @@
                         btn.classList.add('btn-warning');
                     }, 3000);
                 } else {
-                    alert('Error: ' + (result.error || result.message || 'Error desconocido'));
+                    UIFeedback.toast('Error: ' + (result.error || result.message || 'Error desconocido'), 'error');
                     btnText.textContent = originalBtnText;
                 }
             } catch (error) {
-                alert('Error al probar la conexion: ' + error.message);
+                UIFeedback.toast('Error al probar la conexion: ' + error.message, 'error');
                 btnText.textContent = originalBtnText;
             } finally {
                 btn.disabled = false;

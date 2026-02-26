@@ -202,13 +202,14 @@ class PropuestaModel:
         return propuestas
 
     @staticmethod
-    def get_all(empresa_id=None, estado=None):
+    def get_all(empresa_id=None, estado=None, user_id=None):
         """
         Obtiene todas las propuestas (para administradores).
 
         Args:
             empresa_id: Filtrar por empresa (opcional)
             estado: Filtrar por estado (opcional)
+            user_id: Filtrar por usuario (opcional)
 
         Returns:
             list: Lista de propuestas con info del usuario
@@ -232,6 +233,10 @@ class PropuestaModel:
         if estado:
             query += " AND p.estado = ?"
             params.append(estado)
+
+        if user_id:
+            query += " AND p.user_id = ?"
+            params.append(user_id)
 
         query += " ORDER BY p.fecha DESC"
 

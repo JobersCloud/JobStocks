@@ -5,23 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verificación de Email - Gestión de Stocks</title>
     <link rel="stylesheet" href="/css/styles.css">
-    <script>
-        // Cargar tema guardado inmediatamente para evitar flash
-        (function() {
-            const theme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', theme);
-            const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
-            document.documentElement.setAttribute('data-color-theme', colorTheme);
-            // Crear favicon desde localStorage (sin link estático para evitar flash)
-            const faviconUrl = localStorage.getItem('faviconUrl');
-            if (faviconUrl) {
-                const link = document.createElement('link');
-                link.rel = 'icon';
-                link.href = faviconUrl;
-                document.head.appendChild(link);
-            }
-        })();
-    </script>
+    <script src="js/theme-init.js?v=1.34.0"></script>
 </head>
 <body>
     <!-- Selector de idioma fijo -->

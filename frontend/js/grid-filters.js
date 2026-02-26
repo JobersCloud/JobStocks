@@ -434,7 +434,7 @@ class GridFilters {
 
     guardarFiltrosActuales() {
         if (this.filtrosColumna.length === 0) {
-            alert('No hay filtros para guardar');
+            UIFeedback.toast('No hay filtros para guardar', 'warning');
             return;
         }
         const nombre = prompt('Nombre para guardar los filtros:');
@@ -447,7 +447,7 @@ class GridFilters {
         });
         localStorage.setItem(this.storageKey, JSON.stringify(this.filtrosGuardados));
         this.cerrarPopupFiltro();
-        alert(`Filtros guardados como "${nombre}"`);
+        UIFeedback.toast(`Filtros guardados como "${nombre}"`, 'success');
     }
 
     cargarFiltroGuardado(index) {
@@ -459,8 +459,8 @@ class GridFilters {
         this._notifyFilterChange();
     }
 
-    eliminarFiltroGuardado(index) {
-        if (!confirm('¿Eliminar este filtro guardado?')) return;
+    async eliminarFiltroGuardado(index) {
+        if (!await UIFeedback.confirm({ message: '¿Eliminar este filtro guardado?', type: 'danger' })) return;
         this.filtrosGuardados.splice(index, 1);
         localStorage.setItem(this.storageKey, JSON.stringify(this.filtrosGuardados));
         this.cerrarPopupFiltro();

@@ -39,6 +39,7 @@ from routes.pedido_routes import pedido_bp
 from routes.db_info_routes import db_info_bp
 from routes.almacen_routes import almacen_bp
 from routes.notification_routes import notification_bp
+from routes.image_search_routes import image_search_bp
 from database.users_db import verify_user, get_user_by_id
 from models.user import User
 from models.user_session_model import UserSessionModel
@@ -148,7 +149,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.33.2'
+APP_VERSION = 'v1.35.5'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -277,6 +278,7 @@ app.register_blueprint(pedido_bp)
 app.register_blueprint(db_info_bp)
 app.register_blueprint(almacen_bp)
 app.register_blueprint(notification_bp)
+app.register_blueprint(image_search_bp)
 
 # ==================== RUTAS DE AUTENTICACIÓN ====================
 
@@ -388,6 +390,11 @@ def vista_almacen_page():
 @login_required
 def informe_almacen_page():
     return send_from_directory(FRONTEND_DIR, 'informe-almacen.html')
+
+@app.route('/busqueda-magica.html')
+@login_required
+def busqueda_magica_page():
+    return send_from_directory(FRONTEND_DIR, 'busqueda-magica.html')
 
 @app.route('/api/login', methods=['POST'])
 @limiter.limit("5 per minute")  # Máximo 5 intentos por minuto por IP
@@ -1052,6 +1059,18 @@ def serve_js():
 def serve_css():
     return send_from_directory(os.path.join(FRONTEND_DIR, 'css'), 'styles.css', mimetype='text/css')
 
+@app.route('/css/modules/<path:filename>')
+def serve_css_module(filename):
+    return send_from_directory(os.path.join(FRONTEND_DIR, 'css', 'modules'), filename, mimetype='text/css')
+
+@app.route('/js/theme-init.js')
+def serve_theme_init_js():
+    return send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'theme-init.js', mimetype='application/javascript')
+
+@app.route('/js/ui-feedback.js')
+def serve_ui_feedback_js():
+    return send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'ui-feedback.js', mimetype='application/javascript')
+
 @app.route('/js/login.js')
 def serve_login_js():
     response = send_from_directory(os.path.join(FRONTEND_DIR, 'js'), 'login.js', mimetype='application/javascript')
@@ -1170,7 +1189,7 @@ def favicon_root():
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login_page', 'login', 'register_page', 'verify_email_page', 'reset_password_page', 'serve_css', 'serve_login_js', 'serve_register_js', 'serve_reset_password_js', 'serve_i18n_js', 'serve_i18n_lang', 'logo', 'logo_png', 'logo_jobers', 'favicon', 'favicon_jobers', 'favicon_root', 'static', 'flasgger.static', 'flasgger.apispec', 'empresa_logo.get_logo', 'empresa_logo.get_favicon', 'empresa_logo.logo_exists', 'empresa_logo.get_config', 'empresa_logo.get_tema', 'empresa_logo.get_invertir', 'get_version']
+    allowed_routes = ['login_page', 'login', 'register_page', 'verify_email_page', 'reset_password_page', 'serve_css', 'serve_css_module', 'serve_theme_init_js', 'serve_ui_feedback_js', 'serve_login_js', 'serve_register_js', 'serve_reset_password_js', 'serve_i18n_js', 'serve_i18n_lang', 'logo', 'logo_png', 'logo_jobers', 'favicon', 'favicon_jobers', 'favicon_root', 'static', 'flasgger.static', 'flasgger.apispec', 'empresa_logo.get_logo', 'empresa_logo.get_favicon', 'empresa_logo.logo_exists', 'empresa_logo.get_config', 'empresa_logo.get_tema', 'empresa_logo.get_invertir', 'get_version']
     # Permitir acceso a Swagger UI
     if request.path.startswith('/apidocs') or request.path.startswith('/flasgger_static') or request.path.startswith('/apispec'):
         return None

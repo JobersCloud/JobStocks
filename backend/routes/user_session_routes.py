@@ -28,11 +28,12 @@ user_session_bp = Blueprint('user_session', __name__)
 def get_sessions():
     """Obtener sesiones activas"""
     empresa_id = request.args.get('empresa_id')
+    user_id = request.args.get('user_id')
 
     # Limpiar sesiones expiradas antes de listar
     UserSessionModel.cleanup_expired()
 
-    sessions = UserSessionModel.get_active_sessions(empresa_id)
+    sessions = UserSessionModel.get_active_sessions(empresa_id, user_id=user_id)
     count = len(sessions)
 
     return jsonify({

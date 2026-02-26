@@ -412,7 +412,8 @@ class DataGrid {
                     const cellContent = content !== null && content !== undefined ? content : this._escapeHtml(item[col.key]);
                     return `<td${alignClass}>${cellContent}</td>`;
                 }).join('');
-                return `<tr>${cells}</tr>`;
+                const rowId = item.id != null ? ` data-id="${item.id}"` : '';
+                return `<tr${rowId}>${cells}</tr>`;
             }).join('');
         }
 
@@ -561,7 +562,8 @@ class DataGrid {
                 const cellContent = content !== null && content !== undefined ? content : this._escapeHtml(item[col.key]);
                 return `<td${alignClass}>${cellContent}</td>`;
             }).join('');
-            return `<tr>${cells}</tr>`;
+            const rowId = item.id != null ? ` data-id="${item.id}"` : '';
+            return `<tr${rowId}>${cells}</tr>`;
         }).join('');
 
         // Render cards always (CSS handles visibility via media queries)

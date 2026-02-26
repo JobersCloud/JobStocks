@@ -145,8 +145,9 @@ def listar_consultas():
     """
     empresa_id = get_empresa_id()
     estado = request.args.get('estado')
+    user_id = request.args.get('user_id')
 
-    consultas = ConsultaModel.get_all_by_empresa(empresa_id, estado)
+    consultas = ConsultaModel.get_all_by_empresa(empresa_id, estado, user_id=user_id)
 
     return jsonify({
         'success': True,

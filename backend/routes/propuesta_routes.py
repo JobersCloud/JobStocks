@@ -92,9 +92,10 @@ def get_todas_propuestas():
     """
     empresa_id = session.get('empresa_id', '1')
     estado = request.args.get('estado')
+    user_id = request.args.get('user_id')
 
     try:
-        propuestas = PropuestaModel.get_all(empresa_id=empresa_id, estado=estado)
+        propuestas = PropuestaModel.get_all(empresa_id=empresa_id, estado=estado, user_id=user_id)
         return jsonify({
             'success': True,
             'total': len(propuestas),

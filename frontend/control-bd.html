@@ -4,64 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control BD - Administracion</title>
-    <script>
-        // Inyectar colores del tema ANTES del CSS para evitar flash
-        (function () {
-            const themes = {
-                'rubi': { primary: '#FF4338', primaryDark: '#D32F2F', primaryLight: '#FF6B6B' },
-                'zafiro': { primary: '#2196F3', primaryDark: '#1565C0', primaryLight: '#64B5F6' },
-                'esmeralda': { primary: '#4CAF50', primaryDark: '#2E7D32', primaryLight: '#81C784' },
-                'amatista': { primary: '#9C27B0', primaryDark: '#6A1B9A', primaryLight: '#BA68C8' },
-                'ambar': { primary: '#FF9800', primaryDark: '#E65100', primaryLight: '#FFB74D' },
-                'grafito': { primary: '#607D8B', primaryDark: '#37474F', primaryLight: '#90A4AE' },
-                'corporativo': { primary: '#1a365d', primaryDark: '#0d1b2a', primaryLight: '#2c5282' },
-                'ejecutivo': { primary: '#2d3748', primaryDark: '#1a202c', primaryLight: '#4a5568' },
-                'oceano': { primary: '#0077b6', primaryDark: '#023e8a', primaryLight: '#0096c7' },
-                'bosque': { primary: '#2d6a4f', primaryDark: '#1b4332', primaryLight: '#40916c' },
-                'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
-                'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
-                'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
-                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
-                'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
-            };
-            const theme = localStorage.getItem('theme') || 'dark';
-            const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
-            const colors = themes[colorTheme] || themes['rubi'];
-
-            document.documentElement.setAttribute('data-theme', theme);
-            document.documentElement.setAttribute('data-color-theme', colorTheme);
-
-            const style = document.createElement('style');
-            style.id = 'theme-colors-inline';
-            style.textContent = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
-            document.head.appendChild(style);
-
-            const faviconUrl = localStorage.getItem('faviconUrl');
-            if (faviconUrl) {
-                const link = document.createElement('link');
-                link.rel = 'icon';
-                link.href = faviconUrl;
-                document.head.appendChild(link);
-            }
-
-            // Pre-cargar logo y nombre empresa desde cache para evitar flash
-            var _logoUrl = localStorage.getItem('logoUrl');
-            var _companyName = localStorage.getItem('companyName');
-            var _logoInvert = localStorage.getItem('logoInvert');
-            if (_logoUrl || _companyName) {
-                document.addEventListener('DOMContentLoaded', function() {
-                    var logo = document.getElementById('header-logo');
-                    if (logo && _logoUrl) {
-                        logo.src = _logoUrl;
-                        logo.style.filter = _logoInvert === 'true' ? 'brightness(0) invert(1)' : 'none';
-                        logo.style.visibility = 'visible';
-                    }
-                    var name = document.getElementById('header-company-name');
-                    if (name && _companyName) name.textContent = _companyName;
-                });
-            }
-        })();
-    </script>
+    <script src="js/theme-init.js?v=1.34.0"></script>
     <link rel="stylesheet" href="css/styles.css?v=1.26.0">
 </head>
 <body>
@@ -209,6 +152,17 @@
                             </svg>
                         </span>
                         <span class="sidebar-item-text" data-i18n="menu.myInquiries">Mis Consultas</span>
+                    </a>
+                    <a class="sidebar-item" data-page="busqueda-magica.html" data-tooltip="Busqueda Magica" onclick="SidebarNav.navigateTo('busqueda-magica.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                <path d="M8 11h6"></path>
+                                <path d="M11 8v6"></path>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="magicSearch.title">Busqueda Magica</span>
                     </a>
                 </div>
 
@@ -493,6 +447,50 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Seccion: Reindexar Imagenes (CBIR) -->
+                            <div class="param-section">
+                                <div class="param-section-header">
+                                    <span class="param-section-icon">🔍</span>
+                                    <div class="param-section-info">
+                                        <h3 data-i18n="dbControl.reindexImages">Reindexar Imagenes</h3>
+                                        <p data-i18n="dbControl.reindexDesc">Regenerar el indice de busqueda visual (CBIR) de imagenes de productos</p>
+                                    </div>
+                                </div>
+                                <div class="param-section-grid" id="reindex-stats-grid">
+                                    <div class="param-card">
+                                        <div class="param-info" style="flex: 1;">
+                                            <span class="param-key" data-i18n="dbControl.indexed">Indexadas</span>
+                                        </div>
+                                        <div class="param-value-section">
+                                            <span class="param-value-readonly" id="reindex-stat-indexed">-</span>
+                                        </div>
+                                    </div>
+                                    <div class="param-card">
+                                        <div class="param-info" style="flex: 1;">
+                                            <span class="param-key" data-i18n="dbControl.totalImages">Total Imagenes</span>
+                                        </div>
+                                        <div class="param-value-section">
+                                            <span class="param-value-readonly" id="reindex-stat-total">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                    <button class="btn-primary" id="btn-reindex" onclick="reindexImages()" style="display: inline-flex; align-items: center; gap: 8px;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                            <polyline points="23 4 23 10 17 10"></polyline>
+                                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                                        </svg>
+                                        <span data-i18n="dbControl.reindexButton">Reindexar</span>
+                                    </button>
+                                </div>
+                                <div id="reindex-progress" style="display: none; margin-top: 12px;">
+                                    <div style="height: 6px; border-radius: 3px; background: var(--border-color, #e0e0e0); overflow: hidden;">
+                                        <div id="reindex-progress-fill" style="height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary, #e74c3c), var(--primary-dark, #c0392b)); width: 0%; transition: width 0.3s ease;"></div>
+                                    </div>
+                                    <div id="reindex-progress-text" style="font-size: 0.78rem; color: var(--text-secondary, #888); margin-top: 6px;"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -653,6 +651,7 @@
             await checkAuth();
             Notifications.init();
             await loadDbInfo();
+            loadReindexStatus();
         });
 
         // ==================== AUTENTICACION ====================
@@ -876,6 +875,91 @@
                     </div>
                 </div>
             `;
+        }
+
+        // ==================== REINDEXAR IMAGENES (CBIR) ====================
+        async function loadReindexStatus() {
+            try {
+                const response = await fetch(`${API_URL}/api/image-search/status`, { credentials: 'include' });
+                if (!response.ok) return;
+                const data = await response.json();
+                document.getElementById('reindex-stat-indexed').textContent = data.indexed || 0;
+                document.getElementById('reindex-stat-total').textContent = data.total || 0;
+            } catch (error) {
+                console.error('Error loading reindex status:', error);
+            }
+        }
+
+        async function reindexImages() {
+            const btn = document.getElementById('btn-reindex');
+            const progressEl = document.getElementById('reindex-progress');
+            const progressFill = document.getElementById('reindex-progress-fill');
+            const progressText = document.getElementById('reindex-progress-text');
+
+            btn.disabled = true;
+            progressEl.style.display = '';
+            progressFill.style.width = '0%';
+            progressText.textContent = t('dbControl.reindexStarting') || 'Iniciando reindexacion...';
+
+            try {
+                const response = await fetch(`${API_URL}/api/image-search/reindex`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken || localStorage.getItem('csrf_token')
+                    },
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.error || 'Error al reindexar');
+                }
+
+                pollReindexProgress();
+            } catch (error) {
+                console.error('Error reindexing:', error);
+                alert(error.message || 'Error al reindexar');
+                btn.disabled = false;
+                progressEl.style.display = 'none';
+            }
+        }
+
+        async function pollReindexProgress() {
+            const btn = document.getElementById('btn-reindex');
+            const progressFill = document.getElementById('reindex-progress-fill');
+            const progressText = document.getElementById('reindex-progress-text');
+            const progressEl = document.getElementById('reindex-progress');
+
+            try {
+                const response = await fetch(`${API_URL}/api/image-search/status`, { credentials: 'include' });
+                if (!response.ok) {
+                    btn.disabled = false;
+                    progressEl.style.display = 'none';
+                    return;
+                }
+
+                const data = await response.json();
+                const indexed = data.indexed || 0;
+                const total = data.total || 0;
+                const percent = total > 0 ? Math.round((indexed / total) * 100) : 0;
+
+                progressFill.style.width = percent + '%';
+                progressText.textContent = `${indexed} / ${total} (${percent}%)`;
+
+                if (!data.reindexing) {
+                    btn.disabled = false;
+                    alert(t('dbControl.reindexComplete') || 'Reindexacion completada');
+                    loadReindexStatus();
+                    setTimeout(() => { progressEl.style.display = 'none'; }, 2000);
+                } else {
+                    setTimeout(pollReindexProgress, 2000);
+                }
+            } catch (error) {
+                console.error('Error polling reindex status:', error);
+                btn.disabled = false;
+                progressEl.style.display = 'none';
+            }
         }
 
         // ==================== CAMBIO DE CONTRASENA ====================

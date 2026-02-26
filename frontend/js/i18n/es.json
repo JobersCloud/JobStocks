@@ -469,7 +469,13 @@
     "showPricesHelp": "Permite al usuario ver precios en el grid",
     "enablePrices": "Activar precios",
     "disablePrices": "Desactivar precios",
-    "verifyEmail": "Verificar email"
+    "verifyEmail": "Verificar email",
+    "detailInfo": "Información",
+    "detailProposals": "Propuestas",
+    "detailOrders": "Pedidos",
+    "detailInquiries": "Consultas",
+    "detailSessions": "Sesiones",
+    "detailAudit": "Auditoría"
   },
   "changePassword": {
     "title": "Cambiar Contraseña",
@@ -664,7 +670,14 @@
     "expressLimitDesc": "Uso de espacio respecto al limite de 10 GB",
     "expressUsed": "Usado",
     "expressAvailable": "Disponible",
-    "expressLimitLabel": "Limite Express"
+    "expressLimitLabel": "Limite Express",
+    "reindexImages": "Reindexar Imágenes",
+    "reindexDesc": "Regenerar el índice de búsqueda visual (CBIR) de imágenes de productos",
+    "indexed": "Indexadas",
+    "totalImages": "Total Imágenes",
+    "reindexButton": "Reindexar",
+    "reindexStarting": "Iniciando reindexación...",
+    "reindexComplete": "Reindexación completada"
   },
   "apiKeys": {
     "description": "Las API Keys permiten a aplicaciones externas (PowerBuilder, ERP, etc.) acceder a la API sin necesidad de iniciar sesion. Cada key esta asociada a tu usuario y a la empresa actual.",
@@ -750,5 +763,49 @@
     "newNotifications": "nuevas notificaciones",
     "markAllRead": "Marcar todas como leídas",
     "noNotifications": "Sin notificaciones"
+  },
+  "uiFeedback": {
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "accept": "Aceptar",
+    "delete": "Eliminar",
+    "close": "Cerrar"
+  },
+  "userDetail": {
+    "title": "Detalle de usuario",
+    "info": "Información",
+    "proposals": "Propuestas",
+    "orders": "Pedidos",
+    "inquiries": "Consultas",
+    "sessions": "Sesiones",
+    "audit": "Auditoría",
+    "noData": "Sin datos"
+  },
+  "magicSearch": {
+    "title": "Búsqueda Mágica",
+    "subtitle": "Arrastra una imagen para encontrar productos similares",
+    "dropText": "Arrastra una imagen aquí o haz clic para seleccionar",
+    "dropHint": "Formatos: JPG, PNG, WEBP - Máx 10MB",
+    "previewEmpty": "Sin imagen seleccionada",
+    "searchButton": "Buscar productos similares",
+    "searching": "Buscando...",
+    "noResults": "No se encontraron productos similares",
+    "resultsTitle": "Resultados",
+    "productsFound": "productos encontrados",
+    "similarity": "Similitud",
+    "invalidFormat": "Formato no válido. Usa JPG, PNG o WEBP.",
+    "fileTooLarge": "La imagen excede 10MB.",
+    "searchError": "Error al buscar productos similares",
+    "adminTitle": "Estado del Índice de Imágenes",
+    "indexed": "Indexadas",
+    "totalImages": "Total Imágenes",
+    "lastUpdate": "Última Actualización",
+    "reindexButton": "Reindexar Imágenes",
+    "reindexStarting": "Iniciando reindexación...",
+    "reindexComplete": "Reindexación completada",
+    "reindexError": "Error en la reindexación",
+    "notIndexed": "Las imágenes aún no están indexadas. Contacte al administrador.",
+    "viewDetail": "Ver detalle",
+    "loadingDetail": "Cargando imágenes..."
   }
 }

@@ -1,0 +1,368 @@
+/* styles.css - Diseño Bancario Moderno */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Colores principales - neutros por defecto (se sobrescriben con data-color-theme) */
+    --primary: #6b7280;
+    --primary-dark: #4b5563;
+    --primary-light: #9ca3af;
+    --secondary: #6b7280;
+    --accent: #e5e7eb;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --dark: #1a1a2e;
+    --dark-light: #2d2d44;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --text-light: #9ca3af;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --border: #e5e7eb;
+
+    /* Sombras modernas */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+    /* Bordes redondeados */
+    --radius-sm: 6px;
+    --radius: 8px;
+    --radius-md: 10px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+
+    /* Tipografía moderna */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-size-xs: 0.75rem;     /* 12px */
+    --font-size-sm: 0.8125rem;   /* 13px */
+    --font-size-base: 0.875rem;  /* 14px */
+    --font-size-md: 0.9375rem;   /* 15px */
+    --font-size-lg: 1rem;        /* 16px */
+    --font-size-xl: 1.125rem;    /* 18px */
+    --font-size-2xl: 1.25rem;    /* 20px */
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.625;
+    --tracking-tight: -0.025em;
+    --tracking-normal: 0;
+    --tracking-wide: 0.025em;
+
+    /* Efecto cebra - colores por defecto (modo claro) */
+    --row-even: #ffffff;
+    --row-odd: #fafafa;
+    --row-hover: #f5f5f5;
+}
+
+/* ==================== TEMAS DE COLOR ==================== */
+/* Tema Rubí (por defecto - ya definido en :root) */
+[data-color-theme="rubi"] {
+    --primary: #FF4338;
+    --primary-dark: #D32F2F;
+    --primary-light: #FF6B6B;
+    --secondary: #FF5252;
+    --accent: #ffd7d7;
+    --row-odd: #fff8f8;
+    --row-hover: #ffefef;
+}
+
+/* Tema Zafiro (Azul) */
+[data-color-theme="zafiro"] {
+    --primary: #2196F3;
+    --primary-dark: #1565C0;
+    --primary-light: #64B5F6;
+    --secondary: #42A5F5;
+    --accent: #BBDEFB;
+    --row-odd: #f0f9ff;
+    --row-hover: #e0f2fe;
+}
+
+/* Tema Esmeralda (Verde) */
+[data-color-theme="esmeralda"] {
+    --primary: #4CAF50;
+    --primary-dark: #2E7D32;
+    --primary-light: #81C784;
+    --secondary: #66BB6A;
+    --accent: #C8E6C9;
+    --row-odd: #f0fdf4;
+    --row-hover: #dcfce7;
+}
+
+/* Tema Amatista (Púrpura) */
+[data-color-theme="amatista"] {
+    --primary: #9C27B0;
+    --primary-dark: #6A1B9A;
+    --primary-light: #BA68C8;
+    --secondary: #AB47BC;
+    --accent: #E1BEE7;
+    --row-odd: #faf5ff;
+    --row-hover: #f3e8ff;
+}
+
+/* Tema Ámbar (Naranja) */
+[data-color-theme="ambar"] {
+    --primary: #FF9800;
+    --primary-dark: #E65100;
+    --primary-light: #FFB74D;
+    --secondary: #FFA726;
+    --accent: #FFE0B2;
+    --row-odd: #fffbeb;
+    --row-hover: #fef3c7;
+}
+
+/* Tema Grafito (Gris) */
+[data-color-theme="grafito"] {
+    --primary: #607D8B;
+    --primary-dark: #37474F;
+    --primary-light: #90A4AE;
+    --secondary: #78909C;
+    --accent: #CFD8DC;
+    --row-odd: #f9fafb;
+    --row-hover: #f3f4f6;
+}
+
+/* ==================== TEMAS PROFESIONALES ==================== */
+
+/* Tema Corporativo (Navy Blue - Azul Corporativo) */
+[data-color-theme="corporativo"] {
+    --primary: #1e3a5f;
+    --primary-dark: #0d2137;
+    --primary-light: #2d5a8a;
+    --secondary: #234b7a;
+    --accent: #d4e4f7;
+    --row-odd: #f5f8fc;
+    --row-hover: #e8f0f8;
+}
+
+/* Tema Ejecutivo (Charcoal - Gris Ejecutivo) */
+[data-color-theme="ejecutivo"] {
+    --primary: #2d3436;
+    --primary-dark: #1a1d1e;
+    --primary-light: #4a5054;
+    --secondary: #3d4447;
+    --accent: #dfe6e9;
+    --row-odd: #f7f8f8;
+    --row-hover: #eceeef;
+}
+
+/* Tema Océano (Deep Blue - Azul Profundo) */
+[data-color-theme="oceano"] {
+    --primary: #006994;
+    --primary-dark: #004d6d;
+    --primary-light: #0088b4;
+    --secondary: #0077a3;
+    --accent: #cce7f0;
+    --row-odd: #f0f9fc;
+    --row-hover: #e0f2f7;
+}
+
+/* Tema Bosque (Forest Green - Verde Bosque) */
+[data-color-theme="bosque"] {
+    --primary: #1d4e3e;
+    --primary-dark: #0f2d23;
+    --primary-light: #2a7258;
+    --secondary: #236b4e;
+    --accent: #d0e8df;
+    --row-odd: #f2f9f6;
+    --row-hover: #e5f3ec;
+}
+
+/* Tema Vino (Burgundy - Burdeos) */
+[data-color-theme="vino"] {
+    --primary: #722f37;
+    --primary-dark: #4a1f24;
+    --primary-light: #9c4049;
+    --secondary: #8b3a44;
+    --accent: #f0d4d7;
+    --row-odd: #fcf5f6;
+    --row-hover: #f7e8ea;
+}
+
+/* Tema Medianoche (Midnight - Índigo Oscuro) */
+[data-color-theme="medianoche"] {
+    --primary: #2c3e50;
+    --primary-dark: #1a252f;
+    --primary-light: #3d566e;
+    --secondary: #34495e;
+    --accent: #d5dce4;
+    --row-odd: #f5f7f9;
+    --row-hover: #e8ecf1;
+}
+
+/* Tema Titanio (Slate - Pizarra Moderna) */
+[data-color-theme="titanio"] {
+    --primary: #475569;
+    --primary-dark: #1e293b;
+    --primary-light: #64748b;
+    --secondary: #526077;
+    --accent: #e2e8f0;
+    --row-odd: #f8fafc;
+    --row-hover: #f1f5f9;
+}
+
+/* Tema Bronce (Bronze - Cobre Elegante) */
+[data-color-theme="bronce"] {
+    --primary: #8b5a2b;
+    --primary-dark: #5c3a1c;
+    --primary-light: #b8763a;
+    --secondary: #a06830;
+    --accent: #f0e0d0;
+    --row-odd: #fdfaf6;
+    --row-hover: #f8f0e6;
+}
+
+/* Tema Elegante (Rojo Cálido + Negro - Corporativo) */
+[data-color-theme="elegante"] {
+    --primary: #FF4438;
+    --primary-dark: #1a1a1a;
+    --primary-light: #FF6B5B;
+    --secondary: #000000;
+    --accent: #F8EFE0;
+    --row-odd: #fdfbf8;
+    --row-hover: #f8efe0;
+}
+
+/* Asegurar que los temas de color funcionen con dark mode */
+[data-theme="dark"][data-color-theme="rubi"] {
+    --accent: #4a1e1e;
+    --row-even: #1e293b;
+    --row-odd: #261a1a;
+    --row-hover: #3d2424;
+}
+
+[data-theme="dark"][data-color-theme="zafiro"] {
+    --accent: #1a3a5c;
+    --row-even: #1e293b;
+    --row-odd: #0c1929;
+    --row-hover: #1e3a5f;
+}
+
+[data-theme="dark"][data-color-theme="esmeralda"] {
+    --accent: #1b3d1f;
+    --row-even: #1e293b;
+    --row-odd: #0f1f14;
+    --row-hover: #1a3a22;
+}
+
+[data-theme="dark"][data-color-theme="amatista"] {
+    --accent: #3d1a45;
+    --row-even: #1e293b;
+    --row-odd: #1a1424;
+    --row-hover: #2e1f3d;
+}
+
+[data-theme="dark"][data-color-theme="ambar"] {
+    --accent: #4a2e00;
+    --row-even: #1e293b;
+    --row-odd: #1f1a0c;
+    --row-hover: #3d3014;
+}
+
+[data-theme="dark"][data-color-theme="grafito"] {
+    --accent: #263238;
+    --row-even: #1e293b;
+    --row-odd: #141a1f;
+    --row-hover: #2d3a47;
+}
+
+/* Dark mode para temas profesionales */
+[data-theme="dark"][data-color-theme="corporativo"] {
+    --accent: #1a3050;
+    --row-even: #1e293b;
+    --row-odd: #0d1a2a;
+    --row-hover: #1e3a5f;
+}
+
+[data-theme="dark"][data-color-theme="ejecutivo"] {
+    --accent: #2d3436;
+    --row-even: #1e293b;
+    --row-odd: #141718;
+    --row-hover: #2d3436;
+}
+
+[data-theme="dark"][data-color-theme="oceano"] {
+    --accent: #003d54;
+    --row-even: #1e293b;
+    --row-odd: #0a1e28;
+    --row-hover: #004d6d;
+}
+
+[data-theme="dark"][data-color-theme="bosque"] {
+    --accent: #1a3d30;
+    --row-even: #1e293b;
+    --row-odd: #0d1f18;
+    --row-hover: #1d4e3e;
+}
+
+[data-theme="dark"][data-color-theme="vino"] {
+    --accent: #4a1f24;
+    --row-even: #1e293b;
+    --row-odd: #1a0f11;
+    --row-hover: #5c2830;
+}
+
+[data-theme="dark"][data-color-theme="medianoche"] {
+    --accent: #1a252f;
+    --row-even: #1e293b;
+    --row-odd: #0f161c;
+    --row-hover: #2c3e50;
+}
+
+[data-theme="dark"][data-color-theme="titanio"] {
+    --accent: #334155;
+    --row-even: #1e293b;
+    --row-odd: #0f172a;
+    --row-hover: #475569;
+}
+
+[data-theme="dark"][data-color-theme="bronce"] {
+    --accent: #5c3a1c;
+    --row-even: #1e293b;
+    --row-odd: #1a1410;
+    --row-hover: #6b4520;
+}
+
+[data-theme="dark"][data-color-theme="elegante"] {
+    --accent: #3d2a1a;
+    --row-even: #1e293b;
+    --row-odd: #1a1512;
+    --row-hover: #4a3020;
+}
+
+/* ==================== MODO OSCURO ==================== */
+[data-theme="dark"] {
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-light: #64748b;
+    --bg-primary: #1e293b;
+    --bg-secondary: #0f172a;
+    --bg-tertiary: #334155;
+    --border: #475569;
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    --accent: #4a1e1e;
+    /* Efecto cebra modo oscuro base */
+    --row-even: #1e293b;
+    --row-odd: #0f172a;
+    --row-hover: #334155;
+}
+
+[data-theme="dark"] body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+[data-theme="dark"] header {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+[data-theme="dark"] .filters {
+    background: var(--bg-primary);
+}

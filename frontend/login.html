@@ -4,60 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Gestión de Stocks</title>
-    <script>
-        // Inyectar colores del tema ANTES del CSS para evitar flash
-        (function () {
-            const themes = {
-                'rubi': { primary: '#FF4338', primaryDark: '#D32F2F', primaryLight: '#FF6B6B' },
-                'zafiro': { primary: '#2196F3', primaryDark: '#1565C0', primaryLight: '#64B5F6' },
-                'esmeralda': { primary: '#4CAF50', primaryDark: '#2E7D32', primaryLight: '#81C784' },
-                'amatista': { primary: '#9C27B0', primaryDark: '#6A1B9A', primaryLight: '#BA68C8' },
-                'ambar': { primary: '#FF9800', primaryDark: '#E65100', primaryLight: '#FFB74D' },
-                'grafito': { primary: '#607D8B', primaryDark: '#37474F', primaryLight: '#90A4AE' },
-                'corporativo': { primary: '#1a365d', primaryDark: '#0d1b2a', primaryLight: '#2c5282' },
-                'ejecutivo': { primary: '#2d3748', primaryDark: '#1a202c', primaryLight: '#4a5568' },
-                'oceano': { primary: '#0077b6', primaryDark: '#023e8a', primaryLight: '#0096c7' },
-                'bosque': { primary: '#2d6a4f', primaryDark: '#1b4332', primaryLight: '#40916c' },
-                'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
-                'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
-                'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
-                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
-                'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
-            };
-            const theme = localStorage.getItem('theme') || 'dark';
-            const colorTheme = localStorage.getItem('colorTheme') || 'rubi';
-            const colors = themes[colorTheme] || themes['rubi'];
-
-            document.documentElement.setAttribute('data-theme', theme);
-            document.documentElement.setAttribute('data-color-theme', colorTheme);
-
-            // Inyectar colores como CSS inline con !important para ganar especificidad
-            const style = document.createElement('style');
-            style.id = 'theme-colors-inline';
-            style.textContent = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
-            document.head.appendChild(style);
-
-            // Favicon desde cache
-            var _faviconUrl = localStorage.getItem('faviconUrl');
-            if (_faviconUrl) {
-                var link = document.createElement('link');
-                link.rel = 'icon';
-                link.href = _faviconUrl;
-                document.head.appendChild(link);
-            }
-
-            // Pre-cargar logo del cliente desde cache para evitar flash
-            var _logoUrl = localStorage.getItem('logoUrl');
-            if (_logoUrl) {
-                document.addEventListener('DOMContentLoaded', function() {
-                    var sLogo = document.getElementById('sidebar-logo');
-                    var mLogo = document.getElementById('mobile-logo');
-                    if (sLogo) { sLogo.src = _logoUrl; sLogo.style.visibility = 'visible'; }
-                    if (mLogo) { mLogo.src = _logoUrl; mLogo.style.visibility = 'visible'; }
-                });
-            }
-        })();
-    </script>
+    <script src="js/theme-init.js?v=1.34.0"></script>
     <link rel="stylesheet" href="css/styles.css?v=1.26.0">
 </head>
 <body>
@@ -332,6 +279,7 @@
         </div>
     </div>
 
+    <script src="js/ui-feedback.js"></script>
     <script src="js/i18n/i18n.js?v=20260120"></script>
     <script src="js/login.js?v=20260120"></script>
     <script>
@@ -359,6 +307,39 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.35.5', date: '2026-02-25', title: 'Carrito desde Busqueda Magica y fix loading', items: [
+                {type: 'fix', text: 'Busqueda Magica: agregar al carrito desde detalle ahora muestra modal de cantidad (igual que en Stocks)'},
+                {type: 'fix', text: 'Grid de stocks: corregido texto "common.loading" que aparecia en vez de "Cargando..."'},
+                {type: 'improve', text: 'Limpieza de codigo debug en endpoint de busqueda visual'}
+            ]},
+            { version: 'v1.35.3', date: '2026-02-25', title: 'Fix CSRF en Busqueda Magica', items: [
+                {type: 'fix', text: 'Busqueda Magica: anadido token CSRF a peticiones POST de busqueda y thumbnails'},
+                {type: 'fix', text: 'Backend: anadido @csrf_required al endpoint de busqueda visual'}
+            ]},
+            { version: 'v1.35.2', date: '2026-02-25', title: 'Fix Busqueda Magica', items: [
+                {type: 'fix', text: 'Busqueda Magica: corregida carga de archivos (drag & drop y seleccion)'},
+                {type: 'fix', text: 'Busqueda Magica: anadidas funciones faltantes (ampliar imagen, consultas, WhatsApp, agregar al carrito)'},
+                {type: 'fix', text: 'Busqueda Magica: corregido script JS truncado que impedia el funcionamiento de la pagina'}
+            ]},
+            { version: 'v1.35.1', date: '2026-02-25', title: 'Mejoras en Busqueda Magica', items: [
+                {type: 'improve', text: 'Busqueda Magica: tarjetas de resultado con imagen, descripcion, formato, calidad, color y existencias'},
+                {type: 'new', text: 'Busqueda Magica: clic en resultado abre el mismo modal de detalle que en Stocks (con imagenes, empaquetado, todos los campos)'},
+                {type: 'improve', text: 'Busqueda Magica: carga asincrona de thumbnails en resultados'},
+                {type: 'improve', text: 'Backend enriquece resultados de busqueda visual con todos los datos del stock'},
+                {type: 'improve', text: 'Panel de reindexacion de imagenes movido a Control BD'}
+            ]},
+            { version: 'v1.34.1', date: '2026-02-25', title: 'Fix Busqueda Magica', items: [
+                {type: 'fix', text: 'Busqueda Magica: instaladas dependencias CBIR y corregida indexacion de imagenes'},
+                {type: 'fix', text: 'Corregido menu de usuario que aparecia desplegado sin hacer clic'},
+                {type: 'fix', text: 'Migracion automatica para tabla image_embeddings'}
+            ]},
+            { version: 'v1.34.0', date: '2026-02-25', title: 'Busqueda Magica, detalle de usuario y mejoras UI', items: [
+                {type: 'new', text: 'Busqueda Magica - busca productos similares arrastrando una imagen'},
+                {type: 'new', text: 'Vista detalle de usuario con 6 pestanas (Info, Propuestas, Pedidos, Consultas, Sesiones, Auditoria)'},
+                {type: 'improve', text: 'Notificaciones toast en lugar de alertas nativas del navegador'},
+                {type: 'improve', text: 'CSS modular dividido en 16 archivos para mejor mantenimiento'},
+                {type: 'improve', text: 'Tema visual optimizado sin codigo duplicado (theme-init.js)'}
+            ]},
             { version: 'v1.33.2', date: '2026-02-24', title: 'Menu de acciones en usuarios', items: [
                 {type: 'improve', text: 'Menu desplegable de tres puntos en acciones de usuarios (reemplaza multiples botones)'},
                 {type: 'new', text: 'Checkbox "Ver precios" en modal de edicion de usuario'},

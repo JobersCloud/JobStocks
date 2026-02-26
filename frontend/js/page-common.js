@@ -301,7 +301,7 @@
             document.body.appendChild(modal);
         } catch (error) {
             console.error('Error:', error);
-            alert('Error: ' + error.message);
+            UIFeedback.toast('Error: ' + error.message, 'error');
         }
     }
 

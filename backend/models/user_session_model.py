@@ -135,7 +135,7 @@ class UserSessionModel:
             conn.close()
 
     @staticmethod
-    def get_active_sessions(empresa_id=None):
+    def get_active_sessions(empresa_id=None, user_id=None):
         """Obtener todas las sesiones activas con info de usuario"""
         conn = Database.get_connection()
         cursor = conn.cursor()
@@ -153,12 +153,17 @@ class UserSessionModel:
                     s.last_activity
                 FROM user_sessions s
                 INNER JOIN users u ON s.user_id = u.id
+                WHERE 1=1
             """
             params = []
 
             if empresa_id:
-                query += " WHERE s.empresa_id = ?"
+                query += " AND s.empresa_id = ?"
                 params.append(empresa_id)
+
+            if user_id:
+                query += " AND s.user_id = ?"
+                params.append(user_id)
 
             query += " ORDER BY s.last_activity DESC"
 
