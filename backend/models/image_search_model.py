@@ -37,6 +37,8 @@ RELATIVE_THRESHOLD = 0.50    # Umbral relativo: >= 50% del mejor score
 
 def _normalize_group(vec):
     """Normalizar un grupo de features a norma unitaria."""
+    # Reemplazar NaN/Inf por 0 antes de normalizar
+    vec = np.nan_to_num(vec, nan=0.0, posinf=0.0, neginf=0.0)
     norm = np.linalg.norm(vec)
     if norm < 1e-7:
         return vec
@@ -176,7 +178,10 @@ def cosine_similarity(a, b):
     norm_b = np.linalg.norm(b)
     if norm_a == 0 or norm_b == 0:
         return 0.0
-    return float(dot / (norm_a * norm_b))
+    result = float(dot / (norm_a * norm_b))
+    if np.isnan(result) or np.isinf(result):
+        return 0.0
+    return result
 
 
 def vector_to_bytes(vec):
