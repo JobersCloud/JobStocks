@@ -390,6 +390,53 @@ def actualizar_estado(propuesta_id):
         }), 500
 
 
+@propuesta_bp.route('/<int:propuesta_id>/duplicate', methods=['POST'])
+@login_required
+@csrf_required
+def duplicar_propuesta(propuesta_id):
+    """
+    Duplicar una propuesta existente con todas sus lineas.
+    ---
+    tags:
+      - Propuestas
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: propuesta_id
+        in: path
+        type: integer
+        required: true
+        description: ID de la propuesta a duplicar
+    responses:
+      201:
+        description: Propuesta duplicada correctamente
+      404:
+        description: Propuesta no encontrada o no pertenece al usuario
+      401:
+        description: No autenticado
+    """
+    empresa_id = session.get('empresa_id', '1')
+
+    try:
+        new_id = PropuestaModel.duplicate_propuesta(propuesta_id, current_user.id, empresa_id)
+        if not new_id:
+            return jsonify({
+                'success': False,
+                'error': 'Propuesta no encontrada o no tienes permisos para duplicarla'
+            }), 404
+
+        return jsonify({
+            'success': True,
+            'message': 'Propuesta duplicada correctamente',
+            'propuesta_id': new_id
+        }), 201
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
 @propuesta_bp.route('/<int:propuesta_id>/excel', methods=['GET'])
 @login_required
 def descargar_excel(propuesta_id):

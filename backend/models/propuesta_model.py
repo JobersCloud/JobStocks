@@ -83,6 +83,67 @@ class PropuestaModel:
             conn.close()
 
     @staticmethod
+    def duplicate_propuesta(propuesta_id, user_id, empresa_id):
+        """
+        Duplica una propuesta existente con todas sus lineas.
+
+        Args:
+            propuesta_id: ID de la propuesta a duplicar
+            user_id: ID del usuario que solicita la duplicacion
+            empresa_id: ID de la empresa
+
+        Returns:
+            int: ID de la nueva propuesta o None si no se encontro la original
+        """
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Verificar que la propuesta existe y pertenece al usuario
+            cursor.execute("""
+                SELECT id, comentarios, total_items, referencia, cliente_id
+                FROM propuestas
+                WHERE id = ? AND user_id = ? AND empresa_id = ?
+            """, (propuesta_id, user_id, empresa_id))
+
+            original = cursor.fetchone()
+            if not original:
+                conn.close()
+                return None
+
+            # Insertar nueva propuesta
+            cursor.execute("""
+                INSERT INTO propuestas (user_id, empresa_id, comentarios, estado, total_items, referencia, cliente_id)
+                OUTPUT INSERTED.id
+                VALUES (?, ?, ?, 'Enviada', ?, ?, ?)
+            """, (user_id, empresa_id, original[1], original[2], original[3], original[4]))
+
+            new_id = cursor.fetchone()[0]
+
+            # Copiar lineas
+            cursor.execute("""
+                INSERT INTO propuestas_lineas (
+                    propuesta_id, codigo, descripcion, formato, calidad,
+                    color, tono, calibre, pallet, caja, unidad,
+                    existencias, cantidad_solicitada
+                )
+                SELECT ?, codigo, descripcion, formato, calidad,
+                       color, tono, calibre, pallet, caja, unidad,
+                       existencias, cantidad_solicitada
+                FROM propuestas_lineas
+                WHERE propuesta_id = ?
+            """, (new_id, propuesta_id))
+
+            conn.commit()
+            return new_id
+
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
+
+    @staticmethod
     def get_by_id(propuesta_id):
         """
         Obtiene una propuesta por ID con sus lineas.

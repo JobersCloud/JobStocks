@@ -403,7 +403,10 @@
     "downloadExcelError": "Error al descargar el archivo Excel",
     "changeStatus": "Cambiar Estado",
     "selectStatus": "Selecciona un estado",
-    "proposal": "Propuesta"
+    "proposal": "Propuesta",
+    "duplicate": "Duplicar",
+    "duplicateConfirm": "¿Duplicar esta propuesta? Se creará una nueva copia con estado 'Enviada'.",
+    "duplicateSuccess": "Propuesta duplicada correctamente"
   },
   "users": {
     "title": "Gestión de Usuarios",

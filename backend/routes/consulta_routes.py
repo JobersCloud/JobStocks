@@ -112,7 +112,8 @@ def crear_consulta():
 
     # Enviar email de notificación al equipo
     try:
-        enviar_notificacion_consulta(data, consulta_id, empresa_id)
+        connection_id = session.get('connection')
+        enviar_notificacion_consulta(data, consulta_id, empresa_id, connection_id=connection_id)
     except Exception as e:
         print(f"⚠️ No se pudo enviar notificación: {e}")
 
@@ -295,7 +296,8 @@ def responder_consulta(consulta_id):
     # Enviar email de respuesta al cliente
     if data.get('enviar_email', True):
         try:
-            enviar_respuesta_consulta(consulta, data['respuesta'], empresa_id)
+            resp_connection_id = session.get('connection')
+            enviar_respuesta_consulta(consulta, data['respuesta'], empresa_id, connection_id=resp_connection_id)
         except Exception as e:
             print(f"⚠️ No se pudo enviar email de respuesta: {e}")
 
@@ -372,9 +374,9 @@ def get_whatsapp_config():
 
 # ==================== FUNCIONES DE EMAIL ====================
 
-def enviar_notificacion_consulta(data, consulta_id, empresa_id):
+def enviar_notificacion_consulta(data, consulta_id, empresa_id, connection_id=None):
     """Enviar email de notificación al equipo cuando llega una consulta"""
-    email_config = EmailConfigModel.get_active_config(empresa_id)
+    email_config = EmailConfigModel.get_active_config(empresa_id, connection=connection_id)
     if not email_config:
         raise Exception("No hay configuración de email activa")
 
@@ -438,9 +440,9 @@ def enviar_notificacion_consulta(data, consulta_id, empresa_id):
     print(f"✅ Notificación de consulta enviada a {email_config['email_to']}")
 
 
-def enviar_respuesta_consulta(consulta, respuesta, empresa_id):
+def enviar_respuesta_consulta(consulta, respuesta, empresa_id, connection_id=None):
     """Enviar email de respuesta al cliente"""
-    email_config = EmailConfigModel.get_active_config(empresa_id)
+    email_config = EmailConfigModel.get_active_config(empresa_id, connection=connection_id)
     if not email_config:
         raise Exception("No hay configuración de email activa")
 

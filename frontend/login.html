@@ -307,6 +307,11 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.35.7', date: '2026-02-27', title: 'Fix consulta email, dashboard CSS y duplicar propuesta', items: [
+                {type: 'fix', text: 'Consultas: corregido envio de email de notificacion (faltaba connection_id)'},
+                {type: 'fix', text: 'Dashboard: restaurados estilos CSS perdidos en la modularizacion (cards, graficos, responsive, dark mode)'},
+                {type: 'new', text: 'Mis Propuestas: boton para duplicar una propuesta existente con todas sus lineas'}
+            ]},
             { version: 'v1.35.6', date: '2026-02-26', title: 'Mejora precision Busqueda Magica (CBIR v2)', items: [
                 {type: 'improve', text: 'Busqueda Magica: nuevos descriptores de textura (GLCM, LBP multi-escala, HOG) para mejor discriminacion de patrones'},
                 {type: 'improve', text: 'Busqueda Magica: pesos balanceados entre color (25%), textura (35%), estructura (30%) y bordes (10%)'},

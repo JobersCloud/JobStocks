@@ -403,7 +403,10 @@
     "downloadExcelError": "Error downloading Excel file",
     "changeStatus": "Change Status",
     "selectStatus": "Select a status",
-    "proposal": "Proposal"
+    "proposal": "Proposal",
+    "duplicate": "Duplicate",
+    "duplicateConfirm": "Duplicate this proposal? A new copy will be created with 'Sent' status.",
+    "duplicateSuccess": "Proposal duplicated successfully"
   },
   "users": {
     "title": "User Management",
