@@ -471,14 +471,19 @@ class ImageSearchModel:
                 progress_callback(0, total_images, 0)
 
             # 3. Procesar imagen por imagen (no fetchall con 150MB)
-            conn = ImageSearchModel._get_conn(connection_id)
-            cursor = conn.cursor()
-            cursor.execute("SELECT id, codigo, imagen FROM view_articulo_imagen")
+            # Usar conexion separada para lectura y escritura
+            read_conn = ImageSearchModel._get_conn(connection_id)
+            read_cursor = read_conn.cursor()
+            read_cursor.execute("SELECT id, codigo, imagen FROM view_articulo_imagen")
+
+            write_conn = ImageSearchModel._get_conn(connection_id)
+            write_cursor = write_conn.cursor()
 
             count = 0
             errors = 0
             first_error_logged = False
-            row = cursor.fetchone()
+            emp = empresa_id or '1'
+            row = read_cursor.fetchone()
             while row is not None:
                 imagen_id = row[0]
                 codigo = row[1]
@@ -495,9 +500,19 @@ class ImageSearchModel:
                         vec = None
 
                     if vec is not None:
-                        emp = empresa_id or '1'
-                        ImageSearchModel.save_embedding(imagen_id, codigo, emp, vec, connection_id=connection_id)
-                        count += 1
+                        try:
+                            raw = vector_to_bytes(vec)
+                            write_cursor.execute("""
+                                INSERT INTO image_embeddings (imagen_id, codigo, empresa_id, embedding)
+                                VALUES (?, ?, ?, ?)
+                            """, [imagen_id, codigo, emp, raw])
+                            write_conn.commit()
+                            count += 1
+                        except Exception as ex:
+                            errors += 1
+                            if not first_error_logged:
+                                logger.error(f'save_embedding failed for imagen_id={imagen_id}: {ex}')
+                                first_error_logged = True
                     else:
                         errors += 1
                         if not first_error_logged:
@@ -505,7 +520,7 @@ class ImageSearchModel:
                             first_error_logged = True
 
                 # Siguiente fila
-                row = cursor.fetchone()
+                row = read_cursor.fetchone()
 
                 # Actualizar progreso cada 10 imagenes
                 if progress_callback and (count + errors) % 10 == 0:
@@ -514,7 +529,8 @@ class ImageSearchModel:
                 if (count + errors) % 100 == 0:
                     logger.info(f'Indexed {count}/{total_images} images ({errors} errors)')
 
-            conn.close()
+            read_conn.close()
+            write_conn.close()
 
             logger.info(f'Reindex complete: {count} images indexed, {errors} errors')
 
