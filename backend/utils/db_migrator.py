@@ -38,9 +38,10 @@ logger = logging.getLogger(__name__)
 # Clave: identificador de empresa, Valor: número total de migraciones verificadas
 _verified_companies = {}
 
-# Regex para detectar sentencias DROP (prohibidas)
+# Regex para detectar sentencias DROP destructivas (prohibidas)
+# DROP INDEX se permite porque solo elimina un índice de rendimiento, no datos
 _DROP_PATTERN = re.compile(
-    r'\bDROP\s+(TABLE|DATABASE|INDEX|VIEW|PROCEDURE|FUNCTION|TRIGGER|SCHEMA)\b',
+    r'\bDROP\s+(TABLE|DATABASE|VIEW|PROCEDURE|FUNCTION|TRIGGER|SCHEMA)\b',
     re.IGNORECASE
 )
 

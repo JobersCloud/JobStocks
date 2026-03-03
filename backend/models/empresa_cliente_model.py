@@ -67,7 +67,7 @@ class EmpresaClienteModel:
                     'cif': row.empresa_cli_cif,
                     'traductor': row.empresa_cli_traductor,
                     'tipo': int(row.empresa_cli_tipo) if row.empresa_cli_tipo else None,
-                    'empresa_erp': row.empresa_erp
+                    'empresa_erp': row.empresa_erp.strip() if row.empresa_erp else None
                 }
                 # Guardar en caché
                 _cache_empresas[empresa_cli_id] = empresa

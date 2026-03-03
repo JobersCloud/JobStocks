@@ -19,6 +19,35 @@
 from config.database import Database
 
 
+def _s(val):
+    """Strip de campos CHAR de SQL Server que vienen con espacios"""
+    return val.strip() if isinstance(val, str) else val
+
+
+def _row_to_stock(row):
+    """Convierte una fila SQL a dict de stock, con strip de campos CHAR"""
+    return {
+        'empresa': _s(row[0]),
+        'codigo': _s(row[1]),
+        'descripcion': _s(row[2]),
+        'calidad': _s(row[3]),
+        'color': _s(row[4]),
+        'tono': _s(row[5]),
+        'calibre': _s(row[6]),
+        'formato': _s(row[7]),
+        'serie': _s(row[8]),
+        'unidad': _s(row[9]),
+        'pallet': _s(row[10]),
+        'caja': _s(row[11]),
+        'unidadescaja': float(row[12]) if row[12] else 0,
+        'cajaspallet': float(row[13]) if row[13] else 0,
+        'existencias': float(row[14]) if row[14] else 0.0,
+        'ean13': _s(row[15]),
+        'pesocaja': float(row[16]) if row[16] else 0,
+        'pesopallet': float(row[17]) if row[17] else 0
+    }
+
+
 class StockModel:
     @staticmethod
     def get_all():
@@ -33,29 +62,7 @@ class StockModel:
             WHERE empresa = ?
         """, (empresa_erp,))
 
-        stocks = []
-        for row in cursor.fetchall():
-            stocks.append({
-                'empresa': row[0],
-                'codigo': row[1],
-                'descripcion': row[2],
-                'calidad': row[3],
-                'color': row[4],
-                'tono': row[5],
-                'calibre': row[6],
-                'formato': row[7],
-                'serie': row[8],
-                'unidad': row[9],
-                'pallet': row[10],
-                'caja': row[11],
-                'unidadescaja': float(row[12]) if row[12] else 0,
-                'cajaspallet': float(row[13]) if row[13] else 0,
-                'existencias': float(row[14]) if row[14] else 0.0,
-                'ean13': row[15],
-                'pesocaja': float(row[16]) if row[16] else 0,
-                'pesopallet': float(row[17]) if row[17] else 0
-            })
-
+        stocks = [_row_to_stock(row) for row in cursor.fetchall()]
         conn.close()
         return stocks
 
@@ -73,29 +80,7 @@ class StockModel:
         """, (codigo, empresa_erp))
         row = cursor.fetchone()
 
-        stock = None
-        if row:
-            stock = {
-                'empresa': row[0],
-                'codigo': row[1],
-                'descripcion': row[2],
-                'calidad': row[3],
-                'color': row[4],
-                'tono': row[5],
-                'calibre': row[6],
-                'formato': row[7],
-                'serie': row[8],
-                'unidad': row[9],
-                'pallet': row[10],
-                'caja': row[11],
-                'unidadescaja': float(row[12]) if row[12] else 0,
-                'cajaspallet': float(row[13]) if row[13] else 0,
-                'existencias': float(row[14]) if row[14] else 0.0,
-                'ean13': row[15],
-                'pesocaja': float(row[16]) if row[16] else 0,
-                'pesopallet': float(row[17]) if row[17] else 0
-            }
-
+        stock = _row_to_stock(row) if row else None
         conn.close()
         return stock
 
@@ -112,29 +97,7 @@ class StockModel:
         """, (codigo, f"%{empresa}%"))
         row = cursor.fetchone()
 
-        stock = None
-        if row:
-            stock = {
-                'empresa': row[0],
-                'codigo': row[1],
-                'descripcion': row[2],
-                'calidad': row[3],
-                'color': row[4],
-                'tono': row[5],
-                'calibre': row[6],
-                'formato': row[7],
-                'serie': row[8],
-                'unidad': row[9],
-                'pallet': row[10],
-                'caja': row[11],
-                'unidadescaja': float(row[12]) if row[12] else 0,
-                'cajaspallet': float(row[13]) if row[13] else 0,
-                'existencias': float(row[14]) if row[14] else 0.0,
-                'ean13': row[15],
-                'pesocaja': float(row[16]) if row[16] else 0,
-                'pesopallet': float(row[17]) if row[17] else 0
-            }
-
+        stock = _row_to_stock(row) if row else None
         conn.close()
         return stock
 
@@ -158,26 +121,8 @@ class StockModel:
 
         result = {}
         for row in cursor.fetchall():
-            result[row[1]] = {
-                'empresa': row[0],
-                'codigo': row[1],
-                'descripcion': row[2],
-                'calidad': row[3],
-                'color': row[4],
-                'tono': row[5],
-                'calibre': row[6],
-                'formato': row[7],
-                'serie': row[8],
-                'unidad': row[9],
-                'pallet': row[10],
-                'caja': row[11],
-                'unidadescaja': float(row[12]) if row[12] else 0,
-                'cajaspallet': float(row[13]) if row[13] else 0,
-                'existencias': float(row[14]) if row[14] else 0.0,
-                'ean13': row[15],
-                'pesocaja': float(row[16]) if row[16] else 0,
-                'pesopallet': float(row[17]) if row[17] else 0
-            }
+            stock = _row_to_stock(row)
+            result[stock['codigo']] = stock
 
         conn.close()
         return result
@@ -369,29 +314,7 @@ class StockModel:
 
         cursor.execute(query, params)
 
-        stocks = []
-        for row in cursor.fetchall():
-            stocks.append({
-                'empresa': row[0],
-                'codigo': row[1],
-                'descripcion': row[2],
-                'calidad': row[3],
-                'color': row[4],
-                'tono': row[5],
-                'calibre': row[6],
-                'formato': row[7],
-                'serie': row[8],
-                'unidad': row[9],
-                'pallet': row[10],
-                'caja': row[11],
-                'unidadescaja': float(row[12]) if row[12] else 0,
-                'cajaspallet': float(row[13]) if row[13] else 0,
-                'existencias': float(row[14]) if row[14] else 0.0,
-                'ean13': row[15],
-                'pesocaja': float(row[16]) if row[16] else 0,
-                'pesopallet': float(row[17]) if row[17] else 0
-            })
-
+        stocks = [_row_to_stock(row) for row in cursor.fetchall()]
         conn.close()
 
         # Devolver con metadatos de paginación si aplica
@@ -436,7 +359,7 @@ class StockModel:
         """
         cursor.execute(query, (empresa_erp,))
 
-        valores = [row[0] for row in cursor.fetchall()]
+        valores = [_s(row[0]) for row in cursor.fetchall()]
         conn.close()
 
         return valores

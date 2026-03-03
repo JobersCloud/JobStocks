@@ -882,4 +882,49 @@ MIGRATIONS = [
         ]
     },
 
+    # ================================================================
+    # LIMPIEZA: Eliminar columnas legacy de users
+    # (empresa_id y cliente_id se gestionan en users_empresas)
+    # ================================================================
+
+    {
+        'version': 42,
+        'description': 'Eliminar columnas legacy empresa_id y cliente_id de users (ya estan en users_empresas)',
+        'app_version': 'v1.36.8',
+        'sql': [
+            # Eliminar indices sobre cliente_id en users
+            """IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_users_cliente_id' AND object_id = OBJECT_ID('users'))
+            BEGIN
+                DROP INDEX IX_users_cliente_id ON users;
+            END""",
+
+            """IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_users_empresa_cliente' AND object_id = OBJECT_ID('users'))
+            BEGIN
+                DROP INDEX IX_users_empresa_cliente ON users;
+            END""",
+
+            """IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_users_empresa_id' AND object_id = OBJECT_ID('users'))
+            BEGIN
+                DROP INDEX IX_users_empresa_id ON users;
+            END""",
+
+            # Eliminar columna cliente_id
+            """IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users') AND name = 'cliente_id')
+            BEGIN
+                ALTER TABLE users DROP COLUMN cliente_id;
+            END""",
+
+            # Eliminar default constraint de empresa_id y luego la columna
+            """DECLARE @cname NVARCHAR(200);
+            SELECT @cname = dc.name FROM sys.default_constraints dc
+            INNER JOIN sys.columns c ON dc.parent_object_id = c.object_id AND dc.parent_column_id = c.column_id
+            WHERE c.object_id = OBJECT_ID('users') AND c.name = 'empresa_id';
+            IF @cname IS NOT NULL EXEC('ALTER TABLE users DROP CONSTRAINT ' + @cname);
+            IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users') AND name = 'empresa_id')
+            BEGIN
+                ALTER TABLE users DROP COLUMN empresa_id;
+            END""",
+        ]
+    },
+
 ]

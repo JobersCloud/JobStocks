@@ -307,6 +307,19 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.36.9', date: '2026-03-03', title: 'Fix cliente preseleccionado y espacios en codigos', items: [
+                {type: 'fix', text: 'Formulario de envio: el cliente preseleccionado ahora se muestra correctamente'},
+                {type: 'fix', text: 'Codigos de stock: eliminados espacios de campos CHAR de SQL Server que causaban URLs rotas'},
+                {type: 'improve', text: 'stock_model.py refactorizado: funcion unica _row_to_stock con strip automatico'}
+            ]},
+            { version: 'v1.36.8', date: '2026-03-03', title: 'Limpieza BD: cliente_id centralizado en users_empresas', items: [
+                {type: 'improve', text: 'Eliminadas columnas legacy empresa_id y cliente_id de tabla users (ya gestionadas en users_empresas)'},
+                {type: 'improve', text: 'Migrador permite DROP INDEX para operaciones de limpieza seguras'}
+            ]},
+            { version: 'v1.36.7', date: '2026-03-03', title: 'PowerBuilder: cliente_id y referencia en propuestas', items: [
+                {type: 'new', text: 'PowerBuilder: añadidas columnas cliente_id y referencia a la DataWindow de propuestas pendientes'},
+                {type: 'improve', text: 'PowerBuilder: la barra de info de propuesta muestra referencia y cliente al seleccionar'}
+            ]},
             { version: 'v1.36.6', date: '2026-03-03', title: 'Modales de confirmacion con colores del tema', items: [
                 {type: 'fix', text: 'Modales de confirmacion: los botones ahora usan los colores del tema activo en vez de colores fijos'}
             ]},

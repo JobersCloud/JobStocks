@@ -84,7 +84,7 @@ def verify_user(username, password, empresa_cli_id, empresa_erp=None):
                 emp_row = cursor.fetchone()
                 if emp_row:
                     user['empresa_erp'] = emp_row[0]
-                    user['cliente_id'] = emp_row[1]
+                    user['cliente_id'] = emp_row[1].strip() if emp_row[1] else None
                     user['rol'] = emp_row[2] or 'usuario'
                     user['mostrar_precios'] = bool(emp_row[3]) if emp_row[3] is not None else False
                     user['administrador_clientes'] = bool(emp_row[4]) if emp_row[4] is not None else False
@@ -100,7 +100,7 @@ def verify_user(username, password, empresa_cli_id, empresa_erp=None):
                     emp_row = cursor.fetchone()
                     if emp_row:
                         user['empresa_erp'] = emp_row[0]
-                        user['cliente_id'] = emp_row[1]
+                        user['cliente_id'] = emp_row[1].strip() if emp_row[1] else None
                         user['rol'] = emp_row[2] or 'usuario'
                         user['mostrar_precios'] = bool(emp_row[3]) if emp_row[3] is not None else False
                 except Exception:
@@ -113,7 +113,7 @@ def verify_user(username, password, empresa_cli_id, empresa_erp=None):
                     emp_row = cursor.fetchone()
                     if emp_row:
                         user['empresa_erp'] = emp_row[0]
-                        user['cliente_id'] = emp_row[1]
+                        user['cliente_id'] = emp_row[1].strip() if emp_row[1] else None
                         user['rol'] = emp_row[2] or 'usuario'
 
         return user
@@ -176,7 +176,7 @@ def get_user_by_id(user_id, empresa_cli_id, empresa_erp=None):
                 emp_row = cursor.fetchone()
                 if emp_row:
                     user['empresa_erp'] = emp_row[0]
-                    user['cliente_id'] = emp_row[1]
+                    user['cliente_id'] = emp_row[1].strip() if emp_row[1] else None
                     user['rol'] = emp_row[2] or 'usuario'
                     user['mostrar_precios'] = bool(emp_row[3]) if emp_row[3] is not None else False
                     user['administrador_clientes'] = bool(emp_row[4]) if emp_row[4] is not None else False
@@ -192,7 +192,7 @@ def get_user_by_id(user_id, empresa_cli_id, empresa_erp=None):
                     emp_row = cursor.fetchone()
                     if emp_row:
                         user['empresa_erp'] = emp_row[0]
-                        user['cliente_id'] = emp_row[1]
+                        user['cliente_id'] = emp_row[1].strip() if emp_row[1] else None
                         user['rol'] = emp_row[2] or 'usuario'
                         user['mostrar_precios'] = bool(emp_row[3]) if emp_row[3] is not None else False
                 except Exception:
@@ -205,7 +205,7 @@ def get_user_by_id(user_id, empresa_cli_id, empresa_erp=None):
                     emp_row = cursor.fetchone()
                     if emp_row:
                         user['empresa_erp'] = emp_row[0]
-                        user['cliente_id'] = emp_row[1]
+                        user['cliente_id'] = emp_row[1].strip() if emp_row[1] else None
                         user['rol'] = emp_row[2] or 'usuario'
 
         return user
@@ -320,7 +320,7 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
                 'created_at': row[8].isoformat() if row[8] else None,
                 'updated_at': row[9].isoformat() if row[9] else None,
                 'empresa_id': row[10],
-                'cliente_id': row[11],
+                'cliente_id': row[11].strip() if row[11] else None,
                 'company_name': row[12],
                 'cliente_nombre': None
             }
@@ -493,7 +493,7 @@ def get_user_empresas(user_id, empresa_cli_id):
         for row in cursor.fetchall():
             empresas.append({
                 'empresa_id': row[0],
-                'cliente_id': row[1],
+                'cliente_id': row[1].strip() if row[1] else None,
                 'rol': row[2],
                 'fecha_creacion': row[3].isoformat() if row[3] else None
             })
@@ -646,7 +646,7 @@ def get_user_by_id_and_empresa(user_id, empresa_cli_id, empresa_erp):
                 'active': row[6],
                 'email_verificado': row[7],
                 'empresa_id': row[8],
-                'cliente_id': row[9],
+                'cliente_id': row[9].strip() if row[9] else None,
                 'company_name': row[10],
                 'cliente_nombre': None,
                 'mostrar_precios': bool(row[11]) if len(row) > 11 and row[11] is not None else False,

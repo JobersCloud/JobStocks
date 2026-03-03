@@ -3931,8 +3931,8 @@ function mostrarFormularioEnvio() {
     const content = document.getElementById('carrito-content');
 
     // Pre-llenar cliente si el usuario tiene uno asignado
-    const clientePreseleccionado = currentUser?.cliente_id || '';
-    const clienteNombrePreseleccionado = currentUser?.cliente_razon || '';
+    const clientePreseleccionado = currentUser?.cliente_id?.trim() || '';
+    const clienteNombrePreseleccionado = currentUser?.cliente_razon?.trim() || '';
     const companyName = currentUser?.company_name || '';
     const esAdminClientes = currentUser?.administrador_clientes || false;
 
@@ -3966,7 +3966,7 @@ function mostrarFormularioEnvio() {
                         <span class="client-search-icon">🔍</span>
                     </div>
                     <div class="client-suggestions" id="client-suggestions-envio"></div>
-                    <div class="client-selected" id="client-selected-envio" style="${(tieneClienteAsignado || adminConClientePre) ? '' : 'display:none'}">
+                    <div class="client-selected${(tieneClienteAsignado || adminConClientePre) ? ' show' : ''}" id="client-selected-envio" style="${(tieneClienteAsignado || adminConClientePre) ? '' : 'display:none'}">
                         <div class="client-selected-info">
                             <span class="client-selected-code" id="selected-client-code-envio">${clientePreseleccionado}</span>
                             <span class="client-selected-name" id="selected-client-name-envio">${clienteNombrePreseleccionado}</span>
