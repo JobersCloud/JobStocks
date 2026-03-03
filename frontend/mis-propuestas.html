@@ -614,15 +614,17 @@
 
         // ==================== DUPLICAR PROPUESTA ====================
         async function duplicarPropuesta(proposalId) {
-            const confirmed = await UIFeedback.confirm(
-                t('proposals.duplicateConfirm') || '¿Duplicar esta propuesta?',
-                t('proposals.duplicate') || 'Duplicar'
-            );
+            const confirmed = await UIFeedback.confirm({
+                title: t('proposals.duplicateTitle') || 'Copiar propuesta',
+                message: t('proposals.duplicateConfirm') || '¿Duplicar esta propuesta?',
+                confirmText: t('proposals.duplicate') || 'Duplicar'
+            });
             if (!confirmed) return;
 
             try {
-                const response = await PageCommon.fetchWithCsrf(`${API_URL}/api/propuestas/${proposalId}/duplicate`, {
+                const response = await fetch(`${API_URL}/api/propuestas/${proposalId}/duplicate`, {
                     method: 'POST',
+                    headers: { 'X-CSRF-Token': PageCommon.getCsrfToken() },
                     credentials: 'include'
                 });
                 const data = await response.json();

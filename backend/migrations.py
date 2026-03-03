@@ -866,4 +866,20 @@ MIGRATIONS = [
         ]
     },
 
+    # ================================================================
+    # CAMPO ADMINISTRADOR_CLIENTES EN USERS_EMPRESAS
+    # ================================================================
+
+    {
+        'version': 41,
+        'description': 'Campo administrador_clientes en users_empresas',
+        'app_version': 'v1.35.8',
+        'sql': [
+            """IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users_empresas') AND name = 'administrador_clientes')
+            BEGIN
+                ALTER TABLE users_empresas ADD administrador_clientes BIT DEFAULT 0;
+            END""",
+        ]
+    },
+
 ]

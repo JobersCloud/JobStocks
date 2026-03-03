@@ -3934,12 +3934,16 @@ function mostrarFormularioEnvio() {
     const clientePreseleccionado = currentUser?.cliente_id || '';
     const clienteNombrePreseleccionado = currentUser?.cliente_razon || '';
     const companyName = currentUser?.company_name || '';
+    const esAdminClientes = currentUser?.administrador_clientes || false;
 
     // Determinar si mostrar el buscador de clientes o el cliente preseleccionado
-    const tieneClienteAsignado = !!clientePreseleccionado;
+    // Si es admin de clientes, puede cambiar el cliente aunque tenga uno pre-asignado
+    const tieneClienteAsignado = !!clientePreseleccionado && !esAdminClientes;
+    // Admin clientes con cliente pre-asignado: mostrar seleccionado pero permitir cambiar
+    const adminConClientePre = esAdminClientes && !!clientePreseleccionado;
 
     // HTML para el campo de empresa del usuario (solo si no tiene cliente asignado)
-    const companyNameHtml = (!tieneClienteAsignado && companyName) ? `
+    const companyNameHtml = (!tieneClienteAsignado && !adminConClientePre && companyName) ? `
         <div class="form-group">
             <label>${t('shipping.companyLabel') || 'Empresa'}:</label>
             <div class="company-info-display">
@@ -3957,17 +3961,17 @@ function mostrarFormularioEnvio() {
             <div class="form-group">
                 <label>${t('shipping.clientLabel') || 'Cliente'}:</label>
                 <div class="client-search-container">
-                    <div class="client-search-input-wrapper" id="client-search-wrapper-envio" style="${tieneClienteAsignado ? 'display:none' : ''}">
+                    <div class="client-search-input-wrapper" id="client-search-wrapper-envio" style="${(tieneClienteAsignado || adminConClientePre) ? 'display:none' : ''}">
                         <input type="text" id="client-search-envio" placeholder="${t('shipping.clientPlaceholder') || 'Buscar cliente...'}" autocomplete="off">
                         <span class="client-search-icon">🔍</span>
                     </div>
                     <div class="client-suggestions" id="client-suggestions-envio"></div>
-                    <div class="client-selected" id="client-selected-envio" style="${tieneClienteAsignado ? '' : 'display:none'}">
+                    <div class="client-selected" id="client-selected-envio" style="${(tieneClienteAsignado || adminConClientePre) ? '' : 'display:none'}">
                         <div class="client-selected-info">
                             <span class="client-selected-code" id="selected-client-code-envio">${clientePreseleccionado}</span>
                             <span class="client-selected-name" id="selected-client-name-envio">${clienteNombrePreseleccionado}</span>
                         </div>
-                        <button type="button" class="client-clear-btn" onclick="clearClientSelectionEnvio()" title="${t('common.clear') || 'Limpiar'}">×</button>
+                        ${tieneClienteAsignado ? '' : `<button type="button" class="client-clear-btn" onclick="clearClientSelectionEnvio()" title="${t('common.clear') || 'Limpiar'}">×</button>`}
                     </div>
                 </div>
                 <input type="hidden" id="cliente-id-envio" value="${clientePreseleccionado}">

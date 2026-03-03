@@ -307,6 +307,37 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.36.6', date: '2026-03-03', title: 'Modales de confirmacion con colores del tema', items: [
+                {type: 'fix', text: 'Modales de confirmacion: los botones ahora usan los colores del tema activo en vez de colores fijos'}
+            ]},
+            { version: 'v1.36.5', date: '2026-03-03', title: 'Video publicitario y fix tooltips', items: [
+                {type: 'new', text: 'Video promocional: nueva escena de busqueda por voz y correccion de narracion del mapa'},
+                {type: 'new', text: 'Video publicitario accesible en /media/videopublicitario.mp4'},
+                {type: 'fix', text: 'Propuestas: tooltips de iconos de accion ya no se ocultan detras de otros elementos en resolucion laptop'}
+            ]},
+            { version: 'v1.36.4', date: '2026-03-03', title: 'Video promocional mejorado (15 escenas)', items: [
+                {type: 'improve', text: 'Video: ampliado a 15 escenas incluyendo busqueda magica, usuarios, pedidos, detalle con imagenes y mapa'},
+                {type: 'fix', text: 'Video: corregidas imagenes grises en catalogo forzando carga de thumbnails con lazy loading'}
+            ]},
+            { version: 'v1.36.3', date: '2026-03-02', title: 'Fix reducir log de BD', items: [
+                {type: 'fix', text: 'Control BD: corregido error al reducir log (DBCC SHRINKFILE no puede ejecutarse dentro de una transaccion)'}
+            ]},
+            { version: 'v1.36.2', date: '2026-03-02', title: 'Fix duplicar propuesta y scroll busqueda', items: [
+                {type: 'fix', text: 'Mis Propuestas: corregido error al duplicar propuesta (PageCommon.fetchWithCsrf no existia)'},
+                {type: 'fix', text: 'Mis Propuestas: corregido titulo del modal de confirmacion al duplicar'},
+                {type: 'fix', text: 'Busqueda Magica: corregido scroll de resultados que no permitia ver todos los productos encontrados'},
+                {type: 'new', text: 'Control BD: boton para reducir el archivo de log (.ldf) al tamaño minimo con DBCC SHRINKFILE'}
+            ]},
+            { version: 'v1.35.9', date: '2026-02-28', title: 'Filtrado de imagenes por empresa', items: [
+                {type: 'fix', text: 'Imagenes: todas las consultas de imagenes ahora filtran por empresa, evitando mostrar imagenes de otras publicaciones'},
+                {type: 'fix', text: 'Busqueda Magica: reindexado y conteo de imagenes ahora solo procesa la empresa activa'},
+                {type: 'fix', text: 'Vista SQL: añadido campo empresa a view_articulo_imagen'}
+            ]},
+            { version: 'v1.35.8', date: '2026-02-28', title: 'Admin. clientes y mejoras grid usuarios', items: [
+                {type: 'new', text: 'Usuarios: nuevo campo "Admin. Clientes" que permite al usuario cambiar el cliente al confirmar una propuesta'},
+                {type: 'fix', text: 'Grid usuarios: corregido texto "COMMON.YES" en tarjetas movil por icono check/cross'},
+                {type: 'new', text: 'Grid usuarios: añadidas columnas "Ver Precios" y "Admin. Clientes" con iconos check/cross'}
+            ]},
             { version: 'v1.35.7', date: '2026-02-27', title: 'Fix consulta email, dashboard CSS y duplicar propuesta', items: [
                 {type: 'fix', text: 'Consultas: corregido envio de email de notificacion (faltaba connection_id)'},
                 {type: 'fix', text: 'Dashboard: restaurados estilos CSS perdidos en la modularizacion (cards, graficos, responsive, dark mode)'},

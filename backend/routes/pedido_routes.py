@@ -292,7 +292,8 @@ def get_pedido(empresa, anyo, pedido):
                 if l.get('articulo') and str(l['articulo']).strip()
             ))
             if codigos:
-                thumbnails = ImagenModel.get_thumbnails_batch(codigos)
+                empresa_id_img = session.get('empresa_id', str(empresa))
+                thumbnails = ImagenModel.get_thumbnails_batch(codigos, empresa_id=empresa_id_img)
                 for linea in pedido_data['lineas']:
                     art = str(linea.get('articulo', '')).strip()
                     linea['thumbnail'] = thumbnails.get(art) if art else None

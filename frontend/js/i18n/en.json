@@ -405,6 +405,7 @@
     "selectStatus": "Select a status",
     "proposal": "Proposal",
     "duplicate": "Duplicate",
+    "duplicateTitle": "Copy proposal",
     "duplicateConfirm": "Duplicate this proposal? A new copy will be created with 'Sent' status.",
     "duplicateSuccess": "Proposal duplicated successfully"
   },
@@ -473,6 +474,12 @@
     "showPricesHelp": "Allows user to see prices in the grid",
     "enablePrices": "Enable prices",
     "disablePrices": "Disable prices",
+    "clientAdmin": "Client Admin",
+    "clientAdminHelp": "Allows user to change the client when confirming a proposal",
+    "clientAdminEnabled": "Client admin enabled",
+    "clientAdminDisabled": "Client admin disabled",
+    "enableClientAdmin": "Enable client admin",
+    "disableClientAdmin": "Disable client admin",
     "verifyEmail": "Verify email",
     "detailInfo": "Info",
     "detailProposals": "Proposals",
@@ -684,7 +691,15 @@
     "reindexComplete": "Reindexing completed",
     "clearButton": "Clear",
     "clearConfirm": "All embeddings will be deleted. You will need to reindex afterwards. Continue?",
-    "reindexVersionWarning": "Stored embeddings are from a previous version. You need to clear and reindex."
+    "reindexVersionWarning": "Stored embeddings are from a previous version. You need to clear and reindex.",
+    "shrinkLog": "Shrink Log",
+    "shrinkLogDesc": "Shrink the transaction log file to minimum size",
+    "shrinkLogButton": "Shrink Log",
+    "shrinkLogConfirm": "The log file will be shrunk to minimum size. Continue?",
+    "shrinkLogSuccess": "Log shrunk successfully",
+    "shrinkLogBefore": "Previous size",
+    "shrinkLogAfter": "Current size",
+    "logFileSize": "Log File Size"
   },
   "apiKeys": {
     "description": "API Keys allow external applications (PowerBuilder, ERP, etc.) to access the API without logging in. Each key is linked to your user and current company.",

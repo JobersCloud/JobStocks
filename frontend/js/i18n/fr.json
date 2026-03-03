@@ -405,6 +405,7 @@
     "selectStatus": "Sélectionner un statut",
     "proposal": "Proposition",
     "duplicate": "Dupliquer",
+    "duplicateTitle": "Copier la proposition",
     "duplicateConfirm": "Dupliquer cette proposition ? Une nouvelle copie sera créée avec le statut 'Envoyée'.",
     "duplicateSuccess": "Proposition dupliquée avec succès"
   },
@@ -473,6 +474,12 @@
     "showPricesHelp": "Permet à l'utilisateur de voir les prix dans le grid",
     "enablePrices": "Activer les prix",
     "disablePrices": "Désactiver les prix",
+    "clientAdmin": "Admin. Clients",
+    "clientAdminHelp": "Permet à l'utilisateur de changer le client lors de la confirmation d'une proposition",
+    "clientAdminEnabled": "Admin. clients activé",
+    "clientAdminDisabled": "Admin. clients désactivé",
+    "enableClientAdmin": "Activer admin. clients",
+    "disableClientAdmin": "Désactiver admin. clients",
     "verifyEmail": "Vérifier l'email",
     "detailInfo": "Informations",
     "detailProposals": "Propositions",
@@ -684,7 +691,15 @@
     "reindexComplete": "Réindexation terminée",
     "clearButton": "Nettoyer",
     "clearConfirm": "Tous les embeddings seront supprimés. Vous devrez réindexer ensuite. Continuer ?",
-    "reindexVersionWarning": "Les embeddings stockés proviennent d'une version antérieure. Il est nécessaire de nettoyer et réindexer."
+    "reindexVersionWarning": "Les embeddings stockés proviennent d'une version antérieure. Il est nécessaire de nettoyer et réindexer.",
+    "shrinkLog": "Réduire le Log",
+    "shrinkLogDesc": "Réduire le fichier journal de transactions à la taille minimale",
+    "shrinkLogButton": "Réduire le Log",
+    "shrinkLogConfirm": "Le fichier journal sera réduit au minimum. Continuer ?",
+    "shrinkLogSuccess": "Journal réduit avec succès",
+    "shrinkLogBefore": "Taille précédente",
+    "shrinkLogAfter": "Taille actuelle",
+    "logFileSize": "Taille du Log"
   },
   "apiKeys": {
     "description": "Les API Keys permettent aux applications externes (PowerBuilder, ERP, etc.) d'acceder a l'API sans se connecter. Chaque cle est liee a votre utilisateur et a l'entreprise actuelle.",

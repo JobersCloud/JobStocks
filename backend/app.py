@@ -149,7 +149,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.35.7'
+APP_VERSION = 'v1.36.6'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -254,7 +254,8 @@ def load_user(user_id):
             cliente_id=user_data.get('cliente_id'),
             debe_cambiar_password=user_data.get('debe_cambiar_password', False),
             company_name=user_data.get('company_name'),
-            mostrar_precios=user_data.get('mostrar_precios', False)
+            mostrar_precios=user_data.get('mostrar_precios', False),
+            administrador_clientes=user_data.get('administrador_clientes', False)
         )
     return None
 
@@ -904,7 +905,8 @@ def get_current_user():
         'empresa_nombre': session.get('empresa_nombre'),
         'cliente_id': cliente_id,
         'cliente_razon': cliente_razon,
-        'company_name': getattr(current_user, 'company_name', None)
+        'company_name': getattr(current_user, 'company_name', None),
+        'administrador_clientes': getattr(current_user, 'administrador_clientes', False)
     })
 
 @app.route('/api/context-info')
@@ -1185,11 +1187,15 @@ def favicon_jobers():
 def favicon_root():
     return send_from_directory(os.path.join(FRONTEND_DIR, 'assets'), 'favicon.ico')
 
+@app.route('/media/<path:filename>')
+def serve_media(filename):
+    return send_from_directory(os.path.join(FRONTEND_DIR, 'media'), filename)
+
 # ==================== PROTEGER RUTAS API ====================
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login_page', 'login', 'register_page', 'verify_email_page', 'reset_password_page', 'serve_css', 'serve_css_module', 'serve_theme_init_js', 'serve_ui_feedback_js', 'serve_login_js', 'serve_register_js', 'serve_reset_password_js', 'serve_i18n_js', 'serve_i18n_lang', 'logo', 'logo_png', 'logo_jobers', 'favicon', 'favicon_jobers', 'favicon_root', 'static', 'flasgger.static', 'flasgger.apispec', 'empresa_logo.get_logo', 'empresa_logo.get_favicon', 'empresa_logo.logo_exists', 'empresa_logo.get_config', 'empresa_logo.get_tema', 'empresa_logo.get_invertir', 'get_version']
+    allowed_routes = ['login_page', 'login', 'register_page', 'verify_email_page', 'reset_password_page', 'serve_css', 'serve_css_module', 'serve_theme_init_js', 'serve_ui_feedback_js', 'serve_login_js', 'serve_register_js', 'serve_reset_password_js', 'serve_i18n_js', 'serve_i18n_lang', 'logo', 'logo_png', 'logo_jobers', 'favicon', 'favicon_jobers', 'favicon_root', 'serve_media', 'static', 'flasgger.static', 'flasgger.apispec', 'empresa_logo.get_logo', 'empresa_logo.get_favicon', 'empresa_logo.logo_exists', 'empresa_logo.get_config', 'empresa_logo.get_tema', 'empresa_logo.get_invertir', 'get_version']
     # Permitir acceso a Swagger UI
     if request.path.startswith('/apidocs') or request.path.startswith('/flasgger_static') or request.path.startswith('/apispec'):
         return None

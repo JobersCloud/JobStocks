@@ -405,6 +405,7 @@
     "selectStatus": "Selecciona un estado",
     "proposal": "Propuesta",
     "duplicate": "Duplicar",
+    "duplicateTitle": "Copiar propuesta",
     "duplicateConfirm": "¿Duplicar esta propuesta? Se creará una nueva copia con estado 'Enviada'.",
     "duplicateSuccess": "Propuesta duplicada correctamente"
   },
@@ -473,6 +474,12 @@
     "showPricesHelp": "Permite al usuario ver precios en el grid",
     "enablePrices": "Activar precios",
     "disablePrices": "Desactivar precios",
+    "clientAdmin": "Admin. Clientes",
+    "clientAdminHelp": "Permite al usuario cambiar el cliente al confirmar una propuesta",
+    "clientAdminEnabled": "Admin. clientes habilitado",
+    "clientAdminDisabled": "Admin. clientes deshabilitado",
+    "enableClientAdmin": "Activar admin. clientes",
+    "disableClientAdmin": "Desactivar admin. clientes",
     "verifyEmail": "Verificar email",
     "detailInfo": "Información",
     "detailProposals": "Propuestas",
@@ -684,7 +691,15 @@
     "reindexComplete": "Reindexación completada",
     "clearButton": "Limpiar",
     "clearConfirm": "Se eliminarán todos los embeddings. Tendrás que reindexar después. ¿Continuar?",
-    "reindexVersionWarning": "Los embeddings almacenados son de una versión anterior. Es necesario limpiar y reindexar."
+    "reindexVersionWarning": "Los embeddings almacenados son de una versión anterior. Es necesario limpiar y reindexar.",
+    "shrinkLog": "Reducir Log",
+    "shrinkLogDesc": "Reducir el archivo de log de transacciones al tamaño mínimo",
+    "shrinkLogButton": "Reducir Log",
+    "shrinkLogConfirm": "Se reducirá el archivo de log al mínimo. ¿Continuar?",
+    "shrinkLogSuccess": "Log reducido correctamente",
+    "shrinkLogBefore": "Tamaño anterior",
+    "shrinkLogAfter": "Tamaño actual",
+    "logFileSize": "Tamaño del Log"
   },
   "apiKeys": {
     "description": "Las API Keys permiten a aplicaciones externas (PowerBuilder, ERP, etc.) acceder a la API sin necesidad de iniciar sesion. Cada key esta asociada a tu usuario y a la empresa actual.",

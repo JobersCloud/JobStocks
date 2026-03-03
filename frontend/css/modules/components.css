@@ -721,7 +721,8 @@ tbody tr:hover {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    max-width: 400px;
+    width: 400px;
+    max-width: calc(100vw - 40px);
     pointer-events: none;
 }
 
@@ -900,19 +901,19 @@ tbody tr:hover {
 }
 
 .ui-modal-btn-danger {
-    background: #f44336;
+    background: var(--primary, #f44336);
 }
 
 .ui-modal-btn-danger:hover {
-    background: #d32f2f;
+    background: var(--primary-dark, #d32f2f);
 }
 
 .ui-modal-btn-warning {
-    background: #ff9800;
+    background: var(--primary, #ff9800);
 }
 
 .ui-modal-btn-warning:hover {
-    background: #f57c00;
+    background: var(--primary-dark, #f57c00);
 }
 
 .ui-modal-btn-info {
@@ -952,6 +953,7 @@ tbody tr:hover {
         top: 10px;
         right: 10px;
         left: 10px;
+        width: auto;
         max-width: none;
     }
 

@@ -419,6 +419,37 @@
                                 <div id="files-info-container"></div>
                             </div>
 
+                            <!-- Seccion: Reducir Log -->
+                            <div class="param-section">
+                                <div class="param-section-header">
+                                    <span class="param-section-icon">🗑️</span>
+                                    <div class="param-section-info">
+                                        <h3 data-i18n="dbControl.shrinkLog">Reducir Log</h3>
+                                        <p data-i18n="dbControl.shrinkLogDesc">Reducir el archivo de log de transacciones al tamano minimo</p>
+                                    </div>
+                                </div>
+                                <div class="param-section-grid">
+                                    <div class="param-card">
+                                        <div class="param-info" style="flex: 1;">
+                                            <span class="param-key" data-i18n="dbControl.logFileSize">Tamano del Log</span>
+                                        </div>
+                                        <div class="param-value-section">
+                                            <span class="param-value-readonly" id="log-file-size">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                    <button class="btn-primary" id="btn-shrink-log" onclick="shrinkLog()" style="display: inline-flex; align-items: center; gap: 8px;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                        <span data-i18n="dbControl.shrinkLogButton">Reducir Log</span>
+                                    </button>
+                                </div>
+                                <div id="shrink-log-result" style="display: none; margin-top: 12px; padding: 10px 14px; background: #e8f5e9; border: 1px solid #4caf50; border-radius: 8px; color: #2e7d32; font-size: 0.85rem;"></div>
+                            </div>
+
                             <!-- Seccion: Tablas mas grandes -->
                             <div class="param-section">
                                 <div class="param-section-header">
@@ -873,6 +904,16 @@
 
             // Version completa
             document.getElementById('version-full-text').textContent = data.version || 'N/A';
+
+            // Tamano del log (campo dedicado del backend)
+            if (data.log_size_mb != null) {
+                document.getElementById('log-file-size').textContent = data.log_size_mb + ' MB';
+            } else if (data.files && data.files.length > 0) {
+                const logFile = data.files.find(f => f.type === 'LOG');
+                if (logFile) {
+                    document.getElementById('log-file-size').textContent = logFile.size_mb.toLocaleString() + ' MB';
+                }
+            }
         }
 
         function infoCard(label, value) {
@@ -886,6 +927,54 @@
                     </div>
                 </div>
             `;
+        }
+
+        // ==================== REDUCIR LOG ====================
+        async function shrinkLog() {
+            if (!confirm(t('dbControl.shrinkLogConfirm') || 'Se reducira el archivo de log al minimo. ¿Continuar?')) {
+                return;
+            }
+            const btn = document.getElementById('btn-shrink-log');
+            const resultEl = document.getElementById('shrink-log-result');
+            btn.disabled = true;
+            resultEl.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_URL}/api/db-info/shrink-log`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken || localStorage.getItem('csrf_token')
+                    },
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    // Recargar info de BD primero para actualizar tamanos
+                    await loadDbInfo();
+                    // Mostrar resultado despues de recargar (para que no se oculte)
+                    resultEl.style.background = '#e8f5e9';
+                    resultEl.style.borderColor = '#4caf50';
+                    resultEl.style.color = '#2e7d32';
+                    resultEl.innerHTML = `<strong>✅ ${t('dbControl.shrinkLogSuccess') || 'Log reducido correctamente'}</strong><br>${t('dbControl.shrinkLogBefore') || 'Tamano anterior'}: ${data.size_before_mb} MB → ${t('dbControl.shrinkLogAfter') || 'Tamano actual'}: ${data.size_after_mb} MB`;
+                    resultEl.style.display = 'block';
+                } else {
+                    resultEl.style.background = '#ffebee';
+                    resultEl.style.borderColor = '#f44336';
+                    resultEl.style.color = '#c62828';
+                    resultEl.innerHTML = `<strong>❌ Error</strong><br>${data.error || 'Error desconocido'}`;
+                    resultEl.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error shrinking log:', error);
+                resultEl.style.background = '#ffebee';
+                resultEl.style.borderColor = '#f44336';
+                resultEl.style.color = '#c62828';
+                resultEl.innerHTML = `<strong>❌ Error</strong><br>${error.message}`;
+                resultEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+            }
         }
 
         // ==================== REINDEXAR IMAGENES (CBIR) ====================

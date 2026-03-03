@@ -17,7 +17,7 @@
 # ============================================
 from flask import Blueprint, jsonify, session
 from flask_login import login_required
-from utils.auth import administrador_required
+from utils.auth import administrador_required, csrf_required
 from config.database import Database
 
 db_info_bp = Blueprint('db_info', __name__)
@@ -134,6 +134,19 @@ def get_db_info():
         except Exception:
             pass
 
+        # Tamano del archivo de log (campo dedicado, no depende de la query de archivos)
+        try:
+            cursor.execute("""
+                SELECT CAST(size AS BIGINT) * 8.0 / 1024
+                FROM sys.database_files
+                WHERE type_desc = 'LOG'
+            """)
+            row = cursor.fetchone()
+            if row and row[0] is not None:
+                info['log_size_mb'] = round(float(row[0]), 2)
+        except Exception:
+            info['log_size_mb'] = None
+
         # Archivos de la BD
         try:
             cursor.execute("""
@@ -248,6 +261,73 @@ def get_db_info():
         conn.close()
 
         return jsonify(info), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@db_info_bp.route('/api/db-info/shrink-log', methods=['POST'])
+@login_required
+@administrador_required
+@csrf_required
+def shrink_log():
+    """
+    Reducir el archivo de log de transacciones al minimo
+    ---
+    tags:
+      - Sistema
+    responses:
+      200:
+        description: Log reducido correctamente
+    """
+    try:
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+
+        # Obtener tamano actual del log antes del shrink
+        cursor.execute("""
+            SELECT name, CAST(size AS BIGINT) * 8.0 / 1024 AS size_mb
+            FROM sys.database_files
+            WHERE type_desc = 'LOG'
+        """)
+        row = cursor.fetchone()
+        if not row:
+            cursor.close()
+            conn.close()
+            return jsonify({'error': 'No se encontro archivo de log'}), 404
+
+        log_name = row[0]
+        size_before_mb = round(float(row[1]), 2)
+
+        # Cerrar cursor para liberar la conexion antes de cambiar autocommit
+        cursor.close()
+
+        # DBCC SHRINKFILE no puede ejecutarse dentro de una transaccion
+        conn.autocommit = True
+        cursor = conn.cursor()
+        cursor.execute(f"DBCC SHRINKFILE ([{log_name}], 0)")
+        cursor.close()
+        conn.autocommit = False
+
+        # Obtener tamano despues del shrink
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT CAST(size AS BIGINT) * 8.0 / 1024 AS size_mb
+            FROM sys.database_files
+            WHERE type_desc = 'LOG'
+        """)
+        row = cursor.fetchone()
+        size_after_mb = round(float(row[0]), 2) if row else size_before_mb
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'log_name': log_name,
+            'size_before_mb': size_before_mb,
+            'size_after_mb': size_after_mb
+        }), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500

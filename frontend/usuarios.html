@@ -488,6 +488,14 @@
                         <p class="form-help" data-i18n="users.showPricesHelp">Permite al usuario ver precios en el grid</p>
                     </div>
 
+                    <div class="form-group" id="admin-clientes-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="user-admin-clientes">
+                            <span data-i18n="users.clientAdmin">Admin. Clientes</span>
+                        </label>
+                        <p class="form-help" data-i18n="users.clientAdminHelp">Permite al usuario cambiar el cliente al confirmar una propuesta</p>
+                    </div>
+
                     <div class="form-group" id="role-group" style="display: none;">
                         <label data-i18n="users.role">Rol</label>
                         <select id="user-rol">
@@ -559,6 +567,10 @@
                 { key: 'rol', label: t('users.role') || 'Rol', tipo: 'texto' },
                 { key: 'active', label: t('users.status') || 'Estado', tipo: 'texto' },
             ];
+            if (preciosGlobalHabilitado) {
+                gridColumns.push({ key: 'mostrar_precios', label: t('users.showPrices') || 'Ver Precios', tipo: 'texto' });
+            }
+            gridColumns.push({ key: 'administrador_clientes', label: t('users.clientAdmin') || 'Admin. Clientes', tipo: 'texto' });
             gridColumns.push({ key: '_actions', label: t('users.actions') || 'Acciones', sortable: false, filterable: false });
 
             grid = new DataGrid({
@@ -573,6 +585,8 @@
                         case 'pais': return getPaisNombre(item.pais);
                         case 'rol': return getRoleBadge(item.rol);
                         case 'active': return getStatusBadge(item.active, item);
+                        case 'mostrar_precios': return item.mostrar_precios ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>';
+                        case 'administrador_clientes': return item.administrador_clientes ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>';
                         case '_actions': return getActionButtons(item);
                         default: return null;
                     }
@@ -592,7 +606,8 @@
                                 <div class="user-card-info-item"><label>${t('users.companyName')}:</label> ${item.company_name || '-'}</div>
                                 <div class="user-card-info-item"><label>${t('users.role')}:</label> ${getRoleBadge(item.rol)}</div>
                                 <div class="user-card-info-item"><label>${t('users.country')}:</label> ${getPaisNombre(item.pais)}</div>
-                                ${preciosGlobalHabilitado && item.mostrar_precios ? `<div class="user-card-info-item"><label>${t('users.showPrices')}:</label> <span class="status-badge status-active">${t('common.yes') || 'Sí'}</span></div>` : ''}
+                                ${preciosGlobalHabilitado ? `<div class="user-card-info-item"><label>${t('users.showPrices')}:</label> ${item.mostrar_precios ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>'}</div>` : ''}
+                                <div class="user-card-info-item"><label>${t('users.clientAdmin') || 'Admin. Clientes'}:</label> ${item.administrador_clientes ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>'}</div>
                             </div>
                             <div class="user-card-actions">${getActionButtons(item)}</div>
                         </div>`;
@@ -732,6 +747,16 @@
                 </div>`;
             }
 
+            {
+                const adminClientesLabel = user.administrador_clientes ? (t('users.disableClientAdmin') || 'Desactivar admin. clientes') : (t('users.enableClientAdmin') || 'Activar admin. clientes');
+                const adminClientesIcon = user.administrador_clientes
+                    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`
+                    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></svg>`;
+                items += `<div class="action-menu-item" onclick="closeActionMenu(); toggleAdminClientes(${user.id}, ${user.administrador_clientes ? 'true' : 'false'})">
+                    ${adminClientesIcon} ${adminClientesLabel}
+                </div>`;
+            }
+
             items += `<div class="action-menu-divider"></div>`;
 
             items += `<div class="action-menu-item" onclick="closeActionMenu(); openRoleModal(${user.id}, '${user.rol}')">
@@ -855,6 +880,23 @@
         }
         window.toggleMostrarPrecios = toggleMostrarPrecios;
 
+        async function toggleAdminClientes(userId, valorActual) {
+            const nuevoValor = !valorActual;
+            try {
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}/administrador-clientes`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() },
+                    body: JSON.stringify({ administrador_clientes: nuevoValor })
+                });
+                if (!response.ok) throw new Error('Error toggling admin clientes');
+                const idx = users.findIndex(u => u.id === userId);
+                if (idx !== -1) users[idx].administrador_clientes = nuevoValor;
+                grid.setData(users);
+            } catch (error) { UIFeedback.toast('Error al cambiar admin. clientes', 'error'); }
+        }
+        window.toggleAdminClientes = toggleAdminClientes;
+
         async function deleteUserCascade(userId, username) {
             const confirmMsg = t('users.confirmDeleteCascade') || `¿Estás seguro de eliminar al usuario "${username}" y TODOS sus datos?`;
             if (!await UIFeedback.confirm({ message: confirmMsg, type: 'danger' })) return;
@@ -922,6 +964,8 @@
             document.getElementById('send-email-group').style.display = 'block';
             document.getElementById('show-prices-group').style.display = 'none';
             document.getElementById('user-show-prices').checked = false;
+            document.getElementById('admin-clientes-group').style.display = 'none';
+            document.getElementById('user-admin-clientes').checked = false;
             const currentUser = PageCommon.getCurrentUser();
             document.getElementById('role-group').style.display = currentUser && currentUser.rol === 'superusuario' ? 'block' : 'none';
             clearClientSelection();
@@ -935,6 +979,7 @@
             document.getElementById('password-help').textContent = t('users.passwordHelpEdit') || 'Dejar vacío para no cambiar';
             document.getElementById('send-email-group').style.display = 'none';
             document.getElementById('show-prices-group').style.display = preciosGlobalHabilitado ? 'block' : 'none';
+            document.getElementById('admin-clientes-group').style.display = 'block';
             const currentUser = PageCommon.getCurrentUser();
             document.getElementById('role-group').style.display = currentUser && currentUser.rol === 'superusuario' ? 'block' : 'none';
             try {
@@ -951,6 +996,7 @@
                 document.getElementById('user-pais').value = user.pais || '';
                 document.getElementById('user-rol').value = user.rol || 'usuario';
                 document.getElementById('user-show-prices').checked = !!user.mostrar_precios;
+                document.getElementById('user-admin-clientes').checked = !!user.administrador_clientes;
                 if (user.cliente_id) {
                     document.getElementById('user-cliente-id').value = user.cliente_id;
                     document.getElementById('selected-client-code').textContent = user.cliente_id;
@@ -984,6 +1030,7 @@
                 if (preciosGlobalHabilitado) {
                     userData.mostrar_precios = document.getElementById('user-show-prices').checked;
                 }
+                userData.administrador_clientes = document.getElementById('user-admin-clientes').checked;
                 try {
                     const response = await fetch(`${API_URL}/api/usuarios/${editingUserId}`, { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() }, body: JSON.stringify(userData) });
                     const data = await response.json();

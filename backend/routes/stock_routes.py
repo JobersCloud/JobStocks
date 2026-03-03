@@ -355,7 +355,8 @@ def get_imagenes(codigo):
         description: Error del servidor
     """
     try:
-        imagenes = ImagenModel.get_by_codigo(codigo)
+        empresa_id = get_empresa_id()
+        imagenes = ImagenModel.get_by_codigo(codigo, empresa_id)
         return jsonify(imagenes), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -398,7 +399,8 @@ def get_thumbnail(codigo):
         description: Error del servidor
     """
     try:
-        imagen = ImagenModel.get_primera_imagen(codigo)
+        empresa_id = get_empresa_id()
+        imagen = ImagenModel.get_primera_imagen(codigo, empresa_id=empresa_id)
         if imagen:
             return jsonify(imagen), 200
         else:
@@ -460,7 +462,8 @@ def get_thumbnails_batch():
         if quality not in ('thumb', 'grid'):
             quality = 'thumb'
 
-        thumbnails = ImagenModel.get_thumbnails_batch(codigos, quality)
+        empresa_id = get_empresa_id()
+        thumbnails = ImagenModel.get_thumbnails_batch(codigos, quality, empresa_id=empresa_id)
         return jsonify(thumbnails), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500

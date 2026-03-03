@@ -530,6 +530,51 @@
         return currentUser;
     }
 
+    // ==================== TOOLTIPS FLOTANTES ====================
+    // Usa position:fixed para evitar recorte por overflow de contenedores scrollables
+    (function initFloatingTooltips() {
+        let tip = null;
+
+        document.addEventListener('mouseenter', function(e) {
+            const btn = e.target.closest('.btn-icon[title]');
+            if (!btn) return;
+
+            // Guardar y quitar title para que no aparezca el tooltip nativo
+            btn.dataset.tip = btn.getAttribute('title');
+            btn.removeAttribute('title');
+
+            tip = document.createElement('div');
+            tip.className = 'btn-icon-tooltip';
+            tip.textContent = btn.dataset.tip;
+            document.body.appendChild(tip);
+
+            const rect = btn.getBoundingClientRect();
+            const tipW = tip.offsetWidth;
+            let left = rect.left + rect.width / 2 - tipW / 2;
+            // Evitar que se salga por la izquierda o derecha
+            if (left < 4) left = 4;
+            if (left + tipW > window.innerWidth - 4) left = window.innerWidth - 4 - tipW;
+            tip.style.left = left + 'px';
+            tip.style.top = (rect.top - tip.offsetHeight - 8) + 'px';
+
+            requestAnimationFrame(() => tip && tip.classList.add('visible'));
+        }, true);
+
+        document.addEventListener('mouseleave', function(e) {
+            const btn = e.target.closest('.btn-icon[data-tip]');
+            if (!btn) return;
+
+            // Restaurar title
+            btn.setAttribute('title', btn.dataset.tip);
+            delete btn.dataset.tip;
+
+            if (tip) {
+                tip.remove();
+                tip = null;
+            }
+        }, true);
+    })();
+
     // ==================== EXPONER API PUBLICA ====================
     window.PageCommon = {
         // Theme

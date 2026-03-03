@@ -271,7 +271,7 @@ def debug_embeddings():
     try:
         conn = ImageSearchModel._get_conn()
         cursor = conn.cursor()
-        cursor.execute("SELECT TOP 1 id, codigo, DATALENGTH(imagen) as img_size, imagen FROM view_articulo_imagen")
+        cursor.execute("SELECT TOP 1 id, codigo, DATALENGTH(imagen) as img_size, imagen FROM view_articulo_imagen WHERE empresa = ?", [empresa_id])
         row = cursor.fetchone()
         conn.close()
 
@@ -334,7 +334,7 @@ def debug_embeddings():
     try:
         conn = ImageSearchModel._get_conn(connection_id)
         cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM view_articulo_imagen")
+        cursor.execute("SELECT COUNT(*) FROM view_articulo_imagen WHERE empresa = ?", [empresa_id])
         count_via_connid = cursor.fetchone()[0]
         result['connection_id_works'] = True
         result['connection_id_image_count'] = count_via_connid

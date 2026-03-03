@@ -367,6 +367,18 @@
         }
 
         /* ==================== RESPONSIVE ==================== */
+        /* Fix scroll: constrain flex chain so overflow-y: auto works */
+        .app-layout {
+            height: 100vh;
+        }
+        .main-wrapper {
+            min-height: 0;
+            overflow: hidden;
+        }
+        .main-content-area {
+            min-height: 0 !important;
+        }
+
         @media (max-width: 768px) {
             .magic-search-container {
                 padding: 16px;

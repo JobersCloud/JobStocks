@@ -1333,13 +1333,9 @@ th.dg-drag-over-right {
     flex-shrink: 0;
 }
 
-/* Tooltip para botones con icono */
-.btn-icon[title]::after {
-    content: attr(title);
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
+/* Tooltip flotante para botones con icono (generado por JS) */
+.btn-icon-tooltip {
+    position: fixed;
     padding: 6px 10px;
     background: var(--dark);
     color: white;
@@ -1347,31 +1343,33 @@ th.dg-drag-over-right {
     font-weight: 500;
     white-space: nowrap;
     border-radius: var(--radius-sm);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.2s ease;
-    z-index: 1000;
+    z-index: 99999;
     pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
 }
 
-.btn-icon[title]::before {
+.btn-icon-tooltip.visible {
+    opacity: 1;
+}
+
+.btn-icon-tooltip::after {
     content: '';
     position: absolute;
-    bottom: calc(100% + 2px);
+    top: 100%;
     left: 50%;
     transform: translateX(-50%);
     border: 6px solid transparent;
     border-top-color: var(--dark);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.2s ease;
-    z-index: 1000;
 }
 
-.btn-icon[title]:hover::after,
-.btn-icon[title]:hover::before {
-    opacity: 1;
-    visibility: visible;
+[data-theme="dark"] .btn-icon-tooltip {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+}
+
+[data-theme="dark"] .btn-icon-tooltip::after {
+    border-top-color: var(--bg-tertiary);
 }
 
 /* Variantes de botones con icono */

@@ -42,15 +42,22 @@ class ImagenModel:
             return image_data
 
     @staticmethod
-    def get_by_codigo(codigo):
+    def get_by_codigo(codigo, empresa_id=None):
         """Obtiene todas las imágenes de un artículo por código"""
         conn = Database.get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT id, codigo, imagen
-            FROM view_articulo_imagen
-            WHERE codigo = ?
-        """, (codigo,))
+        if empresa_id:
+            cursor.execute("""
+                SELECT id, codigo, imagen
+                FROM view_articulo_imagen
+                WHERE codigo = ? AND empresa = ?
+            """, (codigo, empresa_id))
+        else:
+            cursor.execute("""
+                SELECT id, codigo, imagen
+                FROM view_articulo_imagen
+                WHERE codigo = ?
+            """, (codigo,))
 
         imagenes = []
         for row in cursor.fetchall():
@@ -70,15 +77,22 @@ class ImagenModel:
         return imagenes
 
     @staticmethod
-    def get_by_id(id):
+    def get_by_id(id, empresa_id=None):
         """Obtiene una imagen por su ID"""
         conn = Database.get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT id, codigo, imagen
-            FROM view_articulo_imagen
-            WHERE id = ?
-        """, (id,))
+        if empresa_id:
+            cursor.execute("""
+                SELECT id, codigo, imagen
+                FROM view_articulo_imagen
+                WHERE id = ? AND empresa = ?
+            """, (id, empresa_id))
+        else:
+            cursor.execute("""
+                SELECT id, codigo, imagen
+                FROM view_articulo_imagen
+                WHERE id = ?
+            """, (id,))
 
         row = cursor.fetchone()
         imagen = None
@@ -99,22 +113,24 @@ class ImagenModel:
         return imagen
 
     @staticmethod
-    def get_primera_imagen(codigo, quality='thumb'):
+    def get_primera_imagen(codigo, quality='thumb', empresa_id=None):
         """Obtiene el thumbnail de la primera imagen (para grid de tarjetas)
         quality='thumb': usa thumbnail si existe (pequeño, rápido)
         quality='grid': usa imagen original redimensionada a 400px (nítido para grid)"""
         imagen = None
+        empresa_filter = " AND empresa = ?" if empresa_id else ""
+        params = (codigo, empresa_id) if empresa_id else (codigo,)
 
         try:
             # Intentar con columna thumbnail (si existe)
             conn = Database.get_connection()
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(f"""
                 SELECT TOP 1 id, codigo, thumbnail, imagen
                 FROM view_articulo_imagen
-                WHERE codigo = ?
+                WHERE codigo = ?{empresa_filter}
                 ORDER BY id
-            """, (codigo,))
+            """, params)
 
             row = cursor.fetchone()
             if row:
@@ -136,12 +152,12 @@ class ImagenModel:
             try:
                 conn = Database.get_connection()
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute(f"""
                     SELECT TOP 1 id, codigo, imagen
                     FROM view_articulo_imagen
-                    WHERE codigo = ?
+                    WHERE codigo = ?{empresa_filter}
                     ORDER BY id
-                """, (codigo,))
+                """, params)
 
                 row = cursor.fetchone()
                 if row and row[2]:
@@ -161,15 +177,22 @@ class ImagenModel:
         return imagen
 
     @staticmethod
-    def tiene_imagen(codigo):
+    def tiene_imagen(codigo, empresa_id=None):
         """Verifica si un artículo tiene al menos una imagen"""
         conn = Database.get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT TOP 1 1
-            FROM view_articulo_imagen
-            WHERE codigo = ?
-        """, (codigo,))
+        if empresa_id:
+            cursor.execute("""
+                SELECT TOP 1 1
+                FROM view_articulo_imagen
+                WHERE codigo = ? AND empresa = ?
+            """, (codigo, empresa_id))
+        else:
+            cursor.execute("""
+                SELECT TOP 1 1
+                FROM view_articulo_imagen
+                WHERE codigo = ?
+            """, (codigo,))
 
         tiene = cursor.fetchone() is not None
 
@@ -178,7 +201,7 @@ class ImagenModel:
         return tiene
 
     @staticmethod
-    def get_thumbnails_batch(codigos, quality='thumb'):
+    def get_thumbnails_batch(codigos, quality='thumb', empresa_id=None):
         """Obtiene thumbnails de múltiples artículos en una sola consulta (batch loading)
         quality='thumb': usa thumbnail si existe (pequeño, rápido)
         quality='grid': usa imagen original redimensionada a 400px (nítido para grid)
@@ -191,6 +214,8 @@ class ImagenModel:
 
         # Crear placeholders para IN clause
         placeholders = ','.join(['?' for _ in codigos])
+        empresa_filter = " AND empresa = ?" if empresa_id else ""
+        params = codigos + [empresa_id] if empresa_id else codigos
         thumbnails = {}
 
         try:
@@ -202,12 +227,12 @@ class ImagenModel:
                     SELECT codigo, thumbnail, imagen,
                            ROW_NUMBER() OVER (PARTITION BY codigo ORDER BY id) as rn
                     FROM view_articulo_imagen
-                    WHERE codigo IN ({placeholders})
+                    WHERE codigo IN ({placeholders}){empresa_filter}
                 )
                 SELECT codigo, thumbnail, imagen
                 FROM FirstImages
                 WHERE rn = 1
-            """, codigos)
+            """, params)
 
             for row in cursor.fetchall():
                 codigo = row[0].strip() if row[0] else row[0]
@@ -231,12 +256,12 @@ class ImagenModel:
                         SELECT codigo, imagen,
                                ROW_NUMBER() OVER (PARTITION BY codigo ORDER BY id) as rn
                         FROM view_articulo_imagen
-                        WHERE codigo IN ({placeholders})
+                        WHERE codigo IN ({placeholders}){empresa_filter}
                     )
                     SELECT codigo, imagen
                     FROM FirstImages
                     WHERE rn = 1
-                """, codigos)
+                """, params)
 
                 for row in cursor.fetchall():
                     codigo = row[0].strip() if row[0] else row[0]

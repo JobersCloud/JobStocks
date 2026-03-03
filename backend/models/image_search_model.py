@@ -226,11 +226,14 @@ class ImageSearchModel:
 
     @staticmethod
     def get_total_images(empresa_id=None, connection_id=None):
-        """Contar total de imagenes en la BD."""
+        """Contar total de imagenes en la BD (filtrado por empresa)."""
         try:
             conn = ImageSearchModel._get_conn(connection_id)
             cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM view_articulo_imagen")
+            if empresa_id:
+                cursor.execute("SELECT COUNT(*) FROM view_articulo_imagen WHERE empresa = ?", [empresa_id])
+            else:
+                cursor.execute("SELECT COUNT(*) FROM view_articulo_imagen")
             count = cursor.fetchone()[0]
             conn.close()
             return count
@@ -453,11 +456,14 @@ class ImageSearchModel:
                 ImageSearchModel._cache.pop(cache_key, None)
             logger.info('Cache invalidated')
 
-            # 2. Contar total de imagenes primero (query ligera)
+            # 2. Contar total de imagenes primero (query ligera, filtrado por empresa)
             logger.info('Counting images...')
             conn = ImageSearchModel._get_conn(connection_id)
             cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM view_articulo_imagen")
+            if empresa_id:
+                cursor.execute("SELECT COUNT(*) FROM view_articulo_imagen WHERE empresa = ?", [empresa_id])
+            else:
+                cursor.execute("SELECT COUNT(*) FROM view_articulo_imagen")
             total_images = cursor.fetchone()[0]
             conn.close()
 
@@ -474,7 +480,10 @@ class ImageSearchModel:
             # Usar conexion separada para lectura y escritura
             read_conn = ImageSearchModel._get_conn(connection_id)
             read_cursor = read_conn.cursor()
-            read_cursor.execute("SELECT id, codigo, imagen FROM view_articulo_imagen")
+            if empresa_id:
+                read_cursor.execute("SELECT id, codigo, imagen FROM view_articulo_imagen WHERE empresa = ?", [empresa_id])
+            else:
+                read_cursor.execute("SELECT id, codigo, imagen FROM view_articulo_imagen")
 
             write_conn = ImageSearchModel._get_conn(connection_id)
             write_cursor = write_conn.cursor()
@@ -552,14 +561,16 @@ class ImageSearchModel:
             conn = ImageSearchModel._get_conn(connection_id)
             cursor = conn.cursor()
 
-            # Contar imagenes sin embedding
+            # Contar imagenes sin embedding (filtrado por empresa)
+            emp = empresa_id or '1'
             cursor.execute("""
                 SELECT COUNT(*) FROM view_articulo_imagen v
-                WHERE NOT EXISTS (
+                WHERE v.empresa = ?
+                AND NOT EXISTS (
                     SELECT 1 FROM image_embeddings e
                     WHERE e.imagen_id = v.id AND e.empresa_id = ?
                 )
-            """, [empresa_id or '1'])
+            """, [emp, emp])
             total_new = cursor.fetchone()[0]
             conn.close()
 
@@ -572,16 +583,17 @@ class ImageSearchModel:
             if progress_callback:
                 progress_callback(0, total_new, 0)
 
-            # Procesar una por una
+            # Procesar una por una (filtrado por empresa)
             conn = ImageSearchModel._get_conn(connection_id)
             cursor = conn.cursor()
             cursor.execute("""
                 SELECT v.id, v.codigo, v.imagen FROM view_articulo_imagen v
-                WHERE NOT EXISTS (
+                WHERE v.empresa = ?
+                AND NOT EXISTS (
                     SELECT 1 FROM image_embeddings e
                     WHERE e.imagen_id = v.id AND e.empresa_id = ?
                 )
-            """, [empresa_id or '1'])
+            """, [emp, emp])
 
             count = 0
             errors = 0

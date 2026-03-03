@@ -312,7 +312,7 @@ def enviar_carrito():
 
     try:
         # Generar PDF (con datos del cliente y firma si existe)
-        pdf_buffer = generar_pdf_carrito(carrito, usuario, comentarios, referencia, cliente_info, firma_base64)
+        pdf_buffer = generar_pdf_carrito(carrito, usuario, comentarios, referencia, cliente_info, firma_base64, empresa_id)
 
         # Generar Excel
         excel_buffer = generar_excel_carrito(carrito, usuario, comentarios, referencia)
@@ -371,7 +371,7 @@ def enviar_carrito():
 
 # ==================== FUNCIONES AUXILIARES ====================
 
-def generar_pdf_carrito(carrito, usuario, comentarios, referencia="", cliente_info=None, firma_base64=None):
+def generar_pdf_carrito(carrito, usuario, comentarios, referencia="", cliente_info=None, firma_base64=None, empresa_id=None):
     """Genera un PDF con los items del carrito incluyendo imágenes y firma"""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
@@ -412,7 +412,7 @@ def generar_pdf_carrito(carrito, usuario, comentarios, referencia="", cliente_in
 
     # Obtener thumbnails de los productos
     codigos = [item['codigo'] for item in carrito]
-    thumbnails = ImagenModel.get_thumbnails_batch(codigos)
+    thumbnails = ImagenModel.get_thumbnails_batch(codigos, empresa_id=empresa_id)
 
     # Tabla de productos con imágenes
     data = [['Img', 'Código', 'Descripción', 'Formato', 'Cal.', 'Tono', 'Calib.', 'Stock', 'Solicitado']]
@@ -612,7 +612,7 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
     # Obtener thumbnails de todos los productos del carrito
     codigos = [item['codigo'] for item in carrito]
     print(f"   Obteniendo thumbnails para {len(codigos)} productos...")
-    thumbnails = ImagenModel.get_thumbnails_batch(codigos)
+    thumbnails = ImagenModel.get_thumbnails_batch(codigos, empresa_id=empresa_id)
     print(f"   ✅ Thumbnails obtenidos: {len(thumbnails)} de {len(codigos)}")
 
     # Construir filas de la tabla HTML con referencias CID para imágenes
