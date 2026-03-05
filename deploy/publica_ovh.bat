@@ -13,8 +13,7 @@ echo.
 cd /d "C:\Users\jobers\Documents\Ejercicios Python\JobStocks"
 
 echo [1/4] Subiendo archivos...
-REM Usar rsync para excluir media/ (videos grandes) y __pycache__
-rsync -avz --exclude="frontend/media/" --exclude="__pycache__" --exclude="*.pyc" backend frontend docker-compose.yml ubuntu@51.68.44.136:/opt/ApiRestExternos/
+scp -r backend frontend docker-compose.yml ubuntu@51.68.44.136:/opt/ApiRestExternos/
 
 if %ERRORLEVEL% NEQ 0 (
     echo ERROR: Fallo al subir archivos
