@@ -307,6 +307,16 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.38.3', date: '2026-03-05', title: 'Mejoras de privacidad y UX movil', items: [
+                {type: 'improve', text: 'Parametros y Control BD solo visibles para superusuarios'},
+                {type: 'fix', text: 'Notificaciones ya no se mezclan entre pestañas de diferentes publicaciones'},
+                {type: 'fix', text: 'Changelog ya no muestra cambios internos del sistema'},
+                {type: 'fix', text: 'Mensajes toast legibles en resolucion movil'},
+                {type: 'improve', text: 'Dashboard muestra descripcion de articulos aunque no tengan stock'}
+            ]},
+            { version: 'v1.38.2', date: '2026-03-05', title: 'Fix precios no visibles', items: [
+                {type: 'fix', text: 'Precios de artículos no se mostraban por trailing spaces en campos CHAR de la vista de precios'}
+            ]},
             { version: 'v1.38.1', date: '2026-03-05', title: 'Favicon Jobers en URL pública', items: [
                 {type: 'fix', text: 'Favicon de Jobers como favicon por defecto del dominio (antes mostraba el de cristal)'}
             ]},
@@ -318,7 +328,7 @@
             { version: 'v1.37.0', date: '2026-03-03', title: 'Deuda tecnica: tests, strip CHAR y limpieza JS', items: [
                 {type: 'new', text: 'Infraestructura de tests con pytest: 15 tests cubriendo version, auth, stocks y carrito'},
                 {type: 'improve', text: 'Strip consistente de campos CHAR en cliente_model.py y empresa_cliente_model.py'},
-                {type: 'improve', text: 'Eliminadas funciones JS duplicadas en parametros, empresa-logo y dashboard (delegadas a PageCommon)'}
+                {type: 'improve', text: 'Eliminadas funciones JS duplicadas en parametros, empresa-logo y dashboard (delegadas a PageCommon)', internal: true}
             ]},
             { version: 'v1.36.9', date: '2026-03-03', title: 'Fix cliente preseleccionado y espacios en codigos', items: [
                 {type: 'fix', text: 'Formulario de envio: el cliente preseleccionado ahora se muestra correctamente'},
@@ -346,13 +356,13 @@
                 {type: 'fix', text: 'Video: corregidas imagenes grises en catalogo forzando carga de thumbnails con lazy loading'}
             ]},
             { version: 'v1.36.3', date: '2026-03-02', title: 'Fix reducir log de BD', items: [
-                {type: 'fix', text: 'Control BD: corregido error al reducir log (DBCC SHRINKFILE no puede ejecutarse dentro de una transaccion)'}
+                {type: 'fix', text: 'Control BD: corregido error al reducir log (DBCC SHRINKFILE no puede ejecutarse dentro de una transaccion)', internal: true}
             ]},
             { version: 'v1.36.2', date: '2026-03-02', title: 'Fix duplicar propuesta y scroll busqueda', items: [
                 {type: 'fix', text: 'Mis Propuestas: corregido error al duplicar propuesta (PageCommon.fetchWithCsrf no existia)'},
                 {type: 'fix', text: 'Mis Propuestas: corregido titulo del modal de confirmacion al duplicar'},
                 {type: 'fix', text: 'Busqueda Magica: corregido scroll de resultados que no permitia ver todos los productos encontrados'},
-                {type: 'new', text: 'Control BD: boton para reducir el archivo de log (.ldf) al tamaño minimo con DBCC SHRINKFILE'}
+                {type: 'new', text: 'Control BD: boton para reducir el archivo de log (.ldf) al tamaño minimo con DBCC SHRINKFILE', internal: true}
             ]},
             { version: 'v1.35.9', date: '2026-02-28', title: 'Filtrado de imagenes por empresa', items: [
                 {type: 'fix', text: 'Imagenes: todas las consultas de imagenes ahora filtran por empresa, evitando mostrar imagenes de otras publicaciones'},
@@ -395,7 +405,7 @@
                 {type: 'new', text: 'Busqueda Magica: clic en resultado abre el mismo modal de detalle que en Stocks (con imagenes, empaquetado, todos los campos)'},
                 {type: 'improve', text: 'Busqueda Magica: carga asincrona de thumbnails en resultados'},
                 {type: 'improve', text: 'Backend enriquece resultados de busqueda visual con todos los datos del stock'},
-                {type: 'improve', text: 'Panel de reindexacion de imagenes movido a Control BD'}
+                {type: 'improve', text: 'Panel de reindexacion de imagenes movido a Control BD', internal: true}
             ]},
             { version: 'v1.34.1', date: '2026-02-25', title: 'Fix Busqueda Magica', items: [
                 {type: 'fix', text: 'Busqueda Magica: instaladas dependencias CBIR y corregida indexacion de imagenes'},
@@ -622,7 +632,7 @@
                 title: 'Exportar Excel y refactoring page-common',
                 items: [
                     { type: 'new', text: 'Boton "Excel" en todas las grids para exportar datos filtrados a CSV' },
-                    { type: 'improve', text: 'Dashboard, Email Config, Parametros y Logo Empresa migrados a page-common.js' },
+                    { type: 'improve', text: 'Dashboard, Email Config, Parametros y Logo Empresa migrados a page-common.js', internal: true },
                     { type: 'new', text: 'Campo "Referencia" (numpedcli) en pedidos' },
                     { type: 'improve', text: 'Importes formateados a 2 decimales con separador de miles' }
                 ]
@@ -651,9 +661,9 @@
                 date: '2026-02-08',
                 title: 'Filtros móvil y límite Express',
                 items: [
-                    { type: 'new', text: 'Indicador de espacio disponible en SQL Server Express (límite 10 GB) en Control BD' },
+                    { type: 'new', text: 'Indicador de espacio disponible en SQL Server Express (límite 10 GB) en Control BD', internal: true },
                     { type: 'improve', text: 'Filtros de fecha en propuestas en la misma línea en resolución móvil' },
-                    { type: 'new', text: 'Tarjetas móvil en la información de base de datos (Control BD)' }
+                    { type: 'new', text: 'Tarjetas móvil en la información de base de datos (Control BD)', internal: true }
                 ]
             },
             {
@@ -673,7 +683,7 @@
                 title: 'Existencias en detalle y Control de BD',
                 items: [
                     { type: 'new', text: 'Badge de existencias con color en el modal de detalle de stock' },
-                    { type: 'new', text: 'Nueva página Control BD en Configuración con info del servidor SQL Server' }
+                    { type: 'new', text: 'Nueva página Control BD en Configuración con info del servidor SQL Server', internal: true }
                 ]
             },
             {
@@ -808,7 +818,12 @@
             const modal = document.getElementById('changelog-modal');
             const content = document.getElementById('changelog-content');
 
-            content.innerHTML = changelogData.map(version => `
+            // Filtrar items internos y omitir versiones sin items visibles
+            content.innerHTML = changelogData
+                .map(version => {
+                    const visibleItems = version.items.filter(item => !item.internal);
+                    if (visibleItems.length === 0) return '';
+                    return `
                 <div class="changelog-version">
                     <div class="changelog-version-header">
                         <span class="changelog-version-tag">${version.version}</span>
@@ -816,7 +831,7 @@
                     </div>
                     <div class="changelog-version-title">${version.title}</div>
                     <ul class="changelog-items">
-                        ${version.items.map(item => `
+                        ${visibleItems.map(item => `
                             <li>
                                 <span class="changelog-badge changelog-badge-${item.type}">
                                     ${item.type === 'new' ? 'Nuevo' : item.type === 'fix' ? 'Fix' : 'Mejora'}
@@ -825,8 +840,10 @@
                             </li>
                         `).join('')}
                     </ul>
-                </div>
-            `).join('');
+                </div>`;
+                })
+                .filter(html => html)
+                .join('');
 
             modal.style.display = 'flex';
         }

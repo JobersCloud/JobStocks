@@ -150,7 +150,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.38.1'
+APP_VERSION = 'v1.38.3'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -1192,7 +1192,7 @@ def favicon_jobers():
 
 @app.route('/favicon.ico')
 def favicon_root():
-    return send_from_directory(os.path.join(FRONTEND_DIR, 'assets'), 'faviconjobers.ico')
+    return send_from_directory(os.path.join(FRONTEND_DIR, 'assets'), 'favicon.ico')
 
 @app.route('/media/<path:filename>')
 def serve_media(filename):

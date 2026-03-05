@@ -238,6 +238,14 @@
                 if (configSection) configSection.style.display = 'block';
             }
 
+            // Ocultar Parámetros y Control BD si no es superusuario
+            if (data.rol !== 'superusuario') {
+                const sidebarParametros = document.getElementById('sidebar-parametros');
+                const sidebarControlBd = document.getElementById('sidebar-control-bd');
+                if (sidebarParametros) sidebarParametros.style.display = 'none';
+                if (sidebarControlBd) sidebarControlBd.style.display = 'none';
+            }
+
             return data;
         } catch (error) {
             console.error('Error checking auth:', error);

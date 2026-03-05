@@ -17,7 +17,7 @@
 # ============================================
 from flask import Blueprint, jsonify, session
 from flask_login import login_required
-from utils.auth import administrador_required, csrf_required
+from utils.auth import superusuario_required, csrf_required
 from config.database import Database
 
 db_info_bp = Blueprint('db_info', __name__)
@@ -25,7 +25,7 @@ db_info_bp = Blueprint('db_info', __name__)
 
 @db_info_bp.route('/api/db-info', methods=['GET'])
 @login_required
-@administrador_required
+@superusuario_required
 def get_db_info():
     """
     Obtener información de la base de datos
@@ -268,7 +268,7 @@ def get_db_info():
 
 @db_info_bp.route('/api/db-info/shrink-log', methods=['POST'])
 @login_required
-@administrador_required
+@superusuario_required
 @csrf_required
 def shrink_log():
     """

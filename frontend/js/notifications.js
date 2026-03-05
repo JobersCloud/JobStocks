@@ -33,8 +33,11 @@
      * Inicializar sistema de notificaciones.
      * Fetch inmediato + polling adaptativo + visibilitychange.
      */
+    let connectionId = null;  // Conexión capturada al iniciar
+
     function init() {
         csrfToken = localStorage.getItem('csrf_token');
+        connectionId = localStorage.getItem('connection');
         fetchCount();
         scheduleNext();
 
@@ -48,6 +51,13 @@
             clearTimeout(pollInterval);
             pollInterval = null;
         } else {
+            // Pestaña visible: verificar si la conexión sigue siendo la misma
+            if (connectionId && localStorage.getItem('connection') !== connectionId) {
+                // Otra pestaña cambió la conexión, detener polling
+                clearTimeout(pollInterval);
+                pollInterval = null;
+                return;
+            }
             // Pestaña visible: fetch inmediato y reanudar con delay mínimo
             currentDelay = MIN_DELAY;
             unchangedCycles = 0;
@@ -68,6 +78,10 @@
      * Obtener conteo de notificaciones no leídas.
      */
     async function fetchCount() {
+        // Si la conexión cambió (otra pestaña hizo login), no hacer fetch
+        if (connectionId && localStorage.getItem('connection') !== connectionId) {
+            return;
+        }
         try {
             const response = await fetch(`${getApiUrl()}/api/notifications/unread-count`, {
                 credentials: 'include'
@@ -164,6 +178,10 @@
      * Obtener lista completa de notificaciones y mostrar dropdown.
      */
     async function showDropdown() {
+        // Si la conexión cambió, no mostrar dropdown
+        if (connectionId && localStorage.getItem('connection') !== connectionId) {
+            return;
+        }
         try {
             const response = await fetch(`${getApiUrl()}/api/notifications`, {
                 credentials: 'include'

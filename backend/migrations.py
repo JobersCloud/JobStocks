@@ -954,4 +954,87 @@ MIGRATIONS = [
         ]
     },
 
+    # ================================================================
+    # TABLA USERS_EMPRESAS (creación automática si no existe)
+    # ================================================================
+
+    {
+        'version': 44,
+        'description': 'Crear tabla users_empresas si no existe y migrar datos',
+        'app_version': 'v1.38.1',
+        'sql': [
+            # 1. Crear tabla
+            """IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'users_empresas')
+            BEGIN
+                CREATE TABLE users_empresas (
+                    id INT IDENTITY(1,1) PRIMARY KEY,
+                    user_id INT NOT NULL,
+                    empresa_id VARCHAR(5) NOT NULL,
+                    cliente_id VARCHAR(20) NULL,
+                    rol VARCHAR(20) NOT NULL DEFAULT 'usuario',
+                    mostrar_precios BIT DEFAULT 0,
+                    administrador_clientes BIT DEFAULT 0,
+                    fecha_creacion DATETIME DEFAULT GETDATE(),
+                    CONSTRAINT FK_users_empresas_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                    CONSTRAINT UQ_user_empresa UNIQUE (user_id, empresa_id),
+                    CONSTRAINT CK_users_empresas_rol CHECK (rol IN ('usuario', 'administrador', 'superusuario'))
+                );
+                CREATE INDEX IX_users_empresas_empresa ON users_empresas(empresa_id);
+                CREATE INDEX IX_users_empresas_user ON users_empresas(user_id);
+            END""",
+
+            # 2. Migrar usuarios existentes (usar rol de users si existe)
+            """IF OBJECT_ID('users_empresas') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM users_empresas)
+            AND EXISTS (SELECT 1 FROM users)
+            BEGIN
+                IF COL_LENGTH('users', 'rol') IS NOT NULL
+                BEGIN
+                    EXEC sp_executesql N'
+                        INSERT INTO users_empresas (user_id, empresa_id, rol)
+                        SELECT id, ''1'', ISNULL(rol, ''usuario'') FROM users
+                        WHERE NOT EXISTS (
+                            SELECT 1 FROM users_empresas ue WHERE ue.user_id = users.id AND ue.empresa_id = ''1''
+                        )';
+                END
+                ELSE
+                BEGIN
+                    EXEC sp_executesql N'
+                        INSERT INTO users_empresas (user_id, empresa_id, rol)
+                        SELECT id, ''1'', ''usuario'' FROM users
+                        WHERE NOT EXISTS (
+                            SELECT 1 FROM users_empresas ue WHERE ue.user_id = users.id AND ue.empresa_id = ''1''
+                        )';
+                END
+            END""",
+
+            # 3. Asegurar columnas mostrar_precios y administrador_clientes (por si v39/v41 se saltaron)
+            """IF OBJECT_ID('users_empresas') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users_empresas') AND name = 'mostrar_precios')
+            BEGIN
+                ALTER TABLE users_empresas ADD mostrar_precios BIT DEFAULT 0;
+            END""",
+
+            """IF OBJECT_ID('users_empresas') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users_empresas') AND name = 'administrador_clientes')
+            BEGIN
+                ALTER TABLE users_empresas ADD administrador_clientes BIT DEFAULT 0;
+            END""",
+        ]
+    },
+
+    # v45 - Vista view_externos_articulos (maestro de articulos sin depender de stock)
+    # NOTA: Esta vista debe crearse manualmente en cada instalacion ya que
+    # la tabla origen varia segun el ERP. Ver Scripts SQL/43_create_view_externos_articulos.sql
+    {
+        'version': 45,
+        'description': 'Recordatorio: crear view_externos_articulos manualmente',
+        'app_version': 'v1.38.3',
+        'sql': [
+            # No se puede automatizar porque la tabla origen varia por instalacion.
+            # Se deja como recordatorio para el DBA.
+            """SELECT 1""",
+        ]
+    },
+
 ]

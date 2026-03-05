@@ -1261,6 +1261,14 @@ function displayUserInfo(user) {
         sidebarConfigSection.style.display = (user.rol === 'administrador' || user.rol === 'superusuario') ? 'block' : 'none';
     }
 
+    // Ocultar Parámetros y Control BD si no es superusuario
+    if (user.rol !== 'superusuario') {
+        const sidebarParametros = document.getElementById('sidebar-parametros');
+        const sidebarControlBd = document.getElementById('sidebar-control-bd');
+        if (sidebarParametros) sidebarParametros.style.display = 'none';
+        if (sidebarControlBd) sidebarControlBd.style.display = 'none';
+    }
+
     // Mostrar opción de contexto solo para superusuarios
     const menuItemContext = document.getElementById('menu-item-context');
     const menuDividerContext = document.getElementById('menu-divider-context');

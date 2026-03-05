@@ -453,7 +453,7 @@ def main():
 
         intro_img = create_intro_image()
         intro_audio = generate_audio(
-            "JobStocks, la plataforma desarrollada por Jobers "
+            "Yob Stocks, la plataforma desarrollada por Yóbers "
             "que permite externalizar el stock de su fábrica. "
             "Consulte el catálogo en tiempo real, "
             "gestione propuestas de pedido con firma digital, "
@@ -835,7 +835,7 @@ def main():
 
         audio = generate_audio(
             "Seleccione la cantidad deseada. "
-            "Añada productos por caja o por pallet directamente con un solo clic. "
+            "Añada productos por caja o por palet directamente con un solo clic. "
             "El sistema controla que no supere las existencias disponibles.",
             "06_cantidad"
         )
@@ -1010,22 +1010,23 @@ def main():
         time.sleep(2)
         replace_display_name(driver)
 
-        # Subir imagen de prueba para mostrar resultados reales (prueba2.png preferida, fallback a prueba1.jpg)
-        prueba_img = os.path.abspath(os.path.join(os.path.dirname(__file__), "Recursos IA", "prueba2.png"))
+        # Subir imagen de prueba para mostrar resultados reales
+        # prueba_catalogo.jpg es una imagen real del catálogo que garantiza resultados
+        prueba_img = os.path.abspath(os.path.join(os.path.dirname(__file__), "Recursos IA", "prueba_catalogo.jpg"))
         if not os.path.exists(prueba_img):
             prueba_img = os.path.abspath(os.path.join(os.path.dirname(__file__), "Recursos IA", "prueba1.jpg"))
         if os.path.exists(prueba_img):
             print("    Subiendo imagen de prueba para busqueda visual...")
             file_input = driver.find_element(By.ID, "file-input")
             file_input.send_keys(prueba_img)
-            # Esperar a que aparezcan resultados
+            # Esperar a que aparezcan resultados (tarjetas .stock-image-card)
             try:
-                WebDriverWait(driver, 30).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, ".result-card, .search-result"))
+                WebDriverWait(driver, 45).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".stock-image-card"))
                 )
                 print("    Resultados encontrados!")
             except Exception:
-                print("    [!] Esperando resultados...")
+                print("    [!] No se encontraron resultados de busqueda visual")
             time.sleep(3)
             replace_display_name(driver)
         else:

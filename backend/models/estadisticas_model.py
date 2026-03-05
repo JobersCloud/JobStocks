@@ -330,29 +330,51 @@ class EstadisticasModel:
                     'descripcion': codigo
                 })
 
-            # Intentar obtener descripciones y formato de view_externos_stock
+            # Intentar obtener descripciones y formato
+            # Primero view_externos_articulos (maestro, no depende de stock),
+            # fallback a view_externos_stock
             if articulos:
+                codigos = [a['codigo'] for a in articulos]
+                placeholders = ','.join(['?' for _ in codigos])
+                desc_map = {}
+
+                # Intento 1: view_externos_articulos (tiene todos los articulos)
                 try:
-                    codigos = [a['codigo'] for a in articulos]
-                    placeholders = ','.join(['?' for _ in codigos])
                     cursor.execute(f"""
-                        SELECT DISTINCT codigo, descripcion, formato FROM view_externos_stock
+                        SELECT DISTINCT codigo, descripcion, formato FROM view_externos_articulos
                         WHERE codigo IN ({placeholders}) AND empresa = ?
                     """, codigos + [empresa_id])
-                    desc_map = {}
                     for row in cursor.fetchall():
                         key = row[0].strip() if row[0] else row[0]
                         desc = (row[1].strip() if row[1] else '') or ''
                         fmt = (row[2].strip() if row[2] else '') or ''
-                        # Priorizar filas que tengan descripcion real
-                        if key not in desc_map or (desc and desc != key and not desc_map[key].get('has_desc')):
-                            desc_map[key] = {'descripcion': desc or key, 'formato': fmt, 'has_desc': bool(desc and desc != key)}
-                    for a in articulos:
-                        if a['codigo'] in desc_map:
-                            a['descripcion'] = desc_map[a['codigo']]['descripcion']
-                            a['formato'] = desc_map[a['codigo']].get('formato', '')
+                        if key not in desc_map or (desc and desc != key):
+                            desc_map[key] = {'descripcion': desc or key, 'formato': fmt}
                 except Exception:
-                    pass  # Si la vista no existe, usamos el codigo como descripcion
+                    pass  # Vista no existe, intentar fallback
+
+                # Intento 2: view_externos_stock para codigos que no se encontraron
+                codigos_faltantes = [c for c in codigos if c not in desc_map]
+                if codigos_faltantes:
+                    try:
+                        placeholders2 = ','.join(['?' for _ in codigos_faltantes])
+                        cursor.execute(f"""
+                            SELECT DISTINCT codigo, descripcion, formato FROM view_externos_stock
+                            WHERE codigo IN ({placeholders2}) AND empresa = ?
+                        """, codigos_faltantes + [empresa_id])
+                        for row in cursor.fetchall():
+                            key = row[0].strip() if row[0] else row[0]
+                            desc = (row[1].strip() if row[1] else '') or ''
+                            fmt = (row[2].strip() if row[2] else '') or ''
+                            if key not in desc_map or (desc and desc != key and not desc_map[key].get('has_desc')):
+                                desc_map[key] = {'descripcion': desc or key, 'formato': fmt}
+                    except Exception:
+                        pass  # Si tampoco existe, usamos el codigo como descripcion
+
+                for a in articulos:
+                    if a['codigo'] in desc_map:
+                        a['descripcion'] = desc_map[a['codigo']]['descripcion']
+                        a['formato'] = desc_map[a['codigo']].get('formato', '')
 
             return articulos
         except Exception as e:

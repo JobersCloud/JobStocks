@@ -79,7 +79,9 @@ class PrecioModel:
 
             precios = {}
             for row in cursor.fetchall():
-                key = (row[0], row[1])
+                codigo = row[0].strip() if isinstance(row[0], str) else row[0]
+                calidad = row[1].strip() if isinstance(row[1], str) else row[1]
+                key = (codigo, calidad)
                 precios[key] = float(row[2]) if row[2] else None
 
             cursor.close()

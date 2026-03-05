@@ -725,6 +725,13 @@
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.3s, transform 0.3s;
+    min-width: 0;
+    word-break: normal;
+}
+
+.notification-toast span {
+    flex: 1;
+    min-width: 0;
 }
 
 .notification-toast svg {
@@ -895,8 +902,9 @@
     }
     .notification-toast {
         bottom: 16px;
-        right: 16px;
-        left: 16px;
+        left: 8px;
+        right: 8px;
+        padding: 10px 12px;
     }
 }
 
