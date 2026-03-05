@@ -54,20 +54,21 @@ class EmpresaClienteModel:
             row = cursor.fetchone()
 
             if row:
+                _s = lambda v: v.strip() if isinstance(v, str) else v
                 empresa = {
                     'empresa_cli_id': int(row.empresa_cli_id) if row.empresa_cli_id else None,
-                    'nombre': row.empresa_cli_nombre,
-                    'dbserver': row.empresa_cli_dbserver,
+                    'nombre': _s(row.empresa_cli_nombre),
+                    'dbserver': _s(row.empresa_cli_dbserver),
                     'dbport': int(row.empresa_cli_dbport) if row.empresa_cli_dbport else 1433,
-                    'dblogin': row.empresa_cli_dblogin,
+                    'dblogin': _s(row.empresa_cli_dblogin),
                     'dbpass': row.empresa_cli_dbpass,
-                    'dbname': row.empresa_cli_dbname,
+                    'dbname': _s(row.empresa_cli_dbname),
                     'correo_id': int(row.empresa_cli_correo_id) if row.empresa_cli_correo_id else None,
-                    'key_ws': row.empresa_cli_key_ws,
-                    'cif': row.empresa_cli_cif,
-                    'traductor': row.empresa_cli_traductor,
+                    'key_ws': _s(row.empresa_cli_key_ws),
+                    'cif': _s(row.empresa_cli_cif),
+                    'traductor': _s(row.empresa_cli_traductor),
                     'tipo': int(row.empresa_cli_tipo) if row.empresa_cli_tipo else None,
-                    'empresa_erp': row.empresa_erp.strip() if row.empresa_erp else None
+                    'empresa_erp': _s(row.empresa_erp)
                 }
                 # Guardar en caché
                 _cache_empresas[empresa_cli_id] = empresa
@@ -112,17 +113,18 @@ class EmpresaClienteModel:
             cursor.execute(query)
             rows = cursor.fetchall()
 
+            _s = lambda v: v.strip() if isinstance(v, str) else v
             empresas = []
             for row in rows:
                 empresas.append({
                     'empresa_cli_id': int(row.empresa_cli_id) if row.empresa_cli_id else None,
-                    'nombre': row.empresa_cli_nombre,
-                    'dbserver': row.empresa_cli_dbserver,
+                    'nombre': _s(row.empresa_cli_nombre),
+                    'dbserver': _s(row.empresa_cli_dbserver),
                     'dbport': int(row.empresa_cli_dbport) if row.empresa_cli_dbport else 1433,
-                    'dbname': row.empresa_cli_dbname,
-                    'cif': row.empresa_cli_cif,
+                    'dbname': _s(row.empresa_cli_dbname),
+                    'cif': _s(row.empresa_cli_cif),
                     'tipo': int(row.empresa_cli_tipo) if row.empresa_cli_tipo else None,
-                    'empresa_erp': row.empresa_erp
+                    'empresa_erp': _s(row.empresa_erp)
                 })
             return empresas
 

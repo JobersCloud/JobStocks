@@ -24,23 +24,25 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import edge_tts
 from moviepy import ImageClip, AudioFileClip, concatenate_videoclips
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 # Configuracion de voz
 VOZ_ESPANOLA = "es-ES-AlvaroNeural"
 VELOCIDAD_VOZ = "+0%"
 
 # Configuracion
-BASE_URL = "http://localhost:5000"
+BASE_URL = "https://jobcloudstocks.jobers.es"
 EMPRESA_ID = "10049"
 USERNAME = "admin"
 PASSWORD = "Desa2012."
+
+DISPLAY_NAME = "Administrador"  # Nombre visible en el video (no el real del usuario)
 
 OUTPUT_VIDEO = "video_promocional_stocks.mp4"
 SCREENSHOTS_DIR = "screenshots_promo"
 AUDIO_DIR = "audio_promo"
 FPS = 24
-TOTAL_SCENES = 16
+TOTAL_SCENES = 17  # 1:Intro, 2:Login, 3:Catalogo, 4:Filtro, 5:Voz, 6:Detalle, 7:Cantidad, 8:Carrito, 9:Envio, 10:Firma, 11:Enviado, 12:BusqMagica, 13:Usuarios, 14:Pedidos, 15:DetPedido, 16:Mapa, 17:ERP
 
 
 # ================================================================
@@ -260,6 +262,15 @@ def api_login(driver):
         return False
 
 
+def replace_display_name(driver):
+    """Reemplaza el nombre del usuario en la UI por DISPLAY_NAME"""
+    driver.execute_script(f"""
+        document.querySelectorAll('#user-name-display, #menu-user-name, .user-name, .sidebar-user-name').forEach(el => {{
+            if (el.textContent.trim()) el.textContent = '{DISPLAY_NAME}';
+        }});
+    """)
+
+
 def force_load_thumbnails(driver, limit=30):
     """Fuerza la carga de los primeros N thumbnails visibles (await batch API)"""
     driver.set_script_timeout(60)
@@ -300,6 +311,125 @@ def inject_blur(driver, css_js):
     driver.execute_script(css_js)
 
 
+def create_intro_image():
+    """Genera imagen de presentacion (1920x1080) con logo Jobers y texto"""
+    WIDTH, HEIGHT = 1920, 1080
+
+    # Colores
+    BG_COLOR = (13, 13, 26)
+    RED = (255, 67, 56)
+    WHITE = (255, 255, 255)
+    LIGHT_GRAY = (190, 190, 205)
+    SUBTLE = (120, 120, 145)
+
+    img = Image.new('RGB', (WIDTH, HEIGHT), BG_COLOR)
+    draw = ImageDraw.Draw(img)
+
+    # Resplandor rojo sutil en el centro (circulos concentricos con blend manual)
+    for r in range(500, 0, -2):
+        factor = 0.04 * (r / 500)
+        blended = tuple(int(BG_COLOR[i] * (1 - factor) + RED[i] * factor * 0.3) for i in range(3))
+        x0, y0 = WIDTH // 2 - r * 2, HEIGHT // 2 - r - 50
+        x1, y1 = WIDTH // 2 + r * 2, HEIGHT // 2 + r - 50
+        draw.ellipse([x0, y0, x1, y1], fill=blended)
+
+    # Barra roja decorativa en la parte superior
+    draw.rectangle([0, 0, WIDTH, 5], fill=RED)
+
+    # Cargar y colocar logo
+    logo_path = os.path.join(os.path.dirname(__file__), "frontend", "assets", "logojobers.png")
+    if os.path.exists(logo_path):
+        logo = Image.open(logo_path)
+        # Escalar logo a ~280px de ancho
+        logo_target_w = 280
+        ratio = logo_target_w / logo.size[0]
+        logo_h = int(logo.size[1] * ratio)
+        logo = logo.resize((logo_target_w, logo_h), Image.LANCZOS)
+
+        # Fondo blanco redondeado detras del logo
+        pad = 25
+        logo_x = (WIDTH - logo_target_w) // 2
+        logo_y = 130
+        draw.rounded_rectangle(
+            [logo_x - pad, logo_y - pad,
+             logo_x + logo_target_w + pad, logo_y + logo_h + pad],
+            radius=18,
+            fill=WHITE
+        )
+
+        # Pegar logo
+        if logo.mode == 'RGBA':
+            img.paste(logo, (logo_x, logo_y), logo)
+        else:
+            img.paste(logo, (logo_x, logo_y))
+        text_start_y = logo_y + logo_h + 60
+    else:
+        text_start_y = 200
+
+    # Fuentes
+    try:
+        font_title = ImageFont.truetype("C:\\Windows\\Fonts\\segoeuib.ttf", 96)
+        font_sub = ImageFont.truetype("C:\\Windows\\Fonts\\segoeuil.ttf", 34)
+        font_feat = ImageFont.truetype("C:\\Windows\\Fonts\\segoeui.ttf", 28)
+        font_small = ImageFont.truetype("C:\\Windows\\Fonts\\segoeuil.ttf", 20)
+    except Exception:
+        font_title = ImageFont.truetype("C:\\Windows\\Fonts\\arialbd.ttf", 96)
+        font_sub = ImageFont.truetype("C:\\Windows\\Fonts\\arial.ttf", 34)
+        font_feat = ImageFont.truetype("C:\\Windows\\Fonts\\arial.ttf", 28)
+        font_small = ImageFont.truetype("C:\\Windows\\Fonts\\arial.ttf", 20)
+
+    def center_text(text, font, y, color):
+        bbox = draw.textbbox((0, 0), text, font=font)
+        tw = bbox[2] - bbox[0]
+        draw.text(((WIDTH - tw) // 2, y), text, fill=color, font=font)
+
+    # Titulo "JobStocks"
+    center_text("JobStocks", font_title, text_start_y, WHITE)
+
+    # Linea roja decorativa
+    line_y = text_start_y + 115
+    line_w = 460
+    draw.rounded_rectangle(
+        [(WIDTH - line_w) // 2, line_y,
+         (WIDTH + line_w) // 2, line_y + 4],
+        radius=2, fill=RED
+    )
+
+    # Subtitulo
+    sub_y = line_y + 28
+    center_text("Plataforma integral para la externalización", font_sub, sub_y, LIGHT_GRAY)
+    center_text("de stocks de fábrica", font_sub, sub_y + 46, LIGHT_GRAY)
+
+    # Caracteristicas con viñetas rojas
+    features = [
+        "Catálogo de productos en tiempo real",
+        "Propuestas de pedido con firma digital",
+        "Búsqueda visual con inteligencia artificial",
+        "Integración directa con su sistema ERP",
+    ]
+    feat_y = sub_y + 130
+    for feat in features:
+        full = f"▸  {feat}"
+        bbox = draw.textbbox((0, 0), full, font=font_feat)
+        tw = bbox[2] - bbox[0]
+        fx = (WIDTH - tw) // 2
+        # Viñeta en rojo
+        draw.text((fx, feat_y), "▸", fill=RED, font=font_feat)
+        bullet_w = draw.textbbox((0, 0), "▸  ", font=font_feat)[2]
+        draw.text((fx + bullet_w, feat_y), feat, fill=WHITE, font=font_feat)
+        feat_y += 46
+
+    # Pie
+    center_text("by Jobers  ·  jobers.es", font_small, HEIGHT - 55, SUBTLE)
+
+    # Guardar
+    filepath = os.path.join(SCREENSHOTS_DIR, "00_intro.png")
+    img.save(filepath, quality=95)
+    fix_image_dimensions(filepath)
+    print(f"    Intro generada: 00_intro.png ({WIDTH}x{HEIGHT})")
+    return filepath
+
+
 def main():
     print("\n" + "=" * 60)
     print("VIDEO PROMOCIONAL - FLUJO COMPLETO DE USUARIO")
@@ -317,9 +447,26 @@ def main():
         clips = []
 
         # ============================================================
-        # ESCENA 1: PANTALLA DE LOGIN
+        # ESCENA 1: PANTALLA DE PRESENTACION (INTRO)
         # ============================================================
-        print(f"\n[1/{TOTAL_SCENES}] PANTALLA DE LOGIN...")
+        print(f"\n[1/{TOTAL_SCENES}] PANTALLA DE PRESENTACION...")
+
+        intro_img = create_intro_image()
+        intro_audio = generate_audio(
+            "JobStocks, la plataforma desarrollada por Jobers "
+            "que permite externalizar el stock de su fábrica. "
+            "Consulte el catálogo en tiempo real, "
+            "gestione propuestas de pedido con firma digital, "
+            "localice productos con inteligencia artificial "
+            "y sincronice todo directamente con su sistema ERP.",
+            "00_intro"
+        )
+        clips.append(create_video_clip(intro_img, intro_audio, extra_time=1.0))
+
+        # ============================================================
+        # ESCENA 2: PANTALLA DE LOGIN CON CREDENCIALES
+        # ============================================================
+        print(f"\n[2/{TOTAL_SCENES}] PANTALLA DE LOGIN...")
 
         driver.get(f"{BASE_URL}/login")
         time.sleep(3)
@@ -327,38 +474,22 @@ def main():
         driver.get(f"{BASE_URL}/login")
         time.sleep(5)
 
-        audio = generate_audio(
-            "Bienvenido al Sistema de Gestión de Stocks. "
-            "Plataforma profesional para la gestión de inventario cerámico. "
-            "Acceda con sus credenciales para comenzar.",
-            "01_login"
-        )
-        img = capture_screenshot(driver, "01_login")
-        clips.append(create_video_clip(img, audio))
-
-        # ============================================================
-        # ESCENA 2: CREDENCIALES INTRODUCIDAS
-        # ============================================================
-        print(f"\n[2/{TOTAL_SCENES}] INTRODUCIENDO CREDENCIALES...")
-
+        # Rellenar credenciales antes de capturar
         username_field = driver.find_element(By.ID, "username")
         username_field.clear()
         username_field.send_keys(USERNAME)
         time.sleep(0.3)
-
         password_field = driver.find_element(By.ID, "password")
         password_field.clear()
         password_field.send_keys(PASSWORD)
         time.sleep(0.5)
 
         audio = generate_audio(
-            "Introduzca su usuario y contraseña. "
-            "El sistema valida su identidad con cifrado seguro "
-            "y protección contra intentos no autorizados.",
-            "02_credenciales"
+            "Acceda al sistema con sus credenciales de forma segura.",
+            "01_login"
         )
-        img = capture_screenshot(driver, "02_credenciales")
-        clips.append(create_video_clip(img, audio))
+        img = capture_screenshot(driver, "01_login")
+        clips.append(create_video_clip(img, audio, extra_time=0.8))
 
         # Login real via API
         if not api_login(driver):
@@ -385,6 +516,9 @@ def main():
             time.sleep(0.5)
         else:
             print("    [!] initApp() no completo tras 20s, continuando...")
+
+        # Reemplazar nombre del usuario en la UI
+        replace_display_name(driver)
 
         # Activar vista de tarjetas con imagenes (desactivada por defecto)
         driver.execute_script("gridConImagenes = true;")
@@ -874,6 +1008,32 @@ def main():
         except Exception:
             pass
         time.sleep(2)
+        replace_display_name(driver)
+
+        # Subir imagen de prueba para mostrar resultados reales (prueba2.png preferida, fallback a prueba1.jpg)
+        prueba_img = os.path.abspath(os.path.join(os.path.dirname(__file__), "Recursos IA", "prueba2.png"))
+        if not os.path.exists(prueba_img):
+            prueba_img = os.path.abspath(os.path.join(os.path.dirname(__file__), "Recursos IA", "prueba1.jpg"))
+        if os.path.exists(prueba_img):
+            print("    Subiendo imagen de prueba para busqueda visual...")
+            file_input = driver.find_element(By.ID, "file-input")
+            file_input.send_keys(prueba_img)
+            # Esperar a que aparezcan resultados
+            try:
+                WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".result-card, .search-result"))
+                )
+                print("    Resultados encontrados!")
+            except Exception:
+                print("    [!] Esperando resultados...")
+            time.sleep(3)
+            replace_display_name(driver)
+        else:
+            print(f"    [!] No se encontro imagen: {prueba_img}")
+
+        # Inyectar blur de precios en resultados
+        inject_blur(driver, BLUR_CSS_CATALOGO_PRECIOS)
+        time.sleep(0.3)
 
         audio = generate_audio(
             "Búsqueda mágica por imagen. "
@@ -905,6 +1065,7 @@ def main():
 
         # Difuminar emails y nombres reales
         inject_blur(driver, BLUR_CSS_USUARIOS)
+        replace_display_name(driver)
         time.sleep(0.5)
 
         audio = generate_audio(
@@ -936,6 +1097,7 @@ def main():
 
         # Difuminar nombres de clientes y totales
         inject_blur(driver, BLUR_CSS_PEDIDOS)
+        replace_display_name(driver)
         time.sleep(0.5)
 
         audio = generate_audio(
@@ -1059,6 +1221,29 @@ def main():
         # Cerrar navegador
         driver.quit()
         driver = None
+
+        # ============================================================
+        # ESCENA 17: INTEGRADOR ERP (imagen estática)
+        # ============================================================
+        print(f"\n[{TOTAL_SCENES}/{TOTAL_SCENES}] INTEGRADOR ERP...")
+
+        erp_img_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "Recursos IA", "integrador.png"))
+        if os.path.exists(erp_img_path):
+            audio = generate_audio(
+                "Integración directa con su sistema ERP. "
+                "Las propuestas enviadas desde la plataforma web se importan "
+                "automáticamente como pedidos de venta en su sistema de gestión, "
+                "sin intervención manual. "
+                "Cabeceras, líneas de detalle e imágenes se transfieren al instante. "
+                "Todo conectado mediante API REST con autenticación segura.",
+                "17_integrador_erp"
+            )
+            audio_dur = get_audio_duration(os.path.join(AUDIO_DIR, "17_integrador_erp.mp3"))
+            erp_clip = ImageClip(erp_img_path).with_duration(audio_dur + 1.5)
+            erp_audio = AudioFileClip(os.path.join(AUDIO_DIR, "17_integrador_erp.mp3"))
+            clips.append(erp_clip.with_audio(erp_audio))
+        else:
+            print(f"    [!] No se encontro imagen: {erp_img_path}")
 
         # ============================================================
         # COMBINAR VIDEO

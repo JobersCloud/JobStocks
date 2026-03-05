@@ -164,6 +164,14 @@
                         </span>
                         <span class="sidebar-item-text" data-i18n="magicSearch.title">Busqueda Magica</span>
                     </a>
+                    <a class="sidebar-item" data-page="mis-favoritos.html" data-tooltip="Mis Favoritos" onclick="SidebarNav.navigateTo('mis-favoritos.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.myFavorites">Mis Favoritos</span>
+                    </a>
                 </div>
 
                 <!-- Acordeon Administracion -->
@@ -582,9 +590,7 @@
 
         // ==================== ALERTAS ====================
         function showAlert(message, type = 'success') {
-            const container = document.getElementById('alert-container');
-            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-            setTimeout(() => container.innerHTML = '', 5000);
+            UIFeedback.toast(message, type);
         }
 
         // ==================== CARGAR ESTADO ACTUAL ====================
@@ -793,31 +799,7 @@
 
         // ==================== APLICAR TEMA DE COLOR ====================
         function applyColorTheme(tema) {
-            const themes = {
-                'rubi': { primary: '#FF4338', primaryDark: '#D32F2F', primaryLight: '#FF6B6B' },
-                'zafiro': { primary: '#2196F3', primaryDark: '#1565C0', primaryLight: '#64B5F6' },
-                'esmeralda': { primary: '#4CAF50', primaryDark: '#2E7D32', primaryLight: '#81C784' },
-                'amatista': { primary: '#9C27B0', primaryDark: '#6A1B9A', primaryLight: '#BA68C8' },
-                'ambar': { primary: '#FF9800', primaryDark: '#E65100', primaryLight: '#FFB74D' },
-                'grafito': { primary: '#607D8B', primaryDark: '#37474F', primaryLight: '#90A4AE' },
-                'corporativo': { primary: '#1a365d', primaryDark: '#0d1b2a', primaryLight: '#2c5282' },
-                'ejecutivo': { primary: '#2d3748', primaryDark: '#1a202c', primaryLight: '#4a5568' },
-                'oceano': { primary: '#0077b6', primaryDark: '#023e8a', primaryLight: '#0096c7' },
-                'bosque': { primary: '#2d6a4f', primaryDark: '#1b4332', primaryLight: '#40916c' },
-                'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
-                'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
-                'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
-                'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
-                'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
-            };
-            if (!themes[tema]) tema = 'rubi';
-            const colors = themes[tema];
-            document.documentElement.setAttribute('data-color-theme', tema);
-            localStorage.setItem('colorTheme', tema);
-            document.documentElement.style.setProperty('--primary', colors.primary, 'important');
-            document.documentElement.style.setProperty('--primary-dark', colors.primaryDark, 'important');
-            document.documentElement.style.setProperty('--primary-light', colors.primaryLight, 'important');
-
+            PageCommon.applyColorTheme(tema);
             document.querySelectorAll('.theme-card').forEach(card => {
                 card.classList.toggle('selected', card.dataset.theme === tema);
             });

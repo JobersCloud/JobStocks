@@ -121,7 +121,7 @@ MIGRATIONS = [
                 WHERE object_id = OBJECT_ID('users') AND name = 'empresa_id')
             BEGIN
                 ALTER TABLE users ADD empresa_id VARCHAR(5) NULL;
-                UPDATE users SET empresa_id = '1' WHERE empresa_id IS NULL;
+                EXEC sp_executesql N'UPDATE users SET empresa_id = ''1'' WHERE empresa_id IS NULL';
             END""",
             """IF NOT EXISTS (SELECT 1 FROM sys.columns
                 WHERE object_id = OBJECT_ID('users') AND name = 'cliente_id')
@@ -189,7 +189,7 @@ MIGRATIONS = [
                 WHERE TABLE_NAME = 'users' AND COLUMN_NAME = 'fecha_ultimo_cambio_password')
             BEGIN
                 ALTER TABLE users ADD fecha_ultimo_cambio_password DATETIME NULL;
-                UPDATE users SET fecha_ultimo_cambio_password = GETDATE();
+                EXEC sp_executesql N'UPDATE users SET fecha_ultimo_cambio_password = GETDATE()';
             END""",
         ]
     },
@@ -405,7 +405,7 @@ MIGRATIONS = [
                 WHERE object_id = OBJECT_ID('propuestas') AND name = 'empresa_id')
             BEGIN
                 ALTER TABLE propuestas ADD empresa_id VARCHAR(5) NULL;
-                UPDATE propuestas SET empresa_id = '1' WHERE empresa_id IS NULL;
+                EXEC sp_executesql N'UPDATE propuestas SET empresa_id = ''1'' WHERE empresa_id IS NULL';
             END""",
             """IF NOT EXISTS (SELECT 1 FROM sys.indexes
                 WHERE name = 'IX_propuestas_empresa_id' AND object_id = OBJECT_ID('propuestas'))
@@ -833,7 +833,8 @@ MIGRATIONS = [
         'description': 'Campo mostrar_precios en users_empresas',
         'app_version': 'v1.33.1',
         'sql': [
-            """IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users_empresas') AND name = 'mostrar_precios')
+            """IF OBJECT_ID('users_empresas') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users_empresas') AND name = 'mostrar_precios')
             BEGIN
                 ALTER TABLE users_empresas ADD mostrar_precios BIT DEFAULT 0;
             END""",
@@ -875,7 +876,8 @@ MIGRATIONS = [
         'description': 'Campo administrador_clientes en users_empresas',
         'app_version': 'v1.35.8',
         'sql': [
-            """IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users_empresas') AND name = 'administrador_clientes')
+            """IF OBJECT_ID('users_empresas') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users_empresas') AND name = 'administrador_clientes')
             BEGIN
                 ALTER TABLE users_empresas ADD administrador_clientes BIT DEFAULT 0;
             END""",
@@ -923,6 +925,31 @@ MIGRATIONS = [
             IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users') AND name = 'empresa_id')
             BEGIN
                 ALTER TABLE users DROP COLUMN empresa_id;
+            END""",
+        ]
+    },
+
+    # ================================================================
+    # TABLA FAVORITOS
+    # ================================================================
+
+    {
+        'version': 43,
+        'description': 'Crear tabla favoritos para productos favoritos por usuario',
+        'app_version': 'v1.38.0',
+        'sql': [
+            """IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'favoritos')
+            BEGIN
+                CREATE TABLE favoritos (
+                    id INT IDENTITY(1,1) PRIMARY KEY,
+                    user_id INT NOT NULL,
+                    empresa_id VARCHAR(5) NOT NULL,
+                    codigo VARCHAR(50) NOT NULL,
+                    fecha_creacion DATETIME DEFAULT GETDATE(),
+                    CONSTRAINT FK_favoritos_user FOREIGN KEY (user_id) REFERENCES users(id),
+                    CONSTRAINT UQ_favoritos_user_empresa_codigo UNIQUE (user_id, empresa_id, codigo)
+                );
+                CREATE INDEX idx_favoritos_user_empresa ON favoritos(user_id, empresa_id);
             END""",
         ]
     },

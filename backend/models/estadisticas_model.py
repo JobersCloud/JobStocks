@@ -44,10 +44,10 @@ class EstadisticasModel:
         """, (empresa_id,))
         propuestas_pendientes = cursor.fetchone()[0]
 
-        # Total usuarios activos de esta empresa
+        # Total usuarios activos
         cursor.execute("""
-            SELECT COUNT(*) FROM users WHERE empresa_id = ? AND active = 1
-        """, (empresa_id,))
+            SELECT COUNT(*) FROM users WHERE active = 1
+        """)
         usuarios_activos = cursor.fetchone()[0]
 
         # Total consultas pendientes

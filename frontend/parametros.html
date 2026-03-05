@@ -164,6 +164,14 @@
                         </span>
                         <span class="sidebar-item-text" data-i18n="magicSearch.title">Busqueda Magica</span>
                     </a>
+                    <a class="sidebar-item" data-page="mis-favoritos.html" data-tooltip="Mis Favoritos" onclick="SidebarNav.navigateTo('mis-favoritos.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.myFavorites">Mis Favoritos</span>
+                    </a>
                 </div>
 
                 <!-- Acordeon Administracion -->
@@ -546,7 +554,7 @@
                         <span class="param-key">${param.clave}</span>
                         <p class="param-description">${param.descripcion || 'Sin descripcion'}</p>
                         <span class="param-meta">
-                            <span data-i18n="params.lastModified">Ultima modificacion</span>: ${formatDate(param.fecha_modificacion)}
+                            <span data-i18n="params.lastModified">Ultima modificacion</span>: ${PageCommon.formatDateTime(param.fecha_modificacion)}
                         </span>
                     </div>
                     <div class="param-value-section">
@@ -602,9 +610,9 @@
                     params[index].fecha_modificacion = new Date().toISOString();
                 }
 
-                showToast('Parametro actualizado correctamente', 'success');
+                UIFeedback.toast('Parametro actualizado correctamente', 'success');
             } catch (error) {
-                showToast('Error al actualizar el parametro', 'error');
+                UIFeedback.toast('Error al actualizar el parametro', 'error');
 
                 const card = document.querySelector(`[data-key="${clave}"]`);
                 const input = card.querySelector('input[type="checkbox"]');
@@ -639,40 +647,10 @@
                     params[index].fecha_modificacion = new Date().toISOString();
                 }
 
-                showToast('Parametro actualizado correctamente', 'success');
+                UIFeedback.toast('Parametro actualizado correctamente', 'success');
             } catch (error) {
-                showToast('Error al actualizar el parametro', 'error');
+                UIFeedback.toast('Error al actualizar el parametro', 'error');
             }
-        }
-
-        // ==================== TOAST NOTIFICATION ====================
-        function showToast(message, type) {
-            const existingToast = document.querySelector('.toast');
-            if (existingToast) {
-                existingToast.remove();
-            }
-
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-        }
-
-        // ==================== UTILIDADES ====================
-        function formatDate(dateString) {
-            if (!dateString) return 'N/A';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('es-ES', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
         }
 
         function goBack() {

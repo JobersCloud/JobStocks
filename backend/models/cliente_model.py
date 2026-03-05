@@ -18,6 +18,11 @@
 from config.database import Database
 
 
+def _s(val):
+    """Strip whitespace from CHAR fields returned by SQL Server."""
+    return val.strip() if isinstance(val, str) else val
+
+
 class ClienteModel:
     COLUMNS_FULL = 'empresa, codigo, razon, domicilio, codpos, poblacion, provincia, pais'
     COLUMNS_BASIC = 'empresa, codigo, razon'
@@ -35,14 +40,14 @@ class ClienteModel:
     @staticmethod
     def _row_to_dict(row):
         return {
-            'empresa': row[0],
-            'codigo': row[1],
-            'razon': row[2],
-            'domicilio': row[3] if len(row) > 3 else None,
-            'codpos': row[4] if len(row) > 4 else None,
-            'poblacion': row[5] if len(row) > 5 else None,
-            'provincia': row[6] if len(row) > 6 else None,
-            'pais': row[7] if len(row) > 7 else None
+            'empresa': _s(row[0]),
+            'codigo': _s(row[1]),
+            'razon': _s(row[2]),
+            'domicilio': _s(row[3]) if len(row) > 3 else None,
+            'codpos': _s(row[4]) if len(row) > 4 else None,
+            'poblacion': _s(row[5]) if len(row) > 5 else None,
+            'provincia': _s(row[6]) if len(row) > 6 else None,
+            'pais': _s(row[7]) if len(row) > 7 else None
         }
 
     @staticmethod

@@ -307,6 +307,19 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.38.1', date: '2026-03-05', title: 'Favicon Jobers en URL pública', items: [
+                {type: 'fix', text: 'Favicon de Jobers como favicon por defecto del dominio (antes mostraba el de cristal)'}
+            ]},
+            { version: 'v1.38.0', date: '2026-03-04', title: 'Favoritos y productos frecuentes', items: [
+                {type: 'new', text: 'Página Mis Favoritos con pestañas: favoritos manuales y productos más pedidos'},
+                {type: 'new', text: 'Icono corazón en grid de stocks para marcar/desmarcar favoritos'},
+                {type: 'new', text: 'Seguimiento automático de frecuencia de pedidos por producto'}
+            ]},
+            { version: 'v1.37.0', date: '2026-03-03', title: 'Deuda tecnica: tests, strip CHAR y limpieza JS', items: [
+                {type: 'new', text: 'Infraestructura de tests con pytest: 15 tests cubriendo version, auth, stocks y carrito'},
+                {type: 'improve', text: 'Strip consistente de campos CHAR en cliente_model.py y empresa_cliente_model.py'},
+                {type: 'improve', text: 'Eliminadas funciones JS duplicadas en parametros, empresa-logo y dashboard (delegadas a PageCommon)'}
+            ]},
             { version: 'v1.36.9', date: '2026-03-03', title: 'Fix cliente preseleccionado y espacios en codigos', items: [
                 {type: 'fix', text: 'Formulario de envio: el cliente preseleccionado ahora se muestra correctamente'},
                 {type: 'fix', text: 'Codigos de stock: eliminados espacios de campos CHAR de SQL Server que causaban URLs rotas'},

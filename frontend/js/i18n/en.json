@@ -285,6 +285,8 @@
     "allOrders": "Orders",
     "dbControl": "DB Control",
     "apiKeys": "API Keys",
+    "myFavorites": "My Favorites",
+    "contextInfo": "Context Info",
     "logout": "Logout"
   },
   "orders": {
@@ -829,5 +831,22 @@
     "notIndexed": "Images are not indexed yet. Contact the administrator.",
     "viewDetail": "View detail",
     "loadingDetail": "Loading images..."
+  },
+  "favorites": {
+    "title": "My Favorites",
+    "myFavorites": "My Favorites",
+    "mostOrdered": "Most Ordered",
+    "toggle": "Toggle favorite",
+    "added": "Product added to favorites",
+    "removed": "Product removed from favorites",
+    "dateAdded": "Date added",
+    "timesOrdered": "Times ordered",
+    "totalQuantity": "Total quantity",
+    "lastOrdered": "Last ordered",
+    "noFavorites": "You have no favorite products",
+    "noFrequent": "You haven't placed any orders yet",
+    "remove": "Remove from favorites",
+    "addFavorite": "Add to favorites",
+    "viewInStocks": "View in stocks"
   }
 }

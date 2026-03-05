@@ -536,6 +536,7 @@
         let tip = null;
 
         document.addEventListener('mouseenter', function(e) {
+            if (!e.target || typeof e.target.closest !== 'function') return;
             const btn = e.target.closest('.btn-icon[title]');
             if (!btn) return;
 
@@ -561,6 +562,7 @@
         }, true);
 
         document.addEventListener('mouseleave', function(e) {
+            if (!e.target || typeof e.target.closest !== 'function') return;
             const btn = e.target.closest('.btn-icon[data-tip]');
             if (!btn) return;
 

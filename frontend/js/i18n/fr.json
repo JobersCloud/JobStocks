@@ -285,6 +285,8 @@
     "allOrders": "Commandes",
     "dbControl": "Contrôle BD",
     "apiKeys": "Cles API",
+    "myFavorites": "Mes Favoris",
+    "contextInfo": "Info de Contexte",
     "logout": "Déconnexion"
   },
   "orders": {
@@ -829,5 +831,22 @@
     "notIndexed": "Les images ne sont pas encore indexées. Contactez l'administrateur.",
     "viewDetail": "Voir le détail",
     "loadingDetail": "Chargement des images..."
+  },
+  "favorites": {
+    "title": "Mes Favoris",
+    "myFavorites": "Mes Favoris",
+    "mostOrdered": "Les Plus Commandés",
+    "toggle": "Basculer favori",
+    "added": "Produit ajouté aux favoris",
+    "removed": "Produit retiré des favoris",
+    "dateAdded": "Date d'ajout",
+    "timesOrdered": "Fois commandé",
+    "totalQuantity": "Quantité totale",
+    "lastOrdered": "Dernière commande",
+    "noFavorites": "Vous n'avez pas de produits favoris",
+    "noFrequent": "Vous n'avez pas encore passé de commandes",
+    "remove": "Retirer des favoris",
+    "addFavorite": "Ajouter aux favoris",
+    "viewInStocks": "Voir dans les stocks"
   }
 }

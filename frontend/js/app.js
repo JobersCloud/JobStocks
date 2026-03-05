@@ -30,6 +30,7 @@ let whatsappConfig = { habilitado: false, numero: null };  // Configuración de 
 let busquedaVozHabilitada = false;  // Control de funcionalidad de búsqueda por voz
 let mostrarPrecios = false;  // Control de visualización de precios de artículos
 let csrfToken = null;  // Token CSRF para protección contra ataques
+let favoritosSet = new Set();  // Set de códigos favoritos del usuario
 
 // ==================== PAGINACIÓN BACKEND ====================
 let paginacionBackend = {
@@ -302,6 +303,72 @@ async function fetchWithCsrf(url, options = {}) {
     return fetch(url, options);
 }
 
+
+// ==================== FAVORITOS ====================
+
+async function cargarFavoritos(codigos) {
+    try {
+        const empresaId = localStorage.getItem('empresa_id') || '1';
+        const response = await fetch(`${API_URL}/api/favoritos/check-batch?empresa_id=${empresaId}`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ codigos })
+        });
+        if (response.ok) {
+            const data = await response.json();
+            favoritosSet = new Set(data.favoritos || []);
+            // Actualizar iconos de corazón en el DOM
+            document.querySelectorAll('.fav-heart').forEach(btn => {
+                const codigo = btn.getAttribute('data-codigo');
+                const isActive = favoritosSet.has(codigo);
+                btn.classList.toggle('fav-active', isActive);
+                const svg = btn.querySelector('svg');
+                if (svg) svg.setAttribute('fill', isActive ? 'currentColor' : 'none');
+            });
+        }
+    } catch (e) {
+        console.warn('No se pudieron cargar favoritos:', e);
+    }
+}
+
+async function toggleFavorito(codigo, event) {
+    if (event) { event.stopPropagation(); event.preventDefault(); }
+    try {
+        const empresaId = localStorage.getItem('empresa_id') || '1';
+        const response = await fetchWithCsrf(`${API_URL}/api/favoritos/toggle?empresa_id=${empresaId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ codigo })
+        });
+        if (response.ok) {
+            const data = await response.json();
+            if (data.is_favorite) {
+                favoritosSet.add(codigo);
+            } else {
+                favoritosSet.delete(codigo);
+            }
+            // Actualizar todos los iconos de corazón en el DOM
+            document.querySelectorAll(`.fav-heart[data-codigo="${CSS.escape(codigo)}"]`).forEach(btn => {
+                btn.classList.toggle('fav-active', data.is_favorite);
+                const svg = btn.querySelector('svg');
+                if (svg) svg.setAttribute('fill', data.is_favorite ? 'currentColor' : 'none');
+            });
+        }
+    } catch (e) {
+        console.error('Error toggle favorito:', e);
+    }
+}
+window.toggleFavorito = toggleFavorito;
+
+function getHeartIcon(codigo) {
+    const isActive = favoritosSet.has(codigo);
+    return `<button class="fav-heart ${isActive ? 'fav-active' : ''}" data-codigo="${codigo}" onclick="toggleFavorito('${codigo.replace(/'/g, "\\'")}', event)" title="${t('favorites.toggle')}">
+        <svg viewBox="0 0 24 24" fill="${isActive ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+    </button>`;
+}
 
 // Paginación (solo cuando gridConImagenes está activo)
 let paginaActual = 1;
@@ -1706,6 +1773,10 @@ async function cargarTodos() {
         paginaActual = 1;
         mostrarDatos();
         mostrarCargando(false);
+
+        // Cargar favoritos del usuario para los códigos visibles
+        const codigos = allStocksData.map(s => s.codigo);
+        if (codigos.length > 0) cargarFavoritos(codigos);
     } catch (error) {
         console.error('❌ Error al cargar stocks:', error);
         mostrarCargando(false);
@@ -2668,6 +2739,10 @@ async function buscarStocks() {
         mostrarDatos();
 
         mostrarCargando(false);
+
+        // Cargar favoritos del usuario para los códigos visibles
+        const codigos = allStocksData.map(s => s.codigo);
+        if (codigos.length > 0) cargarFavoritos(codigos);
     } catch (error) {
         console.error('❌ Error en búsqueda:', error);
         mostrarCargando(false);
@@ -2849,7 +2924,7 @@ function mostrarTabla(stocks) {
                     ${iconoVer}
                 </button>${propuestasHabilitadas ? `<button class="btn-icon btn-icon-secondary" onclick='agregarAlCarrito(${JSON.stringify(stock).replace(/'/g, "&apos;")})' title="${t('table.addToCart')}">
                     ${iconoCarrito}
-                </button>` : ''}
+                </button>` : ''}${getHeartIcon(stock.codigo)}
             </td>
         </tr>`
     ).join('');
@@ -2924,6 +2999,7 @@ function mostrarTabla(stocks) {
                                 onclick='agregarAlCarrito(${JSON.stringify(stock).replace(/'/g, "&apos;")})'>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
                         </button>` : ''}
+                        ${getHeartIcon(stock.codigo)}
                     </div>
                 </div>
             `).join('')}
@@ -2972,6 +3048,7 @@ async function verDetalle(stock) {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
                 </button>
                 ` : ''}
+                ${getHeartIcon(stock.codigo)}
                 <button class="btn-icon" style="width: 44px; height: 44px; background: #6c757d; color: white;" title="${t('common.close')}" onclick="cerrarModal()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>

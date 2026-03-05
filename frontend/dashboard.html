@@ -165,6 +165,14 @@
                         </span>
                         <span class="sidebar-item-text" data-i18n="magicSearch.title">Busqueda Magica</span>
                     </a>
+                    <a class="sidebar-item" data-page="mis-favoritos.html" data-tooltip="Mis Favoritos" onclick="SidebarNav.navigateTo('mis-favoritos.html')">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.myFavorites">Mis Favoritos</span>
+                    </a>
                 </div>
 
                 <!-- Acordeon Administracion -->
@@ -671,8 +679,8 @@
                 cardsContainer.innerHTML = `<div class="dashboard-empty-message">${t('dashboard.noData')}</div>`;
                 return;
             }
-            tbody.innerHTML = productos.map(p => `<tr><td class="product-code">${p.codigo}</td><td>${truncate(p.descripcion, 30)}</td><td class="product-qty">${formatNumber(p.total_solicitado)}</td><td class="product-times">${p.veces_solicitado}x</td></tr>`).join('');
-            cardsContainer.innerHTML = productos.map(p => `<div class="top-product-card"><div class="top-product-card-header"><span class="top-product-code">${p.codigo}</span><span class="top-product-times">${p.veces_solicitado}x</span></div><div class="top-product-desc">${truncate(p.descripcion, 50)}</div><div class="top-product-qty">${t('dashboard.quantity')}: <strong>${formatNumber(p.total_solicitado)}</strong></div></div>`).join('');
+            tbody.innerHTML = productos.map(p => `<tr><td class="product-code">${p.codigo}</td><td>${PageCommon.truncateText(p.descripcion, 30)}</td><td class="product-qty">${formatNumber(p.total_solicitado)}</td><td class="product-times">${p.veces_solicitado}x</td></tr>`).join('');
+            cardsContainer.innerHTML = productos.map(p => `<div class="top-product-card"><div class="top-product-card-header"><span class="top-product-code">${p.codigo}</span><span class="top-product-times">${p.veces_solicitado}x</span></div><div class="top-product-desc">${PageCommon.truncateText(p.descripcion, 50)}</div><div class="top-product-qty">${t('dashboard.quantity')}: <strong>${formatNumber(p.total_solicitado)}</strong></div></div>`).join('');
         }
 
         function renderTopUsers(usuarios) {
@@ -695,8 +703,8 @@
                 cardsContainer.innerHTML = `<div class="dashboard-empty-message">${t('dashboard.noData')}</div>`;
                 return;
             }
-            tbody.innerHTML = articulos.map(a => `<tr><td class="product-code">${a.codigo}</td><td>${truncate(a.descripcion || a.codigo, 30)}</td><td class="product-qty">${a.vistas}</td><td class="product-times">${a.usuarios_unicos}</td><td>${formatDateShort(a.ultima_vista)}</td></tr>`).join('');
-            cardsContainer.innerHTML = articulos.map(a => `<div class="top-product-card"><div class="top-product-card-header"><span class="top-product-code">${a.codigo}</span><span class="top-product-times">${a.vistas} ${t('dashboard.views')}</span></div><div class="top-product-desc">${truncate(a.descripcion || a.codigo, 50)}</div><div class="top-product-qty">${t('dashboard.uniqueUsers')}: <strong>${a.usuarios_unicos}</strong> · ${formatDateShort(a.ultima_vista)}</div></div>`).join('');
+            tbody.innerHTML = articulos.map(a => `<tr><td class="product-code">${a.codigo}</td><td>${PageCommon.truncateText(a.descripcion || a.codigo, 30)}</td><td class="product-qty">${a.vistas}</td><td class="product-times">${a.usuarios_unicos}</td><td>${formatDateShort(a.ultima_vista)}</td></tr>`).join('');
+            cardsContainer.innerHTML = articulos.map(a => `<div class="top-product-card"><div class="top-product-card-header"><span class="top-product-code">${a.codigo}</span><span class="top-product-times">${a.vistas} ${t('dashboard.views')}</span></div><div class="top-product-desc">${PageCommon.truncateText(a.descripcion || a.codigo, 50)}</div><div class="top-product-qty">${t('dashboard.uniqueUsers')}: <strong>${a.usuarios_unicos}</strong> · ${formatDateShort(a.ultima_vista)}</div></div>`).join('');
         }
 
         function renderTopViewedChart(articulos) {
@@ -814,11 +822,6 @@
             if (!dateString) return 'N/A';
             const date = new Date(dateString);
             return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-        }
-
-        function truncate(str, length) {
-            if (!str) return '';
-            return str.length > length ? str.substring(0, length) + '...' : str;
         }
 
         function getInitials(name) {

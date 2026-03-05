@@ -40,6 +40,7 @@ from routes.db_info_routes import db_info_bp
 from routes.almacen_routes import almacen_bp
 from routes.notification_routes import notification_bp
 from routes.image_search_routes import image_search_bp
+from routes.favoritos_routes import favoritos_bp
 from database.users_db import verify_user, get_user_by_id
 from models.user import User
 from models.user_session_model import UserSessionModel
@@ -149,7 +150,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.36.9'
+APP_VERSION = 'v1.38.1'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -280,6 +281,7 @@ app.register_blueprint(db_info_bp)
 app.register_blueprint(almacen_bp)
 app.register_blueprint(notification_bp)
 app.register_blueprint(image_search_bp)
+app.register_blueprint(favoritos_bp)
 
 # ==================== RUTAS DE AUTENTICACIÓN ====================
 
@@ -396,6 +398,11 @@ def informe_almacen_page():
 @login_required
 def busqueda_magica_page():
     return send_from_directory(FRONTEND_DIR, 'busqueda-magica.html')
+
+@app.route('/mis-favoritos.html')
+@login_required
+def mis_favoritos_page():
+    return send_from_directory(FRONTEND_DIR, 'mis-favoritos.html')
 
 @app.route('/api/login', methods=['POST'])
 @limiter.limit("5 per minute")  # Máximo 5 intentos por minuto por IP
@@ -1185,7 +1192,7 @@ def favicon_jobers():
 
 @app.route('/favicon.ico')
 def favicon_root():
-    return send_from_directory(os.path.join(FRONTEND_DIR, 'assets'), 'favicon.ico')
+    return send_from_directory(os.path.join(FRONTEND_DIR, 'assets'), 'faviconjobers.ico')
 
 @app.route('/media/<path:filename>')
 def serve_media(filename):
