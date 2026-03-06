@@ -150,7 +150,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.39.4'
+APP_VERSION = 'v1.39.5'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -256,7 +256,8 @@ def load_user(user_id):
             debe_cambiar_password=user_data.get('debe_cambiar_password', False),
             company_name=user_data.get('company_name'),
             mostrar_precios=user_data.get('mostrar_precios', False),
-            administrador_clientes=user_data.get('administrador_clientes', False)
+            administrador_clientes=user_data.get('administrador_clientes', False),
+            visible_pedidos=user_data.get('visible_pedidos', True)
         )
     return None
 
@@ -579,7 +580,11 @@ def login():
             rol=user_data.get('rol', 'usuario'),
             empresa_id=empresa_id,
             cliente_id=user_data.get('cliente_id'),
-            company_name=user_data.get('company_name')
+            debe_cambiar_password=user_data.get('debe_cambiar_password', False),
+            company_name=user_data.get('company_name'),
+            mostrar_precios=user_data.get('mostrar_precios', False),
+            administrador_clientes=user_data.get('administrador_clientes', False),
+            visible_pedidos=user_data.get('visible_pedidos', True)
         )
         login_user(user)
 
