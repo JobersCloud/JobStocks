@@ -993,24 +993,30 @@
 @media (max-width: 768px) {
     .param-section-grid {
         grid-template-columns: 1fr;
-        padding: 16px;
+        padding: 10px;
+    }
+
+    .param-section {
+        overflow: hidden;
     }
 
     .param-section-header {
-        padding: 12px 16px;
+        padding: 10px 12px;
+        gap: 8px;
     }
 
     .param-section-icon {
-        width: 36px;
-        height: 36px;
-        font-size: 1.2rem;
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+        flex-shrink: 0;
     }
 
     .param-section-info h3 {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
 
     .param-section-info p {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
     }
 }
