@@ -1322,8 +1322,8 @@ async function displayUserInfo(user) {
             if (dPedidos.habilitado) {
                 const elMisPedidos = document.getElementById('sidebar-mis-pedidos');
                 const elTodosPedidos = document.getElementById('sidebar-todos-pedidos');
-                if (elMisPedidos) elMisPedidos.style.display = '';
-                if (elTodosPedidos) elTodosPedidos.style.display = '';
+                if (elMisPedidos) elMisPedidos.style.display = 'flex';
+                if (elTodosPedidos) elTodosPedidos.style.display = 'flex';
             }
         }
     } catch (e) {}

@@ -254,8 +254,8 @@
                     if (d.habilitado) {
                         const el1 = document.getElementById('sidebar-mis-pedidos');
                         const el2 = document.getElementById('sidebar-todos-pedidos');
-                        if (el1) el1.style.display = '';
-                        if (el2) el2.style.display = '';
+                        if (el1) el1.style.display = 'flex';
+                        if (el2) el2.style.display = 'flex';
                     }
                 }
             } catch (e) {}
