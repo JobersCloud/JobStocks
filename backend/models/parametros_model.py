@@ -123,6 +123,11 @@ class ParametrosModel:
         return ParametrosModel.get_bool('MOSTRAR_PRECIOS', empresa_id, connection)
 
     @staticmethod
+    def visible_pedidos(empresa_id, connection=None):
+        """Verifica si la sección Mis Pedidos es visible para una empresa"""
+        return ParametrosModel.get_bool('VISIBLE_PEDIDOS', empresa_id, connection)
+
+    @staticmethod
     def create_if_not_exists(clave, valor, descripcion, empresa_id, connection=None):
         """Crea un parámetro si no existe para la empresa"""
         conn = Database.get_connection(connection)

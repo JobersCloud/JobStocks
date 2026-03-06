@@ -1037,4 +1037,96 @@ MIGRATIONS = [
         ]
     },
 
+    # v46 - Parámetro VISIBLE_PEDIDOS + campo visible_pedidos en users_empresas
+    {
+        'version': 46,
+        'description': 'Parametro VISIBLE_PEDIDOS + campo en users_empresas',
+        'app_version': 'v1.39.1',
+        'sql': [
+            # 1. Crear parámetro VISIBLE_PEDIDOS para todas las empresas existentes
+            """DECLARE @emp_id VARCHAR(5);
+            DECLARE emp_cursor CURSOR FOR SELECT DISTINCT empresa_id FROM parametros;
+            OPEN emp_cursor;
+            FETCH NEXT FROM emp_cursor INTO @emp_id;
+            WHILE @@FETCH_STATUS = 0
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM parametros WHERE clave = 'VISIBLE_PEDIDOS' AND empresa_id = @emp_id)
+                BEGIN
+                    INSERT INTO parametros (clave, valor, descripcion, empresa_id, fecha_modificacion)
+                    VALUES ('VISIBLE_PEDIDOS', '0', 'Mostrar seccion Mis Pedidos (0=No, 1=Si)', @emp_id, GETDATE());
+                END
+                FETCH NEXT FROM emp_cursor INTO @emp_id;
+            END;
+            CLOSE emp_cursor;
+            DEALLOCATE emp_cursor;""",
+
+            # 2. Añadir campo visible_pedidos a users_empresas (default 0 = oculto)
+            """IF OBJECT_ID('users_empresas') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users_empresas') AND name = 'visible_pedidos')
+            BEGIN
+                ALTER TABLE users_empresas ADD visible_pedidos BIT DEFAULT 0;
+            END""",
+        ]
+    },
+
+    # v47 - Favoritos con clave compuesta (codigo+calidad+tono+calibre+pallet+caja)
+    {
+        'version': 47,
+        'description': 'Añadir campos variante a favoritos y constraint compuesto',
+        'app_version': 'v1.39.2',
+        'sql': [
+            # 1. Añadir campos de variante
+            """IF OBJECT_ID('favoritos') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('favoritos') AND name = 'calidad')
+            BEGIN
+                ALTER TABLE favoritos ADD calidad VARCHAR(50) NULL;
+            END""",
+
+            """IF OBJECT_ID('favoritos') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('favoritos') AND name = 'tono')
+            BEGIN
+                ALTER TABLE favoritos ADD tono VARCHAR(50) NULL;
+            END""",
+
+            """IF OBJECT_ID('favoritos') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('favoritos') AND name = 'calibre')
+            BEGIN
+                ALTER TABLE favoritos ADD calibre VARCHAR(50) NULL;
+            END""",
+
+            """IF OBJECT_ID('favoritos') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('favoritos') AND name = 'pallet')
+            BEGIN
+                ALTER TABLE favoritos ADD pallet VARCHAR(50) NULL;
+            END""",
+
+            """IF OBJECT_ID('favoritos') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('favoritos') AND name = 'caja')
+            BEGIN
+                ALTER TABLE favoritos ADD caja VARCHAR(50) NULL;
+            END""",
+
+            # 2. Eliminar constraint antigua si existe
+            """IF EXISTS (SELECT 1 FROM sys.key_constraints WHERE name = 'UQ_favoritos_user_empresa_codigo')
+            BEGIN
+                ALTER TABLE favoritos DROP CONSTRAINT UQ_favoritos_user_empresa_codigo;
+            END""",
+
+            # 3. Vaciar tabla para evitar duplicados al crear nueva constraint
+            """IF OBJECT_ID('favoritos') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM sys.key_constraints WHERE name = 'UQ_favoritos_user_empresa_variante')
+            BEGIN
+                DELETE FROM favoritos;
+            END""",
+
+            # 4. Crear nueva constraint compuesta
+            """IF OBJECT_ID('favoritos') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM sys.key_constraints WHERE name = 'UQ_favoritos_user_empresa_variante')
+            BEGIN
+                ALTER TABLE favoritos ADD CONSTRAINT UQ_favoritos_user_empresa_variante
+                    UNIQUE (user_id, empresa_id, codigo, calidad, tono, calibre, pallet, caja);
+            END""",
+        ]
+    },
+
 ]

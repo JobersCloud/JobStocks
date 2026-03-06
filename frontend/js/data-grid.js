@@ -170,6 +170,7 @@ class DataGrid {
                         <div class="spinner"></div>
                         <p>${this.loadingText}</p>
                     </div>
+                    <div class="dg-mobile-toolbar">${this._buildMobileToolbarHTML()}</div>
                     <div class="column-filters-chips dg-chips" id="dg-chips-${this.storageKey}" style="display:none;"></div>
                     <div class="proposals-empty dg-empty" style="display:none;">
                         <div class="proposals-empty-icon">${this.emptyIcon}</div>
@@ -203,6 +204,13 @@ class DataGrid {
         this._refs.tbody = this.el.querySelector('.dg-tbody');
         this._refs.cards = this.el.querySelector('.dg-cards');
         this._refs.footer = this.el.querySelector('.dg-footer');
+
+        // Mobile toolbar refs
+        this._refs.mobileToolbar = this.el.querySelector('.dg-mobile-toolbar');
+        this._refs.mobileSortSelect = this.el.querySelector('.dg-mobile-sort-select');
+        this._refs.mobileSortDir = this.el.querySelector('.dg-mobile-sort-dir');
+        this._refs.mobileFilterBtn = this.el.querySelector('.dg-mobile-filter-btn');
+        this._refs.mobileFilterCount = this.el.querySelector('.dg-mobile-filter-count');
     }
 
     // ==================== GRID FILTERS ====================
@@ -243,6 +251,35 @@ class DataGrid {
                 const column = sortableHeader.dataset.sort;
                 if (!column) return;
                 this._handleSort(column);
+            });
+        }
+
+        // Mobile toolbar events
+        if (this._refs.mobileSortSelect) {
+            this._refs.mobileSortSelect.addEventListener('change', (e) => {
+                const col = e.target.value;
+                if (!col) return;
+                this.ordenActual.columna = col;
+                this.ordenActual.direccion = 'ASC';
+                this._updateSortIcons();
+                this._applyFiltersAndSort();
+                this._updateMobileSortUI();
+            });
+        }
+
+        if (this._refs.mobileSortDir) {
+            this._refs.mobileSortDir.addEventListener('click', () => {
+                if (!this.ordenActual.columna) return;
+                this.ordenActual.direccion = this.ordenActual.direccion === 'ASC' ? 'DESC' : 'ASC';
+                this._updateSortIcons();
+                this._applyFiltersAndSort();
+                this._updateMobileSortUI();
+            });
+        }
+
+        if (this._refs.mobileFilterBtn) {
+            this._refs.mobileFilterBtn.addEventListener('click', () => {
+                this._showMobileFilterPicker();
             });
         }
     }
@@ -410,7 +447,7 @@ class DataGrid {
                     const alignClass = col.align === 'right' ? ' class="text-right"' : col.align === 'center' ? ' class="text-center"' : '';
                     const content = this.renderCell(item, col);
                     const cellContent = content !== null && content !== undefined ? content : this._escapeHtml(item[col.key]);
-                    return `<td${alignClass}>${cellContent}</td>`;
+                    return `<td data-column="${col.key}"${alignClass}>${cellContent}</td>`;
                 }).join('');
                 const rowId = item.id != null ? ` data-id="${item.id}"` : '';
                 return `<tr${rowId}>${cells}</tr>`;
@@ -426,6 +463,9 @@ class DataGrid {
         if (this._gridFilters) {
             this._gridFilters.actualizarIconosFiltro();
         }
+
+        // Rebuild mobile sort options with new column order
+        this._rebuildMobileSortOptions();
     }
 
     // ==================== SORTING ====================
@@ -439,6 +479,7 @@ class DataGrid {
         }
         this._updateSortIcons();
         this._applyFiltersAndSort();
+        this._updateMobileSortUI();
     }
 
     _sortData(data) {
@@ -507,6 +548,174 @@ class DataGrid {
         });
     }
 
+    // ==================== MOBILE TOOLBAR ====================
+
+    _buildMobileToolbarHTML() {
+        const t = window.t || (k => k);
+        const sortableCols = this.columns.filter(c => c.sortable !== false);
+        const filterableCols = this.columns.filter(c => c.filterable !== false && c.sortable !== false);
+
+        const sortOptions = sortableCols.map(col =>
+            `<option value="${col.key}">${col.label}</option>`
+        ).join('');
+
+        const filterCount = filterableCols.length > 0
+            ? `<span class="dg-mobile-filter-count" style="display:none;">0</span>`
+            : '';
+
+        return `
+            <div class="dg-mobile-sort">
+                <span class="dg-mobile-sort-icon">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5h10M11 9h7M11 13h4M3 17l4 4 4-4M7 3v18"/></svg>
+                </span>
+                <select class="dg-mobile-sort-select">
+                    <option value="">${t('common.mobileSortPlaceholder') || '-- Ordenar por --'}</option>
+                    <optgroup label="${t('common.mobileSortBy') || 'Ordenar por'}">
+                        ${sortOptions}
+                    </optgroup>
+                </select>
+                <button class="dg-mobile-sort-dir" title="ASC/DESC">
+                    <span class="dg-sort-arrow-down">&#9660;</span><span class="dg-sort-arrow-up" style="display:none;">&#9650;</span>
+                </button>
+            </div>
+            ${filterableCols.length > 0 ? `
+            <button class="dg-mobile-filter-btn" title="${t('common.mobileFilterBtn') || 'Filtrar'}">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 2h14l-5 6v5l-4 2v-7L1 2z"/></svg>
+                ${filterCount}
+            </button>` : ''}
+        `;
+    }
+
+    _updateMobileSortUI() {
+        if (!this._refs.mobileSortSelect) return;
+        this._refs.mobileSortSelect.value = this.ordenActual.columna || '';
+
+        if (this._refs.mobileSortDir) {
+            const arrowDown = this._refs.mobileSortDir.querySelector('.dg-sort-arrow-down');
+            const arrowUp = this._refs.mobileSortDir.querySelector('.dg-sort-arrow-up');
+            if (arrowDown && arrowUp) {
+                if (this.ordenActual.direccion === 'ASC') {
+                    arrowDown.style.display = 'none';
+                    arrowUp.style.display = '';
+                } else {
+                    arrowDown.style.display = '';
+                    arrowUp.style.display = 'none';
+                }
+            }
+        }
+    }
+
+    _updateMobileFilterCount() {
+        if (!this._refs.mobileFilterCount) {
+            this._refs.mobileFilterCount = this.el.querySelector('.dg-mobile-filter-count');
+        }
+        if (!this._refs.mobileFilterCount) return;
+        const count = this._gridFilters ? this._gridFilters.filtrosColumna.length : 0;
+        if (count > 0) {
+            this._refs.mobileFilterCount.textContent = count;
+            this._refs.mobileFilterCount.style.display = 'inline-flex';
+        } else {
+            this._refs.mobileFilterCount.style.display = 'none';
+        }
+    }
+
+    _showMobileFilterPicker() {
+        // Remove existing picker
+        const existing = document.querySelector('.dg-mobile-filter-picker-overlay');
+        if (existing) { existing.remove(); return; }
+
+        const t = window.t || (k => k);
+        const filterableCols = this.columns.filter(c => c.filterable !== false && c.sortable !== false);
+        if (filterableCols.length === 0) return;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'dg-mobile-filter-picker-overlay';
+
+        const activeFilters = this._gridFilters ? this._gridFilters.filtrosColumna.map(f => f.columna) : [];
+
+        const items = filterableCols.map(col => {
+            const isActive = activeFilters.includes(col.key);
+            return `<button class="dg-mobile-filter-picker-item${isActive ? ' active' : ''}" data-col="${col.key}">
+                <span class="dg-mobile-filter-picker-label">${col.label}</span>
+                ${isActive ? '<span class="dg-mobile-filter-picker-dot"></span>' : ''}
+            </button>`;
+        }).join('');
+
+        overlay.innerHTML = `
+            <div class="dg-mobile-filter-picker">
+                <div class="dg-mobile-filter-picker-header">
+                    <span>${t('common.mobileFilterTitle') || 'Filtrar por columna'}</span>
+                    <button class="dg-mobile-filter-picker-close">&times;</button>
+                </div>
+                <div class="dg-mobile-filter-picker-body">
+                    ${items}
+                </div>
+                ${activeFilters.length > 0 ? `
+                <div class="dg-mobile-filter-picker-footer">
+                    <button class="dg-mobile-filter-picker-clear">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2l12 12M14 2L2 14"/></svg>
+                        ${t('common.mobileClearFilters') || 'Limpiar todos'}
+                    </button>
+                </div>` : ''}
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // Trigger slide-up animation
+        requestAnimationFrame(() => {
+            overlay.classList.add('visible');
+        });
+
+        // Event: close overlay
+        const closeOverlay = () => {
+            overlay.classList.remove('visible');
+            setTimeout(() => overlay.remove(), 300);
+        };
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeOverlay();
+        });
+
+        overlay.querySelector('.dg-mobile-filter-picker-close').addEventListener('click', closeOverlay);
+
+        // Event: column item click → open filter popup for that column
+        overlay.querySelectorAll('.dg-mobile-filter-picker-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const colKey = btn.dataset.col;
+                closeOverlay();
+                // Small delay to allow sheet to close before popup opens
+                setTimeout(() => {
+                    if (this._gridFilters) {
+                        this._gridFilters.mostrarPopupFiltro(colKey, this._refs.mobileFilterBtn || this.el);
+                    }
+                }, 350);
+            });
+        });
+
+        // Event: clear all filters
+        const clearBtn = overlay.querySelector('.dg-mobile-filter-picker-clear');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                if (this._gridFilters) {
+                    this._gridFilters.limpiarTodosFiltrosColumna();
+                }
+                closeOverlay();
+            });
+        }
+    }
+
+    _rebuildMobileSortOptions() {
+        if (!this._refs.mobileSortSelect) return;
+        const t = window.t || (k => k);
+        const sortableCols = this.columns.filter(c => c.sortable !== false);
+        this._refs.mobileSortSelect.innerHTML = `
+            <option value="">${t('common.mobileSortPlaceholder') || '-- Ordenar --'}</option>
+            ${sortableCols.map(col => `<option value="${col.key}">${col.label}</option>`).join('')}
+        `;
+        this._updateMobileSortUI();
+    }
+
     // ==================== RENDERING ====================
 
     _applyFiltersAndSort() {
@@ -521,6 +730,7 @@ class DataGrid {
             this._gridFilters.renderizarChipsFiltrosColumna();
             this._gridFilters.actualizarIconosFiltro();
         }
+        this._updateMobileFilterCount();
     }
 
     _renderData(data) {
@@ -560,7 +770,7 @@ class DataGrid {
                 const alignClass = col.align === 'right' ? ' class="text-right"' : col.align === 'center' ? ' class="text-center"' : '';
                 const content = this.renderCell(item, col);
                 const cellContent = content !== null && content !== undefined ? content : this._escapeHtml(item[col.key]);
-                return `<td${alignClass}>${cellContent}</td>`;
+                return `<td data-column="${col.key}"${alignClass}>${cellContent}</td>`;
             }).join('');
             const rowId = item.id != null ? ` data-id="${item.id}"` : '';
             return `<tr${rowId}>${cells}</tr>`;
@@ -713,6 +923,7 @@ class DataGrid {
         this._paginationMeta = null;
         this._applyFiltersAndSort();
         this._updateSortIcons();
+        this._updateMobileSortUI();
     }
 
     /**
@@ -725,6 +936,7 @@ class DataGrid {
         this._paginationMeta = meta || null;
         this._applyFiltersAndSort();
         this._updateSortIcons();
+        this._updateMobileSortUI();
     }
 
     /**
@@ -777,6 +989,9 @@ class DataGrid {
         if (this._gridFilters) {
             this._gridFilters.cerrarPopupFiltro();
         }
+        // Clean up mobile filter picker if open
+        const picker = document.querySelector('.dg-mobile-filter-picker-overlay');
+        if (picker) picker.remove();
         this.el.innerHTML = '';
         this._allData = [];
         this._filteredData = [];

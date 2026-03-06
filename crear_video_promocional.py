@@ -7,7 +7,7 @@ Flujo completo: Login > Catalogo > Filtro > Busqueda voz > Detalle > Carrito > F
 
 Datos sensibles (nombres clientes, precios, emails) se difuminan automaticamente.
 
-Autor: Jobers
+Autor: Jóbers
 Actualizado: 2026-03-03
 """
 
@@ -42,7 +42,7 @@ OUTPUT_VIDEO = "video_promocional_stocks.mp4"
 SCREENSHOTS_DIR = "screenshots_promo"
 AUDIO_DIR = "audio_promo"
 FPS = 24
-TOTAL_SCENES = 17  # 1:Intro, 2:Login, 3:Catalogo, 4:Filtro, 5:Voz, 6:Detalle, 7:Cantidad, 8:Carrito, 9:Envio, 10:Firma, 11:Enviado, 12:BusqMagica, 13:Usuarios, 14:Pedidos, 15:DetPedido, 16:Mapa, 17:ERP
+TOTAL_SCENES = 12  # 1:Intro, 2:Login, 3:Catalogo, 4:Filtro, 5:Detalle, 6:Carrito, 7:Firma, 8:Enviado, 9:BusqMagica, 10:Usuarios, 11:Pedidos, 12:ERP
 
 
 # ================================================================
@@ -165,7 +165,7 @@ def setup_browser():
 
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
-    driver.set_page_load_timeout(30)
+    driver.set_page_load_timeout(60)
     return driver
 
 
@@ -217,7 +217,7 @@ def get_audio_duration(path):
     return dur
 
 
-def create_video_clip(image_path, audio_path, extra_time=1.5):
+def create_video_clip(image_path, audio_path, extra_time=0.5):
     """Crea clip con imagen estatica y audio"""
     audio_dur = get_audio_duration(audio_path)
     duration = audio_dur + extra_time
@@ -253,6 +253,7 @@ def api_login(driver):
         driver.execute_script(f"""
             localStorage.setItem('connection', '{EMPRESA_ID}');
             localStorage.setItem('empresa_id', '{empresa_id}');
+            localStorage.setItem('theme', 'light');
             if (arguments[0]) localStorage.setItem('csrf_token', arguments[0]);
         """, result.get('csrf_token', ''))
         print(f"    Login exitoso (empresa_id={empresa_id})")
@@ -312,7 +313,7 @@ def inject_blur(driver, css_js):
 
 
 def create_intro_image():
-    """Genera imagen de presentacion (1920x1080) con logo Jobers y texto"""
+    """Genera imagen de presentacion (1920x1080) con logo Jóbers y texto"""
     WIDTH, HEIGHT = 1920, 1080
 
     # Colores
@@ -420,7 +421,7 @@ def create_intro_image():
         feat_y += 46
 
     # Pie
-    center_text("by Jobers  ·  jobers.es", font_small, HEIGHT - 55, SUBTLE)
+    center_text("by Jóbers  ·  jobers.es", font_small, HEIGHT - 55, SUBTLE)
 
     # Guardar
     filepath = os.path.join(SCREENSHOTS_DIR, "00_intro.png")
@@ -453,12 +454,11 @@ def main():
 
         intro_img = create_intro_image()
         intro_audio = generate_audio(
-            "Yob Stocks, la plataforma desarrollada por Yóbers "
-            "que permite externalizar el stock de su fábrica. "
-            "Consulte el catálogo en tiempo real, "
-            "gestione propuestas de pedido con firma digital, "
-            "localice productos con inteligencia artificial "
-            "y sincronice todo directamente con su sistema ERP.",
+            "JobStocks, de Jóbers. "
+            "Externalice el stock de su fábrica. "
+            "Catálogo en tiempo real, propuestas con firma digital, "
+            "búsqueda por inteligencia artificial "
+            "y sincronización directa con su ERP.",
             "00_intro"
         )
         clips.append(create_video_clip(intro_img, intro_audio, extra_time=1.0))
@@ -468,10 +468,22 @@ def main():
         # ============================================================
         print(f"\n[2/{TOTAL_SCENES}] PANTALLA DE LOGIN...")
 
-        driver.get(f"{BASE_URL}/login")
+        for _attempt in range(3):
+            try:
+                driver.get(f"{BASE_URL}/login")
+                break
+            except Exception as e:
+                print(f"    [!] Reintentando carga login ({_attempt+1}/3): {e}")
+                time.sleep(5)
         time.sleep(3)
-        driver.execute_script(f"localStorage.setItem('connection', '{EMPRESA_ID}');")
-        driver.get(f"{BASE_URL}/login")
+        driver.execute_script(f"localStorage.setItem('connection', '{EMPRESA_ID}'); localStorage.setItem('theme', 'light');")
+        for _attempt in range(3):
+            try:
+                driver.get(f"{BASE_URL}/login")
+                break
+            except Exception as e:
+                print(f"    [!] Reintentando carga login ({_attempt+1}/3): {e}")
+                time.sleep(5)
         time.sleep(5)
 
         # Rellenar credenciales antes de capturar
@@ -525,6 +537,16 @@ def main():
 
         # Inyectar blur de precios en catalogo
         inject_blur(driver, BLUR_CSS_CATALOGO_PRECIOS)
+
+        # Filtrar por color negro para mostrar imágenes oscuras
+        driver.execute_script("""
+            const colorInput = document.getElementById('filter-color');
+            if (colorInput) {
+                colorInput.value = 'NEGRO';
+                colorInput.dispatchEvent(new Event('input'));
+            }
+        """)
+        print("    Filtro color: NEGRO")
 
         # Lanzar busqueda (await async)
         print("    Ejecutando buscarStocks()...")
@@ -591,99 +613,55 @@ def main():
         time.sleep(1)
 
         audio = generate_audio(
-            "El catálogo muestra todas las referencias de su inventario "
-            "con imágenes reales de los productos, "
-            "actualizadas en tiempo real desde su sistema ERP.",
+            "Catálogo con imágenes reales, "
+            "actualizado en tiempo real desde su ERP.",
             "03_catalogo"
         )
         img = capture_screenshot(driver, "03_catalogo")
         clips.append(create_video_clip(img, audio))
 
         # ============================================================
-        # ESCENA 4: FILTRAR POR FORMATO
+        # ESCENA 4: FILTRAR POR FORMATO 25x40
         # ============================================================
-        print(f"\n[4/{TOTAL_SCENES}] FILTRAR POR FORMATO...")
+        print(f"\n[4/{TOTAL_SCENES}] FILTRAR POR FORMATO 25x40...")
 
-        formats = driver.execute_script("""
+        # Añadir formato 25x40 al filtro de color negro ya activo
+        driver.execute_script("""
             const select = document.getElementById('filter-formato');
-            if (!select) return [];
-            return Array.from(select.options).map(o => ({value: o.value, text: o.text})).filter(o => o.value !== '');
+            if (select) {
+                // Buscar opcion que contenga 25x40
+                for (const opt of select.options) {
+                    if (opt.value.includes('25') && opt.value.includes('40')) {
+                        select.value = opt.value;
+                        break;
+                    }
+                }
+            }
         """)
-        print(f"    Formatos disponibles: {len(formats)}")
+        print("    Filtro formato: 25x40")
 
-        target_format = ""
-        narr_formato = ""
-        if formats:
-            fmt60 = next((f for f in formats if '60' in f['value']), None)
-            if fmt60:
-                target_format = fmt60['value']
-                narr_formato = fmt60['text']
-            else:
-                target_format = formats[0]['value']
-                narr_formato = formats[0]['text']
-
-            print(f"    Seleccionando formato: {target_format}")
-            driver.execute_script(f"""
-                document.getElementById('filter-formato').value = '{target_format}';
+        try:
+            driver.execute_async_script("""
+                const done = arguments[arguments.length - 1];
+                buscarStocks().then(() => done('ok')).catch(e => done('error: ' + e.message));
             """)
-            try:
-                driver.execute_async_script("""
-                    const done = arguments[arguments.length - 1];
-                    buscarStocks().then(() => done('ok')).catch(e => done('error: ' + e.message));
-                """)
-            except Exception:
-                pass
-            time.sleep(2)
+        except Exception:
+            pass
+        time.sleep(2)
 
-            # Forzar carga de thumbnails tras nuevo filtrado
-            force_load_thumbnails(driver)
-            time.sleep(2)
-            # Segunda pasada
-            force_load_thumbnails(driver)
-            # Forzar opacity
-            driver.execute_script("""
-                document.querySelectorAll('.stock-thumb').forEach(img => {
-                    img.style.opacity = '1';
-                });
-            """)
+        force_load_thumbnails(driver)
+        time.sleep(2)
+        force_load_thumbnails(driver)
+        driver.execute_script("""
+            document.querySelectorAll('.stock-thumb').forEach(img => {
+                img.style.opacity = '1';
+            });
+        """)
 
-            has_results = driver.execute_script(
-                "return document.querySelectorAll('.stock-image-card, table tbody tr').length > 0"
-            )
-            if not has_results:
-                print("    [!] Sin resultados, probando otro formato...")
-                if len(formats) > 1:
-                    target_format = formats[1]['value']
-                    narr_formato = formats[1]['text']
-                    driver.execute_script(f"""
-                        document.getElementById('filter-formato').value = '{target_format}';
-                    """)
-                    try:
-                        driver.execute_async_script("""
-                            const done = arguments[arguments.length - 1];
-                            buscarStocks().then(() => done('ok')).catch(e => done('error: ' + e.message));
-                        """)
-                    except Exception:
-                        pass
-                    time.sleep(2)
-                    force_load_thumbnails(driver)
-                    driver.execute_script("""
-                        document.querySelectorAll('.stock-thumb').forEach(img => {
-                            img.style.opacity = '1';
-                        });
-                    """)
-
-        if target_format:
-            narr_filtro = (
-                f"Utilice los filtros del panel de búsqueda para encontrar productos. "
-                f"Aquí filtramos por formato {narr_formato}. "
-                f"También puede filtrar por modelo, color, calidad o existencias mínimas."
-            )
-        else:
-            narr_filtro = (
-                "Explore todo el catálogo o filtre por formato, modelo, calidad o color "
-                "para encontrar exactamente lo que necesita."
-            )
+        narr_filtro = (
+            "Filtros avanzados. Aquí filtramos por color negro y formato 25x40. "
+            "También por modelo, calidad o existencias."
+        )
 
         # Re-inyectar blur (se pierde al buscar porque se re-renderiza)
         inject_blur(driver, BLUR_CSS_CATALOGO_PRECIOS)
@@ -694,57 +672,9 @@ def main():
         clips.append(create_video_clip(img, audio))
 
         # ============================================================
-        # ESCENA 5: BUSQUEDA POR VOZ
+        # ESCENA 5: DETALLE DE PRODUCTO
         # ============================================================
-        print(f"\n[5/{TOTAL_SCENES}] BUSQUEDA POR VOZ...")
-
-        # Asegurar que estamos en la pagina del catalogo
-        # Simular visualmente el estado "escuchando" del boton de voz
-        driver.execute_script("""
-            // Mostrar el boton de voz (forzar visible)
-            const wrapper = document.getElementById('voice-search-wrapper');
-            if (wrapper) wrapper.style.display = '';
-
-            // Activar estado visual "escuchando" (pulso rojo)
-            const btn = document.getElementById('btn-voice-search');
-            if (btn) btn.classList.add('listening');
-
-            // Mostrar tooltip de ayuda
-            const tooltip = document.getElementById('voice-help-tooltip');
-            if (tooltip) {
-                tooltip.style.display = 'block';
-                tooltip.innerHTML = '<strong>🎤 Escuchando...</strong><br>Diga el nombre del producto';
-            }
-        """)
-        time.sleep(2)
-
-        # Re-inyectar blur de precios
-        inject_blur(driver, BLUR_CSS_CATALOGO_PRECIOS)
-        time.sleep(0.3)
-
-        audio = generate_audio(
-            "Búsqueda por voz. "
-            "Pulse el micrófono y diga el nombre del producto que busca. "
-            "El sistema reconoce su voz y filtra el catálogo automáticamente. "
-            "Compatible con español, inglés y francés.",
-            "05_busqueda_voz"
-        )
-        img = capture_screenshot(driver, "05_busqueda_voz")
-        clips.append(create_video_clip(img, audio))
-
-        # Desactivar estado de escucha
-        driver.execute_script("""
-            const btn = document.getElementById('btn-voice-search');
-            if (btn) btn.classList.remove('listening');
-            const tooltip = document.getElementById('voice-help-tooltip');
-            if (tooltip) tooltip.style.display = 'none';
-        """)
-        time.sleep(0.5)
-
-        # ============================================================
-        # ESCENA 6: DETALLE DE PRODUCTO
-        # ============================================================
-        print(f"\n[6/{TOTAL_SCENES}] DETALLE DE PRODUCTO...")
+        print(f"\n[5/{TOTAL_SCENES}] DETALLE DE PRODUCTO...")
 
         try:
             first_card = WebDriverWait(driver, 10).until(
@@ -804,56 +734,38 @@ def main():
         inject_blur(driver, BLUR_CSS_CATALOGO_PRECIOS)
 
         audio = generate_audio(
-            "Haga clic en cualquier producto para ver su ficha completa. "
-            "Galería de imágenes, datos de empaquetado, "
-            "ficha técnica en PDF y contacto directo por email o WhatsApp.",
+            "Ficha completa del producto: "
+            "galería de imágenes, empaquetado, "
+            "ficha técnica PDF y contacto directo.",
             "05_detalle"
         )
         img = capture_screenshot(driver, "05_detalle")
         clips.append(create_video_clip(img, audio))
 
-        # ============================================================
-        # ESCENA 7: MODAL DE CANTIDAD - ANADIR 1 CAJA
-        # ============================================================
-        print(f"\n[7/{TOTAL_SCENES}] ANADIR CAJA AL CARRITO...")
-
+        # Agregar producto al carrito (sin escena separada)
+        print("    Agregando producto al carrito...")
         driver.execute_script("agregarAlCarritoDesdeDetalle()")
         time.sleep(2)
-
         try:
             WebDriverWait(driver, 5).until(
                 EC.visibility_of_element_located((By.ID, "quantity-modal-overlay"))
             )
         except Exception:
             pass
-
         driver.execute_script("""
             const btns = document.querySelectorAll('.quantity-package-btn-primary');
             if (btns.length > 0) btns[0].click();
         """)
         time.sleep(1)
-
-        audio = generate_audio(
-            "Seleccione la cantidad deseada. "
-            "Añada productos por caja o por palet directamente con un solo clic. "
-            "El sistema controla que no supere las existencias disponibles.",
-            "06_cantidad"
-        )
-        img = capture_screenshot(driver, "06_cantidad")
-        clips.append(create_video_clip(img, audio))
-
-        # Confirmar agregar al carrito
-        print("    Confirmando agregar al carrito...")
         driver.execute_script("confirmarAgregarAlCarrito()")
         time.sleep(4)
-
         cart_count = driver.execute_script("return carrito.length")
         print(f"    Productos en carrito: {cart_count}")
 
         # ============================================================
-        # ESCENA 8: VISTA DEL CARRITO
+        # ESCENA 6: VISTA DEL CARRITO
         # ============================================================
-        print(f"\n[8/{TOTAL_SCENES}] VISTA DEL CARRITO...")
+        print(f"\n[6/{TOTAL_SCENES}] VISTA DEL CARRITO...")
 
         if cart_count > 0:
             driver.execute_script("verCarrito()")
@@ -865,21 +777,16 @@ def main():
         time.sleep(2)
 
         audio = generate_audio(
-            "Revise los productos de su solicitud en el carrito. "
-            "Verifique cantidades, formatos y calidades antes de continuar con el envío.",
+            "Carrito de solicitudes. "
+            "Revise cantidades y calidades antes del envío.",
             "07_carrito"
         )
         img = capture_screenshot(driver, "07_carrito")
         clips.append(create_video_clip(img, audio))
 
-        # ============================================================
-        # ESCENA 9: FORMULARIO DE ENVIO
-        # ============================================================
-        print(f"\n[9/{TOTAL_SCENES}] FORMULARIO DE ENVIO...")
-
+        # Rellenar formulario de envío (sin escena separada)
         driver.execute_script("mostrarFormularioEnvio()")
         time.sleep(2)
-
         driver.execute_script("""
             const ref = document.getElementById('referencia-envio');
             if (ref) {
@@ -888,24 +795,16 @@ def main():
             }
             const com = document.getElementById('comentarios-envio');
             if (com) {
-                com.value = 'Solicitud de muestra para showroom. Entregar en horario de mañana, de 9:00 a 13:00.';
+                com.value = 'Solicitud de muestra para showroom.';
                 com.dispatchEvent(new Event('input'));
             }
         """)
         time.sleep(1)
 
-        audio = generate_audio(
-            "Complete los datos del envío. "
-            "Añada una referencia comercial y comentarios para su propuesta.",
-            "08_formulario"
-        )
-        img = capture_screenshot(driver, "08_formulario")
-        clips.append(create_video_clip(img, audio))
-
         # ============================================================
-        # ESCENA 10: FIRMA DIGITAL
+        # ESCENA 7: FIRMA DIGITAL
         # ============================================================
-        print(f"\n[10/{TOTAL_SCENES}] FIRMA DIGITAL...")
+        print(f"\n[7/{TOTAL_SCENES}] FIRMA DIGITAL...")
 
         has_firma = driver.execute_script("""
             const firmaCheck = document.getElementById('firmar-propuesta');
@@ -970,9 +869,9 @@ def main():
         clips.append(create_video_clip(img, audio))
 
         # ============================================================
-        # ESCENA 11: ENVIAR PROPUESTA
+        # ESCENA 8: ENVIAR PROPUESTA
         # ============================================================
-        print(f"\n[11/{TOTAL_SCENES}] ENVIANDO PROPUESTA...")
+        print(f"\n[8/{TOTAL_SCENES}] ENVIANDO PROPUESTA...")
 
         driver.execute_script("""
             const content = document.getElementById('carrito-content');
@@ -984,19 +883,18 @@ def main():
         time.sleep(8)
 
         audio = generate_audio(
-            "La solicitud ha sido enviada. "
-            "El sistema genera un PDF profesional con las imágenes de los productos "
-            "y la firma digital, y lo envía automáticamente por correo electrónico. "
-            "La propuesta queda registrada en el historial para su seguimiento.",
+            "Solicitud enviada. "
+            "Se genera un PDF con imágenes y firma digital, "
+            "y se envía por email automáticamente.",
             "10_enviado"
         )
         img = capture_screenshot(driver, "10_enviado")
         clips.append(create_video_clip(img, audio))
 
         # ============================================================
-        # ESCENA 12: BUSQUEDA MAGICA
+        # ESCENA 9: BUSQUEDA MAGICA
         # ============================================================
-        print(f"\n[12/{TOTAL_SCENES}] BUSQUEDA MAGICA...")
+        print(f"\n[9/{TOTAL_SCENES}] BUSQUEDA MAGICA...")
 
         driver.get(f"{BASE_URL}/busqueda-magica.html")
         time.sleep(4)
@@ -1019,9 +917,19 @@ def main():
             print("    Subiendo imagen de prueba para busqueda visual...")
             file_input = driver.find_element(By.ID, "file-input")
             file_input.send_keys(prueba_img)
+            time.sleep(2)
+            # Clicar botón "Buscar productos similares"
+            try:
+                search_btn = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.ID, "btn-search"))
+                )
+                search_btn.click()
+                print("    Botón 'Buscar' clicado, esperando resultados...")
+            except Exception as e:
+                print(f"    [!] No se pudo clicar botón de búsqueda: {e}")
             # Esperar a que aparezcan resultados (tarjetas .stock-image-card)
             try:
-                WebDriverWait(driver, 45).until(
+                WebDriverWait(driver, 60).until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, ".stock-image-card"))
                 )
                 print("    Resultados encontrados!")
@@ -1038,19 +946,17 @@ def main():
 
         audio = generate_audio(
             "Búsqueda mágica por imagen. "
-            "Arrastre una fotografía de cualquier producto cerámico "
-            "y el sistema encontrará las referencias más similares de su catálogo "
-            "utilizando inteligencia artificial y reconocimiento visual. "
-            "Cada resultado muestra un porcentaje de similitud.",
+            "Arrastre una foto y la inteligencia artificial "
+            "encontrará los productos más similares de su catálogo.",
             "11_busqueda_magica"
         )
         img = capture_screenshot(driver, "11_busqueda_magica")
         clips.append(create_video_clip(img, audio))
 
         # ============================================================
-        # ESCENA 13: GESTION DE USUARIOS (con blur)
+        # ESCENA 10: GESTION DE USUARIOS (con blur)
         # ============================================================
-        print(f"\n[13/{TOTAL_SCENES}] GESTION DE USUARIOS...")
+        print(f"\n[10/{TOTAL_SCENES}] GESTION DE USUARIOS...")
 
         driver.get(f"{BASE_URL}/usuarios.html")
         time.sleep(4)
@@ -1070,19 +976,18 @@ def main():
         time.sleep(0.5)
 
         audio = generate_audio(
-            "Panel de administración de usuarios. "
-            "Gestione las cuentas de acceso, active o desactive usuarios, "
-            "asigne roles y permisos, y controle quién accede al sistema. "
-            "Filtros avanzados por columna para encontrar cualquier usuario rápidamente.",
+            "Administración de usuarios. "
+            "Gestione cuentas, roles y permisos "
+            "con filtros avanzados por columna.",
             "12_usuarios"
         )
         img = capture_screenshot(driver, "12_usuarios")
         clips.append(create_video_clip(img, audio))
 
         # ============================================================
-        # ESCENA 14: PEDIDOS DE VENTA - LISTA (con blur)
+        # ESCENA 11: PEDIDOS DE VENTA - LISTA (con blur)
         # ============================================================
-        print(f"\n[14/{TOTAL_SCENES}] PEDIDOS DE VENTA...")
+        print(f"\n[11/{TOTAL_SCENES}] PEDIDOS DE VENTA...")
 
         driver.get(f"{BASE_URL}/todos-pedidos.html")
         time.sleep(4)
@@ -1102,121 +1007,11 @@ def main():
         time.sleep(0.5)
 
         audio = generate_audio(
-            "Consulte todos los pedidos de venta sincronizados con su ERP. "
-            "Filtre por año, país, provincia o cliente para localizar cualquier pedido. "
-            "Información en tiempo real del estado de cada operación.",
+            "Pedidos de venta sincronizados con su ERP. "
+            "Filtre por año, país o cliente.",
             "13_pedidos"
         )
         img = capture_screenshot(driver, "13_pedidos")
-        clips.append(create_video_clip(img, audio))
-
-        # ============================================================
-        # ESCENA 15: DETALLE DE PEDIDO CON IMAGENES (con blur)
-        # ============================================================
-        print(f"\n[15/{TOTAL_SCENES}] DETALLE DE PEDIDO...")
-
-        driver.execute_script("""
-            const btn = document.querySelector('#orders-grid .btn-icon-primary');
-            if (btn) btn.click();
-        """)
-        time.sleep(2)
-
-        try:
-            WebDriverWait(driver, 10).until(
-                lambda d: d.execute_script(
-                    "const m = document.getElementById('order-detail-modal'); "
-                    "return m && getComputedStyle(m).display === 'flex';"
-                )
-            )
-        except Exception:
-            pass
-        time.sleep(4)
-
-        # Difuminar datos del cliente y precios en el detalle
-        inject_blur(driver, BLUR_CSS_PEDIDO_DETALLE)
-        time.sleep(0.5)
-
-        has_thumbs = driver.execute_script(
-            "return document.querySelectorAll('.order-line-thumb').length > 0"
-        )
-        print(f"    Thumbnails en lineas: {has_thumbs}")
-
-        audio = generate_audio(
-            "El detalle del pedido muestra todas las líneas con las imágenes reales "
-            "de cada producto, cantidades y referencias. "
-            "Información completa para verificar cualquier operación comercial.",
-            "14_detalle_pedido"
-        )
-        img = capture_screenshot(driver, "14_detalle_pedido")
-        clips.append(create_video_clip(img, audio))
-
-        # ============================================================
-        # ESCENA 16: UBICACION DEL CLIENTE (MAPA)
-        # ============================================================
-        print(f"\n[16/{TOTAL_SCENES}] UBICACION DEL CLIENTE (MAPA)...")
-
-        # Cerrar modal de detalle
-        driver.execute_script("""
-            const modal = document.getElementById('order-detail-modal');
-            if (modal) modal.style.display = 'none';
-        """)
-        time.sleep(1)
-
-        # Click en boton de ubicacion
-        driver.execute_script("""
-            const btns = document.querySelectorAll('#orders-grid button[title]');
-            let mapBtn = null;
-            for (const btn of btns) {
-                const title = btn.getAttribute('title') || '';
-                if (title.toLowerCase().includes('ubicaci') || title.toLowerCase().includes('location')) {
-                    mapBtn = btn;
-                    break;
-                }
-            }
-            if (mapBtn) mapBtn.click();
-        """)
-        time.sleep(3)
-
-        # Esperar mapa + marcador
-        try:
-            WebDriverWait(driver, 15).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, ".leaflet-container"))
-            )
-            WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, ".leaflet-marker-icon"))
-            )
-        except Exception:
-            print("    [!] Mapa o marcador no encontrado, esperando...")
-            time.sleep(5)
-        time.sleep(3)
-
-        # Difuminar datos del cliente en el mapa (titulo, direccion, popup)
-        driver.execute_script("""
-            // Titulo del modal (nombre del cliente)
-            document.querySelectorAll('[id^="map-modal-"] h2').forEach(h2 => {
-                h2.style.filter = 'blur(5px)';
-            });
-            // Direccion debajo del titulo
-            document.querySelectorAll('[id$="-address"]').forEach(el => {
-                if (el.id.startsWith('map-modal-')) {
-                    el.style.filter = 'blur(5px)';
-                }
-            });
-            // Popup del marcador en el mapa (nombre + direccion)
-            document.querySelectorAll('.leaflet-popup-content').forEach(el => {
-                el.style.filter = 'blur(5px)';
-            });
-        """)
-        time.sleep(0.3)
-
-        audio = generate_audio(
-            "Visualice la ubicación de sus clientes en el mapa. "
-            "El sistema geocodifica la dirección del cliente "
-            "y muestra su ubicación exacta sobre el mapa interactivo. "
-            "Una forma rápida de localizar dónde se encuentra cada cliente.",
-            "15_mapa_cliente"
-        )
-        img = capture_screenshot(driver, "15_mapa_cliente")
         clips.append(create_video_clip(img, audio))
 
         # Cerrar navegador
@@ -1224,19 +1019,16 @@ def main():
         driver = None
 
         # ============================================================
-        # ESCENA 17: INTEGRADOR ERP (imagen estática)
+        # ESCENA 12: INTEGRADOR ERP (imagen estática)
         # ============================================================
         print(f"\n[{TOTAL_SCENES}/{TOTAL_SCENES}] INTEGRADOR ERP...")
 
         erp_img_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "Recursos IA", "integrador.png"))
         if os.path.exists(erp_img_path):
             audio = generate_audio(
-                "Integración directa con su sistema ERP. "
-                "Las propuestas enviadas desde la plataforma web se importan "
-                "automáticamente como pedidos de venta en su sistema de gestión, "
-                "sin intervención manual. "
-                "Cabeceras, líneas de detalle e imágenes se transfieren al instante. "
-                "Todo conectado mediante API REST con autenticación segura.",
+                "Integración directa con su ERP. "
+                "Las propuestas se importan automáticamente como pedidos de venta. "
+                "Todo conectado mediante API REST segura.",
                 "17_integrador_erp"
             )
             audio_dur = get_audio_duration(os.path.join(AUDIO_DIR, "17_integrador_erp.mp3"))

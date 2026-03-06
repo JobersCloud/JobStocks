@@ -41,7 +41,7 @@ def get_empresa_id():
 @login_required
 @csrf_required
 def toggle_favorito():
-    """Toggle favorito on/off"""
+    """Toggle favorito on/off (clave compuesta: codigo+calidad+tono+calibre+pallet+caja)"""
     data = request.json
 
     if not data or not data.get('codigo'):
@@ -54,7 +54,15 @@ def toggle_favorito():
     logger.info(f"[favoritos] TOGGLE user_id={current_user.id}, empresa_id={repr(empresa_id)}, codigo={repr(data['codigo'])}")
 
     try:
-        result = FavoritosModel.toggle(current_user.id, empresa_id, data['codigo'])
+        result = FavoritosModel.toggle(
+            current_user.id, empresa_id,
+            data['codigo'],
+            calidad=data.get('calidad'),
+            tono=data.get('tono'),
+            calibre=data.get('calibre'),
+            pallet=data.get('pallet'),
+            caja=data.get('caja')
+        )
         logger.info(f"[favoritos] TOGGLE result: is_favorite={result['is_favorite']}")
         return jsonify({
             'success': True,
@@ -93,10 +101,15 @@ def listar_favoritos():
 @favoritos_bp.route('/check-batch', methods=['POST'])
 @login_required
 def check_batch():
-    """Comprobar lote de códigos"""
+    """Comprobar lote de items (clave compuesta)"""
     data = request.json
 
-    if not data or not data.get('codigos'):
+    # Soportar tanto {items: [...]} como {codigos: [...]} para retrocompatibilidad
+    items = None
+    if data:
+        items = data.get('items') or data.get('codigos')
+
+    if not items:
         return jsonify({
             'success': True,
             'favoritos': []
@@ -105,7 +118,7 @@ def check_batch():
     empresa_id = get_empresa_id()
 
     try:
-        favoritos_set = FavoritosModel.check_batch(current_user.id, empresa_id, data['codigos'])
+        favoritos_set = FavoritosModel.check_batch(current_user.id, empresa_id, items)
         return jsonify({
             'success': True,
             'favoritos': list(favoritos_set)

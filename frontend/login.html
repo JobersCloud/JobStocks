@@ -307,6 +307,28 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.39.3', date: '2026-03-06', title: 'Filtro movil mejorado y fixes UI', items: [
+                {type: 'improve', text: 'Popup de filtro en movil ahora se muestra como bottom-sheet a pantalla completa'},
+                {type: 'improve', text: 'Botones de aplicar/limpiar filtro mas grandes y visibles en movil'},
+                {type: 'fix', text: 'Boton de orden ASC/DESC visible en modo claro y oscuro'},
+                {type: 'fix', text: 'Tarjetas de usuario legibles en modo oscuro'}
+            ]},
+            { version: 'v1.39.2', date: '2026-03-06', title: 'Favoritos con variante y fecha alta usuarios', items: [
+                {type: 'improve', text: 'Favoritos ahora guardan la variante completa (codigo+calidad+tono+calibre+pallet+caja)'},
+                {type: 'improve', text: 'Grid de favoritos muestra columnas de tono y calibre'},
+                {type: 'new', text: 'Columna Fecha Alta en grid de usuarios con ordenacion'},
+                {type: 'improve', text: 'Columnas de la tabla de usuarios se ocultan progresivamente segun la resolucion'},
+                {type: 'fix', text: 'Cada variante de un producto es un favorito independiente (ya no se agrupan)'}
+            ]},
+            { version: 'v1.39.1', date: '2026-03-05', title: 'Visible Pedidos configurable', items: [
+                {type: 'new', text: 'Parametro VISIBLE_PEDIDOS por empresa para controlar visibilidad de Mis Pedidos'},
+                {type: 'new', text: 'Flag visible_pedidos por usuario en gestion de usuarios (como mostrar_precios)'},
+                {type: 'improve', text: 'Sidebar oculta automaticamente Mis Pedidos y Pedidos si el parametro esta desactivado'}
+            ]},
+            { version: 'v1.39.0', date: '2026-03-05', title: 'Toolbar movil y fix notificaciones', items: [
+                {type: 'new', text: 'Toolbar de ordenacion y filtrado en vista movil de grids administrativos'},
+                {type: 'fix', text: 'Las notificaciones ya no se mezclan entre pestañas de diferentes empresas'}
+            ]},
             { version: 'v1.38.3', date: '2026-03-05', title: 'Mejoras de privacidad y UX movil', items: [
                 {type: 'improve', text: 'Parametros y Control BD solo visibles para superusuarios'},
                 {type: 'fix', text: 'Notificaciones ya no se mezclan entre pestañas de diferentes publicaciones'},

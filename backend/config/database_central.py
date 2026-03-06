@@ -57,5 +57,6 @@ class DatabaseCentral:
             f"PWD={password};"
             f"TrustServerCertificate=yes;"
             f"Encrypt=yes;"
+            f"Connection Timeout=10;"
         )
-        return pyodbc.connect(conn_str)
+        return pyodbc.connect(conn_str, timeout=10)

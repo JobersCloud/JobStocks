@@ -288,11 +288,29 @@ def register():
 
         user_id = cursor.fetchone()[0]
 
+        # Obtener valor del parámetro global VISIBLE_PEDIDOS para la empresa
+        visible_pedidos_default = 1
+        try:
+            cursor.execute("""
+                SELECT valor FROM parametros WHERE clave = 'VISIBLE_PEDIDOS' AND empresa_id = ?
+            """, (empresa_id,))
+            vp_row = cursor.fetchone()
+            if vp_row:
+                visible_pedidos_default = 1 if vp_row[0] == '1' else 0
+        except Exception:
+            pass
+
         # Crear relación con la empresa
-        cursor.execute("""
-            INSERT INTO users_empresas (user_id, empresa_id, cliente_id, rol)
-            VALUES (?, ?, NULL, 'usuario')
-        """, (user_id, empresa_id))
+        try:
+            cursor.execute("""
+                INSERT INTO users_empresas (user_id, empresa_id, cliente_id, rol, visible_pedidos)
+                VALUES (?, ?, NULL, 'usuario', ?)
+            """, (user_id, empresa_id, visible_pedidos_default))
+        except Exception:
+            cursor.execute("""
+                INSERT INTO users_empresas (user_id, empresa_id, cliente_id, rol)
+                VALUES (?, ?, NULL, 'usuario')
+            """, (user_id, empresa_id))
 
         conn.commit()
         print(f"✅ Usuario {username} (id: {user_id}) registrado y asignado a empresa {empresa_id}")
@@ -574,10 +592,28 @@ def verify_email():
         """, (user_id, empresa_id))
 
         if not cursor.fetchone():
-            cursor.execute("""
-                INSERT INTO users_empresas (user_id, empresa_id, cliente_id, rol)
-                VALUES (?, ?, NULL, 'usuario')
-            """, (user_id, empresa_id))
+            # Obtener valor del parámetro global VISIBLE_PEDIDOS
+            visible_pedidos_default = 1
+            try:
+                cursor.execute("""
+                    SELECT valor FROM parametros WHERE clave = 'VISIBLE_PEDIDOS' AND empresa_id = ?
+                """, (empresa_id,))
+                vp_row = cursor.fetchone()
+                if vp_row:
+                    visible_pedidos_default = 1 if vp_row[0] == '1' else 0
+            except Exception:
+                pass
+
+            try:
+                cursor.execute("""
+                    INSERT INTO users_empresas (user_id, empresa_id, cliente_id, rol, visible_pedidos)
+                    VALUES (?, ?, NULL, 'usuario', ?)
+                """, (user_id, empresa_id, visible_pedidos_default))
+            except Exception:
+                cursor.execute("""
+                    INSERT INTO users_empresas (user_id, empresa_id, cliente_id, rol)
+                    VALUES (?, ?, NULL, 'usuario')
+                """, (user_id, empresa_id))
             print(f"✅ Usuario {user_id} asignado a empresa {empresa_id}")
 
         conn.commit()

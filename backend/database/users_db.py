@@ -76,7 +76,7 @@ def verify_user(username, password, empresa_cli_id, empresa_erp=None):
         if empresa_erp:
             try:
                 cursor.execute("""
-                    SELECT empresa_id, cliente_id, rol, mostrar_precios, administrador_clientes
+                    SELECT empresa_id, cliente_id, rol, mostrar_precios, administrador_clientes, visible_pedidos
                     FROM users_empresas
                     WHERE user_id = ? AND empresa_id = ?
                 """, (user['id'], empresa_erp))
@@ -88,11 +88,12 @@ def verify_user(username, password, empresa_cli_id, empresa_erp=None):
                     user['rol'] = emp_row[2] or 'usuario'
                     user['mostrar_precios'] = bool(emp_row[3]) if emp_row[3] is not None else False
                     user['administrador_clientes'] = bool(emp_row[4]) if emp_row[4] is not None else False
+                    user['visible_pedidos'] = bool(emp_row[5]) if emp_row[5] is not None else True
             except Exception:
                 # Columnas pueden no existir aún
                 try:
                     cursor.execute("""
-                        SELECT empresa_id, cliente_id, rol, mostrar_precios
+                        SELECT empresa_id, cliente_id, rol, mostrar_precios, administrador_clientes
                         FROM users_empresas
                         WHERE user_id = ? AND empresa_id = ?
                     """, (user['id'], empresa_erp))
@@ -103,18 +104,33 @@ def verify_user(username, password, empresa_cli_id, empresa_erp=None):
                         user['cliente_id'] = emp_row[1].strip() if emp_row[1] else None
                         user['rol'] = emp_row[2] or 'usuario'
                         user['mostrar_precios'] = bool(emp_row[3]) if emp_row[3] is not None else False
+                        user['administrador_clientes'] = bool(emp_row[4]) if emp_row[4] is not None else False
                 except Exception:
-                    cursor.execute("""
-                        SELECT empresa_id, cliente_id, rol
-                        FROM users_empresas
-                        WHERE user_id = ? AND empresa_id = ?
-                    """, (user['id'], empresa_erp))
+                    try:
+                        cursor.execute("""
+                            SELECT empresa_id, cliente_id, rol, mostrar_precios
+                            FROM users_empresas
+                            WHERE user_id = ? AND empresa_id = ?
+                        """, (user['id'], empresa_erp))
 
-                    emp_row = cursor.fetchone()
-                    if emp_row:
-                        user['empresa_erp'] = emp_row[0]
-                        user['cliente_id'] = emp_row[1].strip() if emp_row[1] else None
-                        user['rol'] = emp_row[2] or 'usuario'
+                        emp_row = cursor.fetchone()
+                        if emp_row:
+                            user['empresa_erp'] = emp_row[0]
+                            user['cliente_id'] = emp_row[1].strip() if emp_row[1] else None
+                            user['rol'] = emp_row[2] or 'usuario'
+                            user['mostrar_precios'] = bool(emp_row[3]) if emp_row[3] is not None else False
+                    except Exception:
+                        cursor.execute("""
+                            SELECT empresa_id, cliente_id, rol
+                            FROM users_empresas
+                            WHERE user_id = ? AND empresa_id = ?
+                        """, (user['id'], empresa_erp))
+
+                        emp_row = cursor.fetchone()
+                        if emp_row:
+                            user['empresa_erp'] = emp_row[0]
+                            user['cliente_id'] = emp_row[1].strip() if emp_row[1] else None
+                            user['rol'] = emp_row[2] or 'usuario'
 
         return user
     except Exception as e:
@@ -168,7 +184,7 @@ def get_user_by_id(user_id, empresa_cli_id, empresa_erp=None):
         if empresa_erp:
             try:
                 cursor.execute("""
-                    SELECT empresa_id, cliente_id, rol, mostrar_precios, administrador_clientes
+                    SELECT empresa_id, cliente_id, rol, mostrar_precios, administrador_clientes, visible_pedidos
                     FROM users_empresas
                     WHERE user_id = ? AND empresa_id = ?
                 """, (user_id, empresa_erp))
@@ -180,11 +196,12 @@ def get_user_by_id(user_id, empresa_cli_id, empresa_erp=None):
                     user['rol'] = emp_row[2] or 'usuario'
                     user['mostrar_precios'] = bool(emp_row[3]) if emp_row[3] is not None else False
                     user['administrador_clientes'] = bool(emp_row[4]) if emp_row[4] is not None else False
+                    user['visible_pedidos'] = bool(emp_row[5]) if emp_row[5] is not None else True
             except Exception:
                 # Columnas pueden no existir aún
                 try:
                     cursor.execute("""
-                        SELECT empresa_id, cliente_id, rol, mostrar_precios
+                        SELECT empresa_id, cliente_id, rol, mostrar_precios, administrador_clientes
                         FROM users_empresas
                         WHERE user_id = ? AND empresa_id = ?
                     """, (user_id, empresa_erp))
@@ -195,18 +212,33 @@ def get_user_by_id(user_id, empresa_cli_id, empresa_erp=None):
                         user['cliente_id'] = emp_row[1].strip() if emp_row[1] else None
                         user['rol'] = emp_row[2] or 'usuario'
                         user['mostrar_precios'] = bool(emp_row[3]) if emp_row[3] is not None else False
+                        user['administrador_clientes'] = bool(emp_row[4]) if emp_row[4] is not None else False
                 except Exception:
-                    cursor.execute("""
-                        SELECT empresa_id, cliente_id, rol
-                        FROM users_empresas
-                        WHERE user_id = ? AND empresa_id = ?
-                    """, (user_id, empresa_erp))
+                    try:
+                        cursor.execute("""
+                            SELECT empresa_id, cliente_id, rol, mostrar_precios
+                            FROM users_empresas
+                            WHERE user_id = ? AND empresa_id = ?
+                        """, (user_id, empresa_erp))
 
-                    emp_row = cursor.fetchone()
-                    if emp_row:
-                        user['empresa_erp'] = emp_row[0]
-                        user['cliente_id'] = emp_row[1].strip() if emp_row[1] else None
-                        user['rol'] = emp_row[2] or 'usuario'
+                        emp_row = cursor.fetchone()
+                        if emp_row:
+                            user['empresa_erp'] = emp_row[0]
+                            user['cliente_id'] = emp_row[1].strip() if emp_row[1] else None
+                            user['rol'] = emp_row[2] or 'usuario'
+                            user['mostrar_precios'] = bool(emp_row[3]) if emp_row[3] is not None else False
+                    except Exception:
+                        cursor.execute("""
+                            SELECT empresa_id, cliente_id, rol
+                            FROM users_empresas
+                            WHERE user_id = ? AND empresa_id = ?
+                        """, (user_id, empresa_erp))
+
+                        emp_row = cursor.fetchone()
+                        if emp_row:
+                            user['empresa_erp'] = emp_row[0]
+                            user['cliente_id'] = emp_row[1].strip() if emp_row[1] else None
+                            user['rol'] = emp_row[2] or 'usuario'
 
         return user
     except Exception as e:
@@ -291,6 +323,17 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
         except Exception:
             pass
 
+        # Intentar incluir campo visible_pedidos (puede no existir aún)
+        visible_pedidos_col = ''
+        has_visible_pedidos = False
+        try:
+            cursor.execute("SELECT TOP 1 visible_pedidos FROM users_empresas")
+            cursor.fetchone()
+            visible_pedidos_col = ', ue.visible_pedidos'
+            has_visible_pedidos = True
+        except Exception:
+            pass
+
         cursor.execute(f"""
             SELECT
                 u.id, u.username, u.email, u.full_name, u.pais,
@@ -300,6 +343,7 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
                 {lockout_cols}
                 {mostrar_precios_col}
                 {admin_clientes_col}
+                {visible_pedidos_col}
             FROM users u
             INNER JOIN users_empresas ue ON u.id = ue.user_id
             WHERE ue.empresa_id = ?
@@ -334,6 +378,9 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
                 col_idx += 1
             if has_admin_clientes:
                 user_dict['administrador_clientes'] = bool(row[col_idx]) if row[col_idx] is not None else False
+                col_idx += 1
+            if has_visible_pedidos:
+                user_dict['visible_pedidos'] = bool(row[col_idx]) if row[col_idx] is not None else True
             users.append(user_dict)
 
         # Resolver nombres de clientes en paso separado (no rompe si la vista no existe)
@@ -394,16 +441,41 @@ def create_user_admin(data, empresa_cli_id):
 
         user_id = cursor.fetchone()[0]
 
-        # 2. Insertar en tabla users_empresas (usa empresa_erp)
-        cursor.execute("""
-            INSERT INTO users_empresas (user_id, empresa_id, cliente_id, rol)
-            VALUES (?, ?, ?, ?)
-        """, (
-            user_id,
-            data['empresa_erp'],  # empresa_erp para el filtro interno
-            data.get('cliente_id'),
-            data.get('rol', 'usuario')
-        ))
+        # 2. Obtener valor del parámetro global VISIBLE_PEDIDOS para la empresa
+        visible_pedidos_default = 1
+        try:
+            cursor.execute("""
+                SELECT valor FROM parametros WHERE clave = 'VISIBLE_PEDIDOS' AND empresa_id = ?
+            """, (data['empresa_erp'],))
+            vp_row = cursor.fetchone()
+            if vp_row:
+                visible_pedidos_default = 1 if vp_row[0] == '1' else 0
+        except Exception:
+            pass
+
+        # 3. Insertar en tabla users_empresas (usa empresa_erp)
+        try:
+            cursor.execute("""
+                INSERT INTO users_empresas (user_id, empresa_id, cliente_id, rol, visible_pedidos)
+                VALUES (?, ?, ?, ?, ?)
+            """, (
+                user_id,
+                data['empresa_erp'],
+                data.get('cliente_id'),
+                data.get('rol', 'usuario'),
+                visible_pedidos_default
+            ))
+        except Exception:
+            # Fallback si la columna visible_pedidos no existe aún
+            cursor.execute("""
+                INSERT INTO users_empresas (user_id, empresa_id, cliente_id, rol)
+                VALUES (?, ?, ?, ?)
+            """, (
+                user_id,
+                data['empresa_erp'],
+                data.get('cliente_id'),
+                data.get('rol', 'usuario')
+            ))
 
         conn.commit()
         return int(user_id)
@@ -424,10 +496,29 @@ def add_user_to_empresa(user_id, empresa_cli_id, empresa_erp, cliente_id=None, r
         conn = Database.get_connection(empresa_cli_id)
         cursor = conn.cursor()
 
-        cursor.execute("""
-            INSERT INTO users_empresas (user_id, empresa_id, cliente_id, rol)
-            VALUES (?, ?, ?, ?)
-        """, (user_id, empresa_erp, cliente_id, rol))
+        # Obtener valor del parámetro global VISIBLE_PEDIDOS para la empresa
+        visible_pedidos_default = 1
+        try:
+            cursor.execute("""
+                SELECT valor FROM parametros WHERE clave = 'VISIBLE_PEDIDOS' AND empresa_id = ?
+            """, (empresa_erp,))
+            vp_row = cursor.fetchone()
+            if vp_row:
+                visible_pedidos_default = 1 if vp_row[0] == '1' else 0
+        except Exception:
+            pass
+
+        try:
+            cursor.execute("""
+                INSERT INTO users_empresas (user_id, empresa_id, cliente_id, rol, visible_pedidos)
+                VALUES (?, ?, ?, ?, ?)
+            """, (user_id, empresa_erp, cliente_id, rol, visible_pedidos_default))
+        except Exception:
+            # Fallback si la columna visible_pedidos no existe aún
+            cursor.execute("""
+                INSERT INTO users_empresas (user_id, empresa_id, cliente_id, rol)
+                VALUES (?, ?, ?, ?)
+            """, (user_id, empresa_erp, cliente_id, rol))
 
         conn.commit()
         return True
@@ -576,6 +667,10 @@ def update_user_full(user_id, data, empresa_cli_id, empresa_erp):
             emp_updates.append("administrador_clientes = ?")
             emp_params.append(1 if data['administrador_clientes'] else 0)
 
+        if 'visible_pedidos' in data:
+            emp_updates.append("visible_pedidos = ?")
+            emp_params.append(1 if data['visible_pedidos'] else 0)
+
         if emp_updates:
             emp_params.extend([user_id, empresa_erp])
             query = f"UPDATE users_empresas SET {', '.join(emp_updates)} WHERE user_id = ? AND empresa_id = ?"
@@ -598,14 +693,14 @@ def get_user_by_id_and_empresa(user_id, empresa_cli_id, empresa_erp):
         conn = Database.get_connection(empresa_cli_id)
         cursor = conn.cursor()
 
-        # Intentar incluir mostrar_precios y administrador_clientes (pueden no existir aún)
+        # Intentar incluir mostrar_precios, administrador_clientes y visible_pedidos (pueden no existir aún)
         try:
             cursor.execute("""
                 SELECT
                     u.id, u.username, u.email, u.full_name, u.pais,
                     ue.rol, u.active, u.email_verificado,
                     ue.empresa_id, ue.cliente_id, u.company_name,
-                    ue.mostrar_precios, ue.administrador_clientes
+                    ue.mostrar_precios, ue.administrador_clientes, ue.visible_pedidos
                 FROM users u
                 INNER JOIN users_empresas ue ON u.id = ue.user_id
                 WHERE u.id = ? AND ue.empresa_id = ?
@@ -617,21 +712,33 @@ def get_user_by_id_and_empresa(user_id, empresa_cli_id, empresa_erp):
                         u.id, u.username, u.email, u.full_name, u.pais,
                         ue.rol, u.active, u.email_verificado,
                         ue.empresa_id, ue.cliente_id, u.company_name,
-                        ue.mostrar_precios
+                        ue.mostrar_precios, ue.administrador_clientes
                     FROM users u
                     INNER JOIN users_empresas ue ON u.id = ue.user_id
                     WHERE u.id = ? AND ue.empresa_id = ?
                 """, (user_id, empresa_erp))
             except Exception:
-                cursor.execute("""
-                    SELECT
-                        u.id, u.username, u.email, u.full_name, u.pais,
-                        ue.rol, u.active, u.email_verificado,
-                        ue.empresa_id, ue.cliente_id, u.company_name
-                    FROM users u
-                    INNER JOIN users_empresas ue ON u.id = ue.user_id
-                    WHERE u.id = ? AND ue.empresa_id = ?
-                """, (user_id, empresa_erp))
+                try:
+                    cursor.execute("""
+                        SELECT
+                            u.id, u.username, u.email, u.full_name, u.pais,
+                            ue.rol, u.active, u.email_verificado,
+                            ue.empresa_id, ue.cliente_id, u.company_name,
+                            ue.mostrar_precios
+                        FROM users u
+                        INNER JOIN users_empresas ue ON u.id = ue.user_id
+                        WHERE u.id = ? AND ue.empresa_id = ?
+                    """, (user_id, empresa_erp))
+                except Exception:
+                    cursor.execute("""
+                        SELECT
+                            u.id, u.username, u.email, u.full_name, u.pais,
+                            ue.rol, u.active, u.email_verificado,
+                            ue.empresa_id, ue.cliente_id, u.company_name
+                        FROM users u
+                        INNER JOIN users_empresas ue ON u.id = ue.user_id
+                        WHERE u.id = ? AND ue.empresa_id = ?
+                    """, (user_id, empresa_erp))
 
         row = cursor.fetchone()
 
@@ -650,7 +757,8 @@ def get_user_by_id_and_empresa(user_id, empresa_cli_id, empresa_erp):
                 'company_name': row[10],
                 'cliente_nombre': None,
                 'mostrar_precios': bool(row[11]) if len(row) > 11 and row[11] is not None else False,
-                'administrador_clientes': bool(row[12]) if len(row) > 12 and row[12] is not None else False
+                'administrador_clientes': bool(row[12]) if len(row) > 12 and row[12] is not None else False,
+                'visible_pedidos': bool(row[13]) if len(row) > 13 and row[13] is not None else True
             }
             # Resolver nombre del cliente en paso separado
             if usuario['cliente_id']:

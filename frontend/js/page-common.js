@@ -246,6 +246,20 @@
                 if (sidebarControlBd) sidebarControlBd.style.display = 'none';
             }
 
+            // Mostrar Mis Pedidos / Pedidos solo si está habilitado (ocultos por defecto en CSS)
+            try {
+                const resp = await fetch(`${API_URL}/api/parametros/visible-pedidos`, { credentials: 'include' });
+                if (resp.ok) {
+                    const d = await resp.json();
+                    if (d.habilitado) {
+                        const el1 = document.getElementById('sidebar-mis-pedidos');
+                        const el2 = document.getElementById('sidebar-todos-pedidos');
+                        if (el1) el1.style.display = '';
+                        if (el2) el2.style.display = '';
+                    }
+                }
+            } catch (e) {}
+
             return data;
         } catch (error) {
             console.error('Error checking auth:', error);

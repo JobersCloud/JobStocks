@@ -24,7 +24,7 @@ def unread_count():
       200:
         description: Conteo de notificaciones no leídas
     """
-    empresa_id = session.get('empresa_id')
+    empresa_id = request.args.get('empresa_id') or session.get('empresa_id')
     connection_id = session.get('connection')
 
     count = NotificationModel.get_unread_count(
@@ -51,7 +51,7 @@ def get_notifications():
       200:
         description: Lista de notificaciones no leídas
     """
-    empresa_id = session.get('empresa_id')
+    empresa_id = request.args.get('empresa_id') or session.get('empresa_id')
     connection_id = session.get('connection')
 
     notifications = NotificationModel.get_unread(
@@ -118,7 +118,7 @@ def mark_all_as_read():
       200:
         description: Todas las notificaciones marcadas como leídas
     """
-    empresa_id = session.get('empresa_id')
+    empresa_id = request.args.get('empresa_id') or session.get('empresa_id')
     connection_id = session.get('connection')
 
     count = NotificationModel.mark_all_read(

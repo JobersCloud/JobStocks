@@ -26,9 +26,10 @@ def _s(val):
 
 class FavoritosModel:
     @staticmethod
-    def toggle(user_id, empresa_id, codigo):
+    def toggle(user_id, empresa_id, codigo, calidad=None, tono=None, calibre=None, pallet=None, caja=None):
         """
         Toggle favorito: si existe lo elimina, si no existe lo crea.
+        Usa clave compuesta: codigo+calidad+tono+calibre+pallet+caja.
 
         Returns:
             dict: {is_favorite: bool}
@@ -36,12 +37,25 @@ class FavoritosModel:
         conn = Database.get_connection()
         cursor = conn.cursor()
 
+        # Normalizar valores
+        codigo = codigo.strip() if codigo else ''
+        calidad = (calidad or '').strip()
+        tono = (tono or '').strip()
+        calibre = (calibre or '').strip()
+        pallet = (pallet or '').strip()
+        caja = (caja or '').strip()
+
         try:
-            # Comprobar si ya existe
+            # Comprobar si ya existe con clave compuesta
             cursor.execute("""
                 SELECT id FROM favoritos
                 WHERE user_id = ? AND empresa_id = ? AND RTRIM(codigo) = ?
-            """, (user_id, empresa_id, codigo.strip()))
+                  AND ISNULL(RTRIM(calidad), '') = ?
+                  AND ISNULL(RTRIM(tono), '') = ?
+                  AND ISNULL(RTRIM(calibre), '') = ?
+                  AND ISNULL(RTRIM(pallet), '') = ?
+                  AND ISNULL(RTRIM(caja), '') = ?
+            """, (user_id, empresa_id, codigo, calidad, tono, calibre, pallet, caja))
 
             row = cursor.fetchone()
 
@@ -53,9 +67,9 @@ class FavoritosModel:
             else:
                 # No existe → crear
                 cursor.execute("""
-                    INSERT INTO favoritos (user_id, empresa_id, codigo)
-                    VALUES (?, ?, ?)
-                """, (user_id, empresa_id, codigo.strip()))
+                    INSERT INTO favoritos (user_id, empresa_id, codigo, calidad, tono, calibre, pallet, caja)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (user_id, empresa_id, codigo, calidad or None, tono or None, calibre or None, pallet or None, caja or None))
                 conn.commit()
                 return {'is_favorite': True}
         except Exception as e:
@@ -86,30 +100,56 @@ class FavoritosModel:
         return codigos
 
     @staticmethod
-    def check_batch(user_id, empresa_id, codigos):
+    def _fav_key(codigo, calidad, tono, calibre, pallet, caja):
+        """Genera clave serializada para un favorito."""
+        return '|'.join([
+            (codigo or '').strip(),
+            (calidad or '').strip(),
+            (tono or '').strip(),
+            (calibre or '').strip(),
+            (pallet or '').strip(),
+            (caja or '').strip()
+        ])
+
+    @staticmethod
+    def check_batch(user_id, empresa_id, items):
         """
-        Comprueba múltiples códigos de golpe para la grid.
+        Comprueba múltiples items de golpe para la grid.
+        items: lista de objetos {codigo, calidad, tono, calibre, pallet, caja}
+               o lista de strings (códigos simples, retrocompatible).
 
         Returns:
-            set: Set de códigos que son favoritos
+            set: Set de claves serializadas "codigo|calidad|tono|calibre|pallet|caja"
         """
-        if not codigos:
+        if not items:
             return set()
 
         conn = Database.get_connection()
         cursor = conn.cursor()
 
-        # Usar IN con parámetros
-        placeholders = ','.join(['?' for _ in codigos])
-        params = [user_id, empresa_id] + [c.strip() for c in codigos]
+        # Extraer códigos únicos para filtro IN
+        if isinstance(items[0], str):
+            codigos_unicos = list(set(c.strip() for c in items))
+        else:
+            codigos_unicos = list(set(item.get('codigo', '').strip() for item in items))
+
+        placeholders = ','.join(['?' for _ in codigos_unicos])
+        params = [user_id, empresa_id] + codigos_unicos
 
         cursor.execute(f"""
-            SELECT RTRIM(codigo) FROM favoritos
+            SELECT RTRIM(codigo),
+                   ISNULL(RTRIM(calidad), ''),
+                   ISNULL(RTRIM(tono), ''),
+                   ISNULL(RTRIM(calibre), ''),
+                   ISNULL(RTRIM(pallet), ''),
+                   ISNULL(RTRIM(caja), '')
+            FROM favoritos
             WHERE user_id = ? AND empresa_id = ?
             AND RTRIM(codigo) IN ({placeholders})
         """, params)
 
-        result = {row[0] for row in cursor.fetchall()}
+        result = {FavoritosModel._fav_key(row[0], row[1], row[2], row[3], row[4], row[5])
+                  for row in cursor.fetchall()}
         conn.close()
         return result
 
@@ -117,8 +157,7 @@ class FavoritosModel:
     def get_favorites_with_stock(user_id, empresa_id):
         """
         Obtiene favoritos con datos completos del producto (LEFT JOIN con stock).
-        Usa subquery con ROW_NUMBER para evitar duplicados cuando un producto
-        tiene múltiples filas en stock (distintas calidades/tonos/calibres).
+        Cada favorito es una variante específica (codigo+calidad+tono+calibre+pallet+caja).
 
         Returns:
             list: Lista de favoritos con datos de stock
@@ -131,27 +170,23 @@ class FavoritosModel:
                    RTRIM(s.descripcion) as descripcion,
                    RTRIM(s.formato) as formato,
                    RTRIM(s.serie) as serie,
-                   RTRIM(s.calidad) as calidad,
+                   ISNULL(RTRIM(f.calidad), '') as calidad,
                    RTRIM(s.color) as color,
-                   RTRIM(s.tono) as tono,
-                   RTRIM(s.calibre) as calibre,
-                   s.total_existencias,
-                   RTRIM(s.unidad) as unidad
+                   ISNULL(RTRIM(f.tono), '') as tono,
+                   ISNULL(RTRIM(f.calibre), '') as calibre,
+                   ISNULL(s.existencias, 0) as existencias,
+                   RTRIM(s.unidad) as unidad,
+                   ISNULL(RTRIM(f.pallet), '') as pallet,
+                   ISNULL(RTRIM(f.caja), '') as caja
             FROM favoritos f
-            LEFT JOIN (
-                SELECT codigo, empresa,
-                       MAX(descripcion) as descripcion,
-                       MAX(formato) as formato,
-                       MAX(serie) as serie,
-                       MAX(calidad) as calidad,
-                       MAX(color) as color,
-                       MAX(tono) as tono,
-                       MAX(calibre) as calibre,
-                       SUM(existencias) as total_existencias,
-                       MAX(unidad) as unidad
-                FROM view_externos_stock
-                GROUP BY codigo, empresa
-            ) s ON RTRIM(f.codigo) = RTRIM(s.codigo) AND f.empresa_id = s.empresa
+            LEFT JOIN view_externos_stock s
+                ON RTRIM(f.codigo) = RTRIM(s.codigo)
+                AND f.empresa_id = s.empresa
+                AND ISNULL(RTRIM(f.calidad), '') = ISNULL(RTRIM(s.calidad), '')
+                AND ISNULL(RTRIM(f.tono), '') = ISNULL(RTRIM(s.tono), '')
+                AND ISNULL(RTRIM(f.calibre), '') = ISNULL(RTRIM(s.calibre), '')
+                AND ISNULL(RTRIM(f.pallet), '') = ISNULL(RTRIM(s.pallet), '')
+                AND ISNULL(RTRIM(f.caja), '') = ISNULL(RTRIM(s.caja), '')
             WHERE f.user_id = ? AND f.empresa_id = ?
             ORDER BY f.fecha_creacion DESC
         """, (user_id, empresa_id))
@@ -170,7 +205,9 @@ class FavoritosModel:
                 'tono': _s(row[8]) or '',
                 'calibre': _s(row[9]) or '',
                 'existencias': float(row[10]) if row[10] else 0,
-                'unidad': _s(row[11]) or ''
+                'unidad': _s(row[11]) or '',
+                'pallet': _s(row[12]) or '',
+                'caja': _s(row[13]) or ''
             })
 
         conn.close()

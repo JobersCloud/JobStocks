@@ -5,7 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Usuarios - Administración</title>
     <script src="js/theme-init.js?v=1.34.0"></script>
-    <link rel="stylesheet" href="css/styles.css?v=1.33.2">
+    <link rel="stylesheet" href="css/styles.css?v=1.39.2">
+    <style>
+        /* Responsive: ocultar columnas progresivamente en pantallas pequeñas */
+        @media (max-width: 1400px) {
+            th[data-column="pais"], td[data-column="pais"],
+            th[data-column="company_name"], td[data-column="company_name"] { display: none; }
+        }
+        @media (max-width: 1200px) {
+            th[data-column="created_at"], td[data-column="created_at"],
+            th[data-column="administrador_clientes"], td[data-column="administrador_clientes"] { display: none; }
+        }
+        @media (max-width: 1024px) {
+            th[data-column="email"], td[data-column="email"],
+            th[data-column="mostrar_precios"], td[data-column="mostrar_precios"],
+            th[data-column="visible_pedidos"], td[data-column="visible_pedidos"] { display: none; }
+        }
+    </style>
 </head>
 <body>
     <!-- ==================== MASTERPAGE LAYOUT ==================== -->
@@ -132,7 +148,7 @@
                         </span>
                         <span class="sidebar-item-text" data-i18n="menu.myProposals">Mis Propuestas</span>
                     </a>
-                    <a class="sidebar-item" data-page="mis-pedidos.html" data-tooltip="Mis Pedidos" onclick="SidebarNav.navigateTo('mis-pedidos.html')">
+                    <a class="sidebar-item" id="sidebar-mis-pedidos" data-page="mis-pedidos.html" data-tooltip="Mis Pedidos" onclick="SidebarNav.navigateTo('mis-pedidos.html')">
                         <span class="sidebar-item-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="1" y="3" width="15" height="13"></rect>
@@ -210,7 +226,7 @@
                             </span>
                             <span class="sidebar-item-text" data-i18n="menu.allProposals">Propuestas</span>
                         </a>
-                        <a class="sidebar-item" data-page="todos-pedidos.html" data-tooltip="Pedidos" onclick="SidebarNav.navigateTo('todos-pedidos.html')">
+                        <a class="sidebar-item" id="sidebar-todos-pedidos" data-page="todos-pedidos.html" data-tooltip="Pedidos" onclick="SidebarNav.navigateTo('todos-pedidos.html')">
                             <span class="sidebar-item-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="1" y="3" width="15" height="13"></rect>
@@ -496,6 +512,14 @@
                         <p class="form-help" data-i18n="users.showPricesHelp">Permite al usuario ver precios en el grid</p>
                     </div>
 
+                    <div class="form-group" id="show-orders-group" style="display: none;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="user-show-orders">
+                            <span data-i18n="users.showOrders">Ver Pedidos</span>
+                        </label>
+                        <p class="form-help" data-i18n="users.showOrdersHelp">Permite al usuario ver la sección Mis Pedidos</p>
+                    </div>
+
                     <div class="form-group" id="admin-clientes-group">
                         <label class="checkbox-label">
                             <input type="checkbox" id="user-admin-clientes">
@@ -545,6 +569,7 @@
         let grid;
         let ordenActual = { columna: 'username', direccion: 'ASC' };
         let preciosGlobalHabilitado = false;
+        let pedidosGlobalHabilitado = false;
 
         // ==================== INICIALIZACION ====================
         document.addEventListener('DOMContentLoaded', async function() {
@@ -566,6 +591,15 @@
                 }
             } catch (e) { /* ignorar */ }
 
+            // Comprobar si el parámetro global de pedidos está activo
+            try {
+                const pedidosResp = await fetch(`${API_URL}/api/parametros/visible-pedidos`, { credentials: 'include' });
+                if (pedidosResp.ok) {
+                    const pedidosData = await pedidosResp.json();
+                    pedidosGlobalHabilitado = pedidosData.global_habilitado || false;
+                }
+            } catch (e) { /* ignorar */ }
+
             const gridColumns = [
                 { key: 'username', label: t('users.username') || 'Usuario', tipo: 'texto' },
                 { key: 'full_name', label: t('users.fullName') || 'Nombre Completo', tipo: 'texto' },
@@ -574,9 +608,13 @@
                 { key: 'pais', label: t('users.country') || 'País', tipo: 'texto' },
                 { key: 'rol', label: t('users.role') || 'Rol', tipo: 'texto' },
                 { key: 'active', label: t('users.status') || 'Estado', tipo: 'texto' },
+                { key: 'created_at', label: t('users.registrationDate') || 'Fecha Alta', sortable: true },
             ];
             if (preciosGlobalHabilitado) {
                 gridColumns.push({ key: 'mostrar_precios', label: t('users.showPrices') || 'Ver Precios', tipo: 'texto' });
+            }
+            if (pedidosGlobalHabilitado) {
+                gridColumns.push({ key: 'visible_pedidos', label: t('users.showOrders') || 'Ver Pedidos', tipo: 'texto' });
             }
             gridColumns.push({ key: 'administrador_clientes', label: t('users.clientAdmin') || 'Admin. Clientes', tipo: 'texto' });
             gridColumns.push({ key: '_actions', label: t('users.actions') || 'Acciones', sortable: false, filterable: false });
@@ -594,7 +632,9 @@
                         case 'rol': return getRoleBadge(item.rol);
                         case 'active': return getStatusBadge(item.active, item);
                         case 'mostrar_precios': return item.mostrar_precios ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>';
+                        case 'visible_pedidos': return item.visible_pedidos ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>';
                         case 'administrador_clientes': return item.administrador_clientes ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>';
+                        case 'created_at': return item.created_at ? new Date(item.created_at).toLocaleDateString('es-ES') : '-';
                         case '_actions': return getActionButtons(item);
                         default: return null;
                     }
@@ -615,7 +655,9 @@
                                 <div class="user-card-info-item"><label>${t('users.role')}:</label> ${getRoleBadge(item.rol)}</div>
                                 <div class="user-card-info-item"><label>${t('users.country')}:</label> ${getPaisNombre(item.pais)}</div>
                                 ${preciosGlobalHabilitado ? `<div class="user-card-info-item"><label>${t('users.showPrices')}:</label> ${item.mostrar_precios ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>'}</div>` : ''}
+                                ${pedidosGlobalHabilitado ? `<div class="user-card-info-item"><label>${t('users.showOrders') || 'Ver Pedidos'}:</label> ${item.visible_pedidos ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>'}</div>` : ''}
                                 <div class="user-card-info-item"><label>${t('users.clientAdmin') || 'Admin. Clientes'}:</label> ${item.administrador_clientes ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>'}</div>
+                                <div class="user-card-info-item"><label>${t('users.registrationDate') || 'Fecha Alta'}:</label> ${item.created_at ? new Date(item.created_at).toLocaleDateString('es-ES') : '-'}</div>
                             </div>
                             <div class="user-card-actions">${getActionButtons(item)}</div>
                         </div>`;
@@ -755,6 +797,16 @@
                 </div>`;
             }
 
+            if (pedidosGlobalHabilitado) {
+                const pedidosLabel = user.visible_pedidos ? (t('users.disableOrders') || 'Desactivar pedidos') : (t('users.enableOrders') || 'Activar pedidos');
+                const pedidosIcon = user.visible_pedidos
+                    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`
+                    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+                items += `<div class="action-menu-item" onclick="closeActionMenu(); toggleVisiblePedidos(${user.id}, ${user.visible_pedidos ? 'true' : 'false'})">
+                    ${pedidosIcon} ${pedidosLabel}
+                </div>`;
+            }
+
             {
                 const adminClientesLabel = user.administrador_clientes ? (t('users.disableClientAdmin') || 'Desactivar admin. clientes') : (t('users.enableClientAdmin') || 'Activar admin. clientes');
                 const adminClientesIcon = user.administrador_clientes
@@ -888,6 +940,23 @@
         }
         window.toggleMostrarPrecios = toggleMostrarPrecios;
 
+        async function toggleVisiblePedidos(userId, valorActual) {
+            const nuevoValor = !valorActual;
+            try {
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}/visible-pedidos`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() },
+                    body: JSON.stringify({ visible_pedidos: nuevoValor })
+                });
+                if (!response.ok) throw new Error('Error toggling orders');
+                const idx = users.findIndex(u => u.id === userId);
+                if (idx !== -1) users[idx].visible_pedidos = nuevoValor;
+                grid.setData(users);
+            } catch (error) { UIFeedback.toast('Error al cambiar la visibilidad de pedidos', 'error'); }
+        }
+        window.toggleVisiblePedidos = toggleVisiblePedidos;
+
         async function toggleAdminClientes(userId, valorActual) {
             const nuevoValor = !valorActual;
             try {
@@ -987,6 +1056,7 @@
             document.getElementById('password-help').textContent = t('users.passwordHelpEdit') || 'Dejar vacío para no cambiar';
             document.getElementById('send-email-group').style.display = 'none';
             document.getElementById('show-prices-group').style.display = preciosGlobalHabilitado ? 'block' : 'none';
+            document.getElementById('show-orders-group').style.display = pedidosGlobalHabilitado ? 'block' : 'none';
             document.getElementById('admin-clientes-group').style.display = 'block';
             const currentUser = PageCommon.getCurrentUser();
             document.getElementById('role-group').style.display = currentUser && currentUser.rol === 'superusuario' ? 'block' : 'none';
@@ -1004,6 +1074,7 @@
                 document.getElementById('user-pais').value = user.pais || '';
                 document.getElementById('user-rol').value = user.rol || 'usuario';
                 document.getElementById('user-show-prices').checked = !!user.mostrar_precios;
+                document.getElementById('user-show-orders').checked = user.visible_pedidos !== false;
                 document.getElementById('user-admin-clientes').checked = !!user.administrador_clientes;
                 if (user.cliente_id) {
                     document.getElementById('user-cliente-id').value = user.cliente_id;
@@ -1037,6 +1108,9 @@
                 if (password) userData.password = password;
                 if (preciosGlobalHabilitado) {
                     userData.mostrar_precios = document.getElementById('user-show-prices').checked;
+                }
+                if (pedidosGlobalHabilitado) {
+                    userData.visible_pedidos = document.getElementById('user-show-orders').checked;
                 }
                 userData.administrador_clientes = document.getElementById('user-admin-clientes').checked;
                 try {

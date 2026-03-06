@@ -5,6 +5,12 @@
     background: var(--bg-secondary);
 }
 
+/* Ocultar Mis Pedidos / Pedidos por defecto hasta que JS confirme visibilidad */
+#sidebar-mis-pedidos,
+#sidebar-todos-pedidos {
+    display: none;
+}
+
 /* Sidebar */
 .sidebar {
     width: 240px;

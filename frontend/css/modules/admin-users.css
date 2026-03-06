@@ -445,8 +445,8 @@
 }
 
 .user-card {
-    background: white;
-    border: 2px solid #f0f0f0;
+    background: var(--bg-primary, white);
+    border: 2px solid var(--border, #f0f0f0);
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 15px;
@@ -467,12 +467,12 @@
 
 .user-card-name {
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary, #333);
     font-size: 16px;
 }
 
 .user-card-username {
-    color: #666;
+    color: var(--text-secondary, #666);
     font-size: 13px;
 }
 
@@ -483,11 +483,12 @@
 .user-card-info-item {
     font-size: 13px;
     margin-bottom: 8px;
+    color: var(--text-primary, inherit);
 }
 
 .user-card-info-item label {
     display: inline-block;
-    color: #999;
+    color: var(--text-tertiary, #999);
     font-size: 11px;
     text-transform: uppercase;
     min-width: 60px;

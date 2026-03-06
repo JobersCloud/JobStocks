@@ -226,6 +226,7 @@ class GridFilters {
                         `).join('')}
                     </div>
                     ` : ''}
+                </div>
             </div>
             <div class="filter-popup-footer">
                 <button class="btn-filter-clear" onclick="gridFilters.limpiarFiltroColumna('${columna}')" title="Limpiar">
@@ -244,49 +245,65 @@ class GridFilters {
 
         // Posicionar el popup - primero añadir al DOM para medir
         popup.style.position = 'fixed';
-        popup.style.zIndex = '1000';
+        popup.style.zIndex = '10001';
         popup.style.visibility = 'hidden';
-        document.body.appendChild(popup);
 
-        const rect = elemento.getBoundingClientRect();
-        const popupRect = popup.getBoundingClientRect();
-        const viewportH = window.innerHeight;
         const viewportW = window.innerWidth;
-        const popupW = Math.max(popupRect.width, 260);
-        const popupH = popupRect.height;
+        const isMobile = viewportW <= 768;
 
-        // Horizontal: no salir por la derecha
-        let left = rect.left;
-        if (left + popupW > viewportW - 10) {
-            left = viewportW - popupW - 10;
-        }
-        if (left < 10) left = 10;
-
-        // Vertical: si no cabe abajo, poner arriba
-        let top;
-        const spaceBelow = viewportH - rect.bottom - 10;
-        const spaceAbove = rect.top - 10;
-        if (spaceBelow >= popupH || spaceBelow >= spaceAbove) {
-            top = rect.bottom + 5;
+        if (isMobile) {
+            // Mobile: bottom-sheet con overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'filter-popup-overlay';
+            overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;';
+            overlay.addEventListener('click', () => this.cerrarPopupFiltro());
+            document.body.appendChild(overlay);
+            this._filterPopupOverlay = overlay;
+            document.body.appendChild(popup);
+            popup.style.visibility = 'visible';
         } else {
-            top = rect.top - popupH - 5;
+            document.body.appendChild(popup);
+
+            const rect = elemento.getBoundingClientRect();
+            const popupRect = popup.getBoundingClientRect();
+            const viewportH = window.innerHeight;
+            const popupW = Math.max(popupRect.width, 260);
+            const popupH = popupRect.height;
+
+            // Horizontal: no salir por la derecha
+            let left = rect.left;
+            if (left + popupW > viewportW - 10) {
+                left = viewportW - popupW - 10;
+            }
+            if (left < 10) left = 10;
+
+            // Vertical: si no cabe abajo, poner arriba
+            let top;
+            const spaceBelow = viewportH - rect.bottom - 10;
+            const spaceAbove = rect.top - 10;
+            if (spaceBelow >= popupH || spaceBelow >= spaceAbove) {
+                top = rect.bottom + 5;
+            } else {
+                top = rect.top - popupH - 5;
+            }
+
+            // Asegurar que no se salga por arriba ni por abajo
+            const maxH = viewportH - 20;
+            if (popupH > maxH) {
+                popup.style.maxHeight = maxH + 'px';
+                popup.style.overflowY = 'auto';
+                top = 10;
+            } else if (top < 10) {
+                top = 10;
+            } else if (top + popupH > viewportH - 10) {
+                top = viewportH - popupH - 10;
+            }
+
+            popup.style.top = `${top}px`;
+            popup.style.left = `${left}px`;
+            popup.style.visibility = 'visible';
         }
 
-        // Asegurar que no se salga por arriba ni por abajo
-        const maxH = viewportH - 20;
-        if (popupH > maxH) {
-            popup.style.maxHeight = maxH + 'px';
-            popup.style.overflowY = 'auto';
-            top = 10;
-        } else if (top < 10) {
-            top = 10;
-        } else if (top + popupH > viewportH - 10) {
-            top = viewportH - popupH - 10;
-        }
-
-        popup.style.top = `${top}px`;
-        popup.style.left = `${left}px`;
-        popup.style.visibility = 'visible';
         this.popupFiltroAbierto = popup;
 
         // Si tiene un filtro de rango existente, mostrar los inputs de rango
@@ -296,11 +313,16 @@ class GridFilters {
     }
 
     cerrarPopupFiltro() {
+        if (this._filterPopupOverlay) {
+            this._filterPopupOverlay.remove();
+            this._filterPopupOverlay = null;
+        }
         if (this.popupFiltroAbierto) {
             this.popupFiltroAbierto.remove();
             this.popupFiltroAbierto = null;
         }
         document.querySelectorAll('.filter-popup').forEach(p => p.remove());
+        document.querySelectorAll('.filter-popup-overlay').forEach(o => o.remove());
     }
 
     // ==================== TABS ====================

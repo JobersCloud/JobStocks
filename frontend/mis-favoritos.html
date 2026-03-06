@@ -132,7 +132,7 @@
                         </span>
                         <span class="sidebar-item-text" data-i18n="menu.myProposals">Mis Propuestas</span>
                     </a>
-                    <a class="sidebar-item" data-page="mis-pedidos.html" data-tooltip="Mis Pedidos" onclick="SidebarNav.navigateTo('mis-pedidos.html')">
+                    <a class="sidebar-item" id="sidebar-mis-pedidos" data-page="mis-pedidos.html" data-tooltip="Mis Pedidos" onclick="SidebarNav.navigateTo('mis-pedidos.html')">
                         <span class="sidebar-item-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="1" y="3" width="15" height="13"></rect>
@@ -210,7 +210,7 @@
                             </span>
                             <span class="sidebar-item-text" data-i18n="menu.allProposals">Propuestas</span>
                         </a>
-                        <a class="sidebar-item" data-page="todos-pedidos.html" data-tooltip="Pedidos" onclick="SidebarNav.navigateTo('todos-pedidos.html')">
+                        <a class="sidebar-item" id="sidebar-todos-pedidos" data-page="todos-pedidos.html" data-tooltip="Pedidos" onclick="SidebarNav.navigateTo('todos-pedidos.html')">
                             <span class="sidebar-item-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="1" y="3" width="15" height="13"></rect>
@@ -391,6 +391,22 @@
         });
 
         // ==================== GRIDS ====================
+        // Helper: genera clave serializada para un favorito
+        function favKey(item) {
+            return [
+                (item.codigo || '').trim(),
+                (item.calidad || '').trim(),
+                (item.tono || '').trim(),
+                (item.calibre || '').trim(),
+                (item.pallet || '').trim(),
+                (item.caja || '').trim()
+            ].join('|');
+        }
+
+        function favItemJson(row) {
+            return JSON.stringify({codigo: row.codigo, calidad: row.calidad || '', tono: row.tono || '', calibre: row.calibre || '', pallet: row.pallet || '', caja: row.caja || ''}).replace(/'/g, '&#39;');
+        }
+
         function initGrids() {
             favoritesGrid = new DataGrid({
                 el: '#favorites-grid',
@@ -399,6 +415,8 @@
                     { key: 'descripcion', label: t('table.description'), sortable: true, filterable: true },
                     { key: 'formato', label: t('table.format'), sortable: true, filterable: true },
                     { key: 'calidad', label: t('table.quality'), sortable: true, filterable: true },
+                    { key: 'tono', label: t('table.tone'), sortable: true, filterable: true },
+                    { key: 'calibre', label: t('table.caliber'), sortable: true, filterable: true },
                     { key: 'existencias', label: t('table.stock'), sortable: true, type: 'number' },
                     { key: 'fecha_creacion', label: t('favorites.dateAdded'), sortable: true },
                     { key: '_actions', label: '', sortable: false, filterable: false }
@@ -413,7 +431,7 @@
                         return new Date(row.fecha_creacion).toLocaleDateString('es-ES');
                     }
                     if (col.key === '_actions') {
-                        return `<button class="btn-icon btn-icon-ghost" onclick="removeFavorite('${row.codigo.replace(/'/g, "\\'")}')" title="${t('favorites.remove')}">
+                        return `<button class="btn-icon btn-icon-ghost" onclick="removeFavorite(${favItemJson(row)})" title="${t('favorites.remove')}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                         </button>`;
                     }
@@ -429,11 +447,13 @@
                             <div class="stock-card-field"><span class="stock-card-label">${t('table.code')}</span><span class="stock-card-value">${row.codigo}</span></div>
                             <div class="stock-card-field"><span class="stock-card-label">${t('table.format')}</span><span class="stock-card-value">${row.formato || '-'}</span></div>
                             <div class="stock-card-field"><span class="stock-card-label">${t('table.quality')}</span><span class="stock-card-value">${row.calidad || '-'}</span></div>
+                            <div class="stock-card-field"><span class="stock-card-label">${t('table.tone')}</span><span class="stock-card-value">${row.tono || '-'}</span></div>
+                            <div class="stock-card-field"><span class="stock-card-label">${t('table.caliber')}</span><span class="stock-card-value">${row.calibre || '-'}</span></div>
                             <div class="stock-card-field"><span class="stock-card-label">${t('table.stock')}</span><span class="stock-card-value"><strong>${existencias.toLocaleString('es-ES', {minimumFractionDigits:2})} ${row.unidad || ''}</strong></span></div>
                             <div class="stock-card-field"><span class="stock-card-label">${t('favorites.dateAdded')}</span><span class="stock-card-value">${row.fecha_creacion ? new Date(row.fecha_creacion).toLocaleDateString('es-ES') : '-'}</span></div>
                         </div>
                         <div class="stock-card-footer">
-                            <button class="btn-icon btn-icon-ghost" onclick="removeFavorite('${row.codigo.replace(/'/g, "\\'")}')" title="${t('favorites.remove')}">
+                            <button class="btn-icon btn-icon-ghost" onclick="removeFavorite(${favItemJson(row)})" title="${t('favorites.remove')}">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                             </button>
                         </div>
@@ -564,7 +584,8 @@
         }
 
         // ==================== ACTIONS ====================
-        async function removeFavorite(codigo) {
+        async function removeFavorite(item) {
+            if (typeof item === 'string') item = JSON.parse(item);
             try {
                 const csrfToken = PageCommon.getCsrfToken();
                 const empresaId = PageCommon.getEmpresaId();
@@ -575,7 +596,14 @@
                         'Content-Type': 'application/json',
                         'X-CSRF-Token': csrfToken
                     },
-                    body: JSON.stringify({ codigo })
+                    body: JSON.stringify({
+                        codigo: item.codigo,
+                        calidad: item.calidad || '',
+                        tono: item.tono || '',
+                        calibre: item.calibre || '',
+                        pallet: item.pallet || '',
+                        caja: item.caja || ''
+                    })
                 });
                 if (response.ok) {
                     UIFeedback.toast(t('favorites.removed'), 'info');

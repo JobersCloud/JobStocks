@@ -30,7 +30,19 @@ let whatsappConfig = { habilitado: false, numero: null };  // Configuración de 
 let busquedaVozHabilitada = false;  // Control de funcionalidad de búsqueda por voz
 let mostrarPrecios = false;  // Control de visualización de precios de artículos
 let csrfToken = null;  // Token CSRF para protección contra ataques
-let favoritosSet = new Set();  // Set de códigos favoritos del usuario
+let favoritosSet = new Set();  // Set de claves compuestas favoritos "codigo|calidad|tono|calibre|pallet|caja"
+
+// Helper: genera clave serializada para un favorito
+function favKey(item) {
+    return [
+        (item.codigo || '').trim(),
+        (item.calidad || '').trim(),
+        (item.tono || '').trim(),
+        (item.calibre || '').trim(),
+        (item.pallet || '').trim(),
+        (item.caja || '').trim()
+    ].join('|');
+}
 
 // ==================== PAGINACIÓN BACKEND ====================
 let paginacionBackend = {
@@ -306,22 +318,31 @@ async function fetchWithCsrf(url, options = {}) {
 
 // ==================== FAVORITOS ====================
 
-async function cargarFavoritos(codigos) {
+async function cargarFavoritos(stocks) {
     try {
         const empresaId = localStorage.getItem('empresa_id') || '1';
+        // Enviar items con los 6 campos de la clave compuesta
+        const items = stocks.map(s => ({
+            codigo: s.codigo || '',
+            calidad: s.calidad || '',
+            tono: s.tono || '',
+            calibre: s.calibre || '',
+            pallet: s.pallet || '',
+            caja: s.caja || ''
+        }));
         const response = await fetch(`${API_URL}/api/favoritos/check-batch?empresa_id=${empresaId}`, {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ codigos })
+            body: JSON.stringify({ items })
         });
         if (response.ok) {
             const data = await response.json();
             favoritosSet = new Set(data.favoritos || []);
             // Actualizar iconos de corazón en el DOM
             document.querySelectorAll('.fav-heart').forEach(btn => {
-                const codigo = btn.getAttribute('data-codigo');
-                const isActive = favoritosSet.has(codigo);
+                const key = btn.getAttribute('data-fav-key');
+                const isActive = favoritosSet.has(key);
                 btn.classList.toggle('fav-active', isActive);
                 const svg = btn.querySelector('svg');
                 if (svg) svg.setAttribute('fill', isActive ? 'currentColor' : 'none');
@@ -332,24 +353,33 @@ async function cargarFavoritos(codigos) {
     }
 }
 
-async function toggleFavorito(codigo, event) {
+async function toggleFavorito(itemJson, event) {
     if (event) { event.stopPropagation(); event.preventDefault(); }
+    const item = typeof itemJson === 'string' ? JSON.parse(itemJson) : itemJson;
+    const key = favKey(item);
     try {
         const empresaId = localStorage.getItem('empresa_id') || '1';
         const response = await fetchWithCsrf(`${API_URL}/api/favoritos/toggle?empresa_id=${empresaId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ codigo })
+            body: JSON.stringify({
+                codigo: item.codigo,
+                calidad: item.calidad || '',
+                tono: item.tono || '',
+                calibre: item.calibre || '',
+                pallet: item.pallet || '',
+                caja: item.caja || ''
+            })
         });
         if (response.ok) {
             const data = await response.json();
             if (data.is_favorite) {
-                favoritosSet.add(codigo);
+                favoritosSet.add(key);
             } else {
-                favoritosSet.delete(codigo);
+                favoritosSet.delete(key);
             }
-            // Actualizar todos los iconos de corazón en el DOM
-            document.querySelectorAll(`.fav-heart[data-codigo="${CSS.escape(codigo)}"]`).forEach(btn => {
+            // Actualizar todos los iconos de corazón en el DOM con la misma clave
+            document.querySelectorAll(`.fav-heart[data-fav-key="${CSS.escape(key)}"]`).forEach(btn => {
                 btn.classList.toggle('fav-active', data.is_favorite);
                 const svg = btn.querySelector('svg');
                 if (svg) svg.setAttribute('fill', data.is_favorite ? 'currentColor' : 'none');
@@ -361,14 +391,29 @@ async function toggleFavorito(codigo, event) {
 }
 window.toggleFavorito = toggleFavorito;
 
-function getHeartIcon(codigo) {
-    const isActive = favoritosSet.has(codigo);
-    return `<button class="fav-heart ${isActive ? 'fav-active' : ''}" data-codigo="${codigo}" onclick="toggleFavorito('${codigo.replace(/'/g, "\\'")}', event)" title="${t('favorites.toggle')}">
+function getHeartIcon(stock) {
+    const key = favKey(stock);
+    const isActive = favoritosSet.has(key);
+    const esc = s => (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    return `<button class="fav-heart ${isActive ? 'fav-active' : ''}" data-fav-key="${key}" data-fav-codigo="${esc(stock.codigo)}" data-fav-calidad="${esc(stock.calidad)}" data-fav-tono="${esc(stock.tono)}" data-fav-calibre="${esc(stock.calibre)}" data-fav-pallet="${esc(stock.pallet)}" data-fav-caja="${esc(stock.caja)}" onclick="toggleFavoritoFromBtn(this, event)" title="${t('favorites.toggle')}">
         <svg viewBox="0 0 24 24" fill="${isActive ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
         </svg>
     </button>`;
 }
+
+function toggleFavoritoFromBtn(btn, event) {
+    const item = {
+        codigo: btn.getAttribute('data-fav-codigo') || '',
+        calidad: btn.getAttribute('data-fav-calidad') || '',
+        tono: btn.getAttribute('data-fav-tono') || '',
+        calibre: btn.getAttribute('data-fav-calibre') || '',
+        pallet: btn.getAttribute('data-fav-pallet') || '',
+        caja: btn.getAttribute('data-fav-caja') || ''
+    };
+    toggleFavorito(item, event);
+}
+window.toggleFavoritoFromBtn = toggleFavoritoFromBtn;
 
 // Paginación (solo cuando gridConImagenes está activo)
 let paginaActual = 1;
@@ -1207,7 +1252,7 @@ async function checkAuth() {
             return false;
         }
 
-        displayUserInfo(user);
+        await displayUserInfo(user);
         return true;
     } catch (error) {
         console.error('❌ Error verificando autenticación:', error);
@@ -1217,7 +1262,7 @@ async function checkAuth() {
 }
 
 // Mostrar información del usuario en el menú
-function displayUserInfo(user) {
+async function displayUserInfo(user) {
     currentUser = user;
 
     // Actualizar nombre en el botón del menú
@@ -1268,6 +1313,20 @@ function displayUserInfo(user) {
         if (sidebarParametros) sidebarParametros.style.display = 'none';
         if (sidebarControlBd) sidebarControlBd.style.display = 'none';
     }
+
+    // Mostrar Mis Pedidos / Pedidos solo si está habilitado (ocultos por defecto en CSS)
+    try {
+        const respPedidos = await fetch(`${API_URL}/api/parametros/visible-pedidos`, { credentials: 'include' });
+        if (respPedidos.ok) {
+            const dPedidos = await respPedidos.json();
+            if (dPedidos.habilitado) {
+                const elMisPedidos = document.getElementById('sidebar-mis-pedidos');
+                const elTodosPedidos = document.getElementById('sidebar-todos-pedidos');
+                if (elMisPedidos) elMisPedidos.style.display = '';
+                if (elTodosPedidos) elTodosPedidos.style.display = '';
+            }
+        }
+    } catch (e) {}
 
     // Mostrar opción de contexto solo para superusuarios
     const menuItemContext = document.getElementById('menu-item-context');
@@ -1782,9 +1841,8 @@ async function cargarTodos() {
         mostrarDatos();
         mostrarCargando(false);
 
-        // Cargar favoritos del usuario para los códigos visibles
-        const codigos = allStocksData.map(s => s.codigo);
-        if (codigos.length > 0) cargarFavoritos(codigos);
+        // Cargar favoritos del usuario para los items visibles
+        if (allStocksData.length > 0) cargarFavoritos(allStocksData);
     } catch (error) {
         console.error('❌ Error al cargar stocks:', error);
         mostrarCargando(false);
@@ -2748,9 +2806,8 @@ async function buscarStocks() {
 
         mostrarCargando(false);
 
-        // Cargar favoritos del usuario para los códigos visibles
-        const codigos = allStocksData.map(s => s.codigo);
-        if (codigos.length > 0) cargarFavoritos(codigos);
+        // Cargar favoritos del usuario para los items visibles
+        if (allStocksData.length > 0) cargarFavoritos(allStocksData);
     } catch (error) {
         console.error('❌ Error en búsqueda:', error);
         mostrarCargando(false);
@@ -2932,7 +2989,7 @@ function mostrarTabla(stocks) {
                     ${iconoVer}
                 </button>${propuestasHabilitadas ? `<button class="btn-icon btn-icon-secondary" onclick='agregarAlCarrito(${JSON.stringify(stock).replace(/'/g, "&apos;")})' title="${t('table.addToCart')}">
                     ${iconoCarrito}
-                </button>` : ''}${getHeartIcon(stock.codigo)}
+                </button>` : ''}${getHeartIcon(stock)}
             </td>
         </tr>`
     ).join('');
@@ -3007,7 +3064,7 @@ function mostrarTabla(stocks) {
                                 onclick='agregarAlCarrito(${JSON.stringify(stock).replace(/'/g, "&apos;")})'>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
                         </button>` : ''}
-                        ${getHeartIcon(stock.codigo)}
+                        ${getHeartIcon(stock)}
                     </div>
                 </div>
             `).join('')}
@@ -3056,7 +3113,7 @@ async function verDetalle(stock) {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
                 </button>
                 ` : ''}
-                ${getHeartIcon(stock.codigo)}
+                ${getHeartIcon(stock)}
                 <button class="btn-icon" style="width: 44px; height: 44px; background: #6c757d; color: white;" title="${t('common.close')}" onclick="cerrarModal()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
@@ -4451,7 +4508,7 @@ window.onclick = function (event) {
 }
 
 // Cargar datos al iniciar
-window.onload = async function () {
+document.addEventListener('DOMContentLoaded', async function () {
     console.log('🚀 Iniciando aplicación...');
 
     // Cargar logo y favicon de la empresa (usa connection de localStorage si existe)
@@ -4494,7 +4551,7 @@ window.onload = async function () {
     } else {
         console.log('❌ No autenticado');
     }
-};
+});
 
 // Buscar al presionar Enter en los filtros
 document.addEventListener('DOMContentLoaded', function () {

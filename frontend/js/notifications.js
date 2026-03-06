@@ -12,6 +12,7 @@
     let pollInterval = null;
     let lastCount = 0;
     let csrfToken = null;
+    let empresaId = null;           // Empresa capturada al init (aislamiento por pestaña)
     let currentDelay = 30000;       // Empieza en 30s
     let unchangedCycles = 0;        // Ciclos sin cambios
 
@@ -38,6 +39,7 @@
     function init() {
         csrfToken = localStorage.getItem('csrf_token');
         connectionId = localStorage.getItem('connection');
+        empresaId = localStorage.getItem('empresa_id');
         fetchCount();
         scheduleNext();
 
@@ -83,7 +85,8 @@
             return;
         }
         try {
-            const response = await fetch(`${getApiUrl()}/api/notifications/unread-count`, {
+            const qs = empresaId ? `?empresa_id=${encodeURIComponent(empresaId)}` : '';
+            const response = await fetch(`${getApiUrl()}/api/notifications/unread-count${qs}`, {
                 credentials: 'include'
             });
 
@@ -183,7 +186,8 @@
             return;
         }
         try {
-            const response = await fetch(`${getApiUrl()}/api/notifications`, {
+            const qs = empresaId ? `?empresa_id=${encodeURIComponent(empresaId)}` : '';
+            const response = await fetch(`${getApiUrl()}/api/notifications${qs}`, {
                 credentials: 'include'
             });
 
@@ -322,7 +326,8 @@
     async function markAllAsRead() {
         try {
             csrfToken = csrfToken || localStorage.getItem('csrf_token');
-            const response = await fetch(`${getApiUrl()}/api/notifications/read-all`, {
+            const qs = empresaId ? `?empresa_id=${encodeURIComponent(empresaId)}` : '';
+            const response = await fetch(`${getApiUrl()}/api/notifications/read-all${qs}`, {
                 method: 'PUT',
                 credentials: 'include',
                 headers: {
