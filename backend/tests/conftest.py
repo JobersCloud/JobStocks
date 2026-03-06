@@ -96,3 +96,58 @@ def auth_client(app, client):
         }
 
     return {'client': client, 'csrf_token': csrf_token}
+
+
+def _make_role_client(app, role):
+    """Helper: crea un test client autenticado con un rol específico."""
+    client = app.test_client()
+    csrf_token = secrets.token_hex(16)
+
+    with client.session_transaction() as sess:
+        sess['_user_id'] = '1'
+        sess['connection'] = '1'
+        sess['empresa_id'] = '1'
+        sess['csrf_token'] = csrf_token
+        sess['db_config'] = {
+            'dbserver': 'localhost',
+            'dbport': 1433,
+            'dblogin': 'sa',
+            'dbpass': 'test',
+            'dbname': 'TestDB'
+        }
+
+    # Mock get_user_by_id para que load_user devuelva un User con el rol correcto
+    user_data = {
+        'id': 1,
+        'username': f'test_{role}',
+        'email': f'{role}@test.com',
+        'full_name': f'Test {role.title()}',
+        'rol': role,
+        'empresa_id': '1',
+        'cliente_id': None,
+        'debe_cambiar_password': False,
+        'company_name': 'Test Corp',
+        'mostrar_precios': False,
+        'administrador_clientes': False
+    }
+
+    return client, csrf_token, user_data
+
+
+@pytest.fixture
+def admin_client(app):
+    """Cliente autenticado con rol administrador."""
+    client, csrf_token, user_data = _make_role_client(app, 'administrador')
+
+    # Patch en app.get_user_by_id porque app.py hace 'from database.users_db import get_user_by_id'
+    with patch('app.get_user_by_id', return_value=user_data):
+        yield {'client': client, 'csrf_token': csrf_token}
+
+
+@pytest.fixture
+def superuser_client(app):
+    """Cliente autenticado con rol superusuario."""
+    client, csrf_token, user_data = _make_role_client(app, 'superusuario')
+
+    with patch('app.get_user_by_id', return_value=user_data):
+        yield {'client': client, 'csrf_token': csrf_token}
