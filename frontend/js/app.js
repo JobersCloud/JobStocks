@@ -1763,9 +1763,16 @@ async function cargarOpcionesFiltros() {
         // Ocultar/mostrar filtros del sidebar según columnas opcionales
         aplicarVisibilidadFiltros();
 
+        // Mostrar panel de filtros (estaba oculto para evitar flash)
+        const filtersPanel = document.querySelector('.filters');
+        if (filtersPanel) filtersPanel.style.visibility = '';
+
         console.log('✅ Filtros cargados correctamente (sin cargar datos del grid)');
     } catch (error) {
         console.error('❌ Error al cargar opciones de filtros:', error);
+        // Mostrar filtros aunque haya error (para que no queden ocultos)
+        const filtersPanel = document.querySelector('.filters');
+        if (filtersPanel) filtersPanel.style.visibility = '';
         if (error.message && error.message.includes('401')) {
             window.location.href = '/login';
         }

@@ -307,11 +307,11 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
-            { version: 'v1.40.3', date: '2026-03-08', title: 'Orden filtro tipo producto y fix flash', items: [
-                {type: 'fix', text: 'Filtro tipo producto ahora aparece justo después de formato en sidebar, grid y tarjetas'},
-                {type: 'fix', text: 'Eliminado flash de filtros opcionales (calidad, color) que se veían brevemente antes de ocultarse'},
-                {type: 'fix', text: 'Corregido filtro por tipo de producto: el controller no recogía el parámetro del frontend'},
-                {type: 'fix', text: 'Campo tipo_producto ahora se lee de la vista SQL en vez de estar vacio'}
+            { version: 'v1.40.4', date: '2026-03-08', title: 'Filtros se muestran solo cuando estan listos', items: [
+                {type: 'fix', text: 'Panel de filtros oculto hasta que las opciones estan completamente cargadas'},
+                {type: 'fix', text: 'Filtro tipo producto aparece justo despues de formato en sidebar, grid y tarjetas'},
+                {type: 'fix', text: 'Eliminado flash de filtros opcionales vacios al cargar la pagina'},
+                {type: 'fix', text: 'Corregido filtro por tipo de producto que no funcionaba en busqueda'}
             ]},
             { version: 'v1.40.0', date: '2026-03-08', title: 'Columnas opcionales por empresa en grid de stocks', items: [
                 {type: 'new', text: 'Configuracion de columnas visibles en stocks por empresa (color, calidad, tono, calibre, tipo producto)'},
