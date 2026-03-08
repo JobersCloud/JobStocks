@@ -111,7 +111,7 @@ let filtrosActivos = [];
 
 // ==================== COLUMNAS ARRASTRABLES ====================
 // Orden de columnas (persistido en localStorage)
-let ordenColumnas = ['codigo', 'descripcion', 'formato', 'color', 'calidad', 'tono', 'calibre', 'tipo_producto', 'existencias'];
+let ordenColumnas = ['codigo', 'descripcion', 'formato', 'tipo_producto', 'color', 'calidad', 'tono', 'calibre', 'existencias'];
 let columnaArrastrada = null;
 
 // Cargar orden de columnas desde localStorage
@@ -1727,9 +1727,9 @@ async function cargarOpcionesFiltros() {
         const filtrosSidebar = [
             { columna: 'formato', selectId: 'filter-formato', siempreVisible: true },
             { columna: 'serie', selectId: 'filter-serie', siempreVisible: true },
-            { columna: 'calidad', selectId: 'filter-calidad', siempreVisible: false },
+            { columna: 'tipo_producto', selectId: 'filter-tipo-producto', siempreVisible: false },
             { columna: 'color', selectId: 'filter-color', siempreVisible: false },
-            { columna: 'tipo_producto', selectId: 'filter-tipo-producto', siempreVisible: false }
+            { columna: 'calidad', selectId: 'filter-calidad', siempreVisible: false }
         ];
 
         // Solo cargar valores para filtros visibles
@@ -3111,6 +3111,10 @@ function mostrarTabla(stocks) {
                             <span class="stock-card-label">${t('cards.model')}</span>
                             <span class="stock-card-value">${stock.serie || '-'}</span>
                         </div>
+                        ${esColumnaVisible('tipo_producto') && stock.tipo_producto ? `<div class="stock-card-field">
+                            <span class="stock-card-label">${t('cards.productType')}</span>
+                            <span class="stock-card-value">${stock.tipo_producto}</span>
+                        </div>` : ''}
                         ${esColumnaVisible('color') ? `<div class="stock-card-field">
                             <span class="stock-card-label">${t('cards.color')}</span>
                             <span class="stock-card-value">${stock.color || '-'}</span>
@@ -3126,10 +3130,6 @@ function mostrarTabla(stocks) {
                         ${esColumnaVisible('calibre') ? `<div class="stock-card-field">
                             <span class="stock-card-label">${t('cards.caliber')}</span>
                             <span class="stock-card-value">${stock.calibre || '-'}</span>
-                        </div>` : ''}
-                        ${esColumnaVisible('tipo_producto') && stock.tipo_producto ? `<div class="stock-card-field">
-                            <span class="stock-card-label">${t('cards.productType')}</span>
-                            <span class="stock-card-value">${stock.tipo_producto}</span>
                         </div>` : ''}
                         ${mostrarPrecios && stock.precio != null ? `
                         <div class="stock-card-field">

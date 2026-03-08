@@ -307,7 +307,9 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
-            { version: 'v1.40.2', date: '2026-03-08', title: 'Fix filtro tipo producto en búsqueda', items: [
+            { version: 'v1.40.3', date: '2026-03-08', title: 'Orden filtro tipo producto y fix flash', items: [
+                {type: 'fix', text: 'Filtro tipo producto ahora aparece justo después de formato en sidebar, grid y tarjetas'},
+                {type: 'fix', text: 'Eliminado flash de filtros opcionales (calidad, color) que se veían brevemente antes de ocultarse'},
                 {type: 'fix', text: 'Corregido filtro por tipo de producto: el controller no recogía el parámetro del frontend'},
                 {type: 'fix', text: 'Campo tipo_producto ahora se lee de la vista SQL en vez de estar vacio'}
             ]},
