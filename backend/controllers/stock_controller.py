@@ -81,7 +81,8 @@ class StockController:
                 'calibre': request.args.get('calibre'),
                 'formato': request.args.get('formato'),
                 'serie': request.args.get('serie'),
-                'existencias_min': request.args.get('existencias_min')
+                'existencias_min': request.args.get('existencias_min'),
+                'tipo_producto': request.args.get('tipo_producto')
             }
 
             # Eliminar filtros vacíos
