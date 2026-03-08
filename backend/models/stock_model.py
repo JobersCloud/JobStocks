@@ -44,7 +44,8 @@ def _row_to_stock(row):
         'existencias': float(row[14]) if row[14] else 0.0,
         'ean13': _s(row[15]),
         'pesocaja': float(row[16]) if row[16] else 0,
-        'pesopallet': float(row[17]) if row[17] else 0
+        'pesopallet': float(row[17]) if row[17] else 0,
+        'tipo_producto': ''
     }
 
 
@@ -129,11 +130,11 @@ class StockModel:
 
     # Columnas válidas para ordenación (seguridad contra SQL injection)
     VALID_ORDER_COLUMNS = ['codigo', 'descripcion', 'calidad', 'color', 'tono',
-                           'calibre', 'formato', 'serie', 'existencias']
+                           'calibre', 'formato', 'serie', 'existencias', 'tipo_producto']
 
     # Columnas válidas para filtros (seguridad contra SQL injection)
     VALID_FILTER_COLUMNS = ['codigo', 'descripcion', 'calidad', 'color', 'tono',
-                            'calibre', 'formato', 'serie', 'existencias']
+                            'calibre', 'formato', 'serie', 'existencias', 'tipo_producto']
 
     # Operadores válidos y su traducción SQL
     VALID_OPERATORS = {

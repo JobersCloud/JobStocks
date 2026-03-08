@@ -430,7 +430,7 @@
                 icon: '🎨',
                 description: 'Configuracion visual de la aplicacion',
                 descKey: 'params.sectionDesignDesc',
-                params: ['GRID_CON_IMAGENES', 'PAGINACION_GRID', 'PAGINACION_LIMITE']
+                params: ['GRID_CON_IMAGENES', 'PAGINACION_GRID', 'PAGINACION_LIMITE', 'STOCK_COLUMNAS_OPCIONALES']
             },
             features: {
                 title: 'Funcionalidades',
@@ -493,7 +493,7 @@
                     renderParams();
                 }
             } catch (error) {
-                loadingEl.innerHTML = `<p style="color: #dc3545;">Error al cargar los parametros</p>`;
+                loadingEl.innerHTML = `<p style="color: #dc3545;">${t('params.errorLoading')}</p>`;
             }
         }
 
@@ -547,6 +547,45 @@
             const isBoolean = param.valor === '0' || param.valor === '1';
             const isTrue = param.valor === '1';
             const isReadOnly = param.clave === 'FECHA_ULTIMA_SINCRONIZACION';
+            const isColumnas = param.clave === 'STOCK_COLUMNAS_OPCIONALES';
+
+            if (isColumnas) {
+                const allCols = ['color', 'calidad', 'tono', 'calibre', 'tipo_producto'];
+                const colLabels = {
+                    color: t('filters.color') || 'Color',
+                    calidad: t('filters.quality') || 'Calidad',
+                    tono: t('filters.tone') || 'Tono',
+                    calibre: t('filters.caliber') || 'Calibre',
+                    tipo_producto: t('filters.productType') || 'Tipo Producto'
+                };
+                let selected = [];
+                try { selected = JSON.parse(param.valor || '[]'); } catch(e) { selected = []; }
+
+                const checkboxesHtml = allCols.map(col => `
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 0">
+                        <input type="checkbox" class="col-opt-check" value="${col}" ${selected.includes(col) ? 'checked' : ''} style="width:18px;height:18px;cursor:pointer">
+                        <span>${colLabels[col]}</span>
+                    </label>
+                `).join('');
+
+                return `
+                    <div class="param-card" data-key="${param.clave}">
+                        <div class="param-info">
+                            <span class="param-key">${param.clave}</span>
+                            <p class="param-description" data-i18n="params.columnVisibilityDesc">${t('params.columnVisibilityDesc') || param.descripcion}</p>
+                            <span class="param-meta">
+                                <span data-i18n="params.lastModified">Ultima modificacion</span>: ${PageCommon.formatDateTime(param.fecha_modificacion)}
+                            </span>
+                        </div>
+                        <div class="param-value-section" style="flex-direction:column;align-items:flex-start;gap:8px">
+                            ${checkboxesHtml}
+                            <button class="btn-icon btn-icon-success" onclick="saveColumnasOpcionales()" title="Guardar" style="margin-top:4px">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
 
             return `
                 <div class="param-card" data-key="${param.clave}">
@@ -564,10 +603,10 @@
                                 <span class="slider"></span>
                             </label>
                             <span class="param-value-display ${isTrue ? 'value-true' : 'value-false'}">
-                                ${isTrue ? 'Activo' : 'Inactivo'}
+                                ${isTrue ? t('params.active') : t('params.inactive')}
                             </span>
                         ` : isReadOnly ? `
-                            <span class="param-value-readonly">${param.valor || 'Sin sincronizar'}</span>
+                            <span class="param-value-readonly">${param.valor || t('params.notSynced')}</span>
                         ` : `
                             <input type="text" class="param-input" id="input-${param.clave}" value="${param.valor}" />
                             <button class="btn-icon btn-icon-success" onclick="saveTextParam('${param.clave}')" title="Guardar">
@@ -601,7 +640,7 @@
 
                 const card = document.querySelector(`[data-key="${clave}"]`);
                 const valueDisplay = card.querySelector('.param-value-display');
-                valueDisplay.textContent = checked ? 'Activo' : 'Inactivo';
+                valueDisplay.textContent = checked ? t('params.active') : t('params.inactive');
                 valueDisplay.className = `param-value-display ${checked ? 'value-true' : 'value-false'}`;
 
                 const index = params.findIndex(p => p.clave === clave);
@@ -610,9 +649,9 @@
                     params[index].fecha_modificacion = new Date().toISOString();
                 }
 
-                UIFeedback.toast('Parametro actualizado correctamente', 'success');
+                UIFeedback.toast(t('params.updatedSuccess'), 'success');
             } catch (error) {
-                UIFeedback.toast('Error al actualizar el parametro', 'error');
+                UIFeedback.toast(t('params.errorUpdating'), 'error');
 
                 const card = document.querySelector(`[data-key="${clave}"]`);
                 const input = card.querySelector('input[type="checkbox"]');
@@ -647,9 +686,41 @@
                     params[index].fecha_modificacion = new Date().toISOString();
                 }
 
-                UIFeedback.toast('Parametro actualizado correctamente', 'success');
+                UIFeedback.toast(t('params.updatedSuccess'), 'success');
             } catch (error) {
-                UIFeedback.toast('Error al actualizar el parametro', 'error');
+                UIFeedback.toast(t('params.errorUpdating'), 'error');
+            }
+        }
+
+        // ==================== GUARDAR COLUMNAS OPCIONALES ====================
+        async function saveColumnasOpcionales() {
+            const checks = document.querySelectorAll('.col-opt-check');
+            const columnas = [];
+            checks.forEach(ch => { if (ch.checked) columnas.push(ch.value); });
+            const empresaId = localStorage.getItem('empresa_id') || '1';
+
+            try {
+                const response = await fetch(`${API_URL}/api/parametros/columnas-opcionales`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': PageCommon.getCsrfToken()
+                    },
+                    body: JSON.stringify({ columnas, empresa_id: empresaId })
+                });
+
+                if (!response.ok) throw new Error('Error saving columns');
+
+                const index = params.findIndex(p => p.clave === 'STOCK_COLUMNAS_OPCIONALES');
+                if (index !== -1) {
+                    params[index].valor = JSON.stringify(columnas);
+                    params[index].fecha_modificacion = new Date().toISOString();
+                }
+
+                UIFeedback.toast(t('params.columnSaved'), 'success');
+            } catch (error) {
+                UIFeedback.toast(t('params.columnError'), 'error');
             }
         }
 

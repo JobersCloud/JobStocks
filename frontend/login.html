@@ -307,6 +307,24 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.40.0', date: '2026-03-08', title: 'Columnas opcionales por empresa en grid de stocks', items: [
+                {type: 'new', text: 'Configuracion de columnas visibles en stocks por empresa (color, calidad, tono, calibre, tipo producto)'},
+                {type: 'new', text: 'Nueva columna "Tipo Producto" disponible en grid, tarjetas y filtros'},
+                {type: 'new', text: 'Seccion de checkboxes en Parametros para gestionar columnas visibles'},
+                {type: 'improve', text: 'Filtros del sidebar y filtros de columna se ocultan automaticamente segun configuracion'}
+            ]},
+            { version: 'v1.39.12', date: '2026-03-07', title: 'Fix favoritos: datos historicos para productos sin stock', items: [
+                {type: 'fix', text: 'Favoritos de productos que ya no estan en stock muestran descripcion y formato del ultimo pedido'},
+                {type: 'fix', text: 'Resuelto conflicto de collation en todas las consultas de favoritos (COLLATE DATABASE_DEFAULT)'},
+                {type: 'fix', text: 'Tab "Mas Pedidos" ahora muestra calidad, tono y calibre de cada variante'},
+                {type: 'fix', text: 'Boton corazon en favoritos funciona correctamente (escapado HTML corregido)'},
+                {type: 'fix', text: 'Boton "Ver en Stocks" desde favoritos busca y muestra el producto'},
+                {type: 'improve', text: 'Toast de confirmacion al añadir/quitar favoritos desde la grid principal'},
+                {type: 'improve', text: 'Mensajes de error visibles cuando falla la carga o toggle de favoritos'}
+            ]},
+            { version: 'v1.39.8', date: '2026-03-07', title: 'Cobertura i18n en strings hardcodeados', items: [
+                {type: 'improve', text: 'Textos de email-config, parametros, dashboard y app.js ahora se traducen segun el idioma seleccionado'}
+            ]},
             { version: 'v1.39.7', date: '2026-03-06', title: 'Fix sidebar pedidos no se mostraba', items: [
                 {type: 'fix', text: 'Corregido sidebar de Pedidos que no aparecia al activar el parametro (CSS ID overrideaba JS)'}
             ]},

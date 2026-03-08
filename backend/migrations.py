@@ -1129,4 +1129,32 @@ MIGRATIONS = [
         ]
     },
 
+    # ================================================================
+    # PARAMETRO STOCK_COLUMNAS_OPCIONALES
+    # ================================================================
+
+    {
+        'version': 48,
+        'description': 'Parametro STOCK_COLUMNAS_OPCIONALES para todas las empresas',
+        'app_version': 'v1.40.0',
+        'sql': [
+            """DECLARE @emp_id VARCHAR(5);
+            DECLARE emp_cursor CURSOR FOR SELECT DISTINCT empresa_id FROM parametros;
+            OPEN emp_cursor;
+            FETCH NEXT FROM emp_cursor INTO @emp_id;
+            WHILE @@FETCH_STATUS = 0
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM parametros WHERE clave = 'STOCK_COLUMNAS_OPCIONALES' AND empresa_id = @emp_id)
+                BEGIN
+                    INSERT INTO parametros (clave, valor, descripcion, empresa_id, fecha_modificacion)
+                    VALUES ('STOCK_COLUMNAS_OPCIONALES', '["color","calidad","tono","calibre"]',
+                            'Columnas opcionales visibles en grid de stocks (JSON array)', @emp_id, GETDATE());
+                END
+                FETCH NEXT FROM emp_cursor INTO @emp_id;
+            END;
+            CLOSE emp_cursor;
+            DEALLOCATE emp_cursor;""",
+        ]
+    },
+
 ]

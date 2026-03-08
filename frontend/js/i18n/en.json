@@ -21,7 +21,8 @@
     "mobileSortPlaceholder": "-- Sort --",
     "mobileFilterBtn": "Filter",
     "mobileFilterTitle": "Filter by column",
-    "mobileClearFilters": "Clear all"
+    "mobileClearFilters": "Clear all",
+    "unknownError": "Unknown error"
   },
   "header": {
     "title": "Stock Management",
@@ -125,7 +126,11 @@
     "placeholder": "E.g.: 100",
     "searchTitle": "Search products",
     "searchMessage": "Use the filters and press \"Search\" or \"View All\" to display the data.",
-    "waitingSearch": "Waiting for search..."
+    "waitingSearch": "Waiting for search...",
+    "noFiltersToSave": "No filters to save",
+    "filtersSaved": "Filters saved as \"{name}\"",
+    "productType": "Product Type",
+    "allProductTypes": "All types"
   },
   "table": {
     "image": "Image",
@@ -142,7 +147,8 @@
     "viewDetail": "View Detail",
     "add": "Add",
     "addToCart": "🛒 Add",
-    "price": "Price"
+    "price": "Price",
+    "productType": "Type"
   },
   "detail": {
     "title": "Stock Detail",
@@ -212,7 +218,8 @@
     "invalidQuantity": "Please enter a valid quantity",
     "exceedsStock": "The requested quantity ({requested}) exceeds available stock ({available})",
     "addToCart": "Add to Cart",
-    "quantity": "Quantity"
+    "quantity": "Quantity",
+    "noProductSelected": "No product selected"
   },
   "shipping": {
     "title": "📧 Send Request",
@@ -262,7 +269,8 @@
     "caliber": "Caliber",
     "viewDetail": "View Detail",
     "addToCart": "🛒 Add",
-    "price": "Price"
+    "price": "Price",
+    "productType": "Type"
   },
   "menu": {
     "main": "Main",
@@ -354,6 +362,26 @@
     "confirmDeleteLogo": "Are you sure you want to delete the logo?",
     "confirmDeleteFavicon": "Are you sure you want to delete the favicon?"
   },
+  "emailConfig": {
+    "noConfigurations": "No email configurations found",
+    "newConfiguration": "New Configuration",
+    "editConfiguration": "Edit Configuration",
+    "confirmActivate": "Activate this email configuration?",
+    "errorActivating": "Error activating configuration",
+    "passwordRequired": "Password is required for a new configuration",
+    "createdSuccess": "Configuration created successfully",
+    "updatedSuccess": "Configuration updated successfully",
+    "errorSaving": "Error saving configuration",
+    "requiredFields": "Fill in SMTP server, port and sender email fields",
+    "passwordForTest": "You must enter the password to test the connection",
+    "testing": "Testing...",
+    "connectionOk": "Connection OK",
+    "errorTesting": "Error testing connection",
+    "testConnection": "Test Connection",
+    "errorLoading": "Error loading configurations",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
   "dashboard": {
     "title": "Dashboard",
     "totalProposals": "Total Proposals",
@@ -378,7 +406,9 @@
     "topViewedArticles": "Most Viewed Articles",
     "views": "Views",
     "uniqueUsers": "Users",
-    "lastView": "Last View"
+    "lastView": "Last View",
+    "errorLoading": "Error loading dashboard",
+    "monthsShort": "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec"
   },
   "roles": {
     "user": "User",
@@ -598,7 +628,15 @@
     "mirrorModeDesc": "Indicates this database is a synchronized replica",
     "lastSync": "Last Sync",
     "lastSyncDesc": "Date and time of last data synchronization",
-    "notSynced": "Not synced"
+    "notSynced": "Not synced",
+    "noParameters": "No parameters configured",
+    "errorLoading": "Error loading parameters",
+    "updatedSuccess": "Parameter updated successfully",
+    "errorUpdating": "Error updating parameter",
+    "columnVisibility": "Visible stock columns",
+    "columnVisibilityDesc": "Select which optional columns to show in the stock grid",
+    "columnSaved": "Columns saved successfully",
+    "columnError": "Error saving columns"
   },
   "dataGrid": {
     "loading": "Loading data...",

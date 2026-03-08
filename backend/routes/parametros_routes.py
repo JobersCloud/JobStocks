@@ -265,6 +265,67 @@ def visible_pedidos():
     }), 200
 
 
+@parametros_bp.route('/columnas-opcionales', methods=['GET'])
+def get_columnas_opcionales():
+    """
+    Obtener columnas opcionales visibles en grid de stocks
+    ---
+    tags:
+      - Parámetros
+    parameters:
+      - name: empresa_id
+        in: query
+        type: string
+        required: false
+    responses:
+      200:
+        description: Columnas opcionales configuradas
+    """
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+    columnas = ParametrosModel.columnas_opcionales(empresa_id, connection)
+    todas = ['color', 'calidad', 'tono', 'calibre', 'tipo_producto']
+    return jsonify({'columnas': columnas, 'disponibles': todas}), 200
+
+
+@parametros_bp.route('/columnas-opcionales', methods=['PUT'])
+@login_required
+@csrf_required
+@superusuario_required
+def set_columnas_opcionales():
+    """
+    Guardar columnas opcionales visibles en grid de stocks
+    ---
+    tags:
+      - Parámetros
+    security:
+      - session: []
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            columnas:
+              type: array
+              items:
+                type: string
+    responses:
+      200:
+        description: Columnas actualizadas
+    """
+    import json
+    data = request.get_json()
+    columnas = data.get('columnas', [])
+    todas_validas = ['color', 'calidad', 'tono', 'calibre', 'tipo_producto']
+    columnas = [c for c in columnas if c in todas_validas]
+    empresa_id = get_empresa_id()
+    connection = get_connection()
+    ParametrosModel.set('STOCK_COLUMNAS_OPCIONALES', json.dumps(columnas), empresa_id, connection)
+    return jsonify({'success': True, 'columnas': columnas}), 200
+
+
 @parametros_bp.route('/paginacion-config', methods=['GET'])
 def paginacion_config():
     """

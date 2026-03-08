@@ -21,7 +21,8 @@
     "mobileSortPlaceholder": "-- Ordenar --",
     "mobileFilterBtn": "Filtrar",
     "mobileFilterTitle": "Filtrar por columna",
-    "mobileClearFilters": "Limpiar todos"
+    "mobileClearFilters": "Limpiar todos",
+    "unknownError": "Error desconocido"
   },
   "header": {
     "title": "Gestión de Stocks",
@@ -125,7 +126,11 @@
     "placeholder": "Ej: 100",
     "searchTitle": "Buscar productos",
     "searchMessage": "Usa los filtros y presiona \"Buscar\" o \"Ver todos\" para mostrar los datos.",
-    "waitingSearch": "Esperando búsqueda..."
+    "waitingSearch": "Esperando búsqueda...",
+    "noFiltersToSave": "No hay filtros para guardar",
+    "filtersSaved": "Filtros guardados como \"{name}\"",
+    "productType": "Tipo Producto",
+    "allProductTypes": "Todos los tipos"
   },
   "table": {
     "image": "Imagen",
@@ -142,7 +147,8 @@
     "viewDetail": "Ver Detalle",
     "add": "Agregar",
     "addToCart": "🛒 Agregar",
-    "price": "Precio"
+    "price": "Precio",
+    "productType": "Tipo"
   },
   "detail": {
     "title": "Detalle del Stock",
@@ -212,7 +218,8 @@
     "invalidQuantity": "Por favor ingresa una cantidad válida",
     "exceedsStock": "La cantidad solicitada ({requested}) supera el stock disponible ({available})",
     "addToCart": "Agregar al Carrito",
-    "quantity": "Cantidad"
+    "quantity": "Cantidad",
+    "noProductSelected": "No hay producto seleccionado"
   },
   "shipping": {
     "title": "📧 Enviar Solicitud",
@@ -262,7 +269,8 @@
     "caliber": "Calibre",
     "viewDetail": "Ver Detalle",
     "addToCart": "🛒 Agregar",
-    "price": "Precio"
+    "price": "Precio",
+    "productType": "Tipo"
   },
   "menu": {
     "main": "Principal",
@@ -354,6 +362,26 @@
     "confirmDeleteLogo": "¿Estás seguro de eliminar el logo?",
     "confirmDeleteFavicon": "¿Estás seguro de eliminar el favicon?"
   },
+  "emailConfig": {
+    "noConfigurations": "No hay configuraciones de email",
+    "newConfiguration": "Nueva Configuración",
+    "editConfiguration": "Editar Configuración",
+    "confirmActivate": "¿Activar esta configuración de email?",
+    "errorActivating": "Error al activar la configuración",
+    "passwordRequired": "La contraseña es obligatoria para una nueva configuración",
+    "createdSuccess": "Configuración creada correctamente",
+    "updatedSuccess": "Configuración actualizada correctamente",
+    "errorSaving": "Error al guardar la configuración",
+    "requiredFields": "Completa los campos de servidor SMTP, puerto y email remitente",
+    "passwordForTest": "Debes introducir la contraseña para probar la conexión",
+    "testing": "Probando...",
+    "connectionOk": "Conexión OK",
+    "errorTesting": "Error al probar la conexión",
+    "testConnection": "Probar Conexión",
+    "errorLoading": "Error al cargar las configuraciones",
+    "active": "Activa",
+    "inactive": "Inactiva"
+  },
   "dashboard": {
     "title": "Dashboard",
     "totalProposals": "Total Propuestas",
@@ -378,7 +406,9 @@
     "topViewedArticles": "Articulos Mas Vistos",
     "views": "Vistas",
     "uniqueUsers": "Usuarios",
-    "lastView": "Ultima Vista"
+    "lastView": "Ultima Vista",
+    "errorLoading": "Error al cargar el dashboard",
+    "monthsShort": "Ene,Feb,Mar,Abr,May,Jun,Jul,Ago,Sep,Oct,Nov,Dic"
   },
   "roles": {
     "user": "Usuario",
@@ -598,7 +628,15 @@
     "mirrorModeDesc": "Indica que esta base de datos es una réplica sincronizada",
     "lastSync": "Última Sincronización",
     "lastSyncDesc": "Fecha y hora de la última sincronización de datos",
-    "notSynced": "Sin sincronizar"
+    "notSynced": "Sin sincronizar",
+    "noParameters": "No hay parámetros configurados",
+    "errorLoading": "Error al cargar los parámetros",
+    "updatedSuccess": "Parámetro actualizado correctamente",
+    "errorUpdating": "Error al actualizar el parámetro",
+    "columnVisibility": "Columnas visibles en stocks",
+    "columnVisibilityDesc": "Seleccione qué columnas opcionales mostrar en la tabla de stocks",
+    "columnSaved": "Columnas guardadas correctamente",
+    "columnError": "Error al guardar las columnas"
   },
   "dataGrid": {
     "loading": "Cargando datos...",

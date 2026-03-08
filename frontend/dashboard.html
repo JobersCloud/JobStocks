@@ -606,7 +606,7 @@
                 if (val(5)) renderProposalsByMonthChart(val(5));
             } catch (error) {
                 console.error('Dashboard error:', error);
-                loadingEl.innerHTML = `<p style="color: #dc3545;">Error al cargar el dashboard: ${error.message}</p>`;
+                loadingEl.innerHTML = `<p style="color: #dc3545;">${t('dashboard.errorLoading')}: ${error.message}</p>`;
             }
         }
 
@@ -692,7 +692,7 @@
                 return;
             }
             container.innerHTML = usuarios.map(u => `<div class="user-item"><div class="user-avatar">${getInitials(u.full_name || u.username)}</div><div class="user-info"><div class="user-name">${u.full_name || u.username}</div><div class="user-username">@${u.username}</div></div><div class="user-stats"><div class="user-proposals">${u.total_propuestas} ${t('dashboard.proposals')}</div><div class="user-last">${formatDateShort(u.ultima_propuesta)}</div></div></div>`).join('');
-            cardsContainer.innerHTML = usuarios.map(u => `<div class="top-user-card"><div class="top-user-card-header"><div class="top-user-avatar">${getInitials(u.full_name || u.username)}</div><div class="top-user-info"><div class="top-user-name">${u.full_name || u.username}</div><div class="top-user-username">@${u.username}</div></div></div><div class="top-user-card-stats"><div class="top-user-stat"><span class="top-user-stat-value">${u.total_propuestas}</span><span class="top-user-stat-label">${t('dashboard.proposals')}</span></div><div class="top-user-stat"><span class="top-user-stat-value">${formatDateShort(u.ultima_propuesta)}</span><span class="top-user-stat-label">Ultima</span></div></div></div>`).join('');
+            cardsContainer.innerHTML = usuarios.map(u => `<div class="top-user-card"><div class="top-user-card-header"><div class="top-user-avatar">${getInitials(u.full_name || u.username)}</div><div class="top-user-info"><div class="top-user-name">${u.full_name || u.username}</div><div class="top-user-username">@${u.username}</div></div></div><div class="top-user-card-stats"><div class="top-user-stat"><span class="top-user-stat-value">${u.total_propuestas}</span><span class="top-user-stat-label">${t('dashboard.proposals')}</span></div><div class="top-user-stat"><span class="top-user-stat-value">${formatDateShort(u.ultima_propuesta)}</span><span class="top-user-stat-label">${t('dashboard.lastView')}</span></div></div></div>`).join('');
         }
 
         function renderTopViewedArticles(articulos) {
@@ -790,7 +790,7 @@
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             const textColor = isDark ? '#e0e0e0' : '#666';
             const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const monthNames = t('dashboard.monthsShort').split(',');
             const primaryColorBar = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#FF4338';
             proposalsByMonthChart = new Chart(ctx, {
                 type: 'bar',

@@ -21,7 +21,8 @@
     "mobileSortPlaceholder": "-- Trier --",
     "mobileFilterBtn": "Filtrer",
     "mobileFilterTitle": "Filtrer par colonne",
-    "mobileClearFilters": "Tout effacer"
+    "mobileClearFilters": "Tout effacer",
+    "unknownError": "Erreur inconnue"
   },
   "header": {
     "title": "Gestion des Stocks",
@@ -125,7 +126,11 @@
     "placeholder": "Ex : 100",
     "searchTitle": "Rechercher des produits",
     "searchMessage": "Utilisez les filtres et appuyez sur \"Rechercher\" ou \"Voir tout\" pour afficher les données.",
-    "waitingSearch": "En attente de recherche..."
+    "waitingSearch": "En attente de recherche...",
+    "noFiltersToSave": "Aucun filtre à enregistrer",
+    "filtersSaved": "Filtres enregistrés sous \"{name}\"",
+    "productType": "Type Produit",
+    "allProductTypes": "Tous les types"
   },
   "table": {
     "image": "Image",
@@ -142,7 +147,8 @@
     "viewDetail": "Voir Détail",
     "add": "Ajouter",
     "addToCart": "🛒 Ajouter",
-    "price": "Prix"
+    "price": "Prix",
+    "productType": "Type"
   },
   "detail": {
     "title": "Détail du Stock",
@@ -212,7 +218,8 @@
     "invalidQuantity": "Veuillez entrer une quantité valide",
     "exceedsStock": "La quantité demandée ({requested}) dépasse le stock disponible ({available})",
     "addToCart": "Ajouter au Panier",
-    "quantity": "Quantité"
+    "quantity": "Quantité",
+    "noProductSelected": "Aucun produit sélectionné"
   },
   "shipping": {
     "title": "📧 Envoyer la Demande",
@@ -262,7 +269,8 @@
     "caliber": "Calibre",
     "viewDetail": "Voir Détail",
     "addToCart": "🛒 Ajouter",
-    "price": "Prix"
+    "price": "Prix",
+    "productType": "Type"
   },
   "menu": {
     "main": "Principal",
@@ -354,6 +362,26 @@
     "confirmDeleteLogo": "Êtes-vous sûr de vouloir supprimer le logo ?",
     "confirmDeleteFavicon": "Êtes-vous sûr de vouloir supprimer le favicon ?"
   },
+  "emailConfig": {
+    "noConfigurations": "Aucune configuration email",
+    "newConfiguration": "Nouvelle Configuration",
+    "editConfiguration": "Modifier la Configuration",
+    "confirmActivate": "Activer cette configuration email ?",
+    "errorActivating": "Erreur lors de l'activation",
+    "passwordRequired": "Le mot de passe est requis pour une nouvelle configuration",
+    "createdSuccess": "Configuration créée avec succès",
+    "updatedSuccess": "Configuration mise à jour avec succès",
+    "errorSaving": "Erreur lors de la sauvegarde",
+    "requiredFields": "Remplissez les champs serveur SMTP, port et email expéditeur",
+    "passwordForTest": "Vous devez saisir le mot de passe pour tester la connexion",
+    "testing": "Test en cours...",
+    "connectionOk": "Connexion OK",
+    "errorTesting": "Erreur lors du test de connexion",
+    "testConnection": "Tester la Connexion",
+    "errorLoading": "Erreur lors du chargement",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
   "dashboard": {
     "title": "Tableau de Bord",
     "totalProposals": "Total Propositions",
@@ -378,7 +406,9 @@
     "topViewedArticles": "Articles les Plus Vus",
     "views": "Vues",
     "uniqueUsers": "Utilisateurs",
-    "lastView": "Derniere Vue"
+    "lastView": "Derniere Vue",
+    "errorLoading": "Erreur lors du chargement du tableau de bord",
+    "monthsShort": "Jan,Fév,Mar,Avr,Mai,Jun,Jul,Aoû,Sep,Oct,Nov,Déc"
   },
   "roles": {
     "user": "Utilisateur",
@@ -598,7 +628,15 @@
     "mirrorModeDesc": "Indique que cette base de données est une réplique synchronisée",
     "lastSync": "Dernière Synchronisation",
     "lastSyncDesc": "Date et heure de la dernière synchronisation des données",
-    "notSynced": "Non synchronisé"
+    "notSynced": "Non synchronisé",
+    "noParameters": "Aucun paramètre configuré",
+    "errorLoading": "Erreur lors du chargement des paramètres",
+    "updatedSuccess": "Paramètre mis à jour avec succès",
+    "errorUpdating": "Erreur lors de la mise à jour du paramètre",
+    "columnVisibility": "Colonnes visibles dans les stocks",
+    "columnVisibilityDesc": "Sélectionnez les colonnes optionnelles à afficher dans la grille de stocks",
+    "columnSaved": "Colonnes enregistrées avec succès",
+    "columnError": "Erreur lors de l'enregistrement des colonnes"
   },
   "dataGrid": {
     "loading": "Chargement des données...",

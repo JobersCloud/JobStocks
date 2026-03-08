@@ -70,7 +70,7 @@ end subroutine
 
 public subroutine of_set_api_key (string as_key);
 // Establece la API Key para autenticacion
-is_api_key = as_key
+is_api_key = Trim(as_key)
 end subroutine
 
 public subroutine of_set_connection (string as_connection);
@@ -124,6 +124,9 @@ li_rc = ihc_client.SendRequest("GET", ls_url)
 If li_rc = 1 Then
    ii_last_http_code = ihc_client.GetResponseStatusCode()
    ihc_client.GetResponseBody(ls_response)
+   If ii_last_http_code >= 400 Then
+      is_last_error = "HTTP " + String(ii_last_http_code) + ": " + ls_response
+   End If
 Else
    is_last_error = "Error de conexion: " + String(li_rc)
    ls_response = '{"success": false, "error": "' + is_last_error + '"}'
@@ -163,6 +166,9 @@ li_rc = ihc_client.SendRequest("POST", ls_url, as_body)
 If li_rc = 1 Then
    ii_last_http_code = ihc_client.GetResponseStatusCode()
    ihc_client.GetResponseBody(ls_response)
+   If ii_last_http_code >= 400 Then
+      is_last_error = "HTTP " + String(ii_last_http_code) + ": " + ls_response
+   End If
 Else
    is_last_error = "Error de conexion: " + String(li_rc)
    ls_response = '{"success": false, "error": "' + is_last_error + '"}'
@@ -202,6 +208,9 @@ li_rc = ihc_client.SendRequest("PUT", ls_url, as_body)
 If li_rc = 1 Then
    ii_last_http_code = ihc_client.GetResponseStatusCode()
    ihc_client.GetResponseBody(ls_response)
+   If ii_last_http_code >= 400 Then
+      is_last_error = "HTTP " + String(ii_last_http_code) + ": " + ls_response
+   End If
 Else
    is_last_error = "Error de conexion: " + String(li_rc)
    ls_response = '{"success": false, "error": "' + is_last_error + '"}'
@@ -241,6 +250,9 @@ li_rc = ihc_client.SendRequest("DELETE", ls_url)
 If li_rc = 1 Then
    ii_last_http_code = ihc_client.GetResponseStatusCode()
    ihc_client.GetResponseBody(ls_response)
+   If ii_last_http_code >= 400 Then
+      is_last_error = "HTTP " + String(ii_last_http_code) + ": " + ls_response
+   End If
 Else
    is_last_error = "Error de conexion: " + String(li_rc)
    ls_response = '{"success": false, "error": "' + is_last_error + '"}'

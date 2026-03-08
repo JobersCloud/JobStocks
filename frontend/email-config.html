@@ -465,7 +465,7 @@
                     <div class="edit-modal-actions">
                         <button type="button" class="btn btn-warning" onclick="testConnection()" id="btn-test-connection">
                             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
-                            <span>Probar Conexion</span>
+                            <span data-i18n="emailConfig.testConnection">Probar Conexion</span>
                         </button>
                         <button type="button" class="btn btn-ghost" onclick="closeEditModal()">
                             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -542,7 +542,7 @@
                     renderConfigs();
                 }
             } catch (error) {
-                loadingEl.innerHTML = `<p style="color: #dc3545;">Error al cargar las configuraciones: ${error.message}</p>`;
+                loadingEl.innerHTML = `<p style="color: #dc3545;">${t('emailConfig.errorLoading')}: ${error.message}</p>`;
             }
         }
 
@@ -555,7 +555,7 @@
                     <div class="config-card-header">
                         <span class="config-card-name">${config.nombre_configuracion}</span>
                         <span class="config-card-badge ${config.activo ? 'badge-active' : 'badge-inactive'}">
-                            ${config.activo ? 'Activa' : 'Inactiva'}
+                            ${config.activo ? t('emailConfig.active') : t('emailConfig.inactive')}
                         </span>
                     </div>
                     <div class="config-card-details">
@@ -588,7 +588,7 @@
 
         // ==================== ACTIVAR CONFIGURACION ====================
         async function activateConfig(configId) {
-            if (!await UIFeedback.confirm({ message: 'Activar esta configuracion de email?', type: 'danger' })) return;
+            if (!await UIFeedback.confirm({ message: t('emailConfig.confirmActivate'), type: 'danger' })) return;
 
             try {
                 const empresaId = localStorage.getItem('empresa_id') || '1';
@@ -603,7 +603,7 @@
 
                 await loadConfigs();
             } catch (error) {
-                UIFeedback.toast('Error al activar la configuracion', 'error');
+                UIFeedback.toast(t('emailConfig.errorActivating'), 'error');
             }
         }
 
@@ -617,7 +617,7 @@
             document.getElementById('config-email-password').value = '';
             document.getElementById('config-email-to').value = '';
 
-            document.querySelector('#edit-modal .modal-header h2').textContent = 'Nueva Configuracion';
+            document.querySelector('#edit-modal .modal-header h2').textContent = t('emailConfig.newConfiguration');
             document.getElementById('edit-modal').style.display = 'flex';
         }
 
@@ -634,7 +634,7 @@
             document.getElementById('config-email-password').value = '';
             document.getElementById('config-email-to').value = config.email_to;
 
-            document.querySelector('#edit-modal .modal-header h2').textContent = 'Editar Configuracion';
+            document.querySelector('#edit-modal .modal-header h2').textContent = t('emailConfig.editConfiguration');
             document.getElementById('edit-modal').style.display = 'flex';
         }
 
@@ -659,7 +659,7 @@
             if (password) {
                 data.email_password = password;
             } else if (isNew) {
-                UIFeedback.toast('La contrasena es obligatoria para una nueva configuracion', 'warning');
+                UIFeedback.toast(t('emailConfig.passwordRequired'), 'warning');
                 return;
             }
 
@@ -690,9 +690,9 @@
 
                 closeEditModal();
                 await loadConfigs();
-                UIFeedback.toast(isNew ? 'Configuracion creada correctamente' : 'Configuracion actualizada correctamente', 'success');
+                UIFeedback.toast(isNew ? t('emailConfig.createdSuccess') : t('emailConfig.updatedSuccess'), 'success');
             } catch (error) {
-                UIFeedback.toast('Error al guardar la configuracion: ' + error.message, 'error');
+                UIFeedback.toast(t('emailConfig.errorSaving') + ': ' + error.message, 'error');
             }
         }
 
@@ -711,18 +711,18 @@
             };
 
             if (!data.smtp_server || !data.smtp_port || !data.email_from) {
-                UIFeedback.toast('Por favor, completa los campos de servidor SMTP, puerto y email remitente', 'warning');
+                UIFeedback.toast(t('emailConfig.requiredFields'), 'warning');
                 return;
             }
 
             if (!configId && data.email_password === '********') {
-                UIFeedback.toast('Debes introducir la contrasena para probar la conexion', 'warning');
+                UIFeedback.toast(t('emailConfig.passwordForTest'), 'warning');
                 return;
             }
 
             const btnText = btn.querySelector('span');
             const originalBtnText = btnText.textContent;
-            btnText.textContent = 'Probando...';
+            btnText.textContent = t('emailConfig.testing');
             btn.disabled = true;
 
             try {
@@ -739,7 +739,7 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    btnText.textContent = 'Conexion OK';
+                    btnText.textContent = t('emailConfig.connectionOk');
                     btn.classList.remove('btn-warning');
                     btn.classList.add('btn-success');
                     setTimeout(() => {
@@ -748,11 +748,11 @@
                         btn.classList.add('btn-warning');
                     }, 3000);
                 } else {
-                    UIFeedback.toast('Error: ' + (result.error || result.message || 'Error desconocido'), 'error');
+                    UIFeedback.toast(t('common.error') + ': ' + (result.error || result.message || t('common.unknownError')), 'error');
                     btnText.textContent = originalBtnText;
                 }
             } catch (error) {
-                UIFeedback.toast('Error al probar la conexion: ' + error.message, 'error');
+                UIFeedback.toast(t('emailConfig.errorTesting') + ': ' + error.message, 'error');
                 btnText.textContent = originalBtnText;
             } finally {
                 btn.disabled = false;

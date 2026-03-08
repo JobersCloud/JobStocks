@@ -167,8 +167,8 @@ class FavoritosModel:
 
         cursor.execute("""
             SELECT f.id, RTRIM(f.codigo) as codigo, f.fecha_creacion,
-                   RTRIM(s.descripcion) as descripcion,
-                   RTRIM(s.formato) as formato,
+                   ISNULL(RTRIM(s.descripcion), RTRIM(pl.descripcion)) as descripcion,
+                   ISNULL(RTRIM(s.formato), RTRIM(pl.formato)) as formato,
                    RTRIM(s.serie) as serie,
                    ISNULL(RTRIM(f.calidad), '') as calidad,
                    RTRIM(s.color) as color,
@@ -179,17 +179,28 @@ class FavoritosModel:
                    ISNULL(RTRIM(f.pallet), '') as pallet,
                    ISNULL(RTRIM(f.caja), '') as caja
             FROM favoritos f
-            LEFT JOIN view_externos_stock s
-                ON RTRIM(f.codigo) = RTRIM(s.codigo)
-                AND f.empresa_id = s.empresa
-                AND ISNULL(RTRIM(f.calidad), '') = ISNULL(RTRIM(s.calidad), '')
-                AND ISNULL(RTRIM(f.tono), '') = ISNULL(RTRIM(s.tono), '')
-                AND ISNULL(RTRIM(f.calibre), '') = ISNULL(RTRIM(s.calibre), '')
-                AND ISNULL(RTRIM(f.pallet), '') = ISNULL(RTRIM(s.pallet), '')
-                AND ISNULL(RTRIM(f.caja), '') = ISNULL(RTRIM(s.caja), '')
+            OUTER APPLY (
+                SELECT TOP 1 s.descripcion, s.formato, s.serie, s.color,
+                       s.existencias, s.unidad
+                FROM view_externos_stock s
+                WHERE RTRIM(s.codigo) COLLATE DATABASE_DEFAULT = RTRIM(f.codigo)
+                  AND s.empresa COLLATE DATABASE_DEFAULT = f.empresa_id
+                  AND ISNULL(RTRIM(s.calidad), '') COLLATE DATABASE_DEFAULT = ISNULL(RTRIM(f.calidad), '')
+                  AND ISNULL(RTRIM(s.tono), '') COLLATE DATABASE_DEFAULT = ISNULL(RTRIM(f.tono), '')
+                  AND ISNULL(RTRIM(s.calibre), '') COLLATE DATABASE_DEFAULT = ISNULL(RTRIM(f.calibre), '')
+                ORDER BY s.existencias DESC
+            ) s
+            OUTER APPLY (
+                SELECT TOP 1 pl.descripcion, pl.formato
+                FROM propuestas_lineas pl
+                INNER JOIN propuestas p ON pl.propuesta_id = p.id
+                WHERE RTRIM(pl.codigo) COLLATE DATABASE_DEFAULT = RTRIM(f.codigo)
+                  AND p.user_id = ? AND p.empresa_id = ?
+                ORDER BY p.fecha DESC
+            ) pl
             WHERE f.user_id = ? AND f.empresa_id = ?
             ORDER BY f.fecha_creacion DESC
-        """, (user_id, empresa_id))
+        """, (user_id, empresa_id, user_id, empresa_id))
 
         favoritos = []
         for row in cursor.fetchall():
@@ -229,13 +240,19 @@ class FavoritosModel:
                    RTRIM(pl.codigo) as codigo,
                    RTRIM(MAX(pl.descripcion)) as descripcion,
                    RTRIM(MAX(pl.formato)) as formato,
+                   ISNULL(RTRIM(pl.calidad), '') as calidad,
+                   ISNULL(RTRIM(pl.tono), '') as tono,
+                   ISNULL(RTRIM(pl.calibre), '') as calibre,
+                   ISNULL(RTRIM(pl.pallet), '') as pallet,
+                   ISNULL(RTRIM(pl.caja), '') as caja,
                    COUNT(*) as veces_pedido,
                    SUM(pl.cantidad_solicitada) as total_cantidad,
                    MAX(p.fecha) as ultima_fecha
             FROM propuestas_lineas pl
             INNER JOIN propuestas p ON pl.propuesta_id = p.id
             WHERE p.user_id = ? AND p.empresa_id = ?
-            GROUP BY RTRIM(pl.codigo)
+            GROUP BY RTRIM(pl.codigo), ISNULL(RTRIM(pl.calidad), ''), ISNULL(RTRIM(pl.tono), ''),
+                     ISNULL(RTRIM(pl.calibre), ''), ISNULL(RTRIM(pl.pallet), ''), ISNULL(RTRIM(pl.caja), '')
             ORDER BY COUNT(*) DESC, MAX(p.fecha) DESC
         """, (user_id, empresa_id))
 
@@ -245,9 +262,14 @@ class FavoritosModel:
                 'codigo': _s(row[0]),
                 'descripcion': _s(row[1]) or '',
                 'formato': _s(row[2]) or '',
-                'veces_pedido': row[3],
-                'total_cantidad': float(row[4]) if row[4] else 0,
-                'ultima_fecha': row[5].isoformat() if row[5] else None
+                'calidad': _s(row[3]) or '',
+                'tono': _s(row[4]) or '',
+                'calibre': _s(row[5]) or '',
+                'pallet': _s(row[6]) or '',
+                'caja': _s(row[7]) or '',
+                'veces_pedido': row[8],
+                'total_cantidad': float(row[9]) if row[9] else 0,
+                'ultima_fecha': row[10].isoformat() if row[10] else None
             })
 
         conn.close()

@@ -29,6 +29,7 @@ let firmaHabilitada = false;  // Control de funcionalidad de firma de propuestas
 let whatsappConfig = { habilitado: false, numero: null };  // Configuración de WhatsApp
 let busquedaVozHabilitada = false;  // Control de funcionalidad de búsqueda por voz
 let mostrarPrecios = false;  // Control de visualización de precios de artículos
+let columnasOpcionales = ['color', 'calidad', 'tono', 'calibre'];  // Columnas opcionales visibles
 let csrfToken = null;  // Token CSRF para protección contra ataques
 let favoritosSet = new Set();  // Set de claves compuestas favoritos "codigo|calidad|tono|calibre|pallet|caja"
 
@@ -101,6 +102,7 @@ const columnasFiltrables = [
     { key: 'calidad', label: 'Calidad', tipo: 'texto' },
     { key: 'tono', label: 'Tono', tipo: 'texto' },
     { key: 'calibre', label: 'Calibre', tipo: 'texto' },
+    { key: 'tipo_producto', label: 'Tipo Producto', tipo: 'texto' },
     { key: 'existencias', label: 'Existencias', tipo: 'numero' }
 ];
 
@@ -109,7 +111,7 @@ let filtrosActivos = [];
 
 // ==================== COLUMNAS ARRASTRABLES ====================
 // Orden de columnas (persistido en localStorage)
-let ordenColumnas = ['codigo', 'descripcion', 'formato', 'color', 'calidad', 'tono', 'calibre', 'existencias'];
+let ordenColumnas = ['codigo', 'descripcion', 'formato', 'color', 'calidad', 'tono', 'calibre', 'tipo_producto', 'existencias'];
 let columnaArrastrada = null;
 
 // Cargar orden de columnas desde localStorage
@@ -375,8 +377,10 @@ async function toggleFavorito(itemJson, event) {
             const data = await response.json();
             if (data.is_favorite) {
                 favoritosSet.add(key);
+                UIFeedback.toast(t('favorites.added'), 'success');
             } else {
                 favoritosSet.delete(key);
+                UIFeedback.toast(t('favorites.removed'), 'info');
             }
             // Actualizar todos los iconos de corazón en el DOM con la misma clave
             document.querySelectorAll(`.fav-heart[data-fav-key="${CSS.escape(key)}"]`).forEach(btn => {
@@ -384,9 +388,14 @@ async function toggleFavorito(itemJson, event) {
                 const svg = btn.querySelector('svg');
                 if (svg) svg.setAttribute('fill', data.is_favorite ? 'currentColor' : 'none');
             });
+        } else {
+            const errData = await response.json().catch(() => ({}));
+            console.error('Error toggle favorito:', response.status, errData);
+            UIFeedback.toast(errData.error || t('common.error'), 'error');
         }
     } catch (e) {
         console.error('Error toggle favorito:', e);
+        UIFeedback.toast(t('common.error'), 'error');
     }
 }
 window.toggleFavorito = toggleFavorito;
@@ -1088,6 +1097,44 @@ async function verificarMostrarPrecios() {
     }
 }
 
+// ==================== COLUMNAS OPCIONALES ====================
+
+// Verificar qué columnas opcionales debe mostrar esta empresa
+async function verificarColumnasOpcionales() {
+    try {
+        const params = new URLSearchParams();
+        addEmpresaToParams(params);
+
+        const response = await fetch(`${API_URL}/api/parametros/columnas-opcionales?${params}`, {
+            credentials: 'include'
+        });
+        if (!response.ok) {
+            console.warn(`📋 Columnas opcionales: endpoint respondió ${response.status}`);
+            return;
+        }
+        const data = await response.json();
+        columnasOpcionales = data.columnas || ['color', 'calidad', 'tono', 'calibre'];
+        console.log(`📋 Columnas opcionales: [${columnasOpcionales.join(', ')}]`);
+    } catch (error) {
+        console.error('Error al verificar columnas opcionales:', error);
+    }
+}
+
+// Comprobar si una columna es visible según la configuración
+function esColumnaVisible(col) {
+    const fijas = ['codigo', 'descripcion', 'formato', 'serie', 'existencias'];
+    if (fijas.includes(col)) return true;
+    if (col === 'precio') return mostrarPrecios;
+    return columnasOpcionales.includes(col);
+}
+
+// Ocultar/mostrar filtros del sidebar según columnas opcionales
+function aplicarVisibilidadFiltros() {
+    document.querySelectorAll('[data-optional-column]').forEach(el => {
+        el.style.display = esColumnaVisible(el.dataset.optionalColumn) ? '' : 'none';
+    });
+}
+
 // Formatear precio en formato EUR (1.234,56 €)
 function formatearPrecio(precio) {
     if (precio == null || precio === undefined) return '-';
@@ -1676,71 +1723,45 @@ async function cargarOpcionesFiltros() {
         addEmpresaToParams(params);
         params.append('limite', '500');
 
-        // Cargar los 4 filtros en paralelo (mucho más rápido que cargar todos los registros)
-        const [formatosRes, seriesRes, calidadesRes, coloresRes] = await Promise.all([
-            fetch(`${API_URL}/api/stocks/valores-unicos/formato?${params}`, { credentials: 'include' }),
-            fetch(`${API_URL}/api/stocks/valores-unicos/serie?${params}`, { credentials: 'include' }),
-            fetch(`${API_URL}/api/stocks/valores-unicos/calidad?${params}`, { credentials: 'include' }),
-            fetch(`${API_URL}/api/stocks/valores-unicos/color?${params}`, { credentials: 'include' })
-        ]);
+        // Definir filtros sidebar y sus columnas asociadas
+        const filtrosSidebar = [
+            { columna: 'formato', selectId: 'filter-formato', siempreVisible: true },
+            { columna: 'serie', selectId: 'filter-serie', siempreVisible: true },
+            { columna: 'calidad', selectId: 'filter-calidad', siempreVisible: false },
+            { columna: 'color', selectId: 'filter-color', siempreVisible: false },
+            { columna: 'tipo_producto', selectId: 'filter-tipo-producto', siempreVisible: false }
+        ];
 
-        // Verificar respuestas
-        if (!formatosRes.ok || !seriesRes.ok || !calidadesRes.ok || !coloresRes.ok) {
-            throw new Error('Error al cargar valores únicos');
+        // Solo cargar valores para filtros visibles
+        const filtrosACargar = filtrosSidebar.filter(f => f.siempreVisible || esColumnaVisible(f.columna));
+        const fetchPromises = filtrosACargar.map(f =>
+            fetch(`${API_URL}/api/stocks/valores-unicos/${f.columna}?${params}`, { credentials: 'include' })
+        );
+
+        const responses = await Promise.all(fetchPromises);
+        for (const res of responses) {
+            if (!res.ok) throw new Error('Error al cargar valores únicos');
         }
 
-        const [formatosData, seriesData, calidadesData, coloresData] = await Promise.all([
-            formatosRes.json(),
-            seriesRes.json(),
-            calidadesRes.json(),
-            coloresRes.json()
-        ]);
+        const dataResults = await Promise.all(responses.map(r => r.json()));
 
-        const formatos = formatosData.valores || [];
-        const series = seriesData.valores || [];
-        const calidades = calidadesData.valores || [];
-        const colores = coloresData.valores || [];
-
-        console.log('Formatos únicos:', formatos.length);
-        console.log('Series únicas:', series.length);
-        console.log('Calidades únicas:', calidades.length);
-        console.log('Colores únicos:', colores.length);
-
-        // Llenar select de formatos
-        const selectFormato = document.getElementById('filter-formato');
-        formatos.forEach(formato => {
-            const option = document.createElement('option');
-            option.value = formato;
-            option.textContent = formato;
-            selectFormato.appendChild(option);
+        // Llenar cada select con sus valores
+        filtrosACargar.forEach((filtro, i) => {
+            const valores = dataResults[i].valores || [];
+            const select = document.getElementById(filtro.selectId);
+            if (select) {
+                valores.forEach(val => {
+                    const option = document.createElement('option');
+                    option.value = val;
+                    option.textContent = val;
+                    select.appendChild(option);
+                });
+                console.log(`${filtro.columna} únicos:`, valores.length);
+            }
         });
 
-        // Llenar select de series
-        const selectSerie = document.getElementById('filter-serie');
-        series.forEach(serie => {
-            const option = document.createElement('option');
-            option.value = serie;
-            option.textContent = serie;
-            selectSerie.appendChild(option);
-        });
-
-        // Llenar select de calidades
-        const selectCalidad = document.getElementById('filter-calidad');
-        calidades.forEach(calidad => {
-            const option = document.createElement('option');
-            option.value = calidad;
-            option.textContent = calidad;
-            selectCalidad.appendChild(option);
-        });
-
-        // Llenar select de colores
-        const selectColor = document.getElementById('filter-color');
-        colores.forEach(color => {
-            const option = document.createElement('option');
-            option.value = color;
-            option.textContent = color;
-            selectColor.appendChild(option);
-        });
+        // Ocultar/mostrar filtros del sidebar según columnas opcionales
+        aplicarVisibilidadFiltros();
 
         console.log('✅ Filtros cargados correctamente (sin cargar datos del grid)');
     } catch (error) {
@@ -2370,7 +2391,7 @@ window.toggleRangoInputs = toggleRangoInputs;
 // Guardar filtros actuales
 function guardarFiltrosActuales() {
     if (filtrosColumna.length === 0) {
-        UIFeedback.toast('No hay filtros para guardar', 'warning');
+        UIFeedback.toast(t('filters.noFiltersToSave'), 'warning');
         return;
     }
 
@@ -2387,7 +2408,7 @@ function guardarFiltrosActuales() {
     localStorage.setItem('filtrosGuardados', JSON.stringify(filtrosGuardados));
 
     cerrarPopupFiltro();
-    UIFeedback.toast(`Filtros guardados como "${nombre}"`, 'success');
+    UIFeedback.toast(t('filters.filtersSaved', {name: nombre}), 'success');
 }
 window.guardarFiltrosActuales = guardarFiltrosActuales;
 
@@ -2729,22 +2750,69 @@ window.addEventListener('scroll', (e) => {
     }
 }, true);  // Capture phase para detectar scroll en cualquier elemento
 
+// Buscar por código (desde URL ?buscar=...)
+async function buscarPorCodigo(codigo) {
+    try {
+        mostrarCargandoInline();
+        const params = new URLSearchParams();
+        addEmpresaToParams(params);
+        params.append('codigo', codigo);
+
+        const response = await fetch(`${API_URL}/api/stocks/search?${params}`, {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const data = await response.json();
+        if (Array.isArray(data)) {
+            allStocksData = data;
+            totalItems = data.length;
+        } else {
+            allStocksData = data.data || [];
+            totalItems = data.total || allStocksData.length;
+        }
+
+        filtrosColumna = [];
+        filtrosActivos = [];
+        renderizarChipsFiltrosColumna();
+        actualizarIconosFiltro();
+
+        paginaActual = 1;
+        stocksData = allStocksData;
+        mostrarTabla(stocksData);
+        mostrarDatos();
+        mostrarCargando(false);
+
+        if (allStocksData.length > 0) cargarFavoritos(allStocksData);
+    } catch (error) {
+        console.error('Error buscando por código:', error);
+        mostrarCargando(false);
+        mostrarEstadoInicial();
+    }
+}
+
 // Buscar con filtros (panel lateral) - Llama al backend con filtros
 async function buscarStocks() {
     try {
         // Obtener filtros del panel lateral
         const formato = document.getElementById('filter-formato').value.trim();
         const serie = document.getElementById('filter-serie').value.trim();
-        const calidad = document.getElementById('filter-calidad').value.trim();
-        const color = document.getElementById('filter-color').value.trim();
+        const calidadEl = document.getElementById('filter-calidad');
+        const calidad = calidadEl && calidadEl.offsetParent !== null ? calidadEl.value.trim() : '';
+        const colorEl = document.getElementById('filter-color');
+        const color = colorEl && colorEl.offsetParent !== null ? colorEl.value.trim() : '';
         const existencias_min = document.getElementById('filter-existencias').value.trim();
+        const tipoProdEl = document.getElementById('filter-tipo-producto');
+        const tipo_producto = tipoProdEl && tipoProdEl.offsetParent !== null ? tipoProdEl.value.trim() : '';
 
         // Recoger descripción pendiente de búsqueda por voz (si existe)
         const descripcionVoz = window._vozDescripcion || null;
         window._vozDescripcion = null;
 
         // Verificar si hay algún filtro
-        const hayFiltros = formato || serie || calidad || color || existencias_min || descripcionVoz;
+        const hayFiltros = formato || serie || calidad || color || existencias_min || descripcionVoz || tipo_producto;
 
         // Si no hay filtros, cargar todos los datos
         if (!hayFiltros) {
@@ -2764,6 +2832,7 @@ async function buscarStocks() {
         if (calidad) params.append('calidad', calidad);
         if (color) params.append('color', color);
         if (existencias_min) params.append('existencias_min', existencias_min);
+        if (tipo_producto) params.append('tipo_producto', tipo_producto);
         if (descripcionVoz) params.append('descripcion', descripcionVoz);
 
         console.log('🔍 Buscando con filtros:', params.toString());
@@ -2906,9 +2975,9 @@ function mostrarTabla(stocks) {
         return iconoOrdenNeutro;
     };
 
-    // Verificar si la columna es filtrable
+    // Verificar si la columna es filtrable (debe estar en columnasFiltrables Y ser visible)
     const esColumnaFiltrable = (columna) => {
-        return columnasFiltrables.some(c => c.key === columna);
+        return columnasFiltrables.some(c => c.key === columna) && esColumnaVisible(columna);
     };
 
     // Mapeo de columnas a labels i18n
@@ -2918,6 +2987,15 @@ function mostrarTabla(stocks) {
     } else if (!mostrarPrecios && ordenColumnas.includes('precio')) {
         ordenColumnas = ordenColumnas.filter(c => c !== 'precio');
     }
+    // Asegurar que tipo_producto está en ordenColumnas (se filtrará si no es visible)
+    if (!ordenColumnas.includes('tipo_producto')) {
+        const idxExist = ordenColumnas.indexOf('existencias');
+        if (idxExist !== -1) ordenColumnas.splice(idxExist, 0, 'tipo_producto');
+        else ordenColumnas.push('tipo_producto');
+    }
+
+    // Filtrar columnas según visibilidad (columnas opcionales + precios)
+    const columnasVisibles = ordenColumnas.filter(c => esColumnaVisible(c));
 
     const columnLabels = {
         'codigo': t('table.code'),
@@ -2927,6 +3005,7 @@ function mostrarTabla(stocks) {
         'calidad': t('table.quality'),
         'tono': t('table.tone'),
         'calibre': t('table.caliber'),
+        'tipo_producto': t('table.productType'),
         'existencias': t('table.stock')
     };
     if (mostrarPrecios) {
@@ -2964,8 +3043,8 @@ function mostrarTabla(stocks) {
         return stock[columna] || '-';
     };
 
-    // Generar headers dinámicamente según ordenColumnas
-    const headersHtml = ordenColumnas.map(col =>
+    // Generar headers dinámicamente según columnasVisibles
+    const headersHtml = columnasVisibles.map(col =>
         `<th class="sortable-th" draggable="true"
              data-columna="${col}"
              style="${anchoColumnas[col] ? `width: ${anchoColumnas[col]}px; min-width: ${anchoColumnas[col]}px;` : ''}"
@@ -2981,9 +3060,9 @@ function mostrarTabla(stocks) {
     const iconoVer = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
     const iconoCarrito = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>`;
 
-    // Generar filas dinámicamente según ordenColumnas
+    // Generar filas dinámicamente según columnasVisibles
     const rowsHtml = stocks.map(stock =>
-        `<tr>${ordenColumnas.map(col => `<td>${getCellValue(stock, col)}</td>`).join('')}
+        `<tr>${columnasVisibles.map(col => `<td>${getCellValue(stock, col)}</td>`).join('')}
             <td class="actions-cell">
                 <button class="btn-icon btn-icon-primary" onclick='verDetalle(${JSON.stringify(stock).replace(/'/g, "&apos;")})' title="${t('table.view')}">
                     ${iconoVer}
@@ -3032,22 +3111,26 @@ function mostrarTabla(stocks) {
                             <span class="stock-card-label">${t('cards.model')}</span>
                             <span class="stock-card-value">${stock.serie || '-'}</span>
                         </div>
-                        <div class="stock-card-field">
+                        ${esColumnaVisible('color') ? `<div class="stock-card-field">
                             <span class="stock-card-label">${t('cards.color')}</span>
                             <span class="stock-card-value">${stock.color || '-'}</span>
-                        </div>
-                        <div class="stock-card-field">
+                        </div>` : ''}
+                        ${esColumnaVisible('calidad') ? `<div class="stock-card-field">
                             <span class="stock-card-label">${t('cards.quality')}</span>
                             <span class="stock-card-value">${stock.calidad || '-'}</span>
-                        </div>
-                        <div class="stock-card-field">
+                        </div>` : ''}
+                        ${esColumnaVisible('tono') ? `<div class="stock-card-field">
                             <span class="stock-card-label">${t('cards.tone')}</span>
                             <span class="stock-card-value">${stock.tono || '-'}</span>
-                        </div>
-                        <div class="stock-card-field">
+                        </div>` : ''}
+                        ${esColumnaVisible('calibre') ? `<div class="stock-card-field">
                             <span class="stock-card-label">${t('cards.caliber')}</span>
                             <span class="stock-card-value">${stock.calibre || '-'}</span>
-                        </div>
+                        </div>` : ''}
+                        ${esColumnaVisible('tipo_producto') && stock.tipo_producto ? `<div class="stock-card-field">
+                            <span class="stock-card-label">${t('cards.productType')}</span>
+                            <span class="stock-card-value">${stock.tipo_producto}</span>
+                        </div>` : ''}
                         ${mostrarPrecios && stock.precio != null ? `
                         <div class="stock-card-field">
                             <span class="stock-card-label">${t('cards.price')}</span>
@@ -3871,7 +3954,7 @@ async function confirmarAgregarAlCarrito() {
     const stock = window.stockTemporal;
 
     if (!stock) {
-        UIFeedback.toast('Error: No hay producto seleccionado', 'error');
+        UIFeedback.toast(t('common.error') + ': ' + t('cart.noProductSelected'), 'error');
         return;
     }
 
@@ -4537,13 +4620,22 @@ document.addEventListener('DOMContentLoaded', async function () {
         await verificarFirmaHabilitada();
         await verificarBusquedaVozHabilitada();
         await verificarMostrarPrecios();
+        await verificarColumnasOpcionales();
         await verificarGridConImagenes();
         await cargarConfigPaginacion();
         await cargarConfigWhatsApp();
         await cargarOpcionesFiltros();
         await verificarModoEspejo();
-        // NO cargar datos automáticamente - mostrar estado inicial
-        mostrarEstadoInicial();
+        // Comprobar si hay parámetro de búsqueda en la URL (desde favoritos u otras páginas)
+        const urlBuscar = new URLSearchParams(window.location.search).get('buscar');
+        if (urlBuscar) {
+            // Buscar por código usando la API de search
+            window._buscarDesdeUrl = urlBuscar;
+            await buscarPorCodigo(urlBuscar);
+        } else {
+            // NO cargar datos automáticamente - mostrar estado inicial
+            mostrarEstadoInicial();
+        }
         // Solo cargar carrito si las propuestas están habilitadas
         if (propuestasHabilitadas) {
             await cargarCarrito();
