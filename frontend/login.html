@@ -307,6 +307,10 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.40.1', date: '2026-03-08', title: 'Fix filtro tipo producto en grid y tarjetas', items: [
+                {type: 'fix', text: 'Corregido filtro por tipo de producto que no funcionaba en grid ni tarjetas'},
+                {type: 'fix', text: 'Campo tipo_producto ahora se lee de la vista SQL en vez de estar vacio'}
+            ]},
             { version: 'v1.40.0', date: '2026-03-08', title: 'Columnas opcionales por empresa en grid de stocks', items: [
                 {type: 'new', text: 'Configuracion de columnas visibles en stocks por empresa (color, calidad, tono, calibre, tipo producto)'},
                 {type: 'new', text: 'Nueva columna "Tipo Producto" disponible en grid, tarjetas y filtros'},
