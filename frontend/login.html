@@ -307,10 +307,10 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
-            { version: 'v1.40.6', date: '2026-03-08', title: 'Orden tipo producto tras formato en tarjetas y grid', items: [
-                {type: 'fix', text: 'Tipo producto ahora aparece tras formato y antes de modelo en tarjetas movil y grid'},
-                {type: 'fix', text: 'Solo color y tipo producto son columnas opcionales (calidad, tono y calibre son fijas)'},
-                {type: 'fix', text: 'Panel de filtros oculto hasta que las opciones estan completamente cargadas'}
+            { version: 'v1.40.7', date: '2026-03-08', title: 'Fix filtro calidad restaurado en sidebar', items: [
+                {type: 'fix', text: 'Restaurado filtro de calidad en sidebar (no es opcional, siempre visible)'},
+                {type: 'fix', text: 'Corregido error null al limpiar filtros que no existen en el DOM'},
+                {type: 'fix', text: 'Tipo producto entre formato y modelo en tarjetas, grid y sidebar'}
             ]},
             { version: 'v1.40.0', date: '2026-03-08', title: 'Columnas opcionales por empresa en grid de stocks', items: [
                 {type: 'new', text: 'Configuracion de columnas visibles en stocks por empresa (color, calidad, tono, calibre, tipo producto)'},

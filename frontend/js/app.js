@@ -869,11 +869,10 @@ function procesarBusquedaVoz(texto) {
     let descripcion = limpio.replace(/\s+/g, ' ').trim();
 
     // 5. Reset solo valores de selects (sin efectos secundarios de limpiarFiltros)
-    document.getElementById('filter-formato').value = '';
-    document.getElementById('filter-serie').value = '';
-    document.getElementById('filter-calidad').value = '';
-    document.getElementById('filter-color').value = '';
-    document.getElementById('filter-existencias').value = '';
+    ['filter-formato', 'filter-serie', 'filter-color', 'filter-existencias', 'filter-tipo-producto'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
 
     // 6. Aplicar filtros extraídos de la voz
     const selFormato = document.getElementById('filter-formato');
@@ -1728,7 +1727,8 @@ async function cargarOpcionesFiltros() {
             { columna: 'formato', selectId: 'filter-formato', siempreVisible: true },
             { columna: 'tipo_producto', selectId: 'filter-tipo-producto', siempreVisible: false },
             { columna: 'serie', selectId: 'filter-serie', siempreVisible: true },
-            { columna: 'color', selectId: 'filter-color', siempreVisible: false }
+            { columna: 'color', selectId: 'filter-color', siempreVisible: false },
+            { columna: 'calidad', selectId: 'filter-calidad', siempreVisible: true }
         ];
 
         // Solo cargar valores para filtros visibles
@@ -1825,11 +1825,10 @@ async function cargarTodos() {
         console.log('📦 Cargando todos los stocks...');
 
         // Limpiar filtros del panel lateral
-        document.getElementById('filter-formato').value = '';
-        document.getElementById('filter-serie').value = '';
-        document.getElementById('filter-calidad').value = '';
-        document.getElementById('filter-color').value = '';
-        document.getElementById('filter-existencias').value = '';
+        ['filter-formato', 'filter-serie', 'filter-calidad', 'filter-color', 'filter-existencias', 'filter-tipo-producto'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
 
         // Limpiar filtros de columna del grid
         filtrosColumna = [];
@@ -2896,11 +2895,10 @@ async function buscarStocks() {
 // Limpiar filtros (panel lateral + barra de filtros)
 function limpiarFiltros() {
     // Limpiar filtros laterales (inputs)
-    document.getElementById('filter-formato').value = '';
-    document.getElementById('filter-serie').value = '';
-    document.getElementById('filter-calidad').value = '';
-    document.getElementById('filter-color').value = '';
-    document.getElementById('filter-existencias').value = '';
+    ['filter-formato', 'filter-serie', 'filter-calidad', 'filter-color', 'filter-existencias', 'filter-tipo-producto'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
 
     // Limpiar filtros activos (panel lateral y columnas)
     filtrosActivos = [];
