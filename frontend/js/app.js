@@ -29,7 +29,7 @@ let firmaHabilitada = false;  // Control de funcionalidad de firma de propuestas
 let whatsappConfig = { habilitado: false, numero: null };  // Configuración de WhatsApp
 let busquedaVozHabilitada = false;  // Control de funcionalidad de búsqueda por voz
 let mostrarPrecios = false;  // Control de visualización de precios de artículos
-let columnasOpcionales = ['color', 'calidad', 'tono', 'calibre'];  // Columnas opcionales visibles
+let columnasOpcionales = ['color'];  // Columnas opcionales visibles (color y tipo_producto)
 let csrfToken = null;  // Token CSRF para protección contra ataques
 let favoritosSet = new Set();  // Set de claves compuestas favoritos "codigo|calidad|tono|calibre|pallet|caja"
 
@@ -1113,7 +1113,7 @@ async function verificarColumnasOpcionales() {
             return;
         }
         const data = await response.json();
-        columnasOpcionales = data.columnas || ['color', 'calidad', 'tono', 'calibre'];
+        columnasOpcionales = data.columnas || ['color'];
         console.log(`📋 Columnas opcionales: [${columnasOpcionales.join(', ')}]`);
     } catch (error) {
         console.error('Error al verificar columnas opcionales:', error);
@@ -1122,7 +1122,7 @@ async function verificarColumnasOpcionales() {
 
 // Comprobar si una columna es visible según la configuración
 function esColumnaVisible(col) {
-    const fijas = ['codigo', 'descripcion', 'formato', 'serie', 'existencias'];
+    const fijas = ['codigo', 'descripcion', 'formato', 'serie', 'calidad', 'tono', 'calibre', 'existencias'];
     if (fijas.includes(col)) return true;
     if (col === 'precio') return mostrarPrecios;
     return columnasOpcionales.includes(col);
@@ -1726,10 +1726,9 @@ async function cargarOpcionesFiltros() {
         // Definir filtros sidebar y sus columnas asociadas
         const filtrosSidebar = [
             { columna: 'formato', selectId: 'filter-formato', siempreVisible: true },
-            { columna: 'serie', selectId: 'filter-serie', siempreVisible: true },
             { columna: 'tipo_producto', selectId: 'filter-tipo-producto', siempreVisible: false },
-            { columna: 'color', selectId: 'filter-color', siempreVisible: false },
-            { columna: 'calidad', selectId: 'filter-calidad', siempreVisible: false }
+            { columna: 'serie', selectId: 'filter-serie', siempreVisible: true },
+            { columna: 'color', selectId: 'filter-color', siempreVisible: false }
         ];
 
         // Solo cargar valores para filtros visibles

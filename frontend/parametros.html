@@ -550,12 +550,9 @@
             const isColumnas = param.clave === 'STOCK_COLUMNAS_OPCIONALES';
 
             if (isColumnas) {
-                const allCols = ['color', 'calidad', 'tono', 'calibre', 'tipo_producto'];
+                const allCols = ['color', 'tipo_producto'];
                 const colLabels = {
                     color: t('filters.color') || 'Color',
-                    calidad: t('filters.quality') || 'Calidad',
-                    tono: t('filters.tone') || 'Tono',
-                    calibre: t('filters.caliber') || 'Calibre',
                     tipo_producto: t('filters.productType') || 'Tipo Producto'
                 };
                 let selected = [];

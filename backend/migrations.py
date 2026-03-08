@@ -1157,4 +1157,21 @@ MIGRATIONS = [
         ]
     },
 
+    # ================================================================
+    # FIX: STOCK_COLUMNAS_OPCIONALES solo color y tipo_producto
+    # ================================================================
+
+    {
+        'version': 49,
+        'description': 'Actualizar STOCK_COLUMNAS_OPCIONALES: solo color y tipo_producto son opcionales',
+        'app_version': 'v1.40.4',
+        'sql': [
+            """UPDATE parametros
+            SET valor = '["color"]',
+                fecha_modificacion = GETDATE()
+            WHERE clave = 'STOCK_COLUMNAS_OPCIONALES'
+              AND valor = '["color","calidad","tono","calibre"]'""",
+        ]
+    },
+
 ]

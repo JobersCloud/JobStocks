@@ -284,7 +284,7 @@ def get_columnas_opcionales():
     connection = get_connection()
     empresa_id = get_empresa_id_from_connection(connection)
     columnas = ParametrosModel.columnas_opcionales(empresa_id, connection)
-    todas = ['color', 'calidad', 'tono', 'calibre', 'tipo_producto']
+    todas = ['color', 'tipo_producto']
     return jsonify({'columnas': columnas, 'disponibles': todas}), 200
 
 
@@ -318,7 +318,7 @@ def set_columnas_opcionales():
     import json
     data = request.get_json()
     columnas = data.get('columnas', [])
-    todas_validas = ['color', 'calidad', 'tono', 'calibre', 'tipo_producto']
+    todas_validas = ['color', 'tipo_producto']
     columnas = [c for c in columnas if c in todas_validas]
     empresa_id = get_empresa_id()
     connection = get_connection()
