@@ -111,7 +111,7 @@ let filtrosActivos = [];
 
 // ==================== COLUMNAS ARRASTRABLES ====================
 // Orden de columnas (persistido en localStorage)
-let ordenColumnas = ['codigo', 'descripcion', 'formato', 'tipo_producto', 'color', 'calidad', 'tono', 'calibre', 'existencias'];
+let ordenColumnas = ['codigo', 'descripcion', 'formato', 'tipo_producto', 'serie', 'color', 'calidad', 'tono', 'calibre', 'existencias'];
 let columnaArrastrada = null;
 
 // Cargar orden de columnas desde localStorage
@@ -3113,14 +3113,14 @@ function mostrarTabla(stocks) {
                             <span class="stock-card-label">${t('cards.format')}</span>
                             <span class="stock-card-value">${stock.formato || '-'}</span>
                         </div>
-                        <div class="stock-card-field">
-                            <span class="stock-card-label">${t('cards.model')}</span>
-                            <span class="stock-card-value">${stock.serie || '-'}</span>
-                        </div>
                         ${esColumnaVisible('tipo_producto') && stock.tipo_producto ? `<div class="stock-card-field">
                             <span class="stock-card-label">${t('cards.productType')}</span>
                             <span class="stock-card-value">${stock.tipo_producto}</span>
                         </div>` : ''}
+                        <div class="stock-card-field">
+                            <span class="stock-card-label">${t('cards.model')}</span>
+                            <span class="stock-card-value">${stock.serie || '-'}</span>
+                        </div>
                         ${esColumnaVisible('color') ? `<div class="stock-card-field">
                             <span class="stock-card-label">${t('cards.color')}</span>
                             <span class="stock-card-value">${stock.color || '-'}</span>
