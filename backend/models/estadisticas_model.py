@@ -369,7 +369,32 @@ class EstadisticasModel:
                             if key not in desc_map or (desc and desc != key and not desc_map[key].get('has_desc')):
                                 desc_map[key] = {'descripcion': desc or key, 'formato': fmt}
                     except Exception:
-                        pass  # Si tampoco existe, usamos el codigo como descripcion
+                        pass
+
+                # Intento 3: propuestas_lineas para codigos que siguen sin descripcion
+                codigos_faltantes2 = [c for c in codigos if c not in desc_map]
+                if codigos_faltantes2:
+                    try:
+                        placeholders3 = ','.join(['?' for _ in codigos_faltantes2])
+                        cursor.execute(f"""
+                            SELECT pl.codigo, pl.descripcion, pl.formato
+                            FROM (
+                                SELECT codigo, descripcion, formato,
+                                    ROW_NUMBER() OVER (PARTITION BY RTRIM(codigo) ORDER BY pl2.id DESC) as rn
+                                FROM propuestas_lineas pl2
+                                INNER JOIN propuestas p ON pl2.propuesta_id = p.id
+                                WHERE RTRIM(pl2.codigo) IN ({placeholders3}) AND p.empresa_id = ?
+                            ) pl
+                            WHERE pl.rn = 1
+                        """, codigos_faltantes2 + [empresa_id])
+                        for row in cursor.fetchall():
+                            key = row[0].strip() if row[0] else row[0]
+                            desc = (row[1].strip() if row[1] else '') or ''
+                            fmt = (row[2].strip() if row[2] else '') or ''
+                            if desc and desc != key:
+                                desc_map[key] = {'descripcion': desc, 'formato': fmt}
+                    except Exception:
+                        pass
 
                 for a in articulos:
                     if a['codigo'] in desc_map:
