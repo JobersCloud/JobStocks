@@ -352,7 +352,7 @@ ApiRestExternos/
 ## Tablas de Base de Datos
 
 ### `view_externos_stock` (Vista)
-Campos: empresa, codigo, descripcion, formato, serie, calidad, color, tono, calibre, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet
+Campos: empresa, codigo, descripcion, formato, serie, calidad, color, tono, calibre, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto
 
 ### `view_articulo_imagen` (Vista)
 Campos: id, codigo, imagen
@@ -696,6 +696,27 @@ cloudflared tunnel --url http://localhost:5000
 - Para acceso con empresa: `https://tu-tunel.ngrok-free.app/login?empresa=1`
 
 ## Historial de Cambios
+
+### 2026-03-08
+- **Columnas Opcionales en Grid de Stocks**: Configuración por empresa
+  - Parámetro `STOCK_COLUMNAS_OPCIONALES` (JSON array) en tabla `parametros`
+  - Columnas opcionales: `color`, `tipo_producto` (configurables en Parámetros)
+  - Columnas fijas (siempre visibles): codigo, descripcion, formato, serie, calidad, tono, calibre, existencias
+  - Sección de checkboxes en página Parámetros para gestionar columnas visibles
+  - Endpoints: `GET /api/parametros/columnas-opcionales`, `PUT /api/parametros/columnas-opcionales`
+  - Filtros del sidebar y filtros de columna se ocultan/muestran según configuración
+  - Panel de filtros oculto con `visibility:hidden` hasta carga completa (evita flash)
+  - Migraciones v48 y v49 en `migrations.py`
+- **Campo tipo_producto en Stocks**: Nueva columna para tipo de producto
+  - Campo `tipo_producto` añadido a `view_externos_stock`
+  - Incluido en todos los SELECT de `stock_model.py` y en `stock_controller.py`
+  - Filtro en sidebar (entre Formato y Modelo), grid y tarjetas móvil
+  - Orden en sidebar: Formato > Tipo Producto > Modelo > Color > Calidad > Existencias
+  - Orden en grid/tarjetas: formato > tipo_producto > serie > color > calidad > tono > calibre
+- **Mejora Favoritos**: OUTER APPLY + fallback a propuestas_lineas
+  - Favoritos de productos sin stock muestran descripción del último pedido
+  - Resuelto conflicto COLLATE DATABASE_DEFAULT en consultas
+  - Versión: v1.40.0 → v1.40.7
 
 ### 2026-01-08
 - **Logos Dinámicos por Empresa**: Sistema de logos y favicons personalizables
@@ -1431,10 +1452,10 @@ cloudflared tunnel --url http://localhost:5000
 ---
 ## Servidores de Despliegue
 
-### Servidor Local (Desarrollo)
-- **IP**: 192.168.63.51
-- **Usuario**: root
-- **Contraseña**: Desa2012
+### Servidor Cristal (Desarrollo/Producción)
+- **IP**: 10.1.99.4
+- **Usuario**: administrador
+- **Contraseña**: crijob15
 - **Ruta**: /opt/ApiRestExternos
 - **Método**: Docker (docker-compose)
 - **Estado**: Funcionando
@@ -1482,4 +1503,4 @@ scp -r backend frontend docker-compose.yml ubuntu@51.68.44.136:/opt/ApiRestExter
 - **Nota**: Solo accesible desde red local (192.168.63.x)
 
 ---
-*Última actualización: 2026-01-23*
+*Última actualización: 2026-03-08*
