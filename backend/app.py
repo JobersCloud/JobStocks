@@ -150,7 +150,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.40.7'
+APP_VERSION = 'v1.40.8'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -683,6 +683,7 @@ def login():
                     user_id=_audit_user_id,
                     username=_audit_username,
                     empresa_id=empresa_id,
+                    connection_id=connection,
                     recurso='session',
                     recurso_id=_audit_session_token,
                     ip_address=ip_address,
@@ -745,6 +746,7 @@ def login():
                             user_id=_lock_user_id,
                             username=username,
                             empresa_id=empresa_id,
+                            connection_id=connection,
                             recurso='user',
                             recurso_id=str(_lock_user_id),
                             ip_address=ip_address,
@@ -771,6 +773,7 @@ def login():
                 accion=AuditAction.LOGIN_FAILED,
                 username=username,
                 empresa_id=empresa_id,
+                connection_id=connection,
                 recurso='session',
                 ip_address=ip_address,
                 user_agent=ua_string,
@@ -822,6 +825,7 @@ def logout():
     logout_user_id = current_user.id
     logout_username = current_user.username
     logout_empresa_id = session.get('empresa_id')
+    logout_connection = session.get('connection')
     logout_session_token = session.get('session_token')
 
     # Eliminar sesion de BD
@@ -850,6 +854,7 @@ def logout():
                 user_id=logout_user_id,
                 username=logout_username,
                 empresa_id=logout_empresa_id,
+                connection_id=logout_connection,
                 recurso='session',
                 recurso_id=logout_session_token,
                 ip_address=logout_ip,
