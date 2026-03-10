@@ -439,6 +439,19 @@
     font-size: 14px;
 }
 
+.email-expired {
+    color: #ff9800;
+    font-size: 16px;
+    font-weight: bold;
+    animation: pulse-warning 2s infinite;
+    cursor: help;
+}
+
+@keyframes pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
 /* Cards view usuarios (mobile) */
 .users-cards {
     display: none;

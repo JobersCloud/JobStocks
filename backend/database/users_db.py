@@ -344,6 +344,7 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
                 {mostrar_precios_col}
                 {admin_clientes_col}
                 {visible_pedidos_col}
+                , u.token_expiracion
             FROM users u
             INNER JOIN users_empresas ue ON u.id = ue.user_id
             WHERE ue.empresa_id = ?
@@ -381,6 +382,9 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
                 col_idx += 1
             if has_visible_pedidos:
                 user_dict['visible_pedidos'] = bool(row[col_idx]) if row[col_idx] is not None else True
+                col_idx += 1
+            # token_expiracion siempre es la última columna
+            user_dict['token_expiracion'] = row[col_idx].isoformat() if row[col_idx] else None
             users.append(user_dict)
 
         # Resolver nombres de clientes en paso separado (no rompe si la vista no existe)

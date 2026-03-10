@@ -626,7 +626,19 @@
                     switch (col.key) {
                         case 'username': return `<strong>${item.username}</strong>`;
                         case 'full_name': return item.full_name || '-';
-                        case 'email': return `<div class="email-cell">${item.email || '-'}${item.email ? (item.email_verificado ? '<span class="email-verified" title="Email verificado">✓</span>' : '<span class="email-not-verified" title="Email no verificado">✗</span>') : ''}</div>`;
+                        case 'email': {
+                            let emailIcon = '';
+                            if (item.email) {
+                                if (item.email_verificado) {
+                                    emailIcon = '<span class="email-verified" title="Email verificado">✓</span>';
+                                } else if (item.token_expiracion && new Date(item.token_expiracion) < new Date()) {
+                                    emailIcon = '<span class="email-expired" title="Token expirado - El email de verificación probablemente no llegó">⚠</span>';
+                                } else {
+                                    emailIcon = '<span class="email-not-verified" title="Email no verificado - Pendiente de confirmación">✗</span>';
+                                }
+                            }
+                            return `<div class="email-cell">${item.email || '-'}${emailIcon}</div>`;
+                        }
                         case 'company_name': return item.company_name || '-';
                         case 'pais': return getPaisNombre(item.pais);
                         case 'rol': return getRoleBadge(item.rol);
@@ -1287,7 +1299,7 @@
                     <div class="detail-info-grid">
                         <div class="detail-info-item"><label>${t('users.username') || 'Usuario'}</label><span>${u.username}</span></div>
                         <div class="detail-info-item"><label>${t('users.fullName') || 'Nombre'}</label><span>${u.full_name || '-'}</span></div>
-                        <div class="detail-info-item"><label>Email</label><span>${u.email || '-'} ${u.email ? (u.email_verificado ? '<span style="color:green">&#10003;</span>' : '<span style="color:red">&#10007;</span>') : ''}</span></div>
+                        <div class="detail-info-item"><label>Email</label><span>${u.email || '-'} ${u.email ? (u.email_verificado ? '<span style="color:green">&#10003;</span>' : (u.token_expiracion && new Date(u.token_expiracion) < new Date() ? '<span style="color:#ff9800" title="Token expirado - El email probablemente no llegó">&#9888;</span>' : '<span style="color:red">&#10007;</span>')) : ''}</span></div>
                         <div class="detail-info-item"><label>${t('users.companyName') || 'Empresa'}</label><span>${u.company_name || '-'}</span></div>
                         <div class="detail-info-item"><label>${t('users.role') || 'Rol'}</label><span>${getRoleBadge(u.rol)}</span></div>
                         <div class="detail-info-item"><label>${t('users.status') || 'Estado'}</label><span>${u.active ? '<span class="status-badge status-active">' + (t('users.active') || 'Activo') + '</span>' : '<span class="status-badge status-inactive">' + (t('users.inactive') || 'Inactivo') + '</span>'}</span></div>
