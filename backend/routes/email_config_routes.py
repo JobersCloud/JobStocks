@@ -15,12 +15,11 @@
 # ============================================
 # ARCHIVO: routes/email_config_routes.py
 # ============================================
-import socket
-import smtplib
 from flask import Blueprint, jsonify, request, session
 from flask_login import login_required, current_user
 from utils.auth import csrf_required
 from models.email_config_model import EmailConfigModel
+from utils.email_sender import test_smtp_connection
 
 email_config_bp = Blueprint('email_config', __name__, url_prefix='/api/email-config')
 
@@ -68,7 +67,7 @@ def get_configs():
     try:
         empresa_id = get_empresa_id()
         configs = EmailConfigModel.get_all_configs(empresa_id)
-        # Ocultar contraseñas en la respuesta
+        # Ocultar secretos en la respuesta
         for config in configs:
             config['email_password'] = '********'
         return jsonify(configs), 200
@@ -97,6 +96,7 @@ def get_active():
         config = EmailConfigModel.get_active_config(empresa_id)
         if config:
             config['email_password'] = '********'  # Ocultar contraseña
+            config['oauth2_client_secret'] = '********' if config.get('oauth2_client_secret') else None
             return jsonify(config), 200
         else:
             return jsonify({"error": "No hay configuración activa"}), 404
@@ -137,6 +137,14 @@ def update_config(id):
               type: string
             empresa_id:
               type: string
+            auth_method:
+              type: string
+            oauth2_tenant_id:
+              type: string
+            oauth2_client_id:
+              type: string
+            oauth2_client_secret:
+              type: string
     """
     try:
         data = request.json
@@ -150,7 +158,11 @@ def update_config(id):
             email_from=data.get('email_from'),
             email_password=data.get('email_password'),  # Puede ser None
             email_to=data.get('email_to'),
-            empresa_id=empresa_id
+            empresa_id=empresa_id,
+            auth_method=data.get('auth_method'),
+            oauth2_tenant_id=data.get('oauth2_tenant_id'),
+            oauth2_client_id=data.get('oauth2_client_id'),
+            oauth2_client_secret=data.get('oauth2_client_secret')
         )
 
         return jsonify({"message": "Configuración actualizada correctamente"}), 200
@@ -179,7 +191,11 @@ def create_config():
             email_from=data.get('email_from'),
             email_password=data.get('email_password'),
             email_to=data.get('email_to'),
-            empresa_id=empresa_id
+            empresa_id=empresa_id,
+            auth_method=data.get('auth_method', 'basic'),
+            oauth2_tenant_id=data.get('oauth2_tenant_id'),
+            oauth2_client_id=data.get('oauth2_client_id'),
+            oauth2_client_secret=data.get('oauth2_client_secret')
         )
 
         return jsonify({"message": "Configuración creada correctamente", "id": config_id}), 201
@@ -203,63 +219,65 @@ def test_config():
         email_from = data.get('email_from')
         email_password = data.get('email_password')
         empresa_id = data.get('empresa_id') or get_empresa_id()
+        auth_method = data.get('auth_method', 'basic')
+        config_id = data.get('config_id')
 
-        if not all([smtp_server, smtp_port, email_from, email_password]):
+        if not all([smtp_server, smtp_port, email_from]):
             return jsonify({"success": False, "error": "Faltan datos de conexión"}), 400
 
-        # Si la contraseña es asteriscos, obtener la real de la BD
-        if email_password == '********':
-            config_id = data.get('config_id')
-            if config_id:
+        # Construir config para test
+        test_email_config = {
+            'smtp_server': smtp_server,
+            'smtp_port': smtp_port,
+            'email_from': email_from,
+            'auth_method': auth_method
+        }
+
+        if auth_method == 'oauth2':
+            # Usar datos del formulario primero, fallback a BD
+            test_email_config['oauth2_tenant_id'] = data.get('oauth2_tenant_id')
+            test_email_config['oauth2_client_id'] = data.get('oauth2_client_id')
+            form_secret = data.get('oauth2_client_secret')
+
+            if form_secret:
+                test_email_config['oauth2_client_secret'] = form_secret
+            elif config_id:
+                # Secret no proporcionado en form - obtener de BD
                 existing = EmailConfigModel.get_config_by_id(config_id, empresa_id)
                 if existing:
-                    email_password = existing.get('email_password')
-                else:
-                    return jsonify({"success": False, "error": "No se encontró la configuración para obtener la contraseña"}), 400
-            else:
-                return jsonify({"success": False, "error": "Debe introducir la contraseña para probar la conexión"}), 400
+                    test_email_config['oauth2_client_secret'] = existing.get('oauth2_client_secret')
 
-        # Intentar conexión SMTP
-        print(f"🔧 Probando conexión SMTP: {smtp_server}:{smtp_port}")
-
-        # Puerto 465 usa SSL directo, otros puertos usan STARTTLS
-        if smtp_port == 465:
-            print("   Usando SMTP_SSL (puerto 465)")
-            server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=10)
+            if not all([test_email_config.get('oauth2_tenant_id'), test_email_config.get('oauth2_client_id'), test_email_config.get('oauth2_client_secret')]):
+                return jsonify({"success": False, "error": "Faltan datos OAuth2 (Tenant ID, Client ID, Client Secret)"}), 400
         else:
-            print(f"   Usando SMTP con STARTTLS (puerto {smtp_port})")
-            server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
-            server.starttls()
+            # Basic auth
+            if not email_password:
+                return jsonify({"success": False, "error": "Faltan datos de conexión"}), 400
 
-        server.set_debuglevel(0)
-        server.login(email_from, email_password)
-        server.quit()
+            # Si la contraseña es asteriscos, obtener la real de la BD
+            if email_password == '********':
+                if config_id:
+                    existing = EmailConfigModel.get_config_by_id(config_id, empresa_id)
+                    if existing:
+                        email_password = existing.get('email_password')
+                    else:
+                        return jsonify({"success": False, "error": "No se encontró la configuración para obtener la contraseña"}), 400
+                else:
+                    return jsonify({"success": False, "error": "Debe introducir la contraseña para probar la conexión"}), 400
 
-        print(f"✅ Conexión SMTP exitosa")
-        return jsonify({"success": True, "message": "Conexión SMTP exitosa"}), 200
+            test_email_config['email_password'] = email_password
 
-    except smtplib.SMTPAuthenticationError as e:
-        print(f"❌ Error de autenticación SMTP: {str(e)}")
-        # Gmail/Google requiere "Contraseña de aplicación" si tiene 2FA
-        error_msg = "Error de autenticación. Verifica el email y contraseña."
-        if "gmail" in smtp_server.lower() or "google" in smtp_server.lower():
-            error_msg += " Si usas Gmail con verificación en 2 pasos, necesitas una 'Contraseña de aplicación'."
-        return jsonify({"success": False, "error": error_msg}), 200
-    except smtplib.SMTPConnectError as e:
-        print(f"❌ Error de conexión SMTP: {str(e)}")
-        return jsonify({"success": False, "error": f"No se pudo conectar al servidor SMTP: {smtp_server}:{smtp_port}"}), 200
-    except socket.timeout:
-        print(f"❌ Timeout al conectar a SMTP")
-        return jsonify({"success": False, "error": f"Timeout: El servidor {smtp_server}:{smtp_port} no responde. Verifica servidor y puerto."}), 200
+        # Usar la utilidad central de test
+        print(f"🔧 Probando conexión SMTP: {smtp_server}:{smtp_port} (auth: {auth_method})")
+        result = test_smtp_connection(test_email_config)
+
+        status_code = 200
+        print(f"{'✅' if result['success'] else '❌'} Resultado test: {result}")
+        return jsonify(result), status_code
+
     except Exception as e:
-        print(f"❌ Error SMTP: {str(e)}")
-        error_str = str(e)
-        # Mensajes más amigables para errores comunes
-        if "getaddrinfo failed" in error_str or "Name or service not known" in error_str:
-            return jsonify({"success": False, "error": f"Servidor '{smtp_server}' no encontrado. Verifica el nombre del servidor."}), 200
-        if "Connection refused" in error_str:
-            return jsonify({"success": False, "error": f"Conexión rechazada en {smtp_server}:{smtp_port}. Verifica el puerto."}), 200
-        return jsonify({"success": False, "error": error_str}), 200
+        print(f"❌ Error en test: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 200
 
 
 @email_config_bp.route('/<int:id>/activate', methods=['POST'])
@@ -283,3 +301,4 @@ def activate_config(id):
         return jsonify({"message": "Configuración activada correctamente"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+

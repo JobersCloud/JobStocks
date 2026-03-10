@@ -23,10 +23,10 @@ from utils.auth import administrador_required
 from models.consulta_model import ConsultaModel
 from models.email_config_model import EmailConfigModel
 from models.parametros_model import ParametrosModel
-import smtplib
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from utils.email_sender import smtp_send_message
 from email.utils import formatdate
 
 consulta_bp = Blueprint('consulta', __name__, url_prefix='/api/consultas')
@@ -427,16 +427,7 @@ def enviar_notificacion_consulta(data, consulta_id, empresa_id, connection_id=No
 
     msg.attach(MIMEText(html_body, 'html'))
 
-    if email_config['smtp_port'] == 465:
-        server = smtplib.SMTP_SSL(email_config['smtp_server'], email_config['smtp_port'])
-    else:
-        server = smtplib.SMTP(email_config['smtp_server'], email_config['smtp_port'])
-        server.starttls()
-
-    server.login(email_config['email_from'], email_config['email_password'])
-    server.send_message(msg)
-    server.quit()
-
+    smtp_send_message(email_config, msg)
     print(f"✅ Notificación de consulta enviada a {email_config['email_to']}")
 
 
@@ -487,14 +478,5 @@ def enviar_respuesta_consulta(consulta, respuesta, empresa_id, connection_id=Non
 
     msg.attach(MIMEText(html_body, 'html'))
 
-    if email_config['smtp_port'] == 465:
-        server = smtplib.SMTP_SSL(email_config['smtp_server'], email_config['smtp_port'])
-    else:
-        server = smtplib.SMTP(email_config['smtp_server'], email_config['smtp_port'])
-        server.starttls()
-
-    server.login(email_config['email_from'], email_config['email_password'])
-    server.send_message(msg)
-    server.quit()
-
+    smtp_send_message(email_config, msg)
     print(f"✅ Respuesta enviada a {consulta['email_cliente']}")

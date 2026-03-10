@@ -381,7 +381,18 @@
     "testConnection": "Tester la Connexion",
     "errorLoading": "Erreur lors du chargement",
     "active": "Active",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "authMethod": "Méthode d'Authentification",
+    "authBasic": "Mot de passe (Basic)",
+    "authOAuth2": "OAuth2 (Office 365)",
+    "oauth2Help": "Enregistrez une app dans Azure AD avec la permission SMTP.Send (Application) et les client credentials.",
+    "oauth2FieldsRequired": "Remplissez les champs Tenant ID et Client ID pour OAuth2",
+    "oauth2SecretRequired": "Le Client Secret est requis pour une nouvelle configuration OAuth2",
+    "password": "Mot de passe",
+    "passwordHelp": "Laissez vide pour ne pas changer le mot de passe actuel.",
+    "emailTo": "Email Destination (pour les demandes)",
+    "emailToHelp": "Email où les demandes des clients sont reçues.",
+    "configName": "Nom de la Configuration"
   },
   "dashboard": {
     "title": "Tableau de Bord",

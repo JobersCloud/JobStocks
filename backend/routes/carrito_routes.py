@@ -26,7 +26,6 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from datetime import datetime
 import io
-import smtplib
 import traceback
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -798,50 +797,9 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
         msg.attach(part_excel)
         print(f"✅ Excel adjuntado: {filename_excel}")
     
-    # Enviar email
-    print("\n5️⃣ Conectando al servidor SMTP...")
-    try:
-        # Detectar si usar SSL o TLS según el puerto
-        if email_config['smtp_port'] == 465:
-            print(f"   Usando SSL en puerto {email_config['smtp_port']}")
-            server = smtplib.SMTP_SSL(email_config['smtp_server'], email_config['smtp_port'])
-        else:
-            print(f"   Usando TLS en puerto {email_config['smtp_port']}")
-            server = smtplib.SMTP(email_config['smtp_server'], email_config['smtp_port'])
-            print("   Iniciando STARTTLS...")
-            server.starttls()
-        
-        print("✅ Conexión SMTP establecida")
-        
-        print("\n6️⃣ Autenticando...")
-        server.login(email_config['email_from'], email_config['email_password'])
-        print("✅ Autenticación exitosa")
-        
-        print("\n7️⃣ Enviando mensaje...")
-        server.send_message(msg)
-        print("✅ Mensaje enviado correctamente")
-        
-        server.quit()
-        print("\n✅ EMAIL ENVIADO EXITOSAMENTE")
-        print("=" * 60 + "\n")
-        
-    except smtplib.SMTPAuthenticationError as e:
-        print(f"\n❌ ERROR DE AUTENTICACIÓN SMTP")
-        print(f"   Código: {e.smtp_code}")
-        print(f"   Mensaje: {e.smtp_error}")
-        print(f"   Verifica:")
-        print(f"   - Usuario: {email_config['email_from']}")
-        print(f"   - Contraseña correcta en la BD")
-        print("=" * 60 + "\n")
-        raise
-    except smtplib.SMTPException as e:
-        print(f"\n❌ ERROR SMTP")
-        print(f"   {str(e)}")
-        print("=" * 60 + "\n")
-        raise
-    except Exception as e:
-        print(f"\n❌ ERROR INESPERADO AL ENVIAR EMAIL")
-        print(f"   {str(e)}")
-        traceback.print_exc()
-        print("=" * 60 + "\n")
-        raise
+    # Enviar email usando utilidad central
+    print("\n5️⃣ Enviando email...")
+    from utils.email_sender import smtp_send_message
+    smtp_send_message(email_config, msg)
+    print("\n✅ EMAIL ENVIADO EXITOSAMENTE")
+    print("=" * 60 + "\n")

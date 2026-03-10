@@ -30,12 +30,12 @@ from database.users_db import (
 )
 from models.email_config_model import EmailConfigModel
 from utils.password_policy import validate_password, get_password_error_message
-import smtplib
 import os
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
+from utils.email_sender import smtp_send_message
 
 
 def get_base_url():
@@ -462,16 +462,7 @@ def enviar_email_bienvenida(email, username, password, full_name, empresa_id):
     msg.attach(MIMEText(html_body, 'html'))
 
     # Enviar email
-    if email_config['smtp_port'] == 465:
-        server = smtplib.SMTP_SSL(email_config['smtp_server'], email_config['smtp_port'])
-    else:
-        server = smtplib.SMTP(email_config['smtp_server'], email_config['smtp_port'])
-        server.starttls()
-
-    server.login(email_config['email_from'], email_config['email_password'])
-    server.send_message(msg)
-    server.quit()
-
+    smtp_send_message(email_config, msg)
     print(f"✅ Email de bienvenida enviado a {email}")
 
 

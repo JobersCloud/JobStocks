@@ -44,7 +44,11 @@ class EmailConfigModel:
                     smtp_port,
                     email_from,
                     email_password,
-                    email_to
+                    email_to,
+                    ISNULL(auth_method, 'basic'),
+                    oauth2_tenant_id,
+                    oauth2_client_id,
+                    oauth2_client_secret
                 FROM email_config
                 WHERE activo = 1 AND empresa_id = ?
             """
@@ -62,6 +66,7 @@ class EmailConfigModel:
                 print(f"   - SMTP Port: {row[3]}")
                 print(f"   - Email From: {row[4]}")
                 print(f"   - Email To: {row[6]}")
+                print(f"   - Auth Method: {row[7]}")
 
                 config = {
                     'id': row[0],
@@ -70,7 +75,11 @@ class EmailConfigModel:
                     'smtp_port': row[3],
                     'email_from': row[4],
                     'email_password': row[5],
-                    'email_to': row[6]
+                    'email_to': row[6],
+                    'auth_method': row[7],
+                    'oauth2_tenant_id': row[8],
+                    'oauth2_client_id': row[9],
+                    'oauth2_client_secret': row[10]
                 }
 
                 conn.close()
@@ -96,7 +105,7 @@ class EmailConfigModel:
 
     @staticmethod
     def get_config_by_id(config_id, empresa_id):
-        """Obtiene una configuración de email por ID y empresa (incluye contraseña)"""
+        """Obtiene una configuración de email por ID y empresa (incluye contraseña y OAuth2)"""
         try:
             conn = Database.get_connection()
             cursor = conn.cursor()
@@ -110,7 +119,11 @@ class EmailConfigModel:
                     email_from,
                     email_password,
                     email_to,
-                    activo
+                    activo,
+                    ISNULL(auth_method, 'basic'),
+                    oauth2_tenant_id,
+                    oauth2_client_id,
+                    oauth2_client_secret
                 FROM email_config
                 WHERE id = ? AND empresa_id = ?
             """, (config_id, empresa_id))
@@ -127,7 +140,11 @@ class EmailConfigModel:
                     'email_from': row[4],
                     'email_password': row[5],
                     'email_to': row[6],
-                    'activo': bool(row[7])
+                    'activo': bool(row[7]),
+                    'auth_method': row[8],
+                    'oauth2_tenant_id': row[9],
+                    'oauth2_client_id': row[10],
+                    'oauth2_client_secret': row[11]
                 }
             return None
 
@@ -154,7 +171,10 @@ class EmailConfigModel:
                     email_to,
                     activo,
                     fecha_creacion,
-                    fecha_modificacion
+                    fecha_modificacion,
+                    ISNULL(auth_method, 'basic'),
+                    oauth2_tenant_id,
+                    oauth2_client_id
                 FROM email_config
                 WHERE empresa_id = ?
                 ORDER BY id
@@ -171,7 +191,10 @@ class EmailConfigModel:
                     'email_to': row[5],
                     'activo': bool(row[6]),
                     'fecha_creacion': row[7].strftime('%Y-%m-%d %H:%M:%S') if row[7] else None,
-                    'fecha_modificacion': row[8].strftime('%Y-%m-%d %H:%M:%S') if row[8] else None
+                    'fecha_modificacion': row[8].strftime('%Y-%m-%d %H:%M:%S') if row[8] else None,
+                    'auth_method': row[9],
+                    'oauth2_tenant_id': row[10],
+                    'oauth2_client_id': row[11]
                 })
 
             conn.close()
@@ -184,40 +207,51 @@ class EmailConfigModel:
             return []
 
     @staticmethod
-    def update_config(id, nombre_configuracion, smtp_server, smtp_port, email_from, email_password, email_to, empresa_id):
+    def update_config(id, nombre_configuracion, smtp_server, smtp_port, email_from, email_password, email_to, empresa_id, auth_method=None, oauth2_tenant_id=None, oauth2_client_id=None, oauth2_client_secret=None):
         """Actualiza una configuración de email"""
         try:
             print(f"\n🔧 Actualizando configuración ID: {id} (Empresa: {empresa_id})...")
             conn = Database.get_connection()
             cursor = conn.cursor()
 
-            # Si email_password está vacío o es None, no actualizamos la contraseña
+            # Construir SET dinámico
+            set_parts = [
+                "nombre_configuracion = ?",
+                "smtp_server = ?",
+                "smtp_port = ?",
+                "email_from = ?",
+                "email_to = ?",
+                "fecha_modificacion = GETDATE()"
+            ]
+            params = [nombre_configuracion, smtp_server, smtp_port, email_from, email_to]
+
+            # Contraseña solo si se proporciona
             if email_password and email_password.strip() and email_password != '********':
-                cursor.execute("""
-                    UPDATE email_config
-                    SET
-                        nombre_configuracion = ?,
-                        smtp_server = ?,
-                        smtp_port = ?,
-                        email_from = ?,
-                        email_password = ?,
-                        email_to = ?,
-                        fecha_modificacion = GETDATE()
-                    WHERE id = ? AND empresa_id = ?
-                """, (nombre_configuracion, smtp_server, smtp_port, email_from, email_password, email_to, id, empresa_id))
-            else:
-                # Actualizar sin cambiar la contraseña
-                cursor.execute("""
-                    UPDATE email_config
-                    SET
-                        nombre_configuracion = ?,
-                        smtp_server = ?,
-                        smtp_port = ?,
-                        email_from = ?,
-                        email_to = ?,
-                        fecha_modificacion = GETDATE()
-                    WHERE id = ? AND empresa_id = ?
-                """, (nombre_configuracion, smtp_server, smtp_port, email_from, email_to, id, empresa_id))
+                set_parts.insert(4, "email_password = ?")
+                params.insert(4, email_password)
+
+            # auth_method
+            if auth_method is not None:
+                set_parts.append("auth_method = ?")
+                params.append(auth_method)
+
+            # Campos OAuth2
+            if oauth2_tenant_id is not None:
+                set_parts.append("oauth2_tenant_id = ?")
+                params.append(oauth2_tenant_id if oauth2_tenant_id else None)
+
+            if oauth2_client_id is not None:
+                set_parts.append("oauth2_client_id = ?")
+                params.append(oauth2_client_id if oauth2_client_id else None)
+
+            if oauth2_client_secret is not None and oauth2_client_secret != '********':
+                set_parts.append("oauth2_client_secret = ?")
+                params.append(oauth2_client_secret if oauth2_client_secret else None)
+
+            params.extend([id, empresa_id])
+
+            sql = f"UPDATE email_config SET {', '.join(set_parts)} WHERE id = ? AND empresa_id = ?"
+            cursor.execute(sql, tuple(params))
 
             conn.commit()
             conn.close()
@@ -230,19 +264,23 @@ class EmailConfigModel:
             return False
 
     @staticmethod
-    def create_config(nombre_configuracion, smtp_server, smtp_port, email_from, email_password, email_to, empresa_id):
+    def create_config(nombre_configuracion, smtp_server, smtp_port, email_from, email_password, email_to, empresa_id, auth_method='basic', oauth2_tenant_id=None, oauth2_client_id=None, oauth2_client_secret=None):
         """Crea una nueva configuración de email para una empresa"""
         try:
             print(f"\n➕ Creando nueva configuración: {nombre_configuracion} (Empresa: {empresa_id})...")
             conn = Database.get_connection()
             cursor = conn.cursor()
 
+            # email_password no puede ser NULL en BD - usar string vacío para OAuth2
+            if not email_password:
+                email_password = ''
+
             cursor.execute("""
                 INSERT INTO email_config
-                    (nombre_configuracion, smtp_server, smtp_port, email_from, email_password, email_to, activo, empresa_id, fecha_creacion)
+                    (nombre_configuracion, smtp_server, smtp_port, email_from, email_password, email_to, activo, empresa_id, fecha_creacion, auth_method, oauth2_tenant_id, oauth2_client_id, oauth2_client_secret)
                 OUTPUT INSERTED.id
-                VALUES (?, ?, ?, ?, ?, ?, 0, ?, GETDATE())
-            """, (nombre_configuracion, smtp_server, smtp_port, email_from, email_password, email_to, empresa_id))
+                VALUES (?, ?, ?, ?, ?, ?, 0, ?, GETDATE(), ?, ?, ?, ?)
+            """, (nombre_configuracion, smtp_server, smtp_port, email_from, email_password, email_to, empresa_id, auth_method, oauth2_tenant_id, oauth2_client_id, oauth2_client_secret))
 
             row = cursor.fetchone()
             new_id = row[0] if row else None
@@ -282,3 +320,4 @@ class EmailConfigModel:
             print(f"❌ Error al activar configuración: {str(e)}")
             traceback.print_exc()
             return False
+

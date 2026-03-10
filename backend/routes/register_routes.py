@@ -26,10 +26,10 @@ from datetime import datetime, timedelta
 import secrets
 import json
 import os
-import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
+from utils.email_sender import smtp_send_message
 
 register_bp = Blueprint('register', __name__, url_prefix='/api')
 
@@ -819,41 +819,11 @@ def enviar_email_verificacion(email, nombre, token, empresa_id="1", connection=N
 
     msg.attach(MIMEText(body, 'html'))
 
-    # Enviar email con logging mejorado
-    try:
-        print(f"📧 Intentando enviar email a: {email}")
-        print(f"   SMTP Server: {email_config['smtp_server']}:{email_config['smtp_port']}")
-        print(f"   Email From: {email_config['email_from']}")
-        print(f"   URL de verificación: {verify_url}")
-
-        if email_config['smtp_port'] == 465:
-            print("   Usando SMTP_SSL (puerto 465)")
-            server = smtplib.SMTP_SSL(email_config['smtp_server'], email_config['smtp_port'])
-        else:
-            print(f"   Usando SMTP con STARTTLS (puerto {email_config['smtp_port']})")
-            server = smtplib.SMTP(email_config['smtp_server'], email_config['smtp_port'])
-            server.starttls()
-
-        print("   Intentando login...")
-        server.login(email_config['email_from'], email_config['email_password'])
-        print("   Login exitoso, enviando mensaje...")
-
-        # Enviar con debugging completo
-        server.set_debuglevel(1)  # Activar debug SMTP
-        result = server.send_message(msg)
-        print(f"   Respuesta del servidor: {result}")
-        print(f"✅ Email enviado exitosamente a {email}")
-
-        server.quit()
-    except smtplib.SMTPAuthenticationError as e:
-        print(f"❌ Error de autenticación SMTP: {e}")
-        raise Exception(f"Error de autenticación SMTP: {e}")
-    except smtplib.SMTPException as e:
-        print(f"❌ Error SMTP: {e}")
-        raise Exception(f"Error SMTP: {e}")
-    except Exception as e:
-        print(f"❌ Error general al enviar email: {e}")
-        raise
+    # Enviar email
+    print(f"📧 Enviando email de verificación a: {email}")
+    print(f"   URL de verificación: {verify_url}")
+    smtp_send_message(email_config, msg)
+    print(f"✅ Email de verificación enviado a {email}")
 
 
 def enviar_email_bienvenida(email, nombre, empresa_id="1", connection=None):
@@ -1009,22 +979,9 @@ def enviar_email_bienvenida(email, nombre, empresa_id="1", connection=None):
     msg.attach(MIMEText(body, 'html'))
 
     # Enviar email
-    try:
-        print(f"📧 Enviando email de bienvenida a: {email}")
-
-        if email_config['smtp_port'] == 465:
-            server = smtplib.SMTP_SSL(email_config['smtp_server'], email_config['smtp_port'])
-        else:
-            server = smtplib.SMTP(email_config['smtp_server'], email_config['smtp_port'])
-            server.starttls()
-
-        server.login(email_config['email_from'], email_config['email_password'])
-        server.send_message(msg)
-        print(f"✅ Email de bienvenida enviado a {email}")
-        server.quit()
-    except Exception as e:
-        print(f"❌ Error al enviar email de bienvenida: {e}")
-        raise
+    print(f"📧 Enviando email de bienvenida a: {email}")
+    smtp_send_message(email_config, msg)
+    print(f"✅ Email de bienvenida enviado a {email}")
 
 
 # ==================== RECUPERACIÓN DE CONTRASEÑA ====================
@@ -1412,22 +1369,9 @@ def enviar_email_reset_password(email, nombre, username, token, empresa_id="1", 
     msg.attach(MIMEText(body, 'html'))
 
     # Enviar email
-    try:
-        print(f"📧 Enviando email de recuperación a: {email}")
-
-        if email_config['smtp_port'] == 465:
-            server = smtplib.SMTP_SSL(email_config['smtp_server'], email_config['smtp_port'])
-        else:
-            server = smtplib.SMTP(email_config['smtp_server'], email_config['smtp_port'])
-            server.starttls()
-
-        server.login(email_config['email_from'], email_config['email_password'])
-        server.send_message(msg)
-        print(f"✅ Email de recuperación enviado a {email}")
-        server.quit()
-    except Exception as e:
-        print(f"❌ Error al enviar email de recuperación: {e}")
-        raise
+    print(f"📧 Enviando email de recuperación a: {email}")
+    smtp_send_message(email_config, msg)
+    print(f"✅ Email de recuperación enviado a {email}")
 
 
 def enviar_email_confirmacion_reset(email, nombre, empresa_id="1", connection=None):
@@ -1540,19 +1484,6 @@ def enviar_email_confirmacion_reset(email, nombre, empresa_id="1", connection=No
 
     msg.attach(MIMEText(body, 'html'))
 
-    try:
-        print(f"📧 Enviando email de confirmación de cambio a: {email}")
-
-        if email_config['smtp_port'] == 465:
-            server = smtplib.SMTP_SSL(email_config['smtp_server'], email_config['smtp_port'])
-        else:
-            server = smtplib.SMTP(email_config['smtp_server'], email_config['smtp_port'])
-            server.starttls()
-
-        server.login(email_config['email_from'], email_config['email_password'])
-        server.send_message(msg)
-        print(f"✅ Email de confirmación enviado a {email}")
-        server.quit()
-    except Exception as e:
-        print(f"❌ Error al enviar email de confirmación: {e}")
-        raise
+    print(f"📧 Enviando email de confirmación de cambio a: {email}")
+    smtp_send_message(email_config, msg)
+    print(f"✅ Email de confirmación enviado a {email}")

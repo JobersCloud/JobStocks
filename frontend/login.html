@@ -307,6 +307,11 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.41.0', date: '2026-03-10', title: 'Soporte OAuth2 para Office 365 en envío de emails', items: [
+                {type: 'new', text: 'Método de autenticación OAuth2 (client credentials) para enviar emails desde cuentas Office 365'},
+                {type: 'new', text: 'Campos OAuth2 (Tenant ID, Client ID, Client Secret) en configuración de email'},
+                {type: 'improve', text: 'Centralizado el envío de emails en una utilidad única (8 funciones refactorizadas)'}
+            ]},
             { version: 'v1.40.13', date: '2026-03-10', title: 'Reenviar email de bienvenida desde gestión de usuarios', items: [
                 {type: 'new', text: 'Nueva opción "Reenviar email bienvenida" en menú de acciones de usuarios (disponible para cualquier usuario con email)'}
             ]},

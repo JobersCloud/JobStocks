@@ -1174,4 +1174,32 @@ MIGRATIONS = [
         ]
     },
 
+    # ================================================================
+    # EMAIL CONFIG - Soporte OAuth2/XOAUTH2 para Office 365
+    # ================================================================
+
+    {
+        'version': 50,
+        'description': 'Añadir campos OAuth2 a email_config para soporte Office 365',
+        'app_version': 'v1.41.0',
+        'sql': [
+            """IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('email_config') AND name = 'auth_method')
+            BEGIN
+                ALTER TABLE email_config ADD auth_method VARCHAR(10) DEFAULT 'basic'
+            END""",
+            """IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('email_config') AND name = 'oauth2_tenant_id')
+            BEGIN
+                ALTER TABLE email_config ADD oauth2_tenant_id VARCHAR(100) NULL
+            END""",
+            """IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('email_config') AND name = 'oauth2_client_id')
+            BEGIN
+                ALTER TABLE email_config ADD oauth2_client_id VARCHAR(100) NULL
+            END""",
+            """IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('email_config') AND name = 'oauth2_client_secret')
+            BEGIN
+                ALTER TABLE email_config ADD oauth2_client_secret VARCHAR(500) NULL
+            END""",
+        ]
+    },
+
 ]
