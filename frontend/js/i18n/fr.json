@@ -523,6 +523,7 @@
     "enableOrders": "Activer commandes",
     "disableOrders": "Désactiver commandes",
     "verifyEmail": "Vérifier l'email",
+    "resendWelcome": "Renvoyer l'email de bienvenue",
     "detailInfo": "Informations",
     "detailProposals": "Propositions",
     "detailOrders": "Commandes",

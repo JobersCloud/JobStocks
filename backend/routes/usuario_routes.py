@@ -891,6 +891,52 @@ def cambiar_verificacion_email(user_id):
         }), 500
 
 
+@usuario_bp.route('/<int:user_id>/reenviar-bienvenida', methods=['POST'])
+@login_required
+@csrf_required
+@administrador_required
+def reenviar_email_bienvenida(user_id):
+    """
+    Reenviar email de bienvenida a un usuario (solo administradores)
+    ---
+    tags:
+      - Usuarios
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: user_id
+        in: path
+        type: integer
+        required: true
+        description: ID del usuario
+    responses:
+      200:
+        description: Email de bienvenida reenviado
+      404:
+        description: Usuario no encontrado
+      500:
+        description: Error al enviar email
+    """
+    try:
+        connection = session.get('connection')
+        empresa_id = session.get('empresa_id', '1')
+        user = get_user_by_id(user_id, connection)
+
+        if not user:
+            return jsonify({'success': False, 'error': 'Usuario no encontrado'}), 404
+
+        if not user.get('email'):
+            return jsonify({'success': False, 'error': 'El usuario no tiene email'}), 400
+
+        from routes.register_routes import enviar_email_bienvenida
+        enviar_email_bienvenida(user['email'], user.get('full_name', user['username']), empresa_id, connection)
+
+        return jsonify({'success': True, 'message': f'Email de bienvenida reenviado a {user["email"]}'}), 200
+    except Exception as e:
+        logging.getLogger(__name__).error(f"reenviar_email_bienvenida: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @usuario_bp.route('/cambiar-password', methods=['POST'])
 @login_required
 @csrf_required

@@ -799,6 +799,13 @@
                 </div>`;
             }
 
+            if (user.email) {
+                items += `<div class="action-menu-item" onclick="closeActionMenu(); resendWelcomeEmail(${user.id})">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/><path d="M16 2l4 4-4 4"/></svg>
+                    ${t('users.resendWelcome') || 'Reenviar email bienvenida'}
+                </div>`;
+            }
+
             if (preciosGlobalHabilitado) {
                 const preciosLabel = user.mostrar_precios ? (t('users.disablePrices') || 'Desactivar precios') : (t('users.enablePrices') || 'Activar precios');
                 const preciosIcon = user.mostrar_precios
@@ -1012,6 +1019,16 @@
                 grid.setData(users);
             } catch (error) { UIFeedback.toast('Error al cambiar la verificación', 'error'); }
         }
+
+        async function resendWelcomeEmail(userId) {
+            try {
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}/reenviar-bienvenida`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() } });
+                const data = await response.json();
+                if (response.ok) UIFeedback.toast(data.message || 'Email de bienvenida reenviado', 'success');
+                else UIFeedback.toast(data.error || 'Error al reenviar email', 'error');
+            } catch (error) { UIFeedback.toast('Error al reenviar email de bienvenida', 'error'); }
+        }
+        window.resendWelcomeEmail = resendWelcomeEmail;
 
         async function resendVerification(email) {
             try {

@@ -523,6 +523,7 @@
     "enableOrders": "Enable orders",
     "disableOrders": "Disable orders",
     "verifyEmail": "Verify email",
+    "resendWelcome": "Resend welcome email",
     "detailInfo": "Info",
     "detailProposals": "Proposals",
     "detailOrders": "Orders",
