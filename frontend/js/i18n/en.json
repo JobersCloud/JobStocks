@@ -170,6 +170,7 @@
     "images": "Images",
     "packaging": "Packaging",
     "unitsPerBox": "Units per box",
+    "piecesPerBox": "Pieces per box",
     "boxesPerPallet": "Boxes per pallet",
     "unitsPerPallet": "Units per pallet",
     "weightPerUnit": "Weight per unit",

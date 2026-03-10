@@ -178,6 +178,7 @@
     "contact": "Contacto",
     "packaging": "Empaquetado",
     "unitsPerBox": "Unidades por caja",
+    "piecesPerBox": "Piezas por caja",
     "boxesPerPallet": "Cajas por pallet",
     "unitsPerPallet": "Unidades por pallet",
     "weightPerUnit": "Peso por unidad",

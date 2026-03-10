@@ -45,7 +45,8 @@ def _row_to_stock(row):
         'ean13': _s(row[15]),
         'pesocaja': float(row[16]) if row[16] else 0,
         'pesopallet': float(row[17]) if row[17] else 0,
-        'tipo_producto': _s(row[18]) if len(row) > 18 and row[18] else ''
+        'tipo_producto': _s(row[18]) if len(row) > 18 and row[18] else '',
+        'piezascaja': float(row[19]) if len(row) > 19 and row[19] else 0
     }
 
 
@@ -58,7 +59,7 @@ class StockModel:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
-                   formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto
+                   formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja
             FROM view_externos_stock
             WHERE empresa = ?
         """, (empresa_erp,))
@@ -75,7 +76,7 @@ class StockModel:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
-                   formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto
+                   formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja
             FROM view_externos_stock
             WHERE codigo = ? AND empresa = ?
         """, (codigo, empresa_erp))
@@ -92,7 +93,7 @@ class StockModel:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
-                   formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto
+                   formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja
             FROM view_externos_stock
             WHERE codigo = ? AND empresa LIKE ?
         """, (codigo, f"%{empresa}%"))
@@ -115,7 +116,7 @@ class StockModel:
         params = list(codigos) + [empresa_erp]
         cursor.execute(f"""
             SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
-                   formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto
+                   formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja
             FROM view_externos_stock
             WHERE codigo IN ({placeholders}) AND empresa = ?
         """, params)
@@ -294,7 +295,7 @@ class StockModel:
                     SELECT
                         empresa, codigo, descripcion, calidad, color, tono, calibre,
                         formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet,
-                        existencias, ean13, pesocaja, pesopallet, tipo_producto,
+                        existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja,
                         ROW_NUMBER() OVER (ORDER BY {order_by} {order_dir}) AS row_num
                     FROM view_externos_stock
                     WHERE {where_clause}
@@ -307,7 +308,7 @@ class StockModel:
             query = f"""
                 SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
                        formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet,
-                       existencias, ean13, pesocaja, pesopallet, tipo_producto
+                       existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja
                 FROM view_externos_stock
                 WHERE {where_clause}
                 ORDER BY {order_by} {order_dir}

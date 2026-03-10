@@ -3222,7 +3222,7 @@ async function verDetalle(stock) {
                 ` : ''}
             </div>
         </div>
-        ${stock.unidadescaja || stock.cajaspallet || stock.pesocaja || stock.pesopallet ? `
+        ${stock.unidadescaja || stock.cajaspallet || stock.pesocaja || stock.pesopallet || stock.piezascaja ? `
         <div class="detail-packaging-section">
             <div class="detail-packaging-title">${t('detail.packaging')}</div>
             <div class="detail-packaging-grid">
@@ -3232,6 +3232,15 @@ async function verDetalle(stock) {
                     <div class="detail-packaging-info">
                         <div class="detail-packaging-label">${t('detail.unitsPerBox')}</div>
                         <div class="detail-packaging-value">${formatearCantidadEmpaquetado(stock.unidadescaja)} ${stock.unidad || ''}</div>
+                    </div>
+                </div>
+                ` : ''}
+                ${stock.piezascaja && stock.unidad && stock.unidad.toUpperCase() !== 'PZ' ? `
+                <div class="detail-packaging-item">
+                    <div class="detail-packaging-icon">🧱</div>
+                    <div class="detail-packaging-info">
+                        <div class="detail-packaging-label">${t('detail.piecesPerBox')}</div>
+                        <div class="detail-packaging-value">${formatearCantidadEmpaquetado(stock.piezascaja)} PZ</div>
                     </div>
                 </div>
                 ` : ''}

@@ -12,8 +12,10 @@ echo.
 
 cd /d "C:\Users\jobers\Documents\Ejercicios Python\JobStocks"
 
-echo [1/4] Subiendo archivos...
-scp -r backend frontend docker-compose.yml ubuntu@51.68.44.136:/opt/ApiRestExternos/
+echo [1/4] Subiendo archivos (sin videos promocionales)...
+scp -r backend docker-compose.yml ubuntu@51.68.44.136:/opt/ApiRestExternos/
+REM Subir frontend excluyendo videos (.mp4) via tar+ssh
+tar cf - --exclude="*.mp4" frontend | ssh ubuntu@51.68.44.136 "cd /opt/ApiRestExternos && tar xf -"
 
 if %ERRORLEVEL% NEQ 0 (
     echo ERROR: Fallo al subir archivos

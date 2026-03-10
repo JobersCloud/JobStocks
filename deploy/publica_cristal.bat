@@ -12,11 +12,15 @@ echo.
 
 cd /d "C:\Users\jobers\Documents\Ejercicios Python\JobStocks"
 
-echo [1/4] Subiendo archivos (sin .env - cada servidor tiene su config)...
+echo [1/4] Subiendo archivos (sin .env ni videos promocionales)...
 REM Excluir .env del backend para no sobrescribir configuracion del servidor
+REM Excluir videos promocionales (.mp4) para no subir archivos pesados
 ssh administrador@10.1.99.4 "cp /var/jobstocks/backend/.env /tmp/.env.backup 2>/dev/null || true"
-scp -r backend frontend docker-compose.yml administrador@10.1.99.4:/var/jobstocks/
+scp docker-compose.yml administrador@10.1.99.4:/var/jobstocks/
+scp -r backend administrador@10.1.99.4:/var/jobstocks/
 ssh administrador@10.1.99.4 "cp /tmp/.env.backup /var/jobstocks/backend/.env 2>/dev/null || true"
+REM Subir frontend excluyendo videos (.mp4) via tar+ssh
+tar cf - --exclude="*.mp4" frontend | ssh administrador@10.1.99.4 "cd /var/jobstocks && tar xf -"
 
 if %ERRORLEVEL% NEQ 0 (
     echo ERROR: Fallo al subir archivos

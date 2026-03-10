@@ -307,6 +307,9 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.40.10', date: '2026-03-10', title: 'Piezas por caja en detalle de empaquetado', items: [
+                {type: 'new', text: 'Nuevo campo Piezas/Caja en sección de empaquetado del detalle de stock (visible solo cuando la unidad de venta no es PZ)'}
+            ]},
             { version: 'v1.40.9', date: '2026-03-09', title: 'Fix descripciones huerfanas en dashboard + auditoria logins', items: [
                 {type: 'fix', text: 'Articulos mas vistos en dashboard ahora buscan descripcion en propuestas_lineas cuando no hay stock'},
                 {type: 'fix', text: 'Corregido audit log que no registraba login, login fallido, lockout ni logout (faltaba connection_id en hilos background)'},
