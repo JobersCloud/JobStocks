@@ -134,7 +134,7 @@ class GridFilters {
             .filter(v => v !== null && v !== undefined && v !== '');
         const valoresUnicos = [...new Set(valores)].sort((a, b) =>
             String(a).localeCompare(String(b), 'es', { numeric: true })
-        ).slice(0, 100);
+        );
 
         // Crear el popup
         const popup = document.createElement('div');
