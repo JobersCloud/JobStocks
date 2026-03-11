@@ -392,7 +392,10 @@
     "passwordHelp": "Leave empty to keep current password.",
     "emailTo": "Destination Email (for requests)",
     "emailToHelp": "Email where customer requests are received.",
-    "configName": "Configuration Name"
+    "configName": "Configuration Name",
+    "confirmDelete": "Delete configuration '{name}'? This action cannot be undone.",
+    "deletedSuccess": "Configuration deleted successfully",
+    "cannotDeleteActive": "Cannot delete the active configuration"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -420,7 +423,19 @@
     "uniqueUsers": "Users",
     "lastView": "Last View",
     "errorLoading": "Error loading dashboard",
-    "monthsShort": "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec"
+    "monthsShort": "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",
+    "userInteraction": "User Interaction",
+    "loginsByDay": "Logins per day",
+    "failedLogins": "Failed logins",
+    "uniqueUsersLine": "Unique users",
+    "actionsDistribution": "Actions distribution",
+    "activityByHour": "Activity by hour",
+    "topInteractionUsers": "Most interactive users",
+    "totalActions": "Actions",
+    "activeDays": "Active days",
+    "lastAction": "Last action",
+    "hour": "Hour",
+    "actions": "actions"
   },
   "roles": {
     "user": "User",

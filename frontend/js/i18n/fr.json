@@ -392,7 +392,10 @@
     "passwordHelp": "Laissez vide pour ne pas changer le mot de passe actuel.",
     "emailTo": "Email Destination (pour les demandes)",
     "emailToHelp": "Email où les demandes des clients sont reçues.",
-    "configName": "Nom de la Configuration"
+    "configName": "Nom de la Configuration",
+    "confirmDelete": "Supprimer la configuration '{name}' ? Cette action est irréversible.",
+    "deletedSuccess": "Configuration supprimée avec succès",
+    "cannotDeleteActive": "Impossible de supprimer la configuration active"
   },
   "dashboard": {
     "title": "Tableau de Bord",
@@ -420,7 +423,19 @@
     "uniqueUsers": "Utilisateurs",
     "lastView": "Derniere Vue",
     "errorLoading": "Erreur lors du chargement du tableau de bord",
-    "monthsShort": "Jan,Fév,Mar,Avr,Mai,Jun,Jul,Aoû,Sep,Oct,Nov,Déc"
+    "monthsShort": "Jan,Fév,Mar,Avr,Mai,Jun,Jul,Aoû,Sep,Oct,Nov,Déc",
+    "userInteraction": "Interaction Utilisateurs",
+    "loginsByDay": "Connexions par jour",
+    "failedLogins": "Connexions échouées",
+    "uniqueUsersLine": "Utilisateurs uniques",
+    "actionsDistribution": "Distribution des actions",
+    "activityByHour": "Activité par heure",
+    "topInteractionUsers": "Utilisateurs les plus interactifs",
+    "totalActions": "Actions",
+    "activeDays": "Jours actifs",
+    "lastAction": "Dernière action",
+    "hour": "Heure",
+    "actions": "actions"
   },
   "roles": {
     "user": "Utilisateur",

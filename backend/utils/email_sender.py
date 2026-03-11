@@ -71,7 +71,17 @@ def _get_oauth2_access_token(email_config):
         error_desc = result.get("error_description", result.get("error", "Error desconocido"))
         raise Exception(f"Error al obtener access_token OAuth2: {error_desc}")
 
-    return result["access_token"]
+    access_token = result["access_token"]
+
+    # Debug: mostrar claims del token
+    try:
+        import jwt
+        decoded = jwt.decode(access_token, options={"verify_signature": False})
+        print("Token claims:", decoded)
+    except Exception as e:
+        print(f"⚠️ No se pudo decodificar el token: {e}")
+
+    return access_token
 
 
 def smtp_send_message(email_config, msg):
@@ -112,7 +122,7 @@ def smtp_send_message(email_config, msg):
             access_token = _get_oauth2_access_token(email_config)
             auth_string = _build_xoauth2_string(email_from, access_token)
             print("   Autenticando con XOAUTH2...")
-            server.auth('XOAUTH2', lambda: auth_string)
+            server.auth('XOAUTH2', lambda challenge=None: auth_string)
             print("   ✅ Autenticación XOAUTH2 exitosa")
         else:
             # Autenticación básica
@@ -160,7 +170,7 @@ def test_smtp_connection(email_config):
             if auth_method == 'oauth2':
                 access_token = _get_oauth2_access_token(email_config)
                 auth_string = _build_xoauth2_string(email_from, access_token)
-                server.auth('XOAUTH2', lambda: auth_string)
+                server.auth('XOAUTH2', lambda challenge=None: auth_string)
             else:
                 server.login(email_from, email_config.get('email_password', ''))
         finally:

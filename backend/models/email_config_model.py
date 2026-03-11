@@ -296,6 +296,35 @@ class EmailConfigModel:
             return None
 
     @staticmethod
+    def delete_config(id, empresa_id):
+        """Elimina una configuración de email (solo si no está activa)"""
+        try:
+            print(f"\n🗑️ Eliminando configuración ID: {id} (Empresa: {empresa_id})...")
+            conn = Database.get_connection()
+            cursor = conn.cursor()
+
+            # Verificar que no esté activa
+            cursor.execute("SELECT activo FROM email_config WHERE id = ? AND empresa_id = ?", (id, empresa_id))
+            row = cursor.fetchone()
+            if not row:
+                conn.close()
+                raise Exception("Configuración no encontrada")
+            if bool(row[0]):
+                conn.close()
+                raise Exception("No se puede eliminar la configuración activa")
+
+            cursor.execute("DELETE FROM email_config WHERE id = ? AND empresa_id = ?", (id, empresa_id))
+            conn.commit()
+            conn.close()
+            print(f"✅ Configuración ID {id} eliminada correctamente")
+            return True
+
+        except Exception as e:
+            print(f"❌ Error al eliminar configuración: {str(e)}")
+            traceback.print_exc()
+            raise
+
+    @staticmethod
     def set_active(id, empresa_id):
         """Establece una configuración como activa (desactiva las demás de la misma empresa)"""
         try:

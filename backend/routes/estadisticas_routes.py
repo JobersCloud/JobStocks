@@ -282,6 +282,139 @@ def get_consultas_por_estado():
     return jsonify(estados)
 
 
+@estadisticas_bp.route('/api/estadisticas/actividad-por-dia', methods=['GET'])
+@login_required
+@administrador_required
+def get_actividad_por_dia():
+    """
+    Obtener logins, fallidos y usuarios unicos por dia
+    ---
+    tags:
+      - Estadisticas
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: dias
+        in: query
+        type: integer
+        default: 30
+    responses:
+      200:
+        description: Actividad por dia
+    """
+    empresa_id = get_empresa_id()
+    dias = request.args.get('dias', 30, type=int)
+    if dias > 365:
+        dias = 365
+    try:
+        data = EstadisticasModel.get_actividad_por_dia(empresa_id, dias)
+        return jsonify(data)
+    except Exception as e:
+        print(f"Error en actividad-por-dia: {e}")
+        return jsonify([])
+
+
+@estadisticas_bp.route('/api/estadisticas/acciones-distribucion', methods=['GET'])
+@login_required
+@administrador_required
+def get_acciones_distribucion():
+    """
+    Obtener distribucion de acciones (top 10)
+    ---
+    tags:
+      - Estadisticas
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: dias
+        in: query
+        type: integer
+        default: 30
+    responses:
+      200:
+        description: Distribucion de acciones
+    """
+    empresa_id = get_empresa_id()
+    dias = request.args.get('dias', 30, type=int)
+    if dias > 365:
+        dias = 365
+    try:
+        data = EstadisticasModel.get_acciones_distribucion(empresa_id, dias)
+        return jsonify(data)
+    except Exception as e:
+        print(f"Error en acciones-distribucion: {e}")
+        return jsonify([])
+
+
+@estadisticas_bp.route('/api/estadisticas/actividad-por-hora', methods=['GET'])
+@login_required
+@administrador_required
+def get_actividad_por_hora():
+    """
+    Obtener actividad por hora del dia (0-23)
+    ---
+    tags:
+      - Estadisticas
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: dias
+        in: query
+        type: integer
+        default: 30
+    responses:
+      200:
+        description: Actividad por hora
+    """
+    empresa_id = get_empresa_id()
+    dias = request.args.get('dias', 30, type=int)
+    if dias > 365:
+        dias = 365
+    try:
+        data = EstadisticasModel.get_actividad_por_hora(empresa_id, dias)
+        return jsonify(data)
+    except Exception as e:
+        print(f"Error en actividad-por-hora: {e}")
+        return jsonify([])
+
+
+@estadisticas_bp.route('/api/estadisticas/usuarios-mas-interaccion', methods=['GET'])
+@login_required
+@administrador_required
+def get_usuarios_mas_interaccion():
+    """
+    Obtener top usuarios por total de interacciones
+    ---
+    tags:
+      - Estadisticas
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: limit
+        in: query
+        type: integer
+        default: 10
+      - name: dias
+        in: query
+        type: integer
+        default: 30
+    responses:
+      200:
+        description: Top usuarios por interaccion
+    """
+    empresa_id = get_empresa_id()
+    limit = request.args.get('limit', 10, type=int)
+    dias = request.args.get('dias', 30, type=int)
+    if dias > 365:
+        dias = 365
+    try:
+        data = EstadisticasModel.get_usuarios_mas_interaccion(empresa_id, limit, dias)
+        return jsonify(data)
+    except Exception as e:
+        print(f"Error en usuarios-mas-interaccion: {e}")
+        return jsonify([])
+
+
 @estadisticas_bp.route('/api/estadisticas/articulos-mas-vistos', methods=['GET'])
 @login_required
 @administrador_required

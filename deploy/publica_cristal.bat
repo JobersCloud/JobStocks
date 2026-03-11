@@ -1,7 +1,7 @@
 @echo off
 REM ============================================================
 REM Script de despliegue para servidor CRISTAL (10.1.99.4)
-REM Sube archivos y reinicia Docker
+REM Sube archivos y reinicia Docker (downtime minimo)
 REM ============================================================
 
 echo ========================================
@@ -12,9 +12,8 @@ echo.
 
 cd /d "C:\Users\jobers\Documents\Ejercicios Python\JobStocks"
 
-echo [1/4] Subiendo archivos (sin .env ni videos promocionales)...
-REM Excluir .env del backend para no sobrescribir configuracion del servidor
-REM Excluir videos promocionales (.mp4) para no subir archivos pesados
+echo [1/5] Subiendo archivos (sin .env ni videos promocionales)...
+REM Backup del .env del servidor
 ssh administrador@10.1.99.4 "cp /var/jobstocks/backend/.env /tmp/.env.backup 2>/dev/null || true"
 scp docker-compose.yml administrador@10.1.99.4:/var/jobstocks/
 scp -r backend administrador@10.1.99.4:/var/jobstocks/
@@ -29,22 +28,26 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo.
-echo [2/4] Ajustando permisos...
+echo [2/5] Ajustando permisos...
 ssh administrador@10.1.99.4 "chmod -R 755 /var/jobstocks/frontend"
 
 echo.
-echo [3/4] Reiniciando Docker...
-ssh administrador@10.1.99.4 "cd /var/jobstocks && echo 'crijob15' | sudo -S docker-compose down && echo 'crijob15' | sudo -S docker-compose up -d --build"
+echo [3/5] Construyendo nueva imagen (app sigue funcionando)...
+ssh administrador@10.1.99.4 "cd /var/jobstocks && echo 'crijob15' | sudo -S docker-compose build"
 
 if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: Fallo al reiniciar Docker
+    echo ERROR: Fallo al construir imagen
     pause
     exit /b 1
 )
 
 echo.
-echo [4/4] Verificando version...
-timeout /t 10 /nobreak > nul
+echo [4/5] Reiniciando contenedores (downtime minimo)...
+ssh administrador@10.1.99.4 "cd /var/jobstocks && echo 'crijob15' | sudo -S docker-compose down && echo 'crijob15' | sudo -S docker-compose up -d"
+
+echo.
+echo [5/5] Verificando version...
+timeout /t 8 /nobreak > nul
 ssh administrador@10.1.99.4 "curl -s http://localhost:5000/api/version"
 
 echo.

@@ -280,6 +280,29 @@ def test_config():
         return jsonify({"success": False, "error": str(e)}), 200
 
 
+@email_config_bp.route('/<int:id>', methods=['DELETE'])
+@login_required
+@csrf_required
+def delete_config(id):
+    """
+    Eliminar una configuración de email (no puede ser la activa)
+    ---
+    tags:
+      - Configuración Email
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+    """
+    try:
+        empresa_id = get_empresa_id()
+        EmailConfigModel.delete_config(id, empresa_id)
+        return jsonify({"message": "Configuración eliminada correctamente"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
 @email_config_bp.route('/<int:id>/activate', methods=['POST'])
 @login_required
 @csrf_required

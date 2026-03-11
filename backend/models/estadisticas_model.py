@@ -409,6 +409,155 @@ class EstadisticasModel:
             conn.close()
 
     @staticmethod
+    def get_actividad_por_dia(empresa_id='1', dias=30):
+        """
+        Obtiene logins exitosos, fallidos y usuarios unicos por dia.
+        Excluye administradores y superusuarios.
+        """
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("""
+                SELECT
+                    CAST(a.fecha AS DATE) as dia,
+                    SUM(CASE WHEN a.accion='LOGIN' AND a.resultado='SUCCESS' THEN 1 ELSE 0 END) as logins,
+                    SUM(CASE WHEN a.accion='LOGIN_FAILED' THEN 1 ELSE 0 END) as logins_fallidos,
+                    COUNT(DISTINCT CASE WHEN a.resultado='SUCCESS' THEN a.user_id END) as usuarios_unicos
+                FROM audit_log a
+                LEFT JOIN users u ON a.user_id = u.id
+                WHERE a.empresa_id = ? AND a.fecha >= DATEADD(DAY, ?, GETDATE())
+                    AND (u.id IS NULL OR u.rol NOT IN ('administrador', 'superusuario'))
+                GROUP BY CAST(a.fecha AS DATE)
+                ORDER BY dia ASC
+            """, (empresa_id, -dias))
+
+            resultado = []
+            for row in cursor.fetchall():
+                resultado.append({
+                    'fecha': row[0].isoformat() if row[0] else None,
+                    'logins': row[1],
+                    'logins_fallidos': row[2],
+                    'usuarios_unicos': row[3]
+                })
+            return resultado
+        except Exception as e:
+            print(f"Error en get_actividad_por_dia: {e}")
+            return []
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_acciones_distribucion(empresa_id='1', dias=30):
+        """
+        Obtiene la distribucion de acciones (top 10 tipos).
+        Excluye administradores y superusuarios.
+        """
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("""
+                SELECT TOP 10 a.accion, COUNT(*) as total
+                FROM audit_log a
+                LEFT JOIN users u ON a.user_id = u.id
+                WHERE a.empresa_id = ? AND a.fecha >= DATEADD(DAY, ?, GETDATE())
+                    AND (u.id IS NULL OR u.rol NOT IN ('administrador', 'superusuario'))
+                GROUP BY a.accion
+                ORDER BY total DESC
+            """, (empresa_id, -dias))
+
+            resultado = []
+            for row in cursor.fetchall():
+                resultado.append({
+                    'accion': row[0],
+                    'total': row[1]
+                })
+            return resultado
+        except Exception as e:
+            print(f"Error en get_acciones_distribucion: {e}")
+            return []
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_actividad_por_hora(empresa_id='1', dias=30):
+        """
+        Obtiene actividad agrupada por hora del dia (0-23).
+        Excluye administradores y superusuarios.
+        """
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("""
+                SELECT DATEPART(HOUR, a.fecha) as hora, COUNT(*) as total
+                FROM audit_log a
+                LEFT JOIN users u ON a.user_id = u.id
+                WHERE a.empresa_id = ? AND a.fecha >= DATEADD(DAY, ?, GETDATE())
+                    AND (u.id IS NULL OR u.rol NOT IN ('administrador', 'superusuario'))
+                GROUP BY DATEPART(HOUR, a.fecha)
+                ORDER BY hora ASC
+            """, (empresa_id, -dias))
+
+            resultado = []
+            for row in cursor.fetchall():
+                resultado.append({
+                    'hora': row[0],
+                    'total': row[1]
+                })
+            return resultado
+        except Exception as e:
+            print(f"Error en get_actividad_por_hora: {e}")
+            return []
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_usuarios_mas_interaccion(empresa_id='1', limit=10, dias=30):
+        """
+        Obtiene top usuarios por total de acciones.
+        """
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("""
+                SELECT TOP (?)
+                    a.username,
+                    u.full_name,
+                    COUNT(*) as total_acciones,
+                    COUNT(DISTINCT CAST(a.fecha AS DATE)) as dias_activo,
+                    MAX(a.fecha) as ultima_accion,
+                    u.rol
+                FROM audit_log a
+                INNER JOIN users u ON a.user_id = u.id
+                WHERE a.empresa_id = ?
+                    AND a.fecha >= DATEADD(DAY, ?, GETDATE())
+                    AND u.rol = 'usuario'
+                GROUP BY a.username, u.full_name, u.rol
+                ORDER BY total_acciones DESC
+            """, (limit, empresa_id, -dias))
+
+            usuarios = []
+            for row in cursor.fetchall():
+                print(f"[DEBUG interaccion] user={row[0]} rol={row[5]} acciones={row[2]}", flush=True)
+                usuarios.append({
+                    'username': row[0],
+                    'full_name': row[1],
+                    'total_acciones': row[2],
+                    'dias_activo': row[3],
+                    'ultima_accion': row[4].isoformat() if row[4] else None,
+                    'rol': row[5]
+                })
+            return usuarios
+        except Exception as e:
+            print(f"Error en get_usuarios_mas_interaccion: {e}")
+            return []
+        finally:
+            conn.close()
+
+    @staticmethod
     def get_consultas_por_estado(empresa_id='1'):
         """
         Obtiene el conteo de consultas por estado.

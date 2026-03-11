@@ -392,7 +392,10 @@
     "passwordHelp": "Dejar vacío si no desea cambiar la contraseña actual.",
     "emailTo": "Email Destino (para solicitudes)",
     "emailToHelp": "Email donde se reciben las solicitudes de los clientes.",
-    "configName": "Nombre de Configuración"
+    "configName": "Nombre de Configuración",
+    "confirmDelete": "¿Eliminar la configuración '{name}'? Esta acción no se puede deshacer.",
+    "deletedSuccess": "Configuración eliminada correctamente",
+    "cannotDeleteActive": "No se puede eliminar la configuración activa"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -420,7 +423,19 @@
     "uniqueUsers": "Usuarios",
     "lastView": "Ultima Vista",
     "errorLoading": "Error al cargar el dashboard",
-    "monthsShort": "Ene,Feb,Mar,Abr,May,Jun,Jul,Ago,Sep,Oct,Nov,Dic"
+    "monthsShort": "Ene,Feb,Mar,Abr,May,Jun,Jul,Ago,Sep,Oct,Nov,Dic",
+    "userInteraction": "Interacción de Usuarios",
+    "loginsByDay": "Logins por día",
+    "failedLogins": "Logins fallidos",
+    "uniqueUsersLine": "Usuarios únicos",
+    "actionsDistribution": "Distribución de acciones",
+    "activityByHour": "Actividad por hora",
+    "topInteractionUsers": "Usuarios con más interacción",
+    "totalActions": "Acciones",
+    "activeDays": "Días activo",
+    "lastAction": "Última acción",
+    "hour": "Hora",
+    "actions": "acciones"
   },
   "roles": {
     "user": "Usuario",

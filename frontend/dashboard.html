@@ -512,6 +512,71 @@
                         </div>
                     </div>
 
+                    <!-- ==================== SECCION: INTERACCION DE USUARIOS ==================== -->
+                    <div class="dashboard-section-divider">
+                        <div class="section-divider-line"></div>
+                        <h2 class="section-divider-title">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            <span data-i18n="dashboard.userInteraction">Interacción de Usuarios</span>
+                        </h2>
+                        <div class="section-divider-line"></div>
+                    </div>
+
+                    <!-- Fila 5: Logins por dia + Distribucion acciones -->
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <span class="chart-title" data-i18n="dashboard.loginsByDay">Logins por dia</span>
+                                <div class="chart-period" id="activity-period-btns">
+                                    <button class="period-btn" onclick="changeActivityPeriod(7, this)" data-i18n="dashboard.last7days">7 dias</button>
+                                    <button class="period-btn active" onclick="changeActivityPeriod(30, this)" data-i18n="dashboard.last30days">30 dias</button>
+                                    <button class="period-btn" onclick="changeActivityPeriod(90, this)" data-i18n="dashboard.last90days">90 dias</button>
+                                </div>
+                            </div>
+                            <div class="chart-container"><canvas id="activityByDayChart"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <span class="chart-title" data-i18n="dashboard.actionsDistribution">Distribucion de acciones</span>
+                            </div>
+                            <div class="chart-container"><canvas id="actionsDistributionChart"></canvas></div>
+                        </div>
+                    </div>
+
+                    <!-- Fila 6: Actividad por hora + Top usuarios interaccion -->
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <span class="chart-title" data-i18n="dashboard.activityByHour">Actividad por hora</span>
+                            </div>
+                            <div class="chart-container"><canvas id="activityByHourChart"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <span class="chart-title" data-i18n="dashboard.topInteractionUsers">Usuarios con mas interaccion</span>
+                            </div>
+                            <div id="top-interaction-container">
+                                <table class="products-table top-interaction-table-desktop">
+                                    <thead>
+                                        <tr>
+                                            <th data-i18n="users.username">Usuario</th>
+                                            <th data-i18n="dashboard.totalActions">Acciones</th>
+                                            <th data-i18n="dashboard.activeDays">Dias activo</th>
+                                            <th data-i18n="dashboard.lastAction">Ultima accion</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="top-interaction-body"></tbody>
+                                </table>
+                                <div class="top-products-cards-mobile" id="top-interaction-cards"></div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </main>
         </div>
@@ -557,8 +622,12 @@
         let proposalsByStatusChart = null;
         let proposalsByMonthChart = null;
         let topViewedChart = null;
+        let activityByDayChart = null;
+        let actionsDistributionChart = null;
+        let activityByHourChart = null;
         let currentPeriod = 7;
         let currentViewedPeriod = 30;
+        let currentActivityPeriod = 30;
 
         // ==================== INICIALIZACION ====================
         document.addEventListener('DOMContentLoaded', async function() {
@@ -585,7 +654,11 @@
                     fetchAPI('/api/estadisticas/propuestas-por-estado'),
                     fetchAPI('/api/estadisticas/usuarios-mas-activos?limit=5'),
                     fetchAPI('/api/estadisticas/propuestas-por-mes?meses=12'),
-                    fetchAPI(`/api/estadisticas/articulos-mas-vistos?limit=10&dias=${currentViewedPeriod}`)
+                    fetchAPI(`/api/estadisticas/articulos-mas-vistos?limit=10&dias=${currentViewedPeriod}`),
+                    fetchAPI(`/api/estadisticas/actividad-por-dia?dias=${currentActivityPeriod}`),
+                    fetchAPI(`/api/estadisticas/acciones-distribucion?dias=${currentActivityPeriod}`),
+                    fetchAPI(`/api/estadisticas/actividad-por-hora?dias=${currentActivityPeriod}`),
+                    fetchAPI(`/api/estadisticas/usuarios-mas-interaccion?limit=10&dias=${currentActivityPeriod}`)
                 ]);
                 const val = (i) => {
                     if (results[i].status === 'fulfilled') return results[i].value;
@@ -597,13 +670,16 @@
                 loadingEl.style.display = 'none';
                 contentEl.style.display = 'flex';
                 updateStatCards(resumen);
-                console.log('Propuestas por dia data:', JSON.stringify(val(2)));
                 if (val(2)) renderProposalsByDayChart(val(2));
                 if (val(3)) renderProposalsByStatusChart(val(3));
                 if (val(1)) renderTopProducts(val(1));
                 if (val(4)) renderTopUsers(val(4));
                 if (val(6)) { renderTopViewedChart(val(6)); renderTopViewedArticles(val(6)); }
                 if (val(5)) renderProposalsByMonthChart(val(5));
+                if (val(7)) renderActivityByDayChart(val(7));
+                if (val(8)) renderActionsDistribution(val(8));
+                if (val(9)) renderActivityByHourChart(val(9));
+                if (val(10)) renderTopInteractionUsers(val(10));
             } catch (error) {
                 console.error('Dashboard error:', error);
                 loadingEl.innerHTML = `<p style="color: #dc3545;">${t('dashboard.errorLoading')}: ${error.message}</p>`;
@@ -800,7 +876,8 @@
         }
 
         async function changePeriod(dias, btn) {
-            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            const container = btn.closest('.chart-period');
+            container.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentPeriod = dias;
             try {
@@ -829,6 +906,130 @@
             const parts = name.split(' ');
             if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
             return name.substring(0, 2).toUpperCase();
+        }
+
+        // ==================== GRAFICOS INTERACCION USUARIOS ====================
+
+        function fillMissingDaysActivity(data, dias) {
+            const dataMap = {};
+            data.forEach(d => { if (d.fecha) dataMap[d.fecha] = d; });
+            const filled = [];
+            const today = new Date();
+            for (let i = dias - 1; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(d.getDate() - i);
+                const key = d.toISOString().split('T')[0];
+                filled.push(dataMap[key] || { fecha: key, logins: 0, logins_fallidos: 0, usuarios_unicos: 0 });
+            }
+            return filled;
+        }
+
+        function renderActivityByDayChart(data) {
+            const ctx = document.getElementById('activityByDayChart').getContext('2d');
+            if (activityByDayChart) activityByDayChart.destroy();
+            const filled = fillMissingDaysActivity(data, currentActivityPeriod);
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#e0e0e0' : '#666';
+            const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+            activityByDayChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: filled.map(d => formatDateShort(d.fecha)),
+                    datasets: [
+                        { label: t('dashboard.loginsByDay'), data: filled.map(d => d.logins), borderColor: '#4caf50', backgroundColor: '#4caf5033', fill: false, tension: 0.3, pointRadius: 3, pointHoverRadius: 5 },
+                        { label: t('dashboard.failedLogins'), data: filled.map(d => d.logins_fallidos), borderColor: '#f44336', backgroundColor: '#f4433633', fill: false, tension: 0.3, pointRadius: 3, pointHoverRadius: 5, borderDash: [5, 5] },
+                        { label: t('dashboard.uniqueUsersLine'), data: filled.map(d => d.usuarios_unicos), borderColor: '#2196F3', backgroundColor: '#2196F333', fill: false, tension: 0.3, pointRadius: 3, pointHoverRadius: 5 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { color: textColor, usePointStyle: true, padding: 15 } } },
+                    scales: { y: { beginAtZero: true, ticks: { color: textColor, stepSize: 1 }, grid: { color: gridColor } }, x: { ticks: { color: textColor, maxRotation: 45 }, grid: { color: gridColor } } }
+                }
+            });
+        }
+
+        function renderActionsDistribution(data) {
+            const ctx = document.getElementById('actionsDistributionChart').getContext('2d');
+            if (actionsDistributionChart) actionsDistributionChart.destroy();
+            if (!data || data.length === 0) { actionsDistributionChart = null; return; }
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#e0e0e0' : '#666';
+            const palette = ['#4caf50', '#2196F3', '#ff9800', '#9c27b0', '#f44336', '#00bcd4', '#795548', '#607d8b', '#e91e63', '#cddc39'];
+            actionsDistributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(d => d.accion.replace(/_/g, ' ')),
+                    datasets: [{ data: data.map(d => d.total), backgroundColor: data.map((_, i) => palette[i % palette.length]), borderWidth: 0 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 }, padding: 8 } } }
+                }
+            });
+        }
+
+        function renderActivityByHourChart(data) {
+            const ctx = document.getElementById('activityByHourChart').getContext('2d');
+            if (activityByHourChart) activityByHourChart.destroy();
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#e0e0e0' : '#666';
+            const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#FF4338';
+            // Fill all 24 hours
+            const hoursMap = {};
+            (data || []).forEach(d => { hoursMap[d.hora] = d.total; });
+            const labels = [];
+            const values = [];
+            for (let h = 0; h < 24; h++) {
+                labels.push(h + 'h');
+                values.push(hoursMap[h] || 0);
+            }
+            activityByHourChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: t('dashboard.totalActions'), data: values, backgroundColor: primaryColor + 'CC', borderRadius: 4 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { color: textColor }, grid: { color: gridColor } }, x: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } } }
+                }
+            });
+        }
+
+        function renderTopInteractionUsers(usuarios) {
+            const tbody = document.getElementById('top-interaction-body');
+            const cardsContainer = document.getElementById('top-interaction-cards');
+            if (!usuarios || usuarios.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">${t('dashboard.noData')}</td></tr>`;
+                cardsContainer.innerHTML = `<div class="dashboard-empty-message">${t('dashboard.noData')}</div>`;
+                return;
+            }
+            tbody.innerHTML = usuarios.map(u => `<tr><td><strong>${u.full_name || u.username}</strong><br><small style="color: var(--text-secondary);">@${u.username}</small></td><td class="product-qty">${u.total_acciones}</td><td class="product-qty">${u.dias_activo}</td><td>${formatDateShort(u.ultima_accion)}</td></tr>`).join('');
+            cardsContainer.innerHTML = usuarios.map(u => `<div class="top-product-card"><div class="top-product-card-header"><span class="top-product-code">${u.full_name || u.username}</span><span class="top-product-times">${u.total_acciones} ${t('dashboard.actions')}</span></div><div class="top-product-desc">@${u.username}</div><div class="top-product-qty">${t('dashboard.activeDays')}: <strong>${u.dias_activo}</strong> · ${formatDateShort(u.ultima_accion)}</div></div>`).join('');
+        }
+
+        async function changeActivityPeriod(dias, btn) {
+            const container = btn.closest('.chart-period');
+            container.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentActivityPeriod = dias;
+            try {
+                const [actByDay, actionsDist, actByHour, topInteraction] = await Promise.all([
+                    fetchAPI(`/api/estadisticas/actividad-por-dia?dias=${dias}`),
+                    fetchAPI(`/api/estadisticas/acciones-distribucion?dias=${dias}`),
+                    fetchAPI(`/api/estadisticas/actividad-por-hora?dias=${dias}`),
+                    fetchAPI(`/api/estadisticas/usuarios-mas-interaccion?limit=10&dias=${dias}`)
+                ]);
+                renderActivityByDayChart(actByDay);
+                renderActionsDistribution(actionsDist);
+                renderActivityByHourChart(actByHour);
+                renderTopInteractionUsers(topInteraction);
+            } catch (error) {
+                console.error('Error changing activity period:', error);
+            }
         }
 
         function goBack() {
