@@ -435,7 +435,11 @@
     "activeDays": "Active days",
     "lastAction": "Last action",
     "hour": "Hour",
-    "actions": "actions"
+    "actions": "actions",
+    "loginWorldMap": "Login map",
+    "totalLogins": "Total logins",
+    "connectedUsers": "Connected users",
+    "noLocationData": "No location data"
   },
   "roles": {
     "user": "User",

@@ -7,6 +7,8 @@
     <script src="js/theme-init.js?v=1.34.0"></script>
     <link rel="stylesheet" href="css/styles.css?v=1.26.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
     <!-- ==================== MASTERPAGE LAYOUT ==================== -->
@@ -577,6 +579,16 @@
                         </div>
                     </div>
 
+                    <!-- Fila 7: Mapa mundial de logins -->
+                    <div class="charts-row">
+                        <div class="chart-card" style="grid-column: 1 / -1;">
+                            <div class="chart-header">
+                                <span class="chart-title" data-i18n="dashboard.loginWorldMap">Mapa de conexiones</span>
+                            </div>
+                            <div id="login-map-container"></div>
+                        </div>
+                    </div>
+
                 </div>
             </main>
         </div>
@@ -628,6 +640,9 @@
         let currentPeriod = 7;
         let currentViewedPeriod = 30;
         let currentActivityPeriod = 30;
+        let loginMap = null;
+        let loginMapMarkers = [];
+        let loginMapTileLayer = null;
 
         // ==================== INICIALIZACION ====================
         document.addEventListener('DOMContentLoaded', async function() {
@@ -658,7 +673,8 @@
                     fetchAPI(`/api/estadisticas/actividad-por-dia?dias=${currentActivityPeriod}`),
                     fetchAPI(`/api/estadisticas/acciones-distribucion?dias=${currentActivityPeriod}`),
                     fetchAPI(`/api/estadisticas/actividad-por-hora?dias=${currentActivityPeriod}`),
-                    fetchAPI(`/api/estadisticas/usuarios-mas-interaccion?limit=10&dias=${currentActivityPeriod}`)
+                    fetchAPI(`/api/estadisticas/usuarios-mas-interaccion?limit=10&dias=${currentActivityPeriod}`),
+                    fetchAPI(`/api/estadisticas/logins-por-ubicacion?dias=${currentActivityPeriod}`)
                 ]);
                 const val = (i) => {
                     if (results[i].status === 'fulfilled') return results[i].value;
@@ -680,6 +696,7 @@
                 if (val(8)) renderActionsDistribution(val(8));
                 if (val(9)) renderActivityByHourChart(val(9));
                 if (val(10)) renderTopInteractionUsers(val(10));
+                if (val(11)) renderLoginMap(val(11));
             } catch (error) {
                 console.error('Dashboard error:', error);
                 loadingEl.innerHTML = `<p style="color: #dc3545;">${t('dashboard.errorLoading')}: ${error.message}</p>`;
@@ -1017,20 +1034,130 @@
             btn.classList.add('active');
             currentActivityPeriod = dias;
             try {
-                const [actByDay, actionsDist, actByHour, topInteraction] = await Promise.all([
+                const [actByDay, actionsDist, actByHour, topInteraction, loginLocations] = await Promise.all([
                     fetchAPI(`/api/estadisticas/actividad-por-dia?dias=${dias}`),
                     fetchAPI(`/api/estadisticas/acciones-distribucion?dias=${dias}`),
                     fetchAPI(`/api/estadisticas/actividad-por-hora?dias=${dias}`),
-                    fetchAPI(`/api/estadisticas/usuarios-mas-interaccion?limit=10&dias=${dias}`)
+                    fetchAPI(`/api/estadisticas/usuarios-mas-interaccion?limit=10&dias=${dias}`),
+                    fetchAPI(`/api/estadisticas/logins-por-ubicacion?dias=${dias}`)
                 ]);
                 renderActivityByDayChart(actByDay);
                 renderActionsDistribution(actionsDist);
                 renderActivityByHourChart(actByHour);
                 renderTopInteractionUsers(topInteraction);
+                renderLoginMap(loginLocations);
             } catch (error) {
                 console.error('Error changing activity period:', error);
             }
         }
+
+        // ==================== MAPA DE LOGINS ====================
+
+        function getMapTileUrl() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                return 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+            }
+            return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        }
+
+        function getMapTileAttribution() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                return '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>';
+            }
+            return '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+        }
+
+        function renderLoginMap(data) {
+            const container = document.getElementById('login-map-container');
+            if (!container) return;
+
+            const ubicaciones = data && data.ubicaciones ? data.ubicaciones : [];
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#FF4338';
+
+            // Limpiar marcadores existentes
+            loginMapMarkers.forEach(m => m.remove());
+            loginMapMarkers = [];
+
+            // Crear mapa si no existe
+            if (!loginMap) {
+                loginMap = L.map('login-map-container', {
+                    center: [20, 0],
+                    zoom: 2,
+                    minZoom: 2,
+                    maxZoom: 12,
+                    scrollWheelZoom: true
+                });
+                loginMapTileLayer = L.tileLayer(getMapTileUrl(), {
+                    attribution: getMapTileAttribution()
+                }).addTo(loginMap);
+            } else {
+                // Actualizar tiles si cambio el tema
+                if (loginMapTileLayer) {
+                    loginMapTileLayer.setUrl(getMapTileUrl());
+                }
+            }
+
+            // Sin datos: mostrar mensaje superpuesto
+            let emptyOverlay = container.querySelector('.map-empty-overlay');
+            if (ubicaciones.length === 0) {
+                if (!emptyOverlay) {
+                    emptyOverlay = document.createElement('div');
+                    emptyOverlay.className = 'map-empty-overlay';
+                    emptyOverlay.innerHTML = `<span>${t('dashboard.noLocationData')}</span>`;
+                    container.appendChild(emptyOverlay);
+                }
+                emptyOverlay.style.display = 'flex';
+                return;
+            } else if (emptyOverlay) {
+                emptyOverlay.style.display = 'none';
+            }
+
+            // Calcular radio logaritmico
+            const maxLogins = Math.max(...ubicaciones.map(u => u.total_logins), 1);
+            const minR = 6, maxR = 22;
+
+            ubicaciones.forEach(ub => {
+                const ratio = Math.log(ub.total_logins + 1) / Math.log(maxLogins + 1);
+                const radius = minR + ratio * (maxR - minR);
+
+                const marker = L.circleMarker([ub.lat, ub.lon], {
+                    radius: radius,
+                    fillColor: primaryColor,
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 0.9,
+                    fillOpacity: 0.7
+                });
+
+                const usuariosList = ub.usuarios.slice(0, 10).join(', ');
+                const extra = ub.usuarios.length > 10 ? ` (+${ub.usuarios.length - 10})` : '';
+                marker.bindPopup(
+                    `<b>${ub.pais}</b>${ub.ciudad ? '<br>' + ub.ciudad : ''}<br>` +
+                    `${t('dashboard.totalLogins')}: <strong>${ub.total_logins}</strong><br>` +
+                    `${t('dashboard.connectedUsers')}: ${usuariosList}${extra}`
+                );
+                marker.bindTooltip(ub.pais, { direction: 'top', offset: [0, -radius] });
+
+                marker.addTo(loginMap);
+                loginMapMarkers.push(marker);
+            });
+
+            // Ajustar vista para mostrar todos los marcadores
+            if (ubicaciones.length > 0) {
+                const bounds = L.latLngBounds(ubicaciones.map(u => [u.lat, u.lon]));
+                loginMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 6 });
+            }
+        }
+
+        // Actualizar tiles del mapa cuando cambia el tema
+        new MutationObserver(function() {
+            if (loginMap && loginMapTileLayer) {
+                loginMapTileLayer.setUrl(getMapTileUrl());
+                loginMap.closePopup();
+            }
+        }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
         function goBack() {
             window.location.href = 'index.html';

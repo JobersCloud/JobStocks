@@ -18,6 +18,7 @@
 # ============================================
 from config.database import Database
 from datetime import datetime, timedelta
+import json
 
 
 class EstadisticasModel:
@@ -528,31 +529,107 @@ class EstadisticasModel:
                     u.full_name,
                     COUNT(*) as total_acciones,
                     COUNT(DISTINCT CAST(a.fecha AS DATE)) as dias_activo,
-                    MAX(a.fecha) as ultima_accion,
-                    u.rol
+                    MAX(a.fecha) as ultima_accion
                 FROM audit_log a
                 INNER JOIN users u ON a.user_id = u.id
                 WHERE a.empresa_id = ?
                     AND a.fecha >= DATEADD(DAY, ?, GETDATE())
                     AND u.rol = 'usuario'
-                GROUP BY a.username, u.full_name, u.rol
+                GROUP BY a.username, u.full_name
                 ORDER BY total_acciones DESC
             """, (limit, empresa_id, -dias))
 
             usuarios = []
             for row in cursor.fetchall():
-                print(f"[DEBUG interaccion] user={row[0]} rol={row[5]} acciones={row[2]}", flush=True)
                 usuarios.append({
                     'username': row[0],
                     'full_name': row[1],
                     'total_acciones': row[2],
                     'dias_activo': row[3],
-                    'ultima_accion': row[4].isoformat() if row[4] else None,
-                    'rol': row[5]
+                    'ultima_accion': row[4].isoformat() if row[4] else None
                 })
             return usuarios
         except Exception as e:
             print(f"Error en get_usuarios_mas_interaccion: {e}")
+            return []
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_logins_por_ubicacion(empresa_id='1', dias=30):
+        """
+        Obtiene logins agrupados por ubicacion geografica.
+        Parsea JSON de detalles en Python (SQL Server 2008 no soporta JSON nativo).
+        Filtra IPs locales/privadas (pais_codigo='LO').
+        """
+        conn = Database.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("""
+                SELECT a.detalles, a.username
+                FROM audit_log a
+                INNER JOIN users u ON a.user_id = u.id
+                WHERE a.empresa_id = ?
+                    AND a.accion = 'LOGIN'
+                    AND a.resultado = 'SUCCESS'
+                    AND a.fecha >= DATEADD(DAY, ?, GETDATE())
+                    AND u.rol = 'usuario'
+                    AND a.detalles IS NOT NULL
+            """, (empresa_id, -dias))
+
+            # Agrupar por ubicacion redondeada
+            ubicaciones = {}
+            for row in cursor.fetchall():
+                try:
+                    detalles = json.loads(row[0])
+                except (json.JSONDecodeError, TypeError):
+                    continue
+
+                # Filtrar IPs locales/privadas
+                if detalles.get('pais_codigo') == 'LO':
+                    continue
+
+                lat = detalles.get('lat')
+                lon = detalles.get('lon')
+                if lat is None or lon is None:
+                    continue
+
+                # Redondear a 2 decimales para agrupar ubicaciones cercanas
+                lat_r = round(float(lat), 2)
+                lon_r = round(float(lon), 2)
+                key = f"{lat_r},{lon_r}"
+
+                username = row[1]
+
+                if key not in ubicaciones:
+                    ubicaciones[key] = {
+                        'lat': lat_r,
+                        'lon': lon_r,
+                        'pais': detalles.get('pais', ''),
+                        'ciudad': detalles.get('ciudad', ''),
+                        'total_logins': 0,
+                        'usuarios': set()
+                    }
+
+                ubicaciones[key]['total_logins'] += 1
+                ubicaciones[key]['usuarios'].add(username)
+
+            # Convertir sets a listas para JSON
+            resultado = []
+            for ub in ubicaciones.values():
+                resultado.append({
+                    'lat': ub['lat'],
+                    'lon': ub['lon'],
+                    'pais': ub['pais'],
+                    'ciudad': ub['ciudad'],
+                    'total_logins': ub['total_logins'],
+                    'usuarios': sorted(list(ub['usuarios']))
+                })
+
+            return resultado
+        except Exception as e:
+            print(f"Error en get_logins_por_ubicacion: {e}")
             return []
         finally:
             conn.close()

@@ -435,7 +435,11 @@
     "activeDays": "Jours actifs",
     "lastAction": "Dernière action",
     "hour": "Heure",
-    "actions": "actions"
+    "actions": "actions",
+    "loginWorldMap": "Carte des connexions",
+    "totalLogins": "Total connexions",
+    "connectedUsers": "Utilisateurs connectés",
+    "noLocationData": "Pas de données de localisation"
   },
   "roles": {
     "user": "Utilisateur",

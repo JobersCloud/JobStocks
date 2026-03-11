@@ -415,6 +415,39 @@ def get_usuarios_mas_interaccion():
         return jsonify([])
 
 
+@estadisticas_bp.route('/api/estadisticas/logins-por-ubicacion', methods=['GET'])
+@login_required
+@administrador_required
+def get_logins_por_ubicacion():
+    """
+    Obtener logins agrupados por ubicacion geografica
+    ---
+    tags:
+      - Estadisticas
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: dias
+        in: query
+        type: integer
+        default: 30
+        description: Periodo en dias hacia atras
+    responses:
+      200:
+        description: Ubicaciones con logins
+    """
+    empresa_id = get_empresa_id()
+    dias = request.args.get('dias', 30, type=int)
+    if dias > 365:
+        dias = 365
+    try:
+        data = EstadisticasModel.get_logins_por_ubicacion(empresa_id, dias)
+        return jsonify({'ubicaciones': data})
+    except Exception as e:
+        print(f"Error en logins-por-ubicacion: {e}")
+        return jsonify({'ubicaciones': []})
+
+
 @estadisticas_bp.route('/api/estadisticas/articulos-mas-vistos', methods=['GET'])
 @login_required
 @administrador_required

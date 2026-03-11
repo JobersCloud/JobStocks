@@ -307,6 +307,12 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.41.3', date: '2026-03-11', title: 'Mapa mundial de conexiones en Dashboard', items: [
+                {type: 'new', text: 'Mapa interactivo con ubicaciones de logins de usuarios (Leaflet + OpenStreetMap)'},
+                {type: 'new', text: 'Marcadores proporcionales al número de logins con popup de detalle (país, ciudad, usuarios)'},
+                {type: 'improve', text: 'Soporte modo oscuro en mapa (tiles CartoDB dark, popups oscuros)'},
+                {type: 'fix', text: 'Limpiado debug print en endpoint usuarios-mas-interaccion'}
+            ]},
             { version: 'v1.41.2', date: '2026-03-11', title: 'Gráficos de interacción de usuarios en Dashboard', items: [
                 {type: 'new', text: 'Gráfico de logins por día (exitosos, fallidos y usuarios únicos) con selector de período'},
                 {type: 'new', text: 'Gráfico de distribución de acciones (top 10 tipos de acción)'},
