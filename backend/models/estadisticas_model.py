@@ -573,15 +573,12 @@ class EstadisticasModel:
             cursor.execute("""
                 SELECT a.detalles, a.username
                 FROM audit_log a
-                INNER JOIN users u ON a.user_id = u.id
-                INNER JOIN users_empresas ue ON u.id = ue.user_id AND ue.empresa_id = ?
                 WHERE a.empresa_id = ?
                     AND a.accion = 'LOGIN'
                     AND a.resultado = 'SUCCESS'
                     AND a.fecha >= DATEADD(DAY, ?, GETDATE())
-                    AND ISNULL(ue.rol, u.rol) = 'usuario'
                     AND a.detalles IS NOT NULL
-            """, (empresa_id, empresa_id, -dias))
+            """, (empresa_id, -dias))
 
             # Agrupar por ubicacion redondeada
             ubicaciones = {}
