@@ -307,6 +307,9 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.41.6', date: '2026-03-12', title: 'Fix filtro roles en dashboard interacciones', items: [
+                {type: 'fix', text: 'Corregido filtro de roles en gráficas de interacción: ahora usa users_empresas.rol (rol por empresa) en vez de users.rol'}
+            ]},
             { version: 'v1.41.5', date: '2026-03-12', title: 'Emails profesionales y traducciones auditoría', items: [
                 {type: 'improve', text: 'Emails de bienvenida rediseñados con estilo empresarial profesional (sin emojis)'},
                 {type: 'improve', text: 'Acciones de auditoría traducidas al idioma del usuario en dashboard y auditoría'},

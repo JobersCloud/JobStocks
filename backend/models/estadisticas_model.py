@@ -427,11 +427,12 @@ class EstadisticasModel:
                     COUNT(DISTINCT CASE WHEN a.resultado='SUCCESS' THEN a.user_id END) as usuarios_unicos
                 FROM audit_log a
                 LEFT JOIN users u ON a.user_id = u.id
+                LEFT JOIN users_empresas ue ON u.id = ue.user_id AND ue.empresa_id = ?
                 WHERE a.empresa_id = ? AND a.fecha >= DATEADD(DAY, ?, GETDATE())
-                    AND (u.id IS NULL OR u.rol NOT IN ('administrador', 'superusuario'))
+                    AND (u.id IS NULL OR ISNULL(ue.rol, u.rol) NOT IN ('administrador', 'superusuario'))
                 GROUP BY CAST(a.fecha AS DATE)
                 ORDER BY dia ASC
-            """, (empresa_id, -dias))
+            """, (empresa_id, empresa_id, -dias))
 
             resultado = []
             for row in cursor.fetchall():
@@ -462,11 +463,12 @@ class EstadisticasModel:
                 SELECT TOP 10 a.accion, COUNT(*) as total
                 FROM audit_log a
                 LEFT JOIN users u ON a.user_id = u.id
+                LEFT JOIN users_empresas ue ON u.id = ue.user_id AND ue.empresa_id = ?
                 WHERE a.empresa_id = ? AND a.fecha >= DATEADD(DAY, ?, GETDATE())
-                    AND (u.id IS NULL OR u.rol NOT IN ('administrador', 'superusuario'))
+                    AND (u.id IS NULL OR ISNULL(ue.rol, u.rol) NOT IN ('administrador', 'superusuario'))
                 GROUP BY a.accion
                 ORDER BY total DESC
-            """, (empresa_id, -dias))
+            """, (empresa_id, empresa_id, -dias))
 
             resultado = []
             for row in cursor.fetchall():
@@ -495,11 +497,12 @@ class EstadisticasModel:
                 SELECT DATEPART(HOUR, a.fecha) as hora, COUNT(*) as total
                 FROM audit_log a
                 LEFT JOIN users u ON a.user_id = u.id
+                LEFT JOIN users_empresas ue ON u.id = ue.user_id AND ue.empresa_id = ?
                 WHERE a.empresa_id = ? AND a.fecha >= DATEADD(DAY, ?, GETDATE())
-                    AND (u.id IS NULL OR u.rol NOT IN ('administrador', 'superusuario'))
+                    AND (u.id IS NULL OR ISNULL(ue.rol, u.rol) NOT IN ('administrador', 'superusuario'))
                 GROUP BY DATEPART(HOUR, a.fecha)
                 ORDER BY hora ASC
-            """, (empresa_id, -dias))
+            """, (empresa_id, empresa_id, -dias))
 
             resultado = []
             for row in cursor.fetchall():
@@ -532,12 +535,13 @@ class EstadisticasModel:
                     MAX(a.fecha) as ultima_accion
                 FROM audit_log a
                 INNER JOIN users u ON a.user_id = u.id
+                INNER JOIN users_empresas ue ON u.id = ue.user_id AND ue.empresa_id = ?
                 WHERE a.empresa_id = ?
                     AND a.fecha >= DATEADD(DAY, ?, GETDATE())
-                    AND u.rol = 'usuario'
+                    AND ISNULL(ue.rol, u.rol) = 'usuario'
                 GROUP BY a.username, u.full_name
                 ORDER BY total_acciones DESC
-            """, (limit, empresa_id, -dias))
+            """, (limit, empresa_id, empresa_id, -dias))
 
             usuarios = []
             for row in cursor.fetchall():
@@ -570,13 +574,14 @@ class EstadisticasModel:
                 SELECT a.detalles, a.username
                 FROM audit_log a
                 INNER JOIN users u ON a.user_id = u.id
+                INNER JOIN users_empresas ue ON u.id = ue.user_id AND ue.empresa_id = ?
                 WHERE a.empresa_id = ?
                     AND a.accion = 'LOGIN'
                     AND a.resultado = 'SUCCESS'
                     AND a.fecha >= DATEADD(DAY, ?, GETDATE())
-                    AND u.rol = 'usuario'
+                    AND ISNULL(ue.rol, u.rol) = 'usuario'
                     AND a.detalles IS NOT NULL
-            """, (empresa_id, -dias))
+            """, (empresa_id, empresa_id, -dias))
 
             # Agrupar por ubicacion redondeada
             ubicaciones = {}
