@@ -586,12 +586,17 @@ class EstadisticasModel:
                 except (json.JSONDecodeError, TypeError):
                     continue
 
-                # Filtrar IPs locales/privadas
-                if detalles.get('pais_codigo') == 'LO':
+                # La ubicacion esta anidada bajo 'ubicacion' en el JSON de detalles
+                ub_data = detalles.get('ubicacion', {})
+                if not ub_data:
                     continue
 
-                lat = detalles.get('lat')
-                lon = detalles.get('lon')
+                # Filtrar IPs locales/privadas
+                if ub_data.get('pais_codigo') == 'LO':
+                    continue
+
+                lat = ub_data.get('lat')
+                lon = ub_data.get('lon')
                 if lat is None or lon is None:
                     continue
 
@@ -606,8 +611,8 @@ class EstadisticasModel:
                     ubicaciones[key] = {
                         'lat': lat_r,
                         'lon': lon_r,
-                        'pais': detalles.get('pais', ''),
-                        'ciudad': detalles.get('ciudad', ''),
+                        'pais': ub_data.get('pais', ''),
+                        'ciudad': ub_data.get('ciudad', ''),
                         'total_logins': 0,
                         'usuarios': set()
                     }

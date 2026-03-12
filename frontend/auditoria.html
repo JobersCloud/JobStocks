@@ -534,18 +534,10 @@
 
         // ==================== HELPERS DE FORMATO ====================
         function formatActionName(action) {
-            const actionNames = {
-                'LOGIN': 'Inicio sesion', 'LOGIN_FAILED': 'Login fallido', 'LOGOUT': 'Cerrar sesion',
-                'PASSWORD_CHANGE': 'Cambio contrasena', 'SESSION_KILL': 'Sesion cerrada',
-                'SESSION_KILL_ALL': 'Cerrar todas sesiones', 'USER_CREATE': 'Usuario creado',
-                'USER_ACTIVATE': 'Usuario activado', 'USER_DEACTIVATE': 'Usuario desactivado',
-                'USER_ROLE_CHANGE': 'Cambio de rol', 'API_KEY_CREATE': 'API Key creada',
-                'API_KEY_DELETE': 'API Key eliminada', 'CONFIG_CHANGE': 'Config. modificada',
-                'EMAIL_CONFIG_CHANGE': 'Config. email', 'PROPUESTA_SEND': 'Propuesta enviada',
-                'PROPUESTA_STATUS_CHANGE': 'Estado propuesta', 'CONSULTA_SEND': 'Consulta enviada',
-                'CONSULTA_RESPOND': 'Consulta respondida'
-            };
-            return actionNames[action] || action;
+            const key = `dashboard.auditAction_${action}`;
+            const translated = t(key);
+            if (translated !== key) return translated;
+            return action.replace(/_/g, ' ').toLowerCase().replace(/^\w/, c => c.toUpperCase());
         }
 
         function formatResultName(result) {

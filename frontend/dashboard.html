@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Administracion</title>
     <script src="js/theme-init.js?v=1.34.0"></script>
-    <link rel="stylesheet" href="css/styles.css?v=1.26.0">
+    <link rel="stylesheet" href="css/styles.css?v=1.41.4">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -966,6 +966,14 @@
             });
         }
 
+        function translateAuditAction(action) {
+            const key = `dashboard.auditAction_${action}`;
+            const translated = t(key);
+            // Si no hay traduccion, formatear el nombre legible
+            if (translated === key) return action.replace(/_/g, ' ').toLowerCase().replace(/^\w/, c => c.toUpperCase());
+            return translated;
+        }
+
         function renderActionsDistribution(data) {
             const ctx = document.getElementById('actionsDistributionChart').getContext('2d');
             if (actionsDistributionChart) actionsDistributionChart.destroy();
@@ -976,7 +984,7 @@
             actionsDistributionChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: data.map(d => d.accion.replace(/_/g, ' ')),
+                    labels: data.map(d => translateAuditAction(d.accion)),
                     datasets: [{ data: data.map(d => d.total), backgroundColor: data.map((_, i) => palette[i % palette.length]), borderWidth: 0 }]
                 },
                 options: {
@@ -1154,7 +1162,10 @@
         // Actualizar tiles del mapa cuando cambia el tema
         new MutationObserver(function() {
             if (loginMap && loginMapTileLayer) {
-                loginMapTileLayer.setUrl(getMapTileUrl());
+                loginMap.removeLayer(loginMapTileLayer);
+                loginMapTileLayer = L.tileLayer(getMapTileUrl(), {
+                    attribution: getMapTileAttribution()
+                }).addTo(loginMap);
                 loginMap.closePopup();
             }
         }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });

@@ -307,6 +307,15 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.41.5', date: '2026-03-12', title: 'Emails profesionales y traducciones auditoría', items: [
+                {type: 'improve', text: 'Emails de bienvenida rediseñados con estilo empresarial profesional (sin emojis)'},
+                {type: 'improve', text: 'Acciones de auditoría traducidas al idioma del usuario en dashboard y auditoría'},
+                {type: 'new', text: 'Página de mantenimiento moderna para despliegues (se muestra automáticamente vía nginx)'}
+            ]},
+            { version: 'v1.41.4', date: '2026-03-12', title: 'Fix mapa de conexiones y traducciones', items: [
+                {type: 'fix', text: 'Corregida lectura de datos de geolocalización en mapa de conexiones (JSON anidado bajo ubicacion)'},
+                {type: 'fix', text: 'Añadidas traducciones faltantes para estados de propuestas en gráfico del dashboard'}
+            ]},
             { version: 'v1.41.3', date: '2026-03-11', title: 'Mapa mundial de conexiones en Dashboard', items: [
                 {type: 'new', text: 'Mapa interactivo con ubicaciones de logins de usuarios (Leaflet + OpenStreetMap)'},
                 {type: 'new', text: 'Marcadores proporcionales al número de logins con popup de detalle (país, ciudad, usuarios)'},

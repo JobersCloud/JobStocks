@@ -312,80 +312,67 @@ def enviar_email_bienvenida(email, username, password, full_name, empresa_id):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
-    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5;">
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f5f7;">
         <table role="presentation" style="width: 100%; border-collapse: collapse;">
             <tr>
                 <td style="padding: 40px 20px;">
-                    <table role="presentation" style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.1);">
-                        <!-- Header con gradiente -->
+                    <table role="presentation" style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+                        <!-- Header -->
                         <tr>
-                            <td style="background: linear-gradient(135deg, #FF4338 0%, #C62828 100%); padding: 40px 30px; text-align: center;">
-                                <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
-                                <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">
-                                    ¡Bienvenido al equipo!
+                            <td style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 36px 30px; text-align: center;">
+                                <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.3px;">
+                                    Bienvenido al Sistema de Stocks
                                 </h1>
-                                <p style="color: rgba(255,255,255,0.9); margin: 12px 0 0 0; font-size: 16px;">
-                                    Tu cuenta ha sido creada exitosamente
+                                <p style="color: rgba(255,255,255,0.7); margin: 8px 0 0 0; font-size: 14px; font-weight: 400;">
+                                    Su cuenta ha sido creada correctamente
                                 </p>
                             </td>
                         </tr>
 
                         <!-- Contenido principal -->
                         <tr>
-                            <td style="padding: 40px 30px;">
-                                <p style="font-size: 18px; color: #333; margin: 0 0 24px 0;">
-                                    Hola <strong style="color: #FF4338;">{nombre}</strong>,
+                            <td style="padding: 36px 30px;">
+                                <p style="font-size: 15px; color: #334155; margin: 0 0 20px 0; line-height: 1.6;">
+                                    Estimado/a <strong>{nombre}</strong>,
                                 </p>
-                                <p style="font-size: 15px; color: #555; margin: 0 0 32px 0; line-height: 1.7;">
-                                    Se ha creado una cuenta para ti en el <strong>Sistema de Gestión de Stocks</strong>.
-                                    A continuación encontrarás tus credenciales de acceso.
+                                <p style="font-size: 14px; color: #64748b; margin: 0 0 28px 0; line-height: 1.7;">
+                                    Se ha creado una cuenta a su nombre en el Sistema de Gesti&oacute;n de Stocks.
+                                    A continuaci&oacute;n encontrar&aacute; sus credenciales de acceso.
                                 </p>
 
-                                <!-- Tarjeta de credenciales -->
-                                <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+                                <!-- Credenciales -->
+                                <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 24px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
                                     <tr>
-                                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 24px;">
-                                            <p style="color: rgba(255,255,255,0.8); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px 0;">
-                                                🔐 Credenciales de acceso
-                                            </p>
+                                        <td style="background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid #e2e8f0;">
+                                            <span style="color: #475569; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Credenciales de acceso</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 16px;">
                                             <table role="presentation" style="width: 100%;">
                                                 <tr>
-                                                    <td style="padding: 12px 16px; background: rgba(255,255,255,0.15); border-radius: 8px; margin-bottom: 8px;">
-                                                        <span style="color: rgba(255,255,255,0.7); font-size: 12px; display: block;">Usuario</span>
-                                                        <span style="color: white; font-size: 18px; font-weight: 600;">{username}</span>
-                                                    </td>
+                                                    <td style="padding: 8px 0; color: #64748b; font-size: 13px; width: 140px;">Usuario:</td>
+                                                    <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 600;">{username}</td>
                                                 </tr>
-                                                <tr><td style="height: 8px;"></td></tr>
                                                 <tr>
-                                                    <td style="padding: 12px 16px; background: rgba(255,255,255,0.15); border-radius: 8px;">
-                                                        <span style="color: rgba(255,255,255,0.7); font-size: 12px; display: block;">Contraseña temporal</span>
-                                                        <span style="color: white; font-size: 18px; font-weight: 600; font-family: monospace;">{password}</span>
-                                                    </td>
+                                                    <td style="padding: 8px 0; color: #64748b; font-size: 13px; border-top: 1px solid #f1f5f9;">Contrase&ntilde;a temporal:</td>
+                                                    <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 600; font-family: 'Courier New', monospace; border-top: 1px solid #f1f5f9;">{password}</td>
                                                 </tr>
                                             </table>
                                         </td>
                                     </tr>
                                 </table>
 
-                                <!-- Aviso importante -->
-                                <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 32px;">
+                                <!-- Aviso cambio de contraseña -->
+                                <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 28px;">
                                     <tr>
-                                        <td style="background: #FFF8E1; border-radius: 12px; padding: 20px; border-left: 4px solid #FFB300;">
-                                            <table role="presentation">
-                                                <tr>
-                                                    <td style="vertical-align: top; padding-right: 12px;">
-                                                        <span style="font-size: 24px;">⚠️</span>
-                                                    </td>
-                                                    <td>
-                                                        <p style="margin: 0; color: #F57C00; font-weight: 600; font-size: 14px;">
-                                                            Cambio de contraseña requerido
-                                                        </p>
-                                                        <p style="margin: 6px 0 0 0; color: #795548; font-size: 13px; line-height: 1.5;">
-                                                            Por seguridad, deberás cambiar tu contraseña la primera vez que inicies sesión.
-                                                        </p>
-                                                    </td>
-                                                </tr>
-                                            </table>
+                                        <td style="background: #fffbeb; border-radius: 6px; padding: 14px 16px; border-left: 3px solid #f59e0b;">
+                                            <p style="margin: 0; color: #92400e; font-weight: 600; font-size: 13px;">
+                                                Cambio de contrase&ntilde;a obligatorio
+                                            </p>
+                                            <p style="margin: 4px 0 0 0; color: #78716c; font-size: 13px; line-height: 1.5;">
+                                                Por seguridad, deber&aacute; establecer una nueva contrase&ntilde;a en su primer inicio de sesi&oacute;n.
+                                            </p>
                                         </td>
                                     </tr>
                                 </table>
@@ -393,44 +380,38 @@ def enviar_email_bienvenida(email, username, password, full_name, empresa_id):
                                 <!-- Botón de acceso -->
                                 <table role="presentation" style="width: 100%; border-collapse: collapse;">
                                     <tr>
-                                        <td style="text-align: center; padding: 8px 0 32px 0;">
-                                            <a href="{login_url}" style="display: inline-block; background-color: #FF4338; color: white !important; text-decoration: none; padding: 16px 48px; border-radius: 50px; font-size: 16px; font-weight: 600;">
-                                                🚀 Acceder al Sistema
+                                        <td style="text-align: center; padding: 4px 0 28px 0;">
+                                            <a href="{login_url}" style="display: inline-block; background-color: #1e293b; color: #ffffff !important; text-decoration: none; padding: 14px 40px; border-radius: 6px; font-size: 14px; font-weight: 600;">
+                                                Acceder al Sistema
                                             </a>
                                         </td>
                                     </tr>
                                 </table>
 
                                 <!-- Pasos -->
-                                <table role="presentation" style="width: 100%; border-collapse: collapse; background: #F8F9FA; border-radius: 12px; padding: 20px;">
+                                <table role="presentation" style="width: 100%; border-collapse: collapse; background: #f8fafc; border-radius: 6px;">
                                     <tr>
-                                        <td style="padding: 20px;">
-                                            <p style="margin: 0 0 16px 0; color: #333; font-weight: 600; font-size: 14px;">
-                                                📋 Pasos para comenzar:
+                                        <td style="padding: 18px;">
+                                            <p style="margin: 0 0 14px 0; color: #334155; font-weight: 600; font-size: 13px;">
+                                                Primeros pasos:
                                             </p>
                                             <table role="presentation" style="width: 100%;">
                                                 <tr>
-                                                    <td style="padding: 8px 0; color: #555; font-size: 14px;">
-                                                        <span style="display: inline-block; width: 24px; height: 24px; background: #FF4338; color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold; margin-right: 12px;">1</span>
-                                                        Haz clic en "Acceder al Sistema"
+                                                    <td style="padding: 6px 0; color: #64748b; font-size: 13px;">
+                                                        <span style="display: inline-block; width: 22px; height: 22px; background: #1e293b; color: #ffffff; border-radius: 50%; text-align: center; line-height: 22px; font-size: 11px; font-weight: 600; margin-right: 10px;">1</span>
+                                                        Acceda al sistema con las credenciales proporcionadas
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="padding: 8px 0; color: #555; font-size: 14px;">
-                                                        <span style="display: inline-block; width: 24px; height: 24px; background: #FF4338; color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold; margin-right: 12px;">2</span>
-                                                        Ingresa tus credenciales
+                                                    <td style="padding: 6px 0; color: #64748b; font-size: 13px;">
+                                                        <span style="display: inline-block; width: 22px; height: 22px; background: #1e293b; color: #ffffff; border-radius: 50%; text-align: center; line-height: 22px; font-size: 11px; font-weight: 600; margin-right: 10px;">2</span>
+                                                        Establezca una nueva contrase&ntilde;a segura
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="padding: 8px 0; color: #555; font-size: 14px;">
-                                                        <span style="display: inline-block; width: 24px; height: 24px; background: #FF4338; color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold; margin-right: 12px;">3</span>
-                                                        Cambia tu contraseña por una segura
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td style="padding: 8px 0; color: #555; font-size: 14px;">
-                                                        <span style="display: inline-block; width: 24px; height: 24px; background: #4CAF50; color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold; margin-right: 12px;">✓</span>
-                                                        ¡Listo! Ya puedes usar el sistema
+                                                    <td style="padding: 6px 0; color: #64748b; font-size: 13px;">
+                                                        <span style="display: inline-block; width: 22px; height: 22px; background: #1e293b; color: #ffffff; border-radius: 50%; text-align: center; line-height: 22px; font-size: 11px; font-weight: 600; margin-right: 10px;">3</span>
+                                                        Explore el cat&aacute;logo de productos disponibles
                                                     </td>
                                                 </tr>
                                             </table>
@@ -442,12 +423,12 @@ def enviar_email_bienvenida(email, username, password, full_name, empresa_id):
 
                         <!-- Footer -->
                         <tr>
-                            <td style="background: #F8F9FA; padding: 24px 30px; text-align: center; border-top: 1px solid #E0E0E0;">
-                                <p style="margin: 0 0 8px 0; color: #999; font-size: 12px;">
-                                    Este es un mensaje automático, por favor no respondas a este email.
+                            <td style="background: #f8fafc; padding: 20px 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+                                <p style="margin: 0 0 6px 0; color: #94a3b8; font-size: 12px;">
+                                    Este es un mensaje autom&aacute;tico, por favor no responda a este correo.
                                 </p>
-                                <p style="margin: 0; color: #BBB; font-size: 11px;">
-                                    © {datetime.now().year} Sistema de Gestión de Stocks
+                                <p style="margin: 0; color: #cbd5e1; font-size: 11px;">
+                                    &copy; {datetime.now().year} Sistema de Gesti&oacute;n de Stocks
                                 </p>
                             </td>
                         </tr>

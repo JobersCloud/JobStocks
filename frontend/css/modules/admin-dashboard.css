@@ -1101,6 +1101,14 @@
     background: rgba(255,255,255,0.05);
 }
 
+[data-theme="dark"] #login-map-container {
+    background: #1a1a2e;
+}
+
+[data-theme="dark"] .leaflet-container {
+    background: #1a1a2e;
+}
+
 [data-theme="dark"] .leaflet-popup-content-wrapper {
     background: #2d2d2d;
     color: #e0e0e0;
@@ -1110,10 +1118,36 @@
     background: #2d2d2d;
 }
 
+[data-theme="dark"] .leaflet-popup-close-button {
+    color: #aaa;
+}
+
+[data-theme="dark"] .leaflet-popup-close-button:hover {
+    color: #fff;
+}
+
+[data-theme="dark"] .leaflet-tooltip {
+    background: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+[data-theme="dark"] .leaflet-tooltip-top::before {
+    border-top-color: #2d2d2d;
+}
+
+[data-theme="dark"] .leaflet-tooltip-bottom::before {
+    border-bottom-color: #2d2d2d;
+}
+
 [data-theme="dark"] .leaflet-control-zoom a {
     background: #2d2d2d;
     color: #e0e0e0;
     border-color: #444;
+}
+
+[data-theme="dark"] .leaflet-control-zoom a:hover {
+    background: #3d3d3d;
 }
 
 [data-theme="dark"] .leaflet-control-attribution {
