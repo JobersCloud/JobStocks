@@ -39,16 +39,94 @@
                 transform: translate(-50%, -50%) rotate(90deg) scale(1.02);
                 object-fit: cover;
             }
+            #play-overlay {
+                transform: rotate(90deg);
+                width: 100vh;
+                height: 100vw;
+                top: 50%;
+                left: 50%;
+                margin-top: calc(-50vw);
+                margin-left: calc(-50vh);
+            }
+        }
+
+        /* Overlay con botón de play */
+        #play-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        #play-overlay.hidden {
+            display: none;
+        }
+        .play-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 3px solid rgba(255, 255, 255, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease, background 0.2s ease;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        .play-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.35);
+        }
+        .play-btn svg {
+            width: 50px;
+            height: 50px;
+            margin-left: 8px; /* Centrado óptico del triángulo */
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+            50% { box-shadow: 0 0 0 20px rgba(255, 255, 255, 0); }
+        }
+
+        @media (max-width: 600px) {
+            .play-btn {
+                width: 90px;
+                height: 90px;
+            }
+            .play-btn svg {
+                width: 38px;
+                height: 38px;
+                margin-left: 6px;
+            }
         }
     </style>
 </head>
 <body>
     <!-- Poster negro data-uri de 1px para ocultar primer fotograma con línea roja -->
-    <video controls autoplay playsinline poster="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==">
+    <video controls playsinline poster="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==">
         <source src="/media/videopublicitario.mp4" type="video/mp4">
     </video>
+
+    <!-- Overlay con botón de play grande -->
+    <div id="play-overlay">
+        <div class="play-btn">
+            <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 3.868v16.264c0 .942 1.04 1.52 1.834 1.018l12.586-8.132a1.2 1.2 0 0 0 0-2.036L6.834 2.85C6.04 2.348 5 2.926 5 3.868z"/>
+            </svg>
+        </div>
+    </div>
+
     <script>
         var video = document.querySelector('video');
+        var overlay = document.getElementById('play-overlay');
         var doc = document.documentElement;
 
         function entrarFullscreen() {
@@ -66,10 +144,17 @@
             }
         }
 
-        entrarFullscreen();
-        document.addEventListener('click', entrarFullscreen, { once: true });
-        document.addEventListener('touchstart', entrarFullscreen, { once: true });
-        video.addEventListener('play', entrarFullscreen, { once: true });
+        function playVideo() {
+            overlay.classList.add('hidden');
+            video.play().catch(function(){});
+            entrarFullscreen();
+        }
+
+        overlay.addEventListener('click', playVideo);
+        overlay.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            playVideo();
+        }, { passive: false });
 
         if (screen.orientation && screen.orientation.lock) {
             screen.orientation.lock('landscape').catch(function(){});
