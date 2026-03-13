@@ -265,6 +265,88 @@ def visible_pedidos():
     }), 200
 
 
+@parametros_bp.route('/visible-albaranes', methods=['GET'])
+def visible_albaranes():
+    """
+    Verificar si la sección Albaranes es visible.
+    Para ver albaranes, AMBOS deben estar activos: parámetro global de empresa Y flag del usuario.
+    ---
+    tags:
+      - Parámetros
+    parameters:
+      - name: empresa_id
+        in: query
+        type: string
+        required: false
+    responses:
+      200:
+        description: Estado del parámetro visible albaranes
+        schema:
+          type: object
+          properties:
+            habilitado:
+              type: boolean
+            global_habilitado:
+              type: boolean
+              description: Si el parámetro global de empresa está activo
+    """
+    from flask_login import current_user as cu
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+    global_habilitado = ParametrosModel.visible_albaranes(empresa_id, connection)
+
+    # Si hay usuario logueado, comprobar también su flag visible_albaranes
+    habilitado = global_habilitado
+    if global_habilitado and cu and cu.is_authenticated:
+        habilitado = getattr(cu, 'visible_albaranes', True)
+
+    return jsonify({
+        'habilitado': habilitado,
+        'global_habilitado': global_habilitado
+    }), 200
+
+
+@parametros_bp.route('/visible-facturas', methods=['GET'])
+def visible_facturas():
+    """
+    Verificar si la sección Facturas es visible.
+    Para ver facturas, AMBOS deben estar activos: parámetro global de empresa Y flag del usuario.
+    ---
+    tags:
+      - Parámetros
+    parameters:
+      - name: empresa_id
+        in: query
+        type: string
+        required: false
+    responses:
+      200:
+        description: Estado del parámetro visible facturas
+        schema:
+          type: object
+          properties:
+            habilitado:
+              type: boolean
+            global_habilitado:
+              type: boolean
+              description: Si el parámetro global de empresa está activo
+    """
+    from flask_login import current_user as cu
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+    global_habilitado = ParametrosModel.visible_facturas(empresa_id, connection)
+
+    # Si hay usuario logueado, comprobar también su flag visible_facturas
+    habilitado = global_habilitado
+    if global_habilitado and cu and cu.is_authenticated:
+        habilitado = getattr(cu, 'visible_facturas', True)
+
+    return jsonify({
+        'habilitado': habilitado,
+        'global_habilitado': global_habilitado
+    }), 200
+
+
 @parametros_bp.route('/columnas-opcionales', methods=['GET'])
 def get_columnas_opcionales():
     """

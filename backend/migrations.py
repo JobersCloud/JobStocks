@@ -1202,4 +1202,204 @@ MIGRATIONS = [
         ]
     },
 
+    # ================================================================
+    # VISIBLE_ALBARANES - Parámetro global por empresa
+    # ================================================================
+
+    {
+        'version': 51,
+        'description': 'Crear parámetro VISIBLE_ALBARANES para todas las empresas',
+        'app_version': 'v1.43.0',
+        'sql': [
+            """DECLARE @emp_id VARCHAR(5);
+            DECLARE emp_cursor CURSOR FOR SELECT DISTINCT empresa_id FROM parametros;
+            OPEN emp_cursor;
+            FETCH NEXT FROM emp_cursor INTO @emp_id;
+            WHILE @@FETCH_STATUS = 0
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM parametros WHERE clave = 'VISIBLE_ALBARANES' AND empresa_id = @emp_id)
+                BEGIN
+                    INSERT INTO parametros (clave, valor, descripcion, empresa_id, fecha_modificacion)
+                    VALUES ('VISIBLE_ALBARANES', '0',
+                            'Mostrar sección de albaranes (0=oculto, 1=visible)', @emp_id, GETDATE());
+                END
+                FETCH NEXT FROM emp_cursor INTO @emp_id;
+            END;
+            CLOSE emp_cursor;
+            DEALLOCATE emp_cursor;""",
+        ]
+    },
+
+    # ================================================================
+    # VISIBLE_ALBARANES - Flag por usuario en users_empresas
+    # ================================================================
+
+    {
+        'version': 52,
+        'description': 'Añadir columna visible_albaranes a users_empresas',
+        'app_version': 'v1.43.0',
+        'sql': [
+            """IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('users_empresas') AND name = 'visible_albaranes')
+            BEGIN
+                ALTER TABLE users_empresas ADD visible_albaranes BIT DEFAULT 0
+            END""",
+        ]
+    },
+
+    # ================================================================
+    # VISIBLE_FACTURAS - Parámetro global por empresa
+    # ================================================================
+
+    {
+        'version': 53,
+        'description': 'Crear parámetro VISIBLE_FACTURAS para todas las empresas',
+        'app_version': 'v1.43.0',
+        'sql': [
+            """DECLARE @emp_id VARCHAR(5);
+            DECLARE emp_cursor CURSOR FOR SELECT DISTINCT empresa_id FROM parametros;
+            OPEN emp_cursor;
+            FETCH NEXT FROM emp_cursor INTO @emp_id;
+            WHILE @@FETCH_STATUS = 0
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM parametros WHERE clave = 'VISIBLE_FACTURAS' AND empresa_id = @emp_id)
+                BEGIN
+                    INSERT INTO parametros (clave, valor, descripcion, empresa_id, fecha_modificacion)
+                    VALUES ('VISIBLE_FACTURAS', '0',
+                            'Mostrar sección de facturas (0=oculto, 1=visible)', @emp_id, GETDATE());
+                END
+                FETCH NEXT FROM emp_cursor INTO @emp_id;
+            END;
+            CLOSE emp_cursor;
+            DEALLOCATE emp_cursor;""",
+        ]
+    },
+
+    # ================================================================
+    # VISIBLE_FACTURAS - Flag por usuario en users_empresas
+    # ================================================================
+
+    {
+        'version': 54,
+        'description': 'Añadir columna visible_facturas a users_empresas',
+        'app_version': 'v1.43.0',
+        'sql': [
+            """IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('users_empresas') AND name = 'visible_facturas')
+            BEGIN
+                ALTER TABLE users_empresas ADD visible_facturas BIT DEFAULT 0
+            END""",
+        ]
+    },
+
+    # ================================================================
+    # VISTAS SQL - Albaranes y Facturas
+    # ================================================================
+
+    {
+        'version': 55,
+        'description': 'Crear vistas de albaranes y facturas (venalb, venlialb, venfac, venlifac)',
+        'app_version': 'v1.43.0',
+        'sql': [
+            # Vista cabecera albaranes
+            """IF NOT EXISTS (SELECT * FROM sys.views WHERE name = 'view_externos_venalb')
+            EXEC('CREATE VIEW dbo.view_externos_venalb AS
+            SELECT
+                a.empresa,
+                a.anyo,
+                a.albaran,
+                a.falbaran AS fecha,
+                a.fentrega AS fecha_entrega,
+                RTRIM(a.cliente) AS cliente,
+                RTRIM(ISNULL(c.razon, '''')) AS cliente_nombre,
+                RTRIM(ISNULL(a.serie, '''')) AS serie,
+                ISNULL(a.bruto, 0) AS bruto,
+                ISNULL(a.importe_dto, 0) AS importe_dto,
+                ISNULL(a.total_neto, 0) AS total,
+                ISNULL(a.peso, 0) AS peso,
+                RTRIM(ISNULL(a.divisa, '''')) AS divisa,
+                RTRIM(ISNULL(a.usuario, '''')) AS usuario,
+                a.falta AS fecha_alta
+            FROM cristal.dbo.venalb a
+            LEFT JOIN cristal.dbo.genter c ON a.cliente = c.codigo AND a.empresa = c.empresa AND c.tipoter = ''C''
+            WHERE a.empresa IS NOT NULL
+              AND a.anyo IS NOT NULL
+              AND a.albaran IS NOT NULL
+              AND ISNULL(a.deposito, '''') <> ''''')""",
+
+            # Vista líneas albaranes
+            """IF NOT EXISTS (SELECT * FROM sys.views WHERE name = 'view_externos_venlialb')
+            EXEC('CREATE VIEW dbo.view_externos_venlialb AS
+            SELECT
+                empresa,
+                anyo,
+                albaran,
+                linea,
+                RTRIM(ISNULL(articulo, '''')) AS articulo,
+                RTRIM(ISNULL(descripcion, '''')) AS descripcion,
+                RTRIM(ISNULL(formato, '''')) AS formato,
+                RTRIM(ISNULL(calidad, '''')) AS calidad,
+                ISNULL(tono, 0) AS tono,
+                ISNULL(calibre, 0) AS calibre,
+                ISNULL(cantidad, 0) AS cantidad,
+                ISNULL(precio, 0) AS precio,
+                ISNULL(importe, 0) AS importe,
+                ISNULL(pallets, 0) AS pallets,
+                ISNULL(total_cajas, 0) AS cajas,
+                falbaran AS fecha,
+                RTRIM(ISNULL(situacion, '''')) AS situacion
+            FROM cristal.dbo.venlialb
+            WHERE empresa IS NOT NULL
+              AND anyo IS NOT NULL
+              AND albaran IS NOT NULL')""",
+
+            # Vista cabecera facturas
+            """IF NOT EXISTS (SELECT * FROM sys.views WHERE name = 'view_externos_venfac')
+            EXEC('CREATE VIEW dbo.view_externos_venfac AS
+            SELECT
+                f.empresa,
+                f.anyo,
+                f.factura,
+                f.ffactura AS fecha,
+                RTRIM(f.cliente) AS cliente,
+                RTRIM(ISNULL(c.razon, '''')) AS cliente_nombre,
+                RTRIM(ISNULL(f.serie, '''')) AS serie,
+                ISNULL(f.base_imponible, 0) AS base_imponible,
+                ISNULL(f.iva, 0) AS iva,
+                ISNULL(f.total, 0) AS total,
+                RTRIM(ISNULL(f.divisa, '''')) AS divisa,
+                RTRIM(ISNULL(f.usuario, '''')) AS usuario,
+                f.falta AS fecha_alta
+            FROM cristal.dbo.venfac f
+            LEFT JOIN cristal.dbo.genter c ON f.cliente = c.codigo AND f.empresa = c.empresa AND c.tipoter = ''C''
+            WHERE f.empresa IS NOT NULL
+              AND f.anyo IS NOT NULL
+              AND f.factura IS NOT NULL')""",
+
+            # Vista líneas facturas
+            """IF NOT EXISTS (SELECT * FROM sys.views WHERE name = 'view_externos_venlifac')
+            EXEC('CREATE VIEW dbo.view_externos_venlifac AS
+            SELECT
+                empresa,
+                anyo,
+                factura,
+                linea,
+                RTRIM(ISNULL(articulo, '''')) AS articulo,
+                RTRIM(ISNULL(descripcion, '''')) AS descripcion,
+                RTRIM(ISNULL(formato, '''')) AS formato,
+                RTRIM(ISNULL(calidad, '''')) AS calidad,
+                ISNULL(tono, 0) AS tono,
+                ISNULL(calibre, 0) AS calibre,
+                ISNULL(cantidad, 0) AS cantidad,
+                ISNULL(precio, 0) AS precio,
+                ISNULL(importe, 0) AS importe,
+                ISNULL(pallets, 0) AS pallets,
+                ISNULL(total_cajas, 0) AS cajas,
+                ffactura AS fecha,
+                RTRIM(ISNULL(situacion, '''')) AS situacion
+            FROM cristal.dbo.venlifac
+            WHERE empresa IS NOT NULL
+              AND anyo IS NOT NULL
+              AND factura IS NOT NULL')""",
+        ]
+    },
+
 ]

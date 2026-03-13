@@ -260,6 +260,34 @@
                 }
             } catch (e) {}
 
+            // Mostrar Mis Albaranes / Albaranes solo si está habilitado (ocultos por defecto en CSS)
+            try {
+                const respAlb = await fetch(`${API_URL}/api/parametros/visible-albaranes`, { credentials: 'include' });
+                if (respAlb.ok) {
+                    const dAlb = await respAlb.json();
+                    if (dAlb.habilitado) {
+                        const el1 = document.getElementById('sidebar-mis-albaranes');
+                        const el2 = document.getElementById('sidebar-todos-albaranes');
+                        if (el1) el1.style.display = 'flex';
+                        if (el2) el2.style.display = 'flex';
+                    }
+                }
+            } catch (e) {}
+
+            // Mostrar Mis Facturas / Facturas solo si está habilitado (ocultos por defecto en CSS)
+            try {
+                const respFac = await fetch(`${API_URL}/api/parametros/visible-facturas`, { credentials: 'include' });
+                if (respFac.ok) {
+                    const dFac = await respFac.json();
+                    if (dFac.habilitado) {
+                        const el1 = document.getElementById('sidebar-mis-facturas');
+                        const el2 = document.getElementById('sidebar-todas-facturas');
+                        if (el1) el1.style.display = 'flex';
+                        if (el2) el2.style.display = 'flex';
+                    }
+                }
+            } catch (e) {}
+
             return data;
         } catch (error) {
             console.error('Error checking auth:', error);

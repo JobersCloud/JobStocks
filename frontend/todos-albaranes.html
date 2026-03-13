@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todos los Pedidos - Gestion de Stocks</title>
+    <title>Todos los Albaranes - Gestion de Stocks</title>
     <script src="js/theme-init.js?v=1.34.0"></script>
     <link rel="stylesheet" href="css/styles.css?v=1.26.0">
 </head>
@@ -25,7 +25,7 @@
                 </div>
                 <div class="header-divider"></div>
                 <div>
-                    <h1 class="top-header-title" data-i18n="orders.allTitle">Todos los Pedidos</h1>
+                    <h1 class="top-header-title" data-i18n="deliveryNotes.allTitle">Todos los Albaranes</h1>
                 </div>
             </div>
             <div class="top-header-right">
@@ -144,11 +144,11 @@
                     <a class="sidebar-item" id="sidebar-mis-albaranes" data-page="mis-albaranes.html" data-tooltip="Mis Albaranes" onclick="SidebarNav.navigateTo('mis-albaranes.html')">
                         <span class="sidebar-item-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                <polyline points="14 2 14 8 20 8"/>
-                                <line x1="16" y1="13" x2="8" y2="13"/>
-                                <line x1="16" y1="17" x2="8" y2="17"/>
-                                <polyline points="10 9 9 9 8 9"/>
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
                             </svg>
                         </span>
                         <span class="sidebar-item-text" data-i18n="menu.myDeliveryNotes">Mis Albaranes</span>
@@ -156,10 +156,11 @@
                     <a class="sidebar-item" id="sidebar-mis-facturas" data-page="mis-facturas.html" data-tooltip="Mis Facturas" onclick="SidebarNav.navigateTo('mis-facturas.html')">
                         <span class="sidebar-item-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                <polyline points="14 2 14 8 20 8"/>
-                                <line x1="12" y1="18" x2="12" y2="12"/>
-                                <line x1="9" y1="15" x2="15" y2="15"/>
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <path d="M10 9l-2 0"></path>
                             </svg>
                         </span>
                         <span class="sidebar-item-text" data-i18n="menu.myInvoices">Mis Facturas</span>
@@ -231,7 +232,7 @@
                             </span>
                             <span class="sidebar-item-text" data-i18n="menu.allProposals">Propuestas</span>
                         </a>
-                        <a class="sidebar-item active" id="sidebar-todos-pedidos" data-page="todos-pedidos.html" data-tooltip="Pedidos" onclick="SidebarNav.navigateTo('todos-pedidos.html')">
+                        <a class="sidebar-item" id="sidebar-todos-pedidos" data-page="todos-pedidos.html" data-tooltip="Pedidos" onclick="SidebarNav.navigateTo('todos-pedidos.html')">
                             <span class="sidebar-item-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="1" y="3" width="15" height="13"></rect>
@@ -242,25 +243,26 @@
                             </span>
                             <span class="sidebar-item-text" data-i18n="menu.allOrders">Pedidos</span>
                         </a>
-                        <a class="sidebar-item" id="sidebar-todos-albaranes" data-page="todos-albaranes.html" data-tooltip="Albaranes" onclick="SidebarNav.navigateTo('todos-albaranes.html')">
+                        <a class="sidebar-item active" id="sidebar-todos-albaranes" data-page="todos-albaranes.html" data-tooltip="Albaranes" onclick="SidebarNav.navigateTo('todos-albaranes.html')">
                             <span class="sidebar-item-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                    <polyline points="14 2 14 8 20 8"/>
-                                    <line x1="16" y1="13" x2="8" y2="13"/>
-                                    <line x1="16" y1="17" x2="8" y2="17"/>
-                                    <polyline points="10 9 9 9 8 9"/>
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10 9 9 9 8 9"></polyline>
                                 </svg>
                             </span>
-                            <span class="sidebar-item-text" data-i18n="menu.allDeliveryNotes">Albaranes</span>
+                            <span class="sidebar-item-text" data-i18n="deliveryNotes.allTitle">Albaranes</span>
                         </a>
                         <a class="sidebar-item" id="sidebar-todas-facturas" data-page="todas-facturas.html" data-tooltip="Facturas" onclick="SidebarNav.navigateTo('todas-facturas.html')">
                             <span class="sidebar-item-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                    <polyline points="14 2 14 8 20 8"/>
-                                    <line x1="12" y1="18" x2="12" y2="12"/>
-                                    <line x1="9" y1="15" x2="15" y2="15"/>
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <path d="M10 9l-2 0"></path>
                                 </svg>
                             </span>
                             <span class="sidebar-item-text" data-i18n="menu.allInvoices">Facturas</span>
@@ -404,53 +406,53 @@
                     <h2 data-i18n="filters.title">Filtros de Busqueda</h2>
                     <div class="filter-grid orders-filter-grid">
                         <div class="form-group filter-year">
-                            <label data-i18n="orders.filterYear">Año</label>
+                            <label data-i18n="deliveryNotes.filterYear">Año</label>
                             <select id="filter-anyo"></select>
                         </div>
                         <div class="form-group">
-                            <label data-i18n="orders.filterDateFrom">Desde</label>
+                            <label data-i18n="deliveryNotes.filterDateFrom">Desde</label>
                             <input type="date" id="filter-fecha-desde">
                         </div>
                         <div class="form-group">
-                            <label data-i18n="orders.filterDateTo">Hasta</label>
+                            <label data-i18n="deliveryNotes.filterDateTo">Hasta</label>
                             <input type="date" id="filter-fecha-hasta">
                         </div>
                         <div class="form-group">
-                            <label data-i18n="orders.filterCountry">Pais</label>
+                            <label data-i18n="deliveryNotes.filterCountry">Pais</label>
                             <select id="filter-pais">
                                 <option value="">Todos</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label data-i18n="orders.filterProvince">Provincia</label>
+                            <label data-i18n="deliveryNotes.filterProvince">Provincia</label>
                             <select id="filter-provincia">
                                 <option value="">Todas</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label data-i18n="orders.filterClient">Cliente</label>
+                            <label data-i18n="deliveryNotes.filterClient">Cliente</label>
                             <div class="client-search-container">
-                                <div class="client-search-input-wrapper" id="client-search-wrapper-pedidos">
-                                    <input type="text" id="client-search-pedidos" placeholder="Buscar cliente..." autocomplete="off">
+                                <div class="client-search-input-wrapper" id="client-search-wrapper-albaranes">
+                                    <input type="text" id="client-search-albaranes" placeholder="Buscar cliente..." autocomplete="off">
                                     <span class="client-search-icon">🔍</span>
                                 </div>
-                                <div class="client-suggestions" id="client-suggestions-pedidos"></div>
-                                <div class="client-selected" id="client-selected-pedidos" style="display: none;">
+                                <div class="client-suggestions" id="client-suggestions-albaranes"></div>
+                                <div class="client-selected" id="client-selected-albaranes" style="display: none;">
                                     <div class="client-selected-info">
-                                        <span class="client-selected-code" id="selected-client-code-pedidos"></span>
-                                        <span class="client-selected-name" id="selected-client-name-pedidos"></span>
+                                        <span class="client-selected-code" id="selected-client-code-albaranes"></span>
+                                        <span class="client-selected-name" id="selected-client-name-albaranes"></span>
                                     </div>
-                                    <button class="client-clear-btn" onclick="clearClientSelectionPedidos()" type="button">&times;</button>
+                                    <button class="client-clear-btn" onclick="clearClientSelectionAlbaranes()" type="button">&times;</button>
                                 </div>
                             </div>
                             <input type="hidden" id="filter-cliente" value="">
                         </div>
                         <div class="date-range-presets">
-                            <button type="button" class="period-btn" onclick="setDateRange('today')" data-i18n="orders.today">Hoy</button>
-                            <button type="button" class="period-btn" onclick="setDateRange('week')" data-i18n="orders.thisWeek">Esta semana</button>
-                            <button type="button" class="period-btn" onclick="setDateRange('month')" data-i18n="orders.thisMonth">Este mes</button>
-                            <button type="button" class="period-btn" onclick="setDateRange('lastMonth')" data-i18n="orders.lastMonth">Mes anterior</button>
-                            <button type="button" class="period-btn" onclick="setDateRange('quarter')" data-i18n="orders.thisQuarter">Este trimestre</button>
+                            <button type="button" class="period-btn" onclick="setDateRange('today')" data-i18n="deliveryNotes.today">Hoy</button>
+                            <button type="button" class="period-btn" onclick="setDateRange('week')" data-i18n="deliveryNotes.thisWeek">Esta semana</button>
+                            <button type="button" class="period-btn" onclick="setDateRange('month')" data-i18n="deliveryNotes.thisMonth">Este mes</button>
+                            <button type="button" class="period-btn" onclick="setDateRange('lastMonth')" data-i18n="deliveryNotes.lastMonth">Mes anterior</button>
+                            <button type="button" class="period-btn" onclick="setDateRange('quarter')" data-i18n="deliveryNotes.thisQuarter">Este trimestre</button>
                         </div>
                     </div>
                     <div class="btn-icon-group">
@@ -463,19 +465,19 @@
                     </div>
                 </div>
 
-                <div id="orders-grid"></div>
+                <div id="albaranes-grid"></div>
             </main>
         </div>
     </div>
 
-    <!-- Modal de detalle de pedido -->
-    <div id="order-detail-modal" class="modal-overlay" style="display: none;">
+    <!-- Modal de detalle de albaran -->
+    <div id="albaran-detail-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 data-i18n="orders.viewDetails">Ver Detalles</h2>
-                <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+                <h2 data-i18n="deliveryNotes.viewDetails">Ver Detalles</h2>
+                <button class="modal-close" onclick="closeAlbaranModal()">&times;</button>
             </div>
-            <div class="proposal-detail-content" id="order-detail-content"></div>
+            <div class="proposal-detail-content" id="albaran-detail-content"></div>
         </div>
     </div>
 
@@ -515,10 +517,10 @@
     <script src="js/notifications.js"></script>
 
     <script>
-        // ==================== PAGE: TODOS LOS PEDIDOS (Admin) ====================
+        // ==================== PAGE: TODOS LOS ALBARANES (Admin) ====================
         const API_URL = PageCommon.API_URL;
-        let allOrders = [];
-        let filteredOrders = [];
+        let allAlbaranes = [];
+        let filteredAlbaranes = [];
         let grid;
 
         // ==================== INICIALIZACION ====================
@@ -531,7 +533,7 @@
             // Rellenar selector de anos (año actual por defecto)
             const selectAnyo = document.getElementById('filter-anyo');
             const currentYear = new Date().getFullYear();
-            selectAnyo.innerHTML = `<option value="" data-i18n="orders.allYears">Todos</option>`;
+            selectAnyo.innerHTML = `<option value="" data-i18n="deliveryNotes.allYears">Todos</option>`;
             for (let y = currentYear; y >= currentYear - 5; y--) {
                 const selected = y === currentYear ? ' selected' : '';
                 selectAnyo.innerHTML += `<option value="${y}"${selected}>${y}</option>`;
@@ -546,22 +548,21 @@
 
             // Crear grid
             grid = new DataGrid({
-                el: '#orders-grid',
+                el: '#albaranes-grid',
                 columns: [
-                    { key: 'pedido', label: '# Pedido', tipo: 'numero' },
-                    { key: 'fecha', label: t('orders.date') || 'Fecha', tipo: 'texto' },
-                    { key: 'cliente_nombre', label: t('orders.client') || 'Cliente', tipo: 'texto' },
-                    { key: 'numpedcli', label: t('orders.reference') || 'Referencia', tipo: 'texto' },
-                    { key: 'pais_nombre', label: t('orders.filterCountry') || 'Pais', tipo: 'texto' },
-                    { key: 'provincia_nombre', label: t('orders.filterProvince') || 'Provincia', tipo: 'texto' },
-                    { key: 'total', label: t('orders.total') || 'Total', tipo: 'numero', align: 'right' },
+                    { key: 'albaran', label: '# Albaran', tipo: 'numero' },
+                    { key: 'fecha', label: t('deliveryNotes.date') || 'Fecha', tipo: 'texto' },
+                    { key: 'cliente_nombre', label: t('deliveryNotes.client') || 'Cliente', tipo: 'texto' },
+                    { key: 'pais_nombre', label: t('deliveryNotes.filterCountry') || 'Pais', tipo: 'texto' },
+                    { key: 'provincia_nombre', label: t('deliveryNotes.filterProvince') || 'Provincia', tipo: 'texto' },
+                    { key: 'total', label: t('deliveryNotes.total') || 'Total', tipo: 'numero', align: 'right' },
                     { key: 'serie', label: 'Serie', tipo: 'texto' },
                     { key: 'peso', label: 'Peso', tipo: 'numero', align: 'right' },
                     { key: '_actions', label: 'Acciones', sortable: false, filterable: false }
                 ],
                 renderCell(item, col) {
                     switch (col.key) {
-                        case 'pedido': return `<strong>${item.anyo}/${item.pedido}</strong>`;
+                        case 'albaran': return `<strong>${item.anyo}/${item.albaran}</strong>`;
                         case 'fecha': return PageCommon.formatDate(item.fecha);
                         case 'cliente_nombre': return item.cliente_nombre || item.cliente;
                         case 'total': return `${PageCommon.formatCurrency(item.total)} €`;
@@ -571,10 +572,10 @@
                             const nomSafe = String(item.cliente_nombre || item.cliente || '').replace(/'/g, "\\'");
                             return `
                             <div class="action-buttons btn-icon-group">
-                                <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewOrderDetails(${item.empresa}, ${item.anyo}, ${item.pedido})" title="${t('orders.viewDetails')}">
+                                <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewAlbaranDetails(${item.empresa}, ${item.anyo}, ${item.albaran})" title="${t('deliveryNotes.viewDetails')}">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </button>
-                                <button class="btn-icon btn-icon-ghost btn-icon-sm" onclick="showClientMap('${codSafe}','${nomSafe}')" title="${t('orders.viewLocation') || 'Ver ubicación'}">
+                                <button class="btn-icon btn-icon-ghost btn-icon-sm" onclick="showClientMap('${codSafe}','${nomSafe}')" title="${t('deliveryNotes.viewLocation') || 'Ver ubicación'}">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                                 </button>
                             </div>`;
@@ -588,54 +589,50 @@
                     return `
                         <div class="proposal-card">
                             <div class="proposal-card-header">
-                                <span class="proposal-card-id">${item.anyo}/${item.pedido}</span>
+                                <span class="proposal-card-id">${item.anyo}/${item.albaran}</span>
                                 <span class="status-badge status-procesada">${PageCommon.formatCurrency(item.total)} €</span>
                             </div>
                             <div class="proposal-card-date">${PageCommon.formatDate(item.fecha)}</div>
                             <div class="proposal-card-info">
                                 <div class="proposal-card-info-item">
-                                    <label>${t('orders.client')}</label>
+                                    <label>${t('deliveryNotes.client')}</label>
                                     <span>${item.cliente_nombre || item.cliente}</span>
                                 </div>
-                                ${item.numpedcli ? `<div class="proposal-card-info-item">
-                                    <label>${t('orders.reference') || 'Referencia'}</label>
-                                    <span>${item.numpedcli}</span>
-                                </div>` : ''}
                                 ${item.pais_nombre ? `<div class="proposal-card-info-item">
-                                    <label>${t('orders.filterCountry')}</label>
+                                    <label>${t('deliveryNotes.filterCountry')}</label>
                                     <span>${item.pais_nombre}</span>
                                 </div>` : ''}
                                 ${item.provincia_nombre ? `<div class="proposal-card-info-item">
-                                    <label>${t('orders.filterProvince')}</label>
+                                    <label>${t('deliveryNotes.filterProvince')}</label>
                                     <span>${item.provincia_nombre}</span>
                                 </div>` : ''}
                             </div>
                             <div class="proposal-card-actions btn-icon-group" style="justify-content: center;">
-                                <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewOrderDetails(${item.empresa}, ${item.anyo}, ${item.pedido})" title="${t('orders.viewDetails')}">
+                                <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewAlbaranDetails(${item.empresa}, ${item.anyo}, ${item.albaran})" title="${t('deliveryNotes.viewDetails')}">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </button>
-                                <button class="btn-icon btn-icon-ghost btn-icon-sm" onclick="showClientMap('${codSafe}','${nomSafe}')" title="${t('orders.viewLocation') || 'Ver ubicación'}">
+                                <button class="btn-icon btn-icon-ghost btn-icon-sm" onclick="showClientMap('${codSafe}','${nomSafe}')" title="${t('deliveryNotes.viewLocation') || 'Ver ubicación'}">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                                 </button>
                             </div>
                         </div>`;
                 },
                 defaultSort: { column: 'fecha', direction: 'DESC' },
-                storageKey: 'filtrosGuardados_pedidos',
+                storageKey: 'filtrosGuardados_albaranes',
                 emptyIcon: '📦',
-                emptyText: t('orders.noOrdersAdmin') || 'No hay pedidos',
-                loadingText: t('orders.loading') || 'Cargando pedidos...',
-                onPageChange: (page) => loadOrders(page)
+                emptyText: t('deliveryNotes.noDeliveryNotesAdmin') || 'No hay albaranes',
+                loadingText: t('deliveryNotes.loading') || 'Cargando albaranes...',
+                onPageChange: (page) => loadAlbaranes(page)
             });
 
-            initClientAutocompletePedidos();
-            await loadOrders();
+            initClientAutocompleteAlbaranes();
+            await loadAlbaranes();
         });
 
         // ==================== FILTROS UBICACION ====================
         async function loadLocationFilters(selectedPais) {
             try {
-                let url = `${API_URL}/api/pedidos/filtros-ubicacion`;
+                let url = `${API_URL}/api/albaranes/filtros-ubicacion`;
                 if (selectedPais) url += `?pais=${encodeURIComponent(selectedPais)}`;
                 const response = await fetch(url, { credentials: 'include' });
                 if (!response.ok) return;
@@ -664,43 +661,43 @@
             // Recargar provincias segun pais seleccionado
             document.getElementById('filter-provincia').value = '';
             loadLocationFilters(this.value || null);
-            loadOrders();
+            loadAlbaranes();
         });
 
         document.getElementById('filter-provincia').addEventListener('change', function() {
-            loadOrders();
+            loadAlbaranes();
         });
 
         // ==================== AYUDA CLIENTES ====================
         let clientSearchTimeout = null;
 
-        function initClientAutocompletePedidos() {
-            const input = document.getElementById('client-search-pedidos');
+        function initClientAutocompleteAlbaranes() {
+            const input = document.getElementById('client-search-albaranes');
             if (!input) return;
             input.addEventListener('input', function() {
                 clearTimeout(clientSearchTimeout);
                 const query = this.value.trim();
                 if (query.length < 2) {
-                    const sEl = document.getElementById('client-suggestions-pedidos');
+                    const sEl = document.getElementById('client-suggestions-albaranes');
                     sEl.innerHTML = '';
                     sEl.classList.remove('show');
                     return;
                 }
-                clientSearchTimeout = setTimeout(() => searchClientsPedidos(query), 300);
+                clientSearchTimeout = setTimeout(() => searchClientsAlbaranes(query), 300);
             });
             // Cerrar sugerencias al hacer clic fuera
             document.addEventListener('click', function(e) {
-                const container = document.querySelector('#client-search-wrapper-pedidos')?.closest('.client-search-container');
+                const container = document.querySelector('#client-search-wrapper-albaranes')?.closest('.client-search-container');
                 if (container && !container.contains(e.target)) {
-                    const sEl = document.getElementById('client-suggestions-pedidos');
+                    const sEl = document.getElementById('client-suggestions-albaranes');
                     sEl.innerHTML = '';
                     sEl.classList.remove('show');
                 }
             });
         }
 
-        async function searchClientsPedidos(query) {
-            const suggestionsEl = document.getElementById('client-suggestions-pedidos');
+        async function searchClientsAlbaranes(query) {
+            const suggestionsEl = document.getElementById('client-suggestions-albaranes');
             const empresaId = localStorage.getItem('empresa_id') || '1';
             try {
                 const response = await fetch(`${API_URL}/api/clientes/search?empresa=${empresaId}&razon=${encodeURIComponent(query)}`, { credentials: 'include' });
@@ -712,7 +709,7 @@
                     return;
                 }
                 suggestionsEl.innerHTML = clientes.slice(0, 15).map(c => `
-                    <div class="client-suggestion" onclick="selectClientPedidos('${c.codigo}', '${(c.razon || '').replace(/'/g, "\\'")}')">
+                    <div class="client-suggestion" onclick="selectClientAlbaranes('${c.codigo}', '${(c.razon || '').replace(/'/g, "\\'")}')">
                         <span class="client-suggestion-code">${c.codigo}</span>
                         <span class="client-suggestion-name">${c.razon}</span>
                     </div>
@@ -724,30 +721,30 @@
             }
         }
 
-        function selectClientPedidos(codigo, razon) {
+        function selectClientAlbaranes(codigo, razon) {
             document.getElementById('filter-cliente').value = codigo;
-            document.getElementById('selected-client-code-pedidos').textContent = codigo;
-            document.getElementById('selected-client-name-pedidos').textContent = razon;
-            document.getElementById('client-selected-pedidos').style.display = 'flex';
-            document.getElementById('client-search-wrapper-pedidos').style.display = 'none';
-            const sEl = document.getElementById('client-suggestions-pedidos');
+            document.getElementById('selected-client-code-albaranes').textContent = codigo;
+            document.getElementById('selected-client-name-albaranes').textContent = razon;
+            document.getElementById('client-selected-albaranes').style.display = 'flex';
+            document.getElementById('client-search-wrapper-albaranes').style.display = 'none';
+            const sEl = document.getElementById('client-suggestions-albaranes');
             sEl.innerHTML = '';
             sEl.classList.remove('show');
-            loadOrders();
+            loadAlbaranes();
         }
-        window.selectClientPedidos = selectClientPedidos;
+        window.selectClientAlbaranes = selectClientAlbaranes;
 
-        function clearClientSelectionPedidos(reload = true) {
+        function clearClientSelectionAlbaranes(reload = true) {
             document.getElementById('filter-cliente').value = '';
-            document.getElementById('client-selected-pedidos').style.display = 'none';
-            document.getElementById('client-search-wrapper-pedidos').style.display = '';
-            document.getElementById('client-search-pedidos').value = '';
-            if (reload) loadOrders();
+            document.getElementById('client-selected-albaranes').style.display = 'none';
+            document.getElementById('client-search-wrapper-albaranes').style.display = '';
+            document.getElementById('client-search-albaranes').value = '';
+            if (reload) loadAlbaranes();
         }
-        window.clearClientSelectionPedidos = clearClientSelectionPedidos;
+        window.clearClientSelectionAlbaranes = clearClientSelectionAlbaranes;
 
-        // ==================== CARGAR PEDIDOS ====================
-        async function loadOrders(page = 1) {
+        // ==================== CARGAR ALBARANES ====================
+        async function loadAlbaranes(page = 1) {
             grid.showLoading();
             try {
                 const anyo = document.getElementById('filter-anyo').value;
@@ -757,7 +754,7 @@
                 const pais = document.getElementById('filter-pais').value;
                 const provincia = document.getElementById('filter-provincia').value;
 
-                let url = `${API_URL}/api/pedidos?page=${page}&page_size=50&`;
+                let url = `${API_URL}/api/albaranes?page=${page}&page_size=50&`;
                 if (anyo) url += `anyo=${anyo}&`;
                 if (fechaDesde) url += `fecha_desde=${fechaDesde}&`;
                 if (fechaHasta) url += `fecha_hasta=${fechaHasta}&`;
@@ -765,40 +762,40 @@
                 if (pais) url += `pais=${encodeURIComponent(pais)}&`;
                 if (provincia) url += `provincia=${encodeURIComponent(provincia)}&`;
 
-                console.log('[PEDIDOS] Cargando:', url);
+                console.log('[ALBARANES] Cargando:', url);
 
                 const response = await fetch(url, { credentials: 'include' });
                 const data = await response.json();
 
-                console.log('[PEDIDOS] Resultado:', data.total, 'registros, cliente filtro:', cliente || '(ninguno)');
+                console.log('[ALBARANES] Resultado:', data.total, 'registros, cliente filtro:', cliente || '(ninguno)');
 
-                if (!response.ok) throw new Error(data.error || 'Error loading orders');
+                if (!response.ok) throw new Error(data.error || 'Error loading delivery notes');
 
-                allOrders = data.pedidos || [];
-                grid.setPaginatedData(allOrders, {
+                allAlbaranes = data.albaranes || [];
+                grid.setPaginatedData(allAlbaranes, {
                     page: data.page,
                     page_size: data.page_size,
                     total: data.total,
                     total_pages: data.total_pages
                 });
             } catch (error) {
-                console.error('Error loading orders:', error);
+                console.error('Error loading delivery notes:', error);
                 grid.setData([]);
             }
         }
 
         // ==================== FILTROS ====================
-        function applyFilters() { loadOrders(); }
+        function applyFilters() { loadAlbaranes(); }
         function clearFilters() {
             document.getElementById('filter-anyo').value = '';
             document.getElementById('filter-fecha-desde').value = '';
             document.getElementById('filter-fecha-hasta').value = '';
             document.getElementById('filter-pais').value = '';
             document.getElementById('filter-provincia').value = '';
-            clearClientSelectionPedidos(false);
+            clearClientSelectionAlbaranes(false);
             loadLocationFilters(null);
             document.querySelectorAll('.date-range-presets .period-btn').forEach(b => b.classList.remove('active'));
-            loadOrders();
+            loadAlbaranes();
         }
 
         function setDateRange(preset) {
@@ -852,42 +849,40 @@
         }
 
         // ==================== DETALLE ====================
-        async function viewOrderDetails(empresa, anyo, pedido) {
-            const modal = document.getElementById('order-detail-modal');
-            const content = document.getElementById('order-detail-content');
+        async function viewAlbaranDetails(empresa, anyo, albaran) {
+            const modal = document.getElementById('albaran-detail-modal');
+            const content = document.getElementById('albaran-detail-content');
             modal.style.display = 'flex';
             content.innerHTML = '<div class="proposals-loading"><div class="spinner"></div><p>Cargando...</p></div>';
 
             try {
-                const response = await fetch(`${API_URL}/api/pedidos/${empresa}/${anyo}/${pedido}`, { credentials: 'include' });
-                if (!response.ok) throw new Error('Error loading order details');
+                const response = await fetch(`${API_URL}/api/albaranes/${empresa}/${anyo}/${albaran}`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Error loading delivery note details');
 
                 const data = await response.json();
-                const order = data.pedido;
-                const lines = order.lineas || [];
+                const albData = data.albaran;
+                const lines = albData.lineas || [];
 
                 content.innerHTML = `
                     <div class="proposal-info">
-                        <div class="proposal-info-item"><label># Pedido</label><span>${order.anyo}/${order.pedido}</span></div>
-                        <div class="proposal-info-item"><label>${t('orders.date')}</label><span>${PageCommon.formatDate(order.fecha)}</span></div>
-                        <div class="proposal-info-item"><label>${t('orders.deliveryDate')}</label><span>${order.fecha_entrega ? PageCommon.formatDate(order.fecha_entrega) : '-'}</span></div>
-                        <div class="proposal-info-item"><label>${t('orders.client')}</label><span>${order.cliente_nombre || order.cliente}</span></div>
-                        ${order.numpedcli ? `<div class="proposal-info-item"><label>${t('orders.reference') || 'Referencia'}</label><span>${order.numpedcli}</span></div>` : ''}
-                        <div class="proposal-info-item"><label>${t('orders.total')}</label><span style="font-weight:600;color:var(--primary);">${PageCommon.formatCurrency(order.total)} €</span></div>
+                        <div class="proposal-info-item"><label># Albaran</label><span>${albData.anyo}/${albData.albaran}</span></div>
+                        <div class="proposal-info-item"><label>${t('deliveryNotes.date')}</label><span>${PageCommon.formatDate(albData.fecha)}</span></div>
+                        <div class="proposal-info-item"><label>${t('deliveryNotes.client')}</label><span>${albData.cliente_nombre || albData.cliente}</span></div>
+                        <div class="proposal-info-item"><label>${t('deliveryNotes.total')}</label><span style="font-weight:600;color:var(--primary);">${PageCommon.formatCurrency(albData.total)} €</span></div>
                     </div>
-                    <h3 class="proposal-lines-title">${t('orders.lines')}</h3>
+                    <h3 class="proposal-lines-title">${t('deliveryNotes.lines')}</h3>
                     <div class="order-lines-table">
                         <div class="table-scroll-container">
                             <table class="proposals-table" style="min-width: auto;">
                                 <thead>
                                     <tr>
-                                        <th style="width:60px;">${t('orders.image')}</th>
-                                        <th>${t('orders.article')}</th>
-                                        <th>${t('orders.description')}</th>
-                                        <th>${t('orders.format')}</th>
-                                        <th class="text-right">${t('orders.quantity')}</th>
-                                        <th class="text-right">${t('orders.price')}</th>
-                                        <th class="text-right">${t('orders.amount')}</th>
+                                        <th style="width:60px;">${t('deliveryNotes.image')}</th>
+                                        <th>${t('deliveryNotes.article')}</th>
+                                        <th>${t('deliveryNotes.description')}</th>
+                                        <th>${t('deliveryNotes.format')}</th>
+                                        <th class="text-right">${t('deliveryNotes.quantity')}</th>
+                                        <th class="text-right">${t('deliveryNotes.price')}</th>
+                                        <th class="text-right">${t('deliveryNotes.amount')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -921,15 +916,15 @@
                                 </div>
                                 <div class="order-line-card-details">
                                     <div class="order-line-card-detail">
-                                        <span class="detail-label">${t('orders.format')}</span>
+                                        <span class="detail-label">${t('deliveryNotes.format')}</span>
                                         <span class="detail-value">${line.formato_abreviado || line.formato || '-'}</span>
                                     </div>
                                     <div class="order-line-card-detail">
-                                        <span class="detail-label">${t('orders.quantity')}</span>
+                                        <span class="detail-label">${t('deliveryNotes.quantity')}</span>
                                         <span class="detail-value">${PageCommon.formatCurrency(line.cantidad)}</span>
                                     </div>
                                     <div class="order-line-card-detail">
-                                        <span class="detail-label">${t('orders.price')}</span>
+                                        <span class="detail-label">${t('deliveryNotes.price')}</span>
                                         <span class="detail-value">${PageCommon.formatCurrency(line.precio)}</span>
                                     </div>
                                 </div>
@@ -942,8 +937,8 @@
             }
         }
 
-        function closeOrderModal() {
-            document.getElementById('order-detail-modal').style.display = 'none';
+        function closeAlbaranModal() {
+            document.getElementById('albaran-detail-modal').style.display = 'none';
         }
 
         // ==================== MAPA DE CLIENTE ====================
@@ -1009,7 +1004,7 @@
 
                 const parts = [cliente.domicilio, cliente.codpos, cliente.poblacion, cliente.provincia, cliente.pais].filter(p => p && p.trim());
                 if (parts.length === 0) {
-                    UIFeedback.toast(t('orders.noAddress') || 'No hay dirección disponible para este cliente', 'warning');
+                    UIFeedback.toast(t('deliveryNotes.noAddress') || 'No hay dirección disponible para este cliente', 'warning');
                     return;
                 }
                 const address = parts.join(', ');
@@ -1022,14 +1017,14 @@
         window.showClientMap = showClientMap;
 
         // ==================== EVENT LISTENERS ====================
-        document.getElementById('order-detail-modal').addEventListener('click', function(e) {
-            if (e.target === this) closeOrderModal();
+        document.getElementById('albaran-detail-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeAlbaranModal();
         });
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 if (_mapComponent) _mapComponent.hideModal();
-                closeOrderModal();
+                closeAlbaranModal();
                 hideChangePasswordModal();
                 const gf = grid?.getFilters();
                 if (gf) gf.cerrarPopupFiltro();

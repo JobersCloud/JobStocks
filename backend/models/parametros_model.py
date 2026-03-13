@@ -128,6 +128,16 @@ class ParametrosModel:
         return ParametrosModel.get_bool('VISIBLE_PEDIDOS', empresa_id, connection)
 
     @staticmethod
+    def visible_albaranes(empresa_id, connection=None):
+        """Verifica si la sección Albaranes es visible para una empresa"""
+        return ParametrosModel.get_bool('VISIBLE_ALBARANES', empresa_id, connection)
+
+    @staticmethod
+    def visible_facturas(empresa_id, connection=None):
+        """Verifica si la sección Facturas es visible para una empresa"""
+        return ParametrosModel.get_bool('VISIBLE_FACTURAS', empresa_id, connection)
+
+    @staticmethod
     def columnas_opcionales(empresa_id, connection=None):
         """Devuelve lista de columnas opcionales visibles para la empresa."""
         import json

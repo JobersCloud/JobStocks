@@ -36,6 +36,8 @@ from routes.user_session_routes import user_session_bp
 from routes.empresa_routes import empresa_bp
 from routes.audit_routes import audit_bp
 from routes.pedido_routes import pedido_bp
+from routes.albaran_routes import albaran_bp
+from routes.factura_routes import factura_bp
 from routes.db_info_routes import db_info_bp
 from routes.almacen_routes import almacen_bp
 from routes.notification_routes import notification_bp
@@ -150,7 +152,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.42.1'
+APP_VERSION = 'v1.43.0'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -257,7 +259,9 @@ def load_user(user_id):
             company_name=user_data.get('company_name'),
             mostrar_precios=user_data.get('mostrar_precios', False),
             administrador_clientes=user_data.get('administrador_clientes', False),
-            visible_pedidos=user_data.get('visible_pedidos', True)
+            visible_pedidos=user_data.get('visible_pedidos', True),
+            visible_albaranes=user_data.get('visible_albaranes', False),
+            visible_facturas=user_data.get('visible_facturas', False)
         )
     return None
 
@@ -278,6 +282,8 @@ app.register_blueprint(user_session_bp)
 app.register_blueprint(empresa_bp)
 app.register_blueprint(audit_bp)
 app.register_blueprint(pedido_bp)
+app.register_blueprint(albaran_bp)
+app.register_blueprint(factura_bp)
 app.register_blueprint(db_info_bp)
 app.register_blueprint(almacen_bp)
 app.register_blueprint(notification_bp)
@@ -334,6 +340,26 @@ def todas_propuestas_page():
 @login_required
 def todos_pedidos_page():
     return send_from_directory(FRONTEND_DIR, 'todos-pedidos.html')
+
+@app.route('/mis-albaranes.html')
+@login_required
+def mis_albaranes_page():
+    return send_from_directory(FRONTEND_DIR, 'mis-albaranes.html')
+
+@app.route('/todos-albaranes.html')
+@login_required
+def todos_albaranes_page():
+    return send_from_directory(FRONTEND_DIR, 'todos-albaranes.html')
+
+@app.route('/mis-facturas.html')
+@login_required
+def mis_facturas_page():
+    return send_from_directory(FRONTEND_DIR, 'mis-facturas.html')
+
+@app.route('/todas-facturas.html')
+@login_required
+def todas_facturas_page():
+    return send_from_directory(FRONTEND_DIR, 'todas-facturas.html')
 
 @app.route('/usuarios.html')
 @login_required
@@ -584,7 +610,9 @@ def login():
             company_name=user_data.get('company_name'),
             mostrar_precios=user_data.get('mostrar_precios', False),
             administrador_clientes=user_data.get('administrador_clientes', False),
-            visible_pedidos=user_data.get('visible_pedidos', True)
+            visible_pedidos=user_data.get('visible_pedidos', True),
+            visible_albaranes=user_data.get('visible_albaranes', False),
+            visible_facturas=user_data.get('visible_facturas', False)
         )
         login_user(user)
 

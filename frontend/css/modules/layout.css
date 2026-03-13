@@ -11,6 +11,18 @@
     display: none;
 }
 
+/* Ocultar Mis Albaranes / Albaranes por defecto hasta que JS confirme visibilidad */
+#sidebar-mis-albaranes,
+#sidebar-todos-albaranes {
+    display: none;
+}
+
+/* Ocultar Mis Facturas / Facturas por defecto hasta que JS confirme visibilidad */
+#sidebar-mis-facturas,
+#sidebar-todas-facturas {
+    display: none;
+}
+
 /* Sidebar */
 .sidebar {
     width: 240px;

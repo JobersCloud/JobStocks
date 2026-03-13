@@ -1178,6 +1178,164 @@ def toggle_visible_pedidos(user_id):
         }), 500
 
 
+@usuario_bp.route('/<int:user_id>/visible-albaranes', methods=['PUT'])
+@login_required
+@csrf_required
+@administrador_required
+def toggle_visible_albaranes(user_id):
+    """
+    Activar/desactivar visibilidad de albaranes para un usuario (solo administradores)
+    ---
+    tags:
+      - Usuarios
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: user_id
+        in: path
+        type: integer
+        required: true
+        description: ID del usuario
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - visible_albaranes
+          properties:
+            visible_albaranes:
+              type: boolean
+    responses:
+      200:
+        description: Campo actualizado
+      400:
+        description: Datos inválidos
+      404:
+        description: Usuario no encontrado
+    """
+    data = request.json
+    if not data or 'visible_albaranes' not in data:
+        return jsonify({
+            'success': False,
+            'error': 'Campo "visible_albaranes" es requerido'
+        }), 400
+
+    try:
+        from config.database import Database
+        connection = session.get('connection')
+        empresa_id = session.get('empresa_id', '1')
+
+        conn = Database.get_connection(connection)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE users_empresas SET visible_albaranes = ?
+            WHERE user_id = ? AND empresa_id = ?
+        """, (1 if data['visible_albaranes'] else 0, user_id, empresa_id))
+
+        affected = cursor.rowcount
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        if affected == 0:
+            return jsonify({
+                'success': False,
+                'error': 'Usuario no encontrado en esta empresa'
+            }), 404
+
+        estado = 'habilitados' if data['visible_albaranes'] else 'deshabilitados'
+        return jsonify({
+            'success': True,
+            'message': f'Albaranes {estado} para el usuario'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@usuario_bp.route('/<int:user_id>/visible-facturas', methods=['PUT'])
+@login_required
+@csrf_required
+@administrador_required
+def toggle_visible_facturas(user_id):
+    """
+    Activar/desactivar visibilidad de facturas para un usuario (solo administradores)
+    ---
+    tags:
+      - Usuarios
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: user_id
+        in: path
+        type: integer
+        required: true
+        description: ID del usuario
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - visible_facturas
+          properties:
+            visible_facturas:
+              type: boolean
+    responses:
+      200:
+        description: Campo actualizado
+      400:
+        description: Datos inválidos
+      404:
+        description: Usuario no encontrado
+    """
+    data = request.json
+    if not data or 'visible_facturas' not in data:
+        return jsonify({
+            'success': False,
+            'error': 'Campo "visible_facturas" es requerido'
+        }), 400
+
+    try:
+        from config.database import Database
+        connection = session.get('connection')
+        empresa_id = session.get('empresa_id', '1')
+
+        conn = Database.get_connection(connection)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE users_empresas SET visible_facturas = ?
+            WHERE user_id = ? AND empresa_id = ?
+        """, (1 if data['visible_facturas'] else 0, user_id, empresa_id))
+
+        affected = cursor.rowcount
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        if affected == 0:
+            return jsonify({
+                'success': False,
+                'error': 'Usuario no encontrado en esta empresa'
+            }), 404
+
+        estado = 'habilitadas' if data['visible_facturas'] else 'deshabilitadas'
+        return jsonify({
+            'success': True,
+            'message': f'Facturas {estado} para el usuario'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
 @usuario_bp.route('/<int:user_id>/administrador-clientes', methods=['PUT'])
 @login_required
 @csrf_required

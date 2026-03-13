@@ -1374,6 +1374,34 @@ async function displayUserInfo(user) {
         }
     } catch (e) {}
 
+    // Mostrar Mis Albaranes / Albaranes solo si está habilitado (ocultos por defecto en CSS)
+    try {
+        const respAlb = await fetch(`${API_URL}/api/parametros/visible-albaranes`, { credentials: 'include' });
+        if (respAlb.ok) {
+            const dAlb = await respAlb.json();
+            if (dAlb.habilitado) {
+                const elMisAlb = document.getElementById('sidebar-mis-albaranes');
+                const elTodosAlb = document.getElementById('sidebar-todos-albaranes');
+                if (elMisAlb) elMisAlb.style.display = 'flex';
+                if (elTodosAlb) elTodosAlb.style.display = 'flex';
+            }
+        }
+    } catch (e) {}
+
+    // Mostrar Mis Facturas / Facturas solo si está habilitado (ocultos por defecto en CSS)
+    try {
+        const respFac = await fetch(`${API_URL}/api/parametros/visible-facturas`, { credentials: 'include' });
+        if (respFac.ok) {
+            const dFac = await respFac.json();
+            if (dFac.habilitado) {
+                const elMisFac = document.getElementById('sidebar-mis-facturas');
+                const elTodasFac = document.getElementById('sidebar-todas-facturas');
+                if (elMisFac) elMisFac.style.display = 'flex';
+                if (elTodasFac) elTodasFac.style.display = 'flex';
+            }
+        }
+    } catch (e) {}
+
     // Mostrar opción de contexto solo para superusuarios
     const menuItemContext = document.getElementById('menu-item-context');
     const menuDividerContext = document.getElementById('menu-divider-context');
