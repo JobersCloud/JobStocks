@@ -411,6 +411,7 @@
             favoritesGrid = new DataGrid({
                 el: '#favorites-grid',
                 columns: [
+                    { key: '_imagen', label: '', sortable: false, filterable: false, width: '50px' },
                     { key: 'codigo', label: t('table.code'), sortable: true, filterable: true },
                     { key: 'descripcion', label: t('table.description'), sortable: true, filterable: true },
                     { key: 'formato', label: t('table.format'), sortable: true, filterable: true },
@@ -422,6 +423,10 @@
                     { key: '_actions', label: '', sortable: false, filterable: false }
                 ],
                 renderCell: (row, col) => {
+                    if (col.key === '_imagen') {
+                        const code = (row.codigo || '').trim();
+                        return `<img class="fav-thumb" data-thumb-code="${code}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:40px;height:40px;object-fit:cover;border-radius:4px;background:var(--bg-secondary,#eee);">`;
+                    }
                     if (col.key === 'existencias') {
                         const val = parseFloat(row.existencias) || 0;
                         return `<span style="font-weight:600">${val.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2})} ${row.unidad || ''}</span>`;
@@ -439,8 +444,10 @@
                 },
                 renderCard: (row) => {
                     const existencias = parseFloat(row.existencias) || 0;
+                    const code = (row.codigo || '').trim();
                     return `
-                        <div class="stock-card-header">
+                        <div class="stock-card-header" style="display:flex; gap:12px; align-items:center;">
+                            <img class="fav-thumb" data-thumb-code="${code}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:56px;height:56px;object-fit:cover;border-radius:6px;background:var(--bg-secondary,#eee);flex-shrink:0;">
                             <div class="stock-card-title">${row.descripcion || row.codigo}</div>
                         </div>
                         <div class="stock-card-body">
@@ -469,6 +476,7 @@
             frequentGrid = new DataGrid({
                 el: '#frequent-grid',
                 columns: [
+                    { key: '_imagen', label: '', sortable: false, filterable: false, width: '50px' },
                     { key: 'codigo', label: t('table.code'), sortable: true, filterable: true },
                     { key: 'descripcion', label: t('table.description'), sortable: true, filterable: true },
                     { key: 'formato', label: t('table.format'), sortable: true, filterable: true },
@@ -481,6 +489,10 @@
                     { key: '_actions', label: '', sortable: false, filterable: false }
                 ],
                 renderCell: (row, col) => {
+                    if (col.key === '_imagen') {
+                        const code = (row.codigo || '').trim();
+                        return `<img class="fav-thumb" data-thumb-code="${code}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:40px;height:40px;object-fit:cover;border-radius:4px;background:var(--bg-secondary,#eee);">`;
+                    }
                     if (col.key === 'veces_pedido') {
                         return `<span style="font-weight:600; color: var(--primary);">${row.veces_pedido}</span>`;
                     }
@@ -506,10 +518,14 @@
                 },
                 renderCard: (row) => {
                     const totalCantidad = parseFloat(row.total_cantidad) || 0;
+                    const code = (row.codigo || '').trim();
                     return `
-                        <div class="stock-card-header">
-                            <div class="stock-card-title">${row.descripcion || row.codigo}</div>
-                            <span class="badge badge-primary">${row.veces_pedido}x</span>
+                        <div class="stock-card-header" style="display:flex; gap:12px; align-items:center;">
+                            <img class="fav-thumb" data-thumb-code="${code}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:56px;height:56px;object-fit:cover;border-radius:6px;background:var(--bg-secondary,#eee);flex-shrink:0;">
+                            <div>
+                                <div class="stock-card-title">${row.descripcion || row.codigo}</div>
+                                <span class="badge badge-primary">${row.veces_pedido}x</span>
+                            </div>
                         </div>
                         <div class="stock-card-body">
                             <div class="stock-card-field"><span class="stock-card-label">${t('table.code')}</span><span class="stock-card-value">${row.codigo}</span></div>
@@ -555,24 +571,48 @@
             else loadFrequent();
         }
 
+        // ==================== THUMBNAILS ====================
+        async function loadThumbnails(items) {
+            const codigos = [...new Set(items.map(i => (i.codigo || '').trim()).filter(Boolean))];
+            if (!codigos.length) return;
+            try {
+                const empresaId = PageCommon.getEmpresaId() || '1';
+                const response = await fetch(`${API_URL}/api/stocks/thumbnails?empresa_id=${empresaId}`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ codigos, quality: 'thumb' })
+                });
+                if (!response.ok) return;
+                const thumbs = await response.json();
+                document.querySelectorAll('.fav-thumb[data-thumb-code]').forEach(img => {
+                    const code = img.dataset.thumbCode;
+                    if (thumbs[code]) {
+                        img.src = 'data:image/jpeg;base64,' + thumbs[code];
+                    }
+                });
+            } catch (e) {
+                console.error('Error loading thumbnails:', e);
+            }
+        }
+
         // ==================== DATA LOADING ====================
         async function loadFavorites() {
             favoritesGrid.showLoading();
             try {
                 const empresaId = PageCommon.getEmpresaId() || localStorage.getItem('empresa_id') || '1';
-                console.log('[favoritos] loadFavorites empresa_id:', empresaId);
                 const response = await fetch(`${API_URL}/api/favoritos?empresa_id=${empresaId}`, { credentials: 'include' });
                 if (!response.ok) {
                     const errData = await response.json().catch(() => ({}));
-                    console.error('[favoritos] Error:', response.status, errData);
                     UIFeedback.toast(errData.error || t('common.error'), 'error');
                     favoritesGrid.setData([]);
                     return;
                 }
                 const data = await response.json();
-                console.log('[favoritos] Loaded:', (data.favoritos || []).length, 'favoritos');
-                favoritesGrid.setData(data.favoritos || []);
-                document.getElementById('count-favoritos').textContent = (data.favoritos || []).length;
+                const favoritos = data.favoritos || [];
+                favoritesGrid.setData(favoritos);
+                document.getElementById('count-favoritos').textContent = favoritos.length;
+                loadThumbnails(favoritos);
             } catch (e) {
                 console.error('Error loading favorites:', e);
                 UIFeedback.toast(t('common.error'), 'error');
@@ -592,8 +632,10 @@
                     return;
                 }
                 const data = await response.json();
-                frequentGrid.setData(data.productos || []);
-                document.getElementById('count-frecuentes').textContent = (data.productos || []).length;
+                const productos = data.productos || [];
+                frequentGrid.setData(productos);
+                document.getElementById('count-frecuentes').textContent = productos.length;
+                loadThumbnails(productos);
             } catch (e) {
                 console.error('Error loading frequent:', e);
                 UIFeedback.toast(t('common.error'), 'error');
