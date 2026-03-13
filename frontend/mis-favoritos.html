@@ -425,7 +425,7 @@
                 renderCell: (row, col) => {
                     if (col.key === '_imagen') {
                         const code = (row.codigo || '').trim();
-                        return `<img class="fav-thumb" data-thumb-code="${code}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:40px;height:40px;object-fit:cover;border-radius:4px;background:var(--bg-secondary,#eee);">`;
+                        return `<img class="fav-thumb" data-thumb-code="${code}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:40px;height:40px;object-fit:cover;border-radius:4px;background:var(--bg-secondary,#eee);cursor:pointer;" onclick="viewInStocks('${code.replace(/'/g, "\\'")}')" title="${t('favorites.viewInStocks')}">`;
                     }
                     if (col.key === 'existencias') {
                         const val = parseFloat(row.existencias) || 0;
@@ -447,7 +447,7 @@
                     const code = (row.codigo || '').trim();
                     return `
                         <div class="stock-card-header" style="display:flex; gap:12px; align-items:center;">
-                            <img class="fav-thumb" data-thumb-code="${code}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:56px;height:56px;object-fit:cover;border-radius:6px;background:var(--bg-secondary,#eee);flex-shrink:0;">
+                            <img class="fav-thumb" data-thumb-code="${code}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:56px;height:56px;object-fit:cover;border-radius:6px;background:var(--bg-secondary,#eee);flex-shrink:0;cursor:pointer;" onclick="viewInStocks('${code.replace(/'/g, "\\'")}')" title="${t('favorites.viewInStocks')}">
                             <div class="stock-card-title">${row.descripcion || row.codigo}</div>
                         </div>
                         <div class="stock-card-body">
@@ -491,7 +491,7 @@
                 renderCell: (row, col) => {
                     if (col.key === '_imagen') {
                         const code = (row.codigo || '').trim();
-                        return `<img class="fav-thumb" data-thumb-code="${code}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:40px;height:40px;object-fit:cover;border-radius:4px;background:var(--bg-secondary,#eee);">`;
+                        return `<img class="fav-thumb" data-thumb-code="${code}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:40px;height:40px;object-fit:cover;border-radius:4px;background:var(--bg-secondary,#eee);cursor:pointer;" onclick="viewInStocks('${code.replace(/'/g, "\\'")}')" title="${t('favorites.viewInStocks')}">`;
                     }
                     if (col.key === 'veces_pedido') {
                         return `<span style="font-weight:600; color: var(--primary);">${row.veces_pedido}</span>`;
@@ -521,7 +521,7 @@
                     const code = (row.codigo || '').trim();
                     return `
                         <div class="stock-card-header" style="display:flex; gap:12px; align-items:center;">
-                            <img class="fav-thumb" data-thumb-code="${code}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:56px;height:56px;object-fit:cover;border-radius:6px;background:var(--bg-secondary,#eee);flex-shrink:0;">
+                            <img class="fav-thumb" data-thumb-code="${code}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:56px;height:56px;object-fit:cover;border-radius:6px;background:var(--bg-secondary,#eee);flex-shrink:0;cursor:pointer;" onclick="viewInStocks('${code.replace(/'/g, "\\'")}')" title="${t('favorites.viewInStocks')}">
                             <div>
                                 <div class="stock-card-title">${row.descripcion || row.codigo}</div>
                                 <span class="badge badge-primary">${row.veces_pedido}x</span>
@@ -712,7 +712,7 @@
 
         function viewInStocks(codigo) {
             const empresaId = PageCommon.getEmpresaId();
-            window.location.href = `index.html?empresa=${empresaId}&buscar=${encodeURIComponent(codigo)}`;
+            window.location.href = `index.html?empresa=${empresaId}&detalle=${encodeURIComponent(codigo)}`;
         }
     </script>
 </body>

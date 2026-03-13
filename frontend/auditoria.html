@@ -400,19 +400,19 @@
                         <div class="audit-log-filters">
                             <div class="filter-group">
                                 <label>Desde</label>
-                                <input type="date" id="audit-fecha-desde">
+                                <input type="date" id="audit-fecha-desde" onchange="applyAuditFilters()">
                             </div>
                             <div class="filter-group">
                                 <label>Hasta</label>
-                                <input type="date" id="audit-fecha-hasta">
+                                <input type="date" id="audit-fecha-hasta" onchange="applyAuditFilters()">
                             </div>
                             <div class="filter-group">
                                 <label>Acción</label>
-                                <select id="audit-accion"><option value="">Todas</option></select>
+                                <select id="audit-accion" onchange="applyAuditFilters()"><option value="">Todas</option></select>
                             </div>
                             <div class="filter-group">
                                 <label>Resultado</label>
-                                <select id="audit-resultado">
+                                <select id="audit-resultado" onchange="applyAuditFilters()">
                                     <option value="">Todos</option>
                                     <option value="SUCCESS">Éxito</option>
                                     <option value="FAILED">Fallido</option>
@@ -421,7 +421,7 @@
                             </div>
                             <div class="filter-group">
                                 <label>Usuario</label>
-                                <input type="text" id="audit-usuario" placeholder="Buscar...">
+                                <input type="text" id="audit-usuario" placeholder="Buscar..." onkeypress="if(event.key==='Enter')applyAuditFilters()">
                             </div>
                             <div class="filter-buttons btn-icon-group">
                                 <button class="btn-icon btn-icon-primary" onclick="applyAuditFilters()" title="Filtrar">

@@ -4640,8 +4640,19 @@ document.addEventListener('DOMContentLoaded', async function () {
         await cargarOpcionesFiltros();
         await verificarModoEspejo();
         // Comprobar si hay parámetro de búsqueda en la URL (desde favoritos u otras páginas)
-        const urlBuscar = new URLSearchParams(window.location.search).get('buscar');
-        if (urlBuscar) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlBuscar = urlParams.get('buscar');
+        const urlDetalle = urlParams.get('detalle');
+        if (urlDetalle) {
+            // Buscar por código y abrir detalle automáticamente
+            window._buscarDesdeUrl = urlDetalle;
+            await buscarPorCodigo(urlDetalle);
+            // Abrir modal de detalle del primer resultado encontrado
+            if (allStocksData.length > 0) {
+                const match = allStocksData.find(s => (s.codigo || '').trim() === urlDetalle.trim()) || allStocksData[0];
+                verDetalle(match);
+            }
+        } else if (urlBuscar) {
             // Buscar por código usando la API de search
             window._buscarDesdeUrl = urlBuscar;
             await buscarPorCodigo(urlBuscar);
