@@ -1,61 +1,55 @@
 /* ==================== AUDITORIA DE USUARIOS ==================== */
-.audit-filters {
-    background: var(--bg-secondary, #f8f9fa);
-    padding: 16px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-}
 
-.audit-filters .filter-row {
+/* Filtros de logs de auditoría - una sola fila en desktop */
+.audit-log-filters {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
     align-items: flex-end;
+    background: var(--bg-secondary, #f8f9fa);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
 }
 
-.audit-filters .filter-group {
+.audit-log-filters .filter-group {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
+    flex: 1;
+    min-width: 100px;
 }
 
-.audit-filters .filter-group label {
-    font-size: 0.85rem;
+.audit-log-filters .filter-group label {
+    font-size: 0.75rem;
     color: var(--text-secondary, #666);
-    font-weight: 500;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
-.audit-filters .filter-group input,
-.audit-filters .filter-group select {
-    padding: 8px 12px;
+.audit-log-filters .filter-group input,
+.audit-log-filters .filter-group select {
+    padding: 6px 8px;
     border: 1px solid var(--border, #e0e0e0);
     border-radius: 6px;
     background: var(--bg-primary, #fff);
     color: var(--text-primary, #333);
-    font-size: 0.9rem;
-    min-width: 120px;
+    font-size: 0.85rem;
 }
 
-.audit-filters .filter-group input:focus,
-.audit-filters .filter-group select:focus {
+.audit-log-filters .filter-group input:focus,
+.audit-log-filters .filter-group select:focus {
     outline: none;
     border-color: var(--primary);
 }
 
-.audit-filters .filter-buttons {
-    display: flex;
-    gap: 8px;
-    align-items: flex-end;
+.audit-log-filters .filter-buttons {
+    flex-shrink: 0;
 }
 
-.audit-filters .btn-secondary {
-    background: transparent;
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-}
-
-.audit-filters .btn-secondary:hover {
-    background: var(--bg-secondary);
+/* Grid de auditoría: altura mínima para que sea usable */
+#audit-grid .table-scroll-container {
+    min-height: 350px;
 }
 
 /* Desktop: tabla, movil: tarjetas */
@@ -153,44 +147,30 @@
         padding: 0;
     }
 
-    .audit-filters {
+    .audit-log-filters {
+        flex-direction: column;
         padding: 12px;
         margin-bottom: 12px;
     }
 
-    .audit-filters .filter-row {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .audit-filters .filter-group {
+    .audit-log-filters .filter-group {
         width: 100%;
-    }
-
-    .audit-filters .filter-group label {
-        font-size: 0.8rem;
-        margin-bottom: 2px;
-    }
-
-    .audit-filters .filter-group input,
-    .audit-filters .filter-group select {
-        width: 100%;
-        padding: 10px 12px;
-        font-size: 16px; /* Evita zoom en iOS */
         min-width: unset;
     }
 
-    .audit-filters .filter-buttons {
+    .audit-log-filters .filter-group input,
+    .audit-log-filters .filter-group select {
         width: 100%;
-        display: flex;
-        gap: 10px;
-        margin-top: 5px;
+        padding: 10px 12px;
+        font-size: 16px; /* Evita zoom en iOS */
     }
 
-    .audit-filters .filter-buttons button {
-        flex: 1;
-        padding: 12px;
-        font-size: 14px;
+    .audit-log-filters .filter-buttons {
+        width: 100%;
+    }
+
+    #audit-grid .table-scroll-container {
+        min-height: unset;
     }
 
     /* Tarjetas de auditoría en móvil */
@@ -400,12 +380,12 @@
 }
 
 /* Dark mode auditoria */
-[data-theme="dark"] .audit-filters {
+[data-theme="dark"] .audit-log-filters {
     background: var(--bg-secondary);
 }
 
-[data-theme="dark"] .audit-filters .filter-group input,
-[data-theme="dark"] .audit-filters .filter-group select {
+[data-theme="dark"] .audit-log-filters .filter-group input,
+[data-theme="dark"] .audit-log-filters .filter-group select {
     background: var(--bg-primary);
     border-color: var(--border);
     color: var(--text-primary);
