@@ -26,7 +26,7 @@ SELECT
     ISNULL(calibre, 0) AS calibre,
     ISNULL(cantidad, 0) AS cantidad,
     ISNULL(precio, 0) AS precio,
-    ISNULL(importe, 0) AS importe,
+    ISNULL(neto, 0) AS importe,
     ISNULL(pallets, 0) AS pallets,
     ISNULL(total_cajas, 0) AS cajas,
     ffactura AS fecha,
