@@ -254,10 +254,14 @@ def visible_pedidos():
     empresa_id = get_empresa_id_from_connection(connection)
     global_habilitado = ParametrosModel.visible_pedidos(empresa_id, connection)
 
-    # Si hay usuario logueado, comprobar también su flag visible_pedidos
+    # Admins/superusuarios siempre ven si el global está activo; usuarios normales necesitan flag individual
     habilitado = global_habilitado
     if global_habilitado and cu and cu.is_authenticated:
-        habilitado = getattr(cu, 'visible_pedidos', True)
+        rol = getattr(cu, 'rol', 'usuario')
+        if rol in ('administrador', 'superusuario'):
+            habilitado = True
+        else:
+            habilitado = getattr(cu, 'visible_pedidos', False)
 
     return jsonify({
         'habilitado': habilitado,
@@ -295,10 +299,14 @@ def visible_albaranes():
     empresa_id = get_empresa_id_from_connection(connection)
     global_habilitado = ParametrosModel.visible_albaranes(empresa_id, connection)
 
-    # Si hay usuario logueado, comprobar también su flag visible_albaranes
+    # Admins/superusuarios siempre ven si el global está activo; usuarios normales necesitan flag individual
     habilitado = global_habilitado
     if global_habilitado and cu and cu.is_authenticated:
-        habilitado = getattr(cu, 'visible_albaranes', True)
+        rol = getattr(cu, 'rol', 'usuario')
+        if rol in ('administrador', 'superusuario'):
+            habilitado = True
+        else:
+            habilitado = getattr(cu, 'visible_albaranes', False)
 
     return jsonify({
         'habilitado': habilitado,
@@ -336,10 +344,14 @@ def visible_facturas():
     empresa_id = get_empresa_id_from_connection(connection)
     global_habilitado = ParametrosModel.visible_facturas(empresa_id, connection)
 
-    # Si hay usuario logueado, comprobar también su flag visible_facturas
+    # Admins/superusuarios siempre ven si el global está activo; usuarios normales necesitan flag individual
     habilitado = global_habilitado
     if global_habilitado and cu and cu.is_authenticated:
-        habilitado = getattr(cu, 'visible_facturas', True)
+        rol = getattr(cu, 'rol', 'usuario')
+        if rol in ('administrador', 'superusuario'):
+            habilitado = True
+        else:
+            habilitado = getattr(cu, 'visible_facturas', False)
 
     return jsonify({
         'habilitado': habilitado,
