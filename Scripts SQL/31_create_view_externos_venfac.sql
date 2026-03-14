@@ -21,9 +21,9 @@ SELECT
     RTRIM(f.cliente) AS cliente,
     RTRIM(ISNULL(c.razon, '')) AS cliente_nombre,
     RTRIM(ISNULL(f.serie, '')) AS serie,
-    ISNULL(f.base_imponible, 0) AS base_imponible,
+    ISNULL(f.total_neto -f.importe_dto, 0) AS base_imponible,
     ISNULL(f.iva, 0) AS iva,
-    ISNULL(f.total, 0) AS total,
+    ISNULL(f.total_fac, 0) AS total,
     RTRIM(ISNULL(f.divisa, '')) AS divisa,
     RTRIM(ISNULL(f.usuario, '')) AS usuario,
     f.falta AS fecha_alta
