@@ -918,6 +918,28 @@
 }
 
 /* ==================== MODAL DETALLE DE PEDIDO ==================== */
+/* Fullscreen dentro del masterpage: respetar header y sidebar */
+#order-detail-modal,
+#albaran-detail-modal,
+#invoice-detail-modal {
+    top: 70px;
+    left: 240px;
+    width: calc(100% - 240px);
+    height: calc(100% - 70px);
+    background: rgba(0, 0, 0, 0.15);
+    backdrop-filter: none;
+    align-items: stretch;
+    justify-content: stretch;
+}
+
+/* Sidebar colapsado */
+body:has(.sidebar.collapsed) #order-detail-modal,
+body:has(.sidebar.collapsed) #albaran-detail-modal,
+body:has(.sidebar.collapsed) #invoice-detail-modal {
+    left: 60px;
+    width: calc(100% - 60px);
+}
+
 #order-detail-modal .modal-content,
 #albaran-detail-modal .modal-content,
 #invoice-detail-modal .modal-content {
@@ -1251,6 +1273,19 @@
     }
 
     /* Order/Albaran/Invoice detail modal - card style on mobile */
+    #order-detail-modal,
+    #albaran-detail-modal,
+    #invoice-detail-modal {
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        align-items: center;
+        justify-content: center;
+    }
+
     #order-detail-modal .modal-content,
     #albaran-detail-modal .modal-content,
     #invoice-detail-modal .modal-content {
