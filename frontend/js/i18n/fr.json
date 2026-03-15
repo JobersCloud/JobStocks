@@ -232,6 +232,7 @@
     "clientRequired": "Vous devez sélectionner un client",
     "clientHelp": "Tapez au moins 3 caractères pour rechercher",
     "clientAssigned": "Client assigné à votre utilisateur",
+    "noClientAssigned": "Vous n'avez pas de client assigné. Contactez l'administrateur.",
     "referenceLabel": "Référence (optionnel)",
     "referencePlaceholder": "Votre référence interne pour cette demande...",
     "comments": "Commentaires supplémentaires (optionnel) :",

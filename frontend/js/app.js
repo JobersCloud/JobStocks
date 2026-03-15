@@ -4207,6 +4207,8 @@ function mostrarFormularioEnvio() {
     const tieneClienteAsignado = !!clientePreseleccionado && !esAdminClientes;
     // Admin clientes con cliente pre-asignado: mostrar seleccionado pero permitir cambiar
     const adminConClientePre = esAdminClientes && !!clientePreseleccionado;
+    // Usuario sin cliente y sin permiso de admin clientes: no puede buscar clientes
+    const sinClienteYsinPermiso = !clientePreseleccionado && !esAdminClientes;
 
     // HTML para el campo de empresa del usuario (solo si no tiene cliente asignado)
     const companyNameHtml = (!tieneClienteAsignado && !adminConClientePre && companyName) ? `
@@ -4226,6 +4228,9 @@ function mostrarFormularioEnvio() {
             ${companyNameHtml}
             <div class="form-group">
                 <label>${t('shipping.clientLabel') || 'Cliente'}:</label>
+                ${sinClienteYsinPermiso ? `
+                <p class="form-help form-help-warning">${t('shipping.noClientAssigned') || 'No tienes un cliente asignado. Contacta con el administrador.'}</p>
+                ` : `
                 <div class="client-search-container">
                     <div class="client-search-input-wrapper" id="client-search-wrapper-envio" style="${(tieneClienteAsignado || adminConClientePre) ? 'display:none' : ''}">
                         <input type="text" id="client-search-envio" placeholder="${t('shipping.clientPlaceholder') || 'Buscar cliente...'}" autocomplete="off">
@@ -4240,9 +4245,10 @@ function mostrarFormularioEnvio() {
                         ${tieneClienteAsignado ? '' : `<button type="button" class="client-clear-btn" onclick="clearClientSelectionEnvio()" title="${t('common.clear') || 'Limpiar'}">×</button>`}
                     </div>
                 </div>
+                `}
                 <input type="hidden" id="cliente-id-envio" value="${clientePreseleccionado}">
                 <input type="hidden" id="company-name-envio" value="${companyName}">
-                <p class="form-help">${tieneClienteAsignado ? (t('shipping.clientAssigned') || 'Cliente asignado a tu usuario') : (t('shipping.clientHelp') || 'Escribe al menos 3 caracteres para buscar')}</p>
+                ${!sinClienteYsinPermiso ? `<p class="form-help">${tieneClienteAsignado ? (t('shipping.clientAssigned') || 'Cliente asignado a tu usuario') : (t('shipping.clientHelp') || 'Escribe al menos 3 caracteres para buscar')}</p>` : ''}
             </div>
             <div class="form-group">
                 <label>${t('shipping.referenceLabel')}:</label>
