@@ -294,7 +294,7 @@ def enviar_email_bienvenida(email, username, password, full_name, empresa_id):
 
     # Crear mensaje
     msg = MIMEMultipart()
-    msg['From'] = email_config['email_from']
+    msg['From'] = f"Sistema de Stocks <{email_config['email_from']}>"
     msg['To'] = email
     msg['Subject'] = "Bienvenido - Tu cuenta ha sido creada"
     msg['Date'] = formatdate(localtime=True)
@@ -892,7 +892,7 @@ def reenviar_email_bienvenida(user_id):
     try:
         connection = session.get('connection')
         empresa_id = session.get('empresa_id', '1')
-        user = get_user_by_id(user_id, connection)
+        user = get_user_by_id_and_empresa(user_id, connection, empresa_id)
 
         if not user:
             return jsonify({'success': False, 'error': 'Usuario no encontrado'}), 404

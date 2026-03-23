@@ -307,6 +307,24 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.43.7', date: '2026-03-23', title: 'Corrección reenvío email bienvenida', items: [
+                {type: 'fix', text: 'Corregido error "Usuario no encontrado" al reenviar email de bienvenida a usuarios inactivos'}
+            ]},
+            { version: 'v1.43.6', date: '2026-03-17', title: 'Mejoras en formulario de registro', items: [
+                {type: 'improve', text: 'El email se pide antes que el usuario y auto-rellena el campo de usuario'},
+                {type: 'new', text: 'Nombres de países traducidos según el idioma seleccionado (ES/EN/FR)'},
+                {type: 'fix', text: 'Botón "Reintentar" mostraba texto sin traducir en página de error de conexión'},
+                {type: 'improve', text: 'Timeout de 8 segundos para detección más rápida de servidores caídos'}
+            ]},
+            { version: 'v1.43.3', date: '2026-03-15', title: 'Error de conexión a base de datos', items: [
+                {type: 'new', text: 'Modal informativo cuando no se puede conectar con el servidor de datos del cliente'},
+                {type: 'improve', text: 'Detección automática de errores de conexión a BD en login y durante el uso normal'},
+                {type: 'fix', text: 'Nombre del remitente "Sistema de Stocks" unificado en todos los emails'}
+            ]},
+            { version: 'v1.43.2', date: '2026-03-13', title: 'Correcciones propuestas y modales', items: [
+                {type: 'fix', text: 'Error al generar PDF si los comentarios contenían caracteres especiales (<, >, &)'},
+                {type: 'fix', text: 'Usuarios sin cliente asignado pueden enviar propuestas sin ver el buscador de clientes'}
+            ]},
             { version: 'v1.43.0', date: '2026-03-13', title: 'Secciones de Albaranes y Facturas', items: [
                 {type: 'new', text: 'Mis Albaranes: consulta de albaranes del usuario con detalle de líneas y thumbnails'},
                 {type: 'new', text: 'Todos los Albaranes (admin): gestión de albaranes con filtros avanzados por cliente, país y provincia'},

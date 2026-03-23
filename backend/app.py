@@ -152,7 +152,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.43.0'
+APP_VERSION = 'v1.43.7'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -554,7 +554,16 @@ def login():
                 pass
 
     # Verificar usuario con conexión dinámica
-    user_data = verify_user(username, password, connection, empresa_id)
+    from database.users_db import DatabaseConnectionError
+    try:
+        user_data = verify_user(username, password, connection, empresa_id)
+    except DatabaseConnectionError as e:
+        logging.getLogger(__name__).error(f"Error de conexión BD cliente: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'No se puede conectar con el servidor de datos. Inténtalo de nuevo más tarde.',
+            'error': 'database_connection'
+        }), 503
 
     if user_data:
         # ==================== LOGIN EXITOSO (1 sola conexión para todo) ====================
@@ -1290,6 +1299,25 @@ def ratelimit_handler(e):
         'message': 'Demasiados intentos. Por favor, espera un momento antes de intentarlo de nuevo.',
         'error': 'rate_limit_exceeded'
     }), 429
+
+@app.errorhandler(500)
+def internal_error_handler(e):
+    """Handler global que detecta errores de conexión a BD y devuelve 503"""
+    import pyodbc
+    original = getattr(e, 'original_exception', None)
+    if isinstance(original, (pyodbc.OperationalError, pyodbc.InterfaceError)):
+        logging.getLogger(__name__).error(f"Error de conexión BD: {original}")
+        return jsonify({
+            'success': False,
+            'message': 'No se puede conectar con el servidor de datos.',
+            'error': 'database_connection'
+        }), 503
+    logging.getLogger(__name__).error(f"Error interno: {e}")
+    return jsonify({
+        'success': False,
+        'message': 'Error interno del servidor.',
+        'error': 'internal_error'
+    }), 500
 
 if __name__ == '__main__':
     print("=" * 60)
