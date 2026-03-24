@@ -28,17 +28,19 @@ class ParametrosModel:
             connection: ID para conexión (opcional, si no se pasa obtiene de sesión)
         """
         conn = Database.get_connection(connection)
-        cursor = conn.cursor()
+        try:
+            cursor = conn.cursor()
 
-        cursor.execute("""
-            SELECT valor FROM parametros WHERE clave = ? AND empresa_id = ?
-        """, (clave, empresa_id))
+            cursor.execute("""
+                SELECT valor FROM parametros WHERE clave = ? AND empresa_id = ?
+            """, (clave, empresa_id))
 
-        row = cursor.fetchone()
-        cursor.close()
-        conn.close()
+            row = cursor.fetchone()
+            cursor.close()
 
-        return row[0] if row else None
+            return row[0] if row else None
+        finally:
+            conn.close()
 
     @staticmethod
     def get_bool(clave, empresa_id, connection=None):
@@ -50,47 +52,51 @@ class ParametrosModel:
     def set(clave, valor, empresa_id, connection=None):
         """Actualiza el valor de un parámetro para una empresa"""
         conn = Database.get_connection(connection)
-        cursor = conn.cursor()
+        try:
+            cursor = conn.cursor()
 
-        cursor.execute("""
-            UPDATE parametros
-            SET valor = ?, fecha_modificacion = GETDATE()
-            WHERE clave = ? AND empresa_id = ?
-        """, (valor, clave, empresa_id))
+            cursor.execute("""
+                UPDATE parametros
+                SET valor = ?, fecha_modificacion = GETDATE()
+                WHERE clave = ? AND empresa_id = ?
+            """, (valor, clave, empresa_id))
 
-        affected = cursor.rowcount
-        conn.commit()
-        cursor.close()
-        conn.close()
+            affected = cursor.rowcount
+            conn.commit()
+            cursor.close()
 
-        return affected > 0
+            return affected > 0
+        finally:
+            conn.close()
 
     @staticmethod
     def get_all(empresa_id, connection=None):
         """Obtiene todos los parámetros de una empresa"""
         conn = Database.get_connection(connection)
-        cursor = conn.cursor()
+        try:
+            cursor = conn.cursor()
 
-        cursor.execute("""
-            SELECT clave, valor, descripcion, fecha_modificacion
-            FROM parametros
-            WHERE empresa_id = ?
-            ORDER BY clave
-        """, (empresa_id,))
+            cursor.execute("""
+                SELECT clave, valor, descripcion, fecha_modificacion
+                FROM parametros
+                WHERE empresa_id = ?
+                ORDER BY clave
+            """, (empresa_id,))
 
-        parametros = []
-        for row in cursor.fetchall():
-            parametros.append({
-                'clave': row[0],
-                'valor': row[1],
-                'descripcion': row[2],
-                'fecha_modificacion': row[3].isoformat() if row[3] else None
-            })
+            parametros = []
+            for row in cursor.fetchall():
+                parametros.append({
+                    'clave': row[0],
+                    'valor': row[1],
+                    'descripcion': row[2],
+                    'fecha_modificacion': row[3].isoformat() if row[3] else None
+                })
 
-        cursor.close()
-        conn.close()
+            cursor.close()
 
-        return parametros
+            return parametros
+        finally:
+            conn.close()
 
     @staticmethod
     def permitir_registro(empresa_id, connection=None):
@@ -153,23 +159,24 @@ class ParametrosModel:
     def create_if_not_exists(clave, valor, descripcion, empresa_id, connection=None):
         """Crea un parámetro si no existe para la empresa"""
         conn = Database.get_connection(connection)
-        cursor = conn.cursor()
+        try:
+            cursor = conn.cursor()
 
-        # Verificar si existe
-        cursor.execute("""
-            SELECT 1 FROM parametros WHERE clave = ? AND empresa_id = ?
-        """, (clave, empresa_id))
-
-        if not cursor.fetchone():
+            # Verificar si existe
             cursor.execute("""
-                INSERT INTO parametros (clave, valor, descripcion, empresa_id, fecha_modificacion)
-                VALUES (?, ?, ?, ?, GETDATE())
-            """, (clave, valor, descripcion, empresa_id))
-            conn.commit()
-            cursor.close()
-            conn.close()
-            return True
+                SELECT 1 FROM parametros WHERE clave = ? AND empresa_id = ?
+            """, (clave, empresa_id))
 
-        cursor.close()
-        conn.close()
-        return False
+            if not cursor.fetchone():
+                cursor.execute("""
+                    INSERT INTO parametros (clave, valor, descripcion, empresa_id, fecha_modificacion)
+                    VALUES (?, ?, ?, ?, GETDATE())
+                """, (clave, valor, descripcion, empresa_id))
+                conn.commit()
+                cursor.close()
+                return True
+
+            cursor.close()
+            return False
+        finally:
+            conn.close()

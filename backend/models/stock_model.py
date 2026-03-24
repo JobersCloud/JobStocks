@@ -56,52 +56,58 @@ class StockModel:
         """Obtiene todos los stocks de la empresa actual (de sesión)"""
         conn = Database.get_connection()  # Obtiene empresa_cli_id de sesión
         empresa_erp = Database.get_empresa_erp()  # Obtiene de sesión
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
-                   formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja
-            FROM view_externos_stock
-            WHERE empresa = ?
-        """, (empresa_erp,))
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
+                       formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja
+                FROM view_externos_stock
+                WHERE empresa = ?
+            """, (empresa_erp,))
 
-        stocks = [_row_to_stock(row) for row in cursor.fetchall()]
-        conn.close()
-        return stocks
+            stocks = [_row_to_stock(row) for row in cursor.fetchall()]
+            return stocks
+        finally:
+            conn.close()
 
     @staticmethod
     def get_by_codigo(codigo):
         """Obtiene un stock por código"""
         conn = Database.get_connection()
         empresa_erp = Database.get_empresa_erp()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
-                   formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja
-            FROM view_externos_stock
-            WHERE codigo = ? AND empresa = ?
-        """, (codigo, empresa_erp))
-        row = cursor.fetchone()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
+                       formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja
+                FROM view_externos_stock
+                WHERE codigo = ? AND empresa = ?
+            """, (codigo, empresa_erp))
+            row = cursor.fetchone()
 
-        stock = _row_to_stock(row) if row else None
-        conn.close()
-        return stock
+            stock = _row_to_stock(row) if row else None
+            return stock
+        finally:
+            conn.close()
 
     @staticmethod
     def get_by_codigo_and_empresa(codigo, empresa):
         """Obtiene un stock por código y empresa (compatibilidad)"""
         conn = Database.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
-                   formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja
-            FROM view_externos_stock
-            WHERE codigo = ? AND empresa LIKE ?
-        """, (codigo, f"%{empresa}%"))
-        row = cursor.fetchone()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
+                       formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja
+                FROM view_externos_stock
+                WHERE codigo = ? AND empresa LIKE ?
+            """, (codigo, f"%{empresa}%"))
+            row = cursor.fetchone()
 
-        stock = _row_to_stock(row) if row else None
-        conn.close()
-        return stock
+            stock = _row_to_stock(row) if row else None
+            return stock
+        finally:
+            conn.close()
 
     @staticmethod
     def get_by_codigos(codigos):
@@ -110,24 +116,26 @@ class StockModel:
             return {}
         conn = Database.get_connection()
         empresa_erp = Database.get_empresa_erp()
-        cursor = conn.cursor()
+        try:
+            cursor = conn.cursor()
 
-        placeholders = ','.join(['?' for _ in codigos])
-        params = list(codigos) + [empresa_erp]
-        cursor.execute(f"""
-            SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
-                   formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja
-            FROM view_externos_stock
-            WHERE codigo IN ({placeholders}) AND empresa = ?
-        """, params)
+            placeholders = ','.join(['?' for _ in codigos])
+            params = list(codigos) + [empresa_erp]
+            cursor.execute(f"""
+                SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
+                       formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet, existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja
+                FROM view_externos_stock
+                WHERE codigo IN ({placeholders}) AND empresa = ?
+            """, params)
 
-        result = {}
-        for row in cursor.fetchall():
-            stock = _row_to_stock(row)
-            result[stock['codigo']] = stock
+            result = {}
+            for row in cursor.fetchall():
+                stock = _row_to_stock(row)
+                result[stock['codigo']] = stock
 
-        conn.close()
-        return result
+            return result
+        finally:
+            conn.close()
 
     # Columnas válidas para ordenación (seguridad contra SQL injection)
     VALID_ORDER_COLUMNS = ['codigo', 'descripcion', 'calidad', 'color', 'tono',
@@ -231,106 +239,108 @@ class StockModel:
         """
         conn = Database.get_connection()
         empresa_erp = Database.get_empresa_erp()
-        cursor = conn.cursor()
+        try:
+            cursor = conn.cursor()
 
-        # Validar columna de ordenación (prevenir SQL injection)
-        if order_by not in StockModel.VALID_ORDER_COLUMNS:
-            order_by = 'codigo'
+            # Validar columna de ordenación (prevenir SQL injection)
+            if order_by not in StockModel.VALID_ORDER_COLUMNS:
+                order_by = 'codigo'
 
-        # Validar dirección de ordenación
-        order_dir = 'DESC' if order_dir.upper() == 'DESC' else 'ASC'
+            # Validar dirección de ordenación
+            order_dir = 'DESC' if order_dir.upper() == 'DESC' else 'ASC'
 
-        # Construir WHERE clause
-        where_conditions = ["empresa = ?"]
-        params = [empresa_erp]
+            # Construir WHERE clause
+            where_conditions = ["empresa = ?"]
+            params = [empresa_erp]
 
-        # Procesar filtros - soporta tanto formato simple como con operador
-        for key, valor in filtros.items():
-            if not valor:  # Ignorar valores vacíos
-                continue
+            # Procesar filtros - soporta tanto formato simple como con operador
+            for key, valor in filtros.items():
+                if not valor:  # Ignorar valores vacíos
+                    continue
 
-            # Intentar parsear como filtro con operador (columna__operador)
-            parsed = StockModel._parse_filter_key(key)
-            if parsed:
-                columna, operador = parsed
-                condition, param = StockModel._build_filter_condition(columna, operador, valor)
-                if condition:  # Solo añadir si hay condición válida
-                    where_conditions.append(condition)
-                    # param puede ser un valor simple o una lista (para BETWEEN)
-                    if isinstance(param, list):
-                        params.extend(param)
+                # Intentar parsear como filtro con operador (columna__operador)
+                parsed = StockModel._parse_filter_key(key)
+                if parsed:
+                    columna, operador = parsed
+                    condition, param = StockModel._build_filter_condition(columna, operador, valor)
+                    if condition:  # Solo añadir si hay condición válida
+                        where_conditions.append(condition)
+                        # param puede ser un valor simple o una lista (para BETWEEN)
+                        if isinstance(param, list):
+                            params.extend(param)
+                        else:
+                            params.append(param)
+                # Compatibilidad con filtros simples (sin operador)
+                elif key in StockModel.VALID_FILTER_COLUMNS:
+                    # Por defecto usa LIKE %valor% para texto
+                    if key == 'existencias':
+                        # Para existencias, usar >= si viene como filtro simple
+                        where_conditions.append("existencias >= ?")
+                        params.append(float(valor))
                     else:
-                        params.append(param)
-            # Compatibilidad con filtros simples (sin operador)
-            elif key in StockModel.VALID_FILTER_COLUMNS:
-                # Por defecto usa LIKE %valor% para texto
-                if key == 'existencias':
-                    # Para existencias, usar >= si viene como filtro simple
+                        where_conditions.append(f"{key} LIKE ?")
+                        params.append(f"%{valor}%")
+                # Filtro especial existencias_min (compatibilidad)
+                elif key == 'existencias_min':
                     where_conditions.append("existencias >= ?")
                     params.append(float(valor))
-                else:
-                    where_conditions.append(f"{key} LIKE ?")
-                    params.append(f"%{valor}%")
-            # Filtro especial existencias_min (compatibilidad)
-            elif key == 'existencias_min':
-                where_conditions.append("existencias >= ?")
-                params.append(float(valor))
 
-        where_clause = " AND ".join(where_conditions)
+            where_clause = " AND ".join(where_conditions)
 
-        # Si hay paginación, usar ROW_NUMBER() (compatible con SQL Server 2008)
-        if page is not None and limit is not None:
-            page = max(1, int(page))
-            limit = max(1, min(500, int(limit)))  # Máximo 500 registros por página
-            offset = (page - 1) * limit
+            # Si hay paginación, usar ROW_NUMBER() (compatible con SQL Server 2008)
+            if page is not None and limit is not None:
+                page = max(1, int(page))
+                limit = max(1, min(500, int(limit)))  # Máximo 500 registros por página
+                offset = (page - 1) * limit
 
-            # Primero obtener el total de registros
-            count_query = f"SELECT COUNT(*) FROM view_externos_stock WHERE {where_clause}"
-            cursor.execute(count_query, params)
-            total = cursor.fetchone()[0]
+                # Primero obtener el total de registros
+                count_query = f"SELECT COUNT(*) FROM view_externos_stock WHERE {where_clause}"
+                cursor.execute(count_query, params)
+                total = cursor.fetchone()[0]
 
-            # Query con paginación usando ROW_NUMBER()
-            query = f"""
-                SELECT * FROM (
-                    SELECT
-                        empresa, codigo, descripcion, calidad, color, tono, calibre,
-                        formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet,
-                        existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja,
-                        ROW_NUMBER() OVER (ORDER BY {order_by} {order_dir}) AS row_num
+                # Query con paginación usando ROW_NUMBER()
+                query = f"""
+                    SELECT * FROM (
+                        SELECT
+                            empresa, codigo, descripcion, calidad, color, tono, calibre,
+                            formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet,
+                            existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja,
+                            ROW_NUMBER() OVER (ORDER BY {order_by} {order_dir}) AS row_num
+                        FROM view_externos_stock
+                        WHERE {where_clause}
+                    ) AS numbered
+                    WHERE row_num > ? AND row_num <= ?
+                """
+                params.extend([offset, offset + limit])
+            else:
+                # Sin paginación - comportamiento original con ordenación
+                query = f"""
+                    SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
+                           formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet,
+                           existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja
                     FROM view_externos_stock
                     WHERE {where_clause}
-                ) AS numbered
-                WHERE row_num > ? AND row_num <= ?
-            """
-            params.extend([offset, offset + limit])
-        else:
-            # Sin paginación - comportamiento original con ordenación
-            query = f"""
-                SELECT empresa, codigo, descripcion, calidad, color, tono, calibre,
-                       formato, serie, unidad, pallet, caja, unidadescaja, cajaspallet,
-                       existencias, ean13, pesocaja, pesopallet, tipo_producto, piezascaja
-                FROM view_externos_stock
-                WHERE {where_clause}
-                ORDER BY {order_by} {order_dir}
-            """
+                    ORDER BY {order_by} {order_dir}
+                """
 
-        cursor.execute(query, params)
+            cursor.execute(query, params)
 
-        stocks = [_row_to_stock(row) for row in cursor.fetchall()]
-        conn.close()
+            stocks = [_row_to_stock(row) for row in cursor.fetchall()]
 
-        # Devolver con metadatos de paginación si aplica
-        if page is not None and limit is not None:
-            total_pages = (total + limit - 1) // limit  # Redondeo hacia arriba
-            return {
-                'data': stocks,
-                'total': total,
-                'page': page,
-                'limit': limit,
-                'pages': total_pages
-            }
+            # Devolver con metadatos de paginación si aplica
+            if page is not None and limit is not None:
+                total_pages = (total + limit - 1) // limit  # Redondeo hacia arriba
+                return {
+                    'data': stocks,
+                    'total': total,
+                    'page': page,
+                    'limit': limit,
+                    'pages': total_pages
+                }
 
-        return stocks
+            return stocks
+        finally:
+            conn.close()
 
     @staticmethod
     def get_valores_unicos(columna, limite=100):
@@ -350,47 +360,51 @@ class StockModel:
 
         conn = Database.get_connection()
         empresa_erp = Database.get_empresa_erp()
-        cursor = conn.cursor()
+        try:
+            cursor = conn.cursor()
 
-        # Query para obtener valores únicos
-        query = f"""
-            SELECT DISTINCT TOP {min(limite, 500)} {columna}
-            FROM view_externos_stock
-            WHERE empresa = ? AND {columna} IS NOT NULL AND {columna} <> ''
-            ORDER BY {columna}
-        """
-        cursor.execute(query, (empresa_erp,))
+            # Query para obtener valores únicos
+            query = f"""
+                SELECT DISTINCT TOP {min(limite, 500)} {columna}
+                FROM view_externos_stock
+                WHERE empresa = ? AND {columna} IS NOT NULL AND {columna} <> ''
+                ORDER BY {columna}
+            """
+            cursor.execute(query, (empresa_erp,))
 
-        valores = [_s(row[0]) for row in cursor.fetchall()]
-        conn.close()
+            valores = [_s(row[0]) for row in cursor.fetchall()]
 
-        return valores
+            return valores
+        finally:
+            conn.close()
 
     @staticmethod
     def get_resumen():
         """Obtiene un resumen de estadísticas del stock"""
         conn = Database.get_connection()
         empresa_erp = Database.get_empresa_erp()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT
-                COUNT(*) as total_productos,
-                SUM(existencias) as total_existencias,
-                AVG(existencias) as promedio_existencias,
-                MIN(existencias) as minimo_existencias,
-                MAX(existencias) as maximo_existencias
-            FROM view_externos_stock
-            WHERE empresa = ?
-        """, (empresa_erp,))
-        row = cursor.fetchone()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT
+                    COUNT(*) as total_productos,
+                    SUM(existencias) as total_existencias,
+                    AVG(existencias) as promedio_existencias,
+                    MIN(existencias) as minimo_existencias,
+                    MAX(existencias) as maximo_existencias
+                FROM view_externos_stock
+                WHERE empresa = ?
+            """, (empresa_erp,))
+            row = cursor.fetchone()
 
-        resumen = {
-            'total_productos': row[0],
-            'total_existencias': float(row[1]) if row[1] else 0.0,
-            'promedio_existencias': float(row[2]) if row[2] else 0.0,
-            'minimo_existencias': float(row[3]) if row[3] else 0.0,
-            'maximo_existencias': float(row[4]) if row[4] else 0.0
-        }
+            resumen = {
+                'total_productos': row[0],
+                'total_existencias': float(row[1]) if row[1] else 0.0,
+                'promedio_existencias': float(row[2]) if row[2] else 0.0,
+                'minimo_existencias': float(row[3]) if row[3] else 0.0,
+                'maximo_existencias': float(row[4]) if row[4] else 0.0
+            }
 
-        conn.close()
-        return resumen
+            return resumen
+        finally:
+            conn.close()

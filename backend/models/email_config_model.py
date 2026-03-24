@@ -22,6 +22,7 @@ class EmailConfigModel:
     @staticmethod
     def get_active_config(empresa_id, connection=None):
         """Obtiene la configuración de email activa para una empresa"""
+        conn = None
         try:
             print("\n" + "=" * 60)
             print(f"🔍 OBTENIENDO CONFIGURACIÓN DE EMAIL (Empresa: {empresa_id}, Connection: {connection})")
@@ -82,14 +83,12 @@ class EmailConfigModel:
                     'oauth2_client_secret': row[10]
                 }
 
-                conn.close()
                 print("✅ Configuración cargada exitosamente")
                 print("=" * 60 + "\n")
                 return config
             else:
                 print("❌ NO SE ENCONTRÓ NINGUNA CONFIGURACIÓN ACTIVA")
                 print(f"   Verifica que exista un registro con activo = 1 para empresa_id = {empresa_id}")
-                conn.close()
                 print("=" * 60 + "\n")
                 return None
 
@@ -102,10 +101,14 @@ class EmailConfigModel:
             traceback.print_exc()
             print("=" * 60 + "\n")
             return None
+        finally:
+            if conn:
+                conn.close()
 
     @staticmethod
     def get_config_by_id(config_id, empresa_id):
         """Obtiene una configuración de email por ID y empresa (incluye contraseña y OAuth2)"""
+        conn = None
         try:
             conn = Database.get_connection()
             cursor = conn.cursor()
@@ -129,7 +132,6 @@ class EmailConfigModel:
             """, (config_id, empresa_id))
 
             row = cursor.fetchone()
-            conn.close()
 
             if row:
                 return {
@@ -152,10 +154,14 @@ class EmailConfigModel:
             print(f"❌ Error al obtener configuración por ID: {str(e)}")
             traceback.print_exc()
             return None
+        finally:
+            if conn:
+                conn.close()
 
     @staticmethod
     def get_all_configs(empresa_id):
         """Obtiene todas las configuraciones de email de una empresa"""
+        conn = None
         try:
             print(f"\n🔍 Obteniendo configuraciones de email (Empresa: {empresa_id})...")
             conn = Database.get_connection()
@@ -197,7 +203,6 @@ class EmailConfigModel:
                     'oauth2_client_id': row[11]
                 })
 
-            conn.close()
             print(f"✅ Se encontraron {len(configs)} configuraciones")
             return configs
 
@@ -205,10 +210,14 @@ class EmailConfigModel:
             print(f"❌ Error al obtener todas las configuraciones: {str(e)}")
             traceback.print_exc()
             return []
+        finally:
+            if conn:
+                conn.close()
 
     @staticmethod
     def update_config(id, nombre_configuracion, smtp_server, smtp_port, email_from, email_password, email_to, empresa_id, auth_method=None, oauth2_tenant_id=None, oauth2_client_id=None, oauth2_client_secret=None):
         """Actualiza una configuración de email"""
+        conn = None
         try:
             print(f"\n🔧 Actualizando configuración ID: {id} (Empresa: {empresa_id})...")
             conn = Database.get_connection()
@@ -254,7 +263,6 @@ class EmailConfigModel:
             cursor.execute(sql, tuple(params))
 
             conn.commit()
-            conn.close()
             print(f"✅ Configuración ID {id} actualizada correctamente")
             return True
 
@@ -262,10 +270,14 @@ class EmailConfigModel:
             print(f"❌ Error al actualizar configuración: {str(e)}")
             traceback.print_exc()
             return False
+        finally:
+            if conn:
+                conn.close()
 
     @staticmethod
     def create_config(nombre_configuracion, smtp_server, smtp_port, email_from, email_password, email_to, empresa_id, auth_method='basic', oauth2_tenant_id=None, oauth2_client_id=None, oauth2_client_secret=None):
         """Crea una nueva configuración de email para una empresa"""
+        conn = None
         try:
             print(f"\n➕ Creando nueva configuración: {nombre_configuracion} (Empresa: {empresa_id})...")
             conn = Database.get_connection()
@@ -286,7 +298,6 @@ class EmailConfigModel:
             new_id = row[0] if row else None
 
             conn.commit()
-            conn.close()
             print(f"✅ Configuración creada con ID: {new_id}")
             return new_id
 
@@ -294,10 +305,14 @@ class EmailConfigModel:
             print(f"❌ Error al crear configuración: {str(e)}")
             traceback.print_exc()
             return None
+        finally:
+            if conn:
+                conn.close()
 
     @staticmethod
     def delete_config(id, empresa_id):
         """Elimina una configuración de email (solo si no está activa)"""
+        conn = None
         try:
             print(f"\n🗑️ Eliminando configuración ID: {id} (Empresa: {empresa_id})...")
             conn = Database.get_connection()
@@ -307,15 +322,12 @@ class EmailConfigModel:
             cursor.execute("SELECT activo FROM email_config WHERE id = ? AND empresa_id = ?", (id, empresa_id))
             row = cursor.fetchone()
             if not row:
-                conn.close()
                 raise Exception("Configuración no encontrada")
             if bool(row[0]):
-                conn.close()
                 raise Exception("No se puede eliminar la configuración activa")
 
             cursor.execute("DELETE FROM email_config WHERE id = ? AND empresa_id = ?", (id, empresa_id))
             conn.commit()
-            conn.close()
             print(f"✅ Configuración ID {id} eliminada correctamente")
             return True
 
@@ -323,10 +335,14 @@ class EmailConfigModel:
             print(f"❌ Error al eliminar configuración: {str(e)}")
             traceback.print_exc()
             raise
+        finally:
+            if conn:
+                conn.close()
 
     @staticmethod
     def set_active(id, empresa_id):
         """Establece una configuración como activa (desactiva las demás de la misma empresa)"""
+        conn = None
         try:
             print(f"\n🔄 Activando configuración ID: {id} (Empresa: {empresa_id})...")
             conn = Database.get_connection()
@@ -341,7 +357,6 @@ class EmailConfigModel:
             print(f"  - Configuración ID {id} activada")
 
             conn.commit()
-            conn.close()
             print(f"✅ Configuración ID {id} establecida como activa")
             return True
 
@@ -349,4 +364,7 @@ class EmailConfigModel:
             print(f"❌ Error al activar configuración: {str(e)}")
             traceback.print_exc()
             return False
+        finally:
+            if conn:
+                conn.close()
 

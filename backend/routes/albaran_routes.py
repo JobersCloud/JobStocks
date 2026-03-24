@@ -40,6 +40,7 @@ def get_filtros_ubicacion():
     tags:
       - Albaranes
     """
+    conn = None
     try:
         conn = Database.get_connection()
         cursor = conn.cursor()
@@ -71,8 +72,6 @@ def get_filtros_ubicacion():
         cursor.execute(prov_query, prov_params)
         provincias = [{'codigo': row[0], 'nombre': row[1]} for row in cursor.fetchall()]
 
-        conn.close()
-
         return jsonify({
             'success': True,
             'paises': paises,
@@ -83,6 +82,9 @@ def get_filtros_ubicacion():
             'success': False,
             'error': str(e)
         }), 500
+    finally:
+        if conn:
+            conn.close()
 
 
 @albaran_bp.route('/mis-albaranes', methods=['GET'])
