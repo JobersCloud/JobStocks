@@ -69,6 +69,21 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="email" data-i18n="auth.email">Email</label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                data-i18n-placeholder="authPlaceholders.email"
+                                placeholder="tu@email.com"
+                                required
+                                autocomplete="email"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
                             <label for="username" data-i18n="auth.username">Usuario</label>
                             <input
                                 type="text"
@@ -79,6 +94,13 @@
                                 required
                                 autocomplete="username"
                             >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pais" data-i18n="auth.country">País</label>
+                            <select id="pais" name="pais" required>
+                                <option value="" data-i18n="authPlaceholders.selectCountry">Selecciona...</option>
+                            </select>
                         </div>
                     </div>
 
@@ -109,28 +131,6 @@
                                 data-i18n-placeholder="authPlaceholders.cifNif"
                                 placeholder="Identificador fiscal"
                             >
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="email" data-i18n="auth.email">Email</label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                data-i18n-placeholder="authPlaceholders.email"
-                                placeholder="tu@email.com"
-                                required
-                                autocomplete="email"
-                            >
-                        </div>
-
-                        <div class="form-group">
-                            <label for="pais" data-i18n="auth.country">País</label>
-                            <select id="pais" name="pais" required>
-                                <option value="" data-i18n="authPlaceholders.selectCountry">Selecciona...</option>
-                            </select>
                         </div>
                     </div>
 

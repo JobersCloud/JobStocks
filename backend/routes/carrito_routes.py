@@ -40,6 +40,7 @@ from models.propuesta_model import PropuestaModel
 from models.imagen_model import ImagenModel
 from models.cliente_model import ClienteModel
 import base64
+from xml.sax.saxutils import escape as xml_escape
 
 carrito_bp = Blueprint('carrito', __name__, url_prefix='/api/carrito')
 
@@ -299,25 +300,29 @@ def enviar_carrito():
     firma_base64 = data.get('firma', None)  # Firma digital en base64
     usuario = current_user.full_name or current_user.username
     email_usuario = current_user.email if enviar_copia else None
+    # Datos adicionales del usuario para el email
+    user_full_name = current_user.full_name or ''
+    user_company_name = company_name or getattr(current_user, 'company_name', '') or ''
+    user_cliente_id = cliente_id or getattr(current_user, 'cliente_id', '') or ''
 
     # Obtener datos del cliente (opcional)
     cliente_info = None
-    if cliente_id:
-        cliente_info = ClienteModel.get_by_codigo(cliente_id, empresa_id)
+    if user_cliente_id:
+        cliente_info = ClienteModel.get_by_codigo(user_cliente_id, empresa_id)
 
     # Si no hay cliente pero hay company_name, crear info básica
-    if not cliente_info and company_name:
-        cliente_info = {'codigo': '', 'razon': company_name, 'is_company_name': True}
+    if not cliente_info and user_company_name:
+        cliente_info = {'codigo': '', 'razon': user_company_name, 'is_company_name': True}
 
     try:
         # Generar PDF (con datos del cliente y firma si existe)
-        pdf_buffer = generar_pdf_carrito(carrito, usuario, comentarios, referencia, cliente_info, firma_base64, empresa_id)
+        pdf_buffer = generar_pdf_carrito(carrito, usuario, comentarios, referencia, cliente_info, firma_base64, empresa_id, user_full_name, user_company_name)
 
         # Generar Excel
         excel_buffer = generar_excel_carrito(carrito, usuario, comentarios, referencia)
 
         # Enviar email (con CC al usuario si está marcado, datos del cliente y firma)
-        enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios, empresa_id, email_usuario, referencia, excel_buffer, cliente_info, firma_base64)
+        enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios, empresa_id, email_usuario, referencia, excel_buffer, cliente_info, firma_base64, user_full_name, user_company_name)
 
         # Guardar propuesta en BD (solo si el email se envio correctamente)
         propuesta_id = PropuestaModel.crear_propuesta(
@@ -370,7 +375,7 @@ def enviar_carrito():
 
 # ==================== FUNCIONES AUXILIARES ====================
 
-def generar_pdf_carrito(carrito, usuario, comentarios, referencia="", cliente_info=None, firma_base64=None, empresa_id=None):
+def generar_pdf_carrito(carrito, usuario, comentarios, referencia="", cliente_info=None, firma_base64=None, empresa_id=None, user_full_name="", user_company_name=""):
     """Genera un PDF con los items del carrito incluyendo imágenes y firma"""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
@@ -394,18 +399,17 @@ def generar_pdf_carrito(carrito, usuario, comentarios, referencia="", cliente_in
 
     # Información general
     info_style = styles['Normal']
-    story.append(Paragraph(f"<b>Usuario:</b> {usuario}", info_style))
+    story.append(Paragraph(f"<b>Usuario:</b> {xml_escape(usuario)}", info_style))
+    if user_full_name and user_full_name != usuario:
+        story.append(Paragraph(f"<b>Nombre:</b> {xml_escape(user_full_name)}", info_style))
+    if user_company_name and not (cliente_info and not cliente_info.get('is_company_name')):
+        story.append(Paragraph(f"<b>Empresa:</b> {xml_escape(user_company_name)}", info_style))
+    if cliente_info and not cliente_info.get('is_company_name'):
+        cliente_texto = f"{xml_escape(cliente_info.get('codigo', ''))} - {xml_escape(cliente_info.get('razon', ''))}"
+        story.append(Paragraph(f"<b>Cliente:</b> {cliente_texto}", info_style))
     story.append(Paragraph(f"<b>Fecha:</b> {datetime.now().strftime('%d/%m/%Y %H:%M')}", info_style))
-    if cliente_info:
-        if cliente_info.get('is_company_name'):
-            # Es el nombre de empresa del usuario, no un cliente del ERP
-            story.append(Paragraph(f"<b>Empresa:</b> {cliente_info.get('razon', '')}", info_style))
-        else:
-            # Es un cliente del ERP
-            cliente_texto = f"{cliente_info.get('codigo', '')} - {cliente_info.get('razon', '')}"
-            story.append(Paragraph(f"<b>Cliente:</b> {cliente_texto}", info_style))
     if referencia:
-        story.append(Paragraph(f"<b>Referencia:</b> {referencia}", info_style))
+        story.append(Paragraph(f"<b>Referencia:</b> {xml_escape(referencia)}", info_style))
     story.append(Paragraph(f"<b>Total de items:</b> {len(carrito)}", info_style))
     story.append(Spacer(1, 0.3*inch))
 
@@ -463,7 +467,7 @@ def generar_pdf_carrito(carrito, usuario, comentarios, referencia="", cliente_in
     # Comentarios
     if comentarios:
         story.append(Paragraph("<b>Comentarios:</b>", styles['Heading3']))
-        story.append(Paragraph(comentarios, styles['Normal']))
+        story.append(Paragraph(xml_escape(comentarios), styles['Normal']))
 
     # Firma digital (si existe)
     if firma_base64:
@@ -565,7 +569,7 @@ def generar_excel_carrito(carrito, usuario, comentarios="", referencia=""):
     return buffer
 
 
-def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_id="1", email_copia=None, referencia="", excel_buffer=None, cliente_info=None, firma_base64=None):
+def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_id="1", email_copia=None, referencia="", excel_buffer=None, cliente_info=None, firma_base64=None, user_full_name="", user_company_name=""):
     """Envía el PDF y Excel por email usando configuración de la BD con imágenes CID y firma"""
 
     print("\n" + "=" * 60)
@@ -594,7 +598,7 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
     # Crear mensaje con soporte para imágenes embebidas (mixed para adjuntos)
     print("\n2️⃣ Creando mensaje de email...")
     msg = MIMEMultipart('mixed')
-    msg['From'] = email_config['email_from']
+    msg['From'] = f"Sistema de Stocks <{email_config['email_from']}>"
     msg['To'] = email_config['email_to']
     if email_copia:
         msg['Cc'] = email_copia
@@ -702,9 +706,11 @@ def enviar_email_con_pdf(pdf_buffer, usuario, carrito, comentarios="", empresa_i
 
             <div class="info-box">
                 <p><strong>👤 Usuario:</strong> {usuario}</p>
+                {'<p><strong>📛 Nombre:</strong> ' + xml_escape(user_full_name) + '</p>' if user_full_name and user_full_name != usuario else ''}
+                {'<p><strong>🏢 Empresa:</strong> ' + xml_escape(user_company_name) + '</p>' if user_company_name and not (cliente_info and not cliente_info.get('is_company_name')) else ''}
+                {'<p><strong>🏢 Cliente:</strong> ' + xml_escape(cliente_info.get('codigo', '')) + ' - ' + xml_escape(cliente_info.get('razon', '')) + '</p>' if cliente_info and not cliente_info.get('is_company_name') else ''}
                 <p><strong>📅 Fecha:</strong> {datetime.now().strftime('%d/%m/%Y %H:%M')}</p>
-                {'<p><strong>🏢 Empresa:</strong> ' + cliente_info.get('razon', '') + '</p>' if cliente_info and cliente_info.get('is_company_name') else ('<p><strong>🏢 Cliente:</strong> ' + cliente_info.get('codigo', '') + ' - ' + cliente_info.get('razon', '') + '</p>' if cliente_info else '')}
-                {'<p><strong>🏷️ Referencia:</strong> ' + referencia + '</p>' if referencia else ''}
+                {'<p><strong>🏷️ Referencia:</strong> ' + xml_escape(referencia) + '</p>' if referencia else ''}
                 <p><strong>📊 Total de productos:</strong> {len(carrito)}</p>
             </div>
 

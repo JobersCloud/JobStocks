@@ -627,6 +627,52 @@
         }, true);
     })();
 
+    // ==================== INTERCEPTOR GLOBAL DE ERRORES DE CONEXION BD ====================
+    let _dbErrorShown = false;
+    function showDatabaseConnectionError() {
+        if (_dbErrorShown) return;
+        _dbErrorShown = true;
+        const modal = document.createElement('div');
+        modal.id = 'db-connection-error-modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10000;backdrop-filter:blur(4px);';
+        modal.innerHTML = `
+            <div style="background:var(--bg-primary, #fff);border-radius:16px;padding:40px;max-width:440px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                <div style="font-size:56px;margin-bottom:16px;">⚠️</div>
+                <h2 style="margin:0 0 12px;color:var(--text-primary, #333);font-size:1.3rem;">
+                    ${typeof t === 'function' ? (t('auth.connectionErrorTitle') || 'Error de conexión') : 'Error de conexión'}
+                </h2>
+                <p style="color:var(--text-secondary, #666);margin:0 0 24px;line-height:1.5;">
+                    ${typeof t === 'function' ? (t('auth.connectionErrorMessage') || 'No se puede conectar con el servidor de datos.') : 'No se puede conectar con el servidor de datos. Es posible que el servicio esté temporalmente no disponible.'}
+                </p>
+                <p style="color:var(--text-secondary, #888);margin:0 0 24px;font-size:0.85rem;">
+                    ${typeof t === 'function' ? (t('auth.connectionErrorHint') || 'Inténtalo de nuevo en unos minutos.') : 'Inténtalo de nuevo en unos minutos. Si el problema persiste, contacta con el administrador.'}
+                </p>
+                <button onclick="document.getElementById('db-connection-error-modal').remove(); window._pcDbErrorShown=false;"
+                        style="background:var(--primary, #FF4338);color:#fff;border:none;padding:12px 32px;border-radius:8px;font-size:1rem;cursor:pointer;font-weight:600;">
+                    ${typeof t === 'function' ? (t('common.accept') || 'Aceptar') : 'Aceptar'}
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    window._pcDbErrorShown = false;
+
+    // Parchear fetch global para interceptar 503 de BD
+    const _originalFetch = window.fetch;
+    window.fetch = async function(...args) {
+        const response = await _originalFetch.apply(this, args);
+        if (response.status === 503) {
+            try {
+                const clone = response.clone();
+                const data = await clone.json();
+                if (data.error === 'database_connection') {
+                    showDatabaseConnectionError();
+                }
+            } catch (e) { /* ignore */ }
+        }
+        return response;
+    };
+
     // ==================== EXPONER API PUBLICA ====================
     window.PageCommon = {
         // Theme

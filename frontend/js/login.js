@@ -129,7 +129,12 @@ window.toggleTheme = toggleTheme;
 // Retorna true si la conexión fue exitosa, false si falló
 async function cargarTemaColor(connection) {
     try {
-        const response = await fetch(`${API_URL}/api/empresa/${connection}/config`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const response = await fetch(`${API_URL}/api/empresa/${connection}/config`, {
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
         const data = await response.json().catch(() => ({}));
 
         // Si el servidor responde con error 500/503, es problema de conexión a BD
@@ -200,79 +205,91 @@ async function cargarLogoCliente(connection) {
     }
 }
 
-// Mostrar error de conexión a BD Central
+// Helper: t() devuelve la clave si i18n no cargó (servidor caído), detectar y usar fallback
+function ts(key, fallback) {
+    const val = t(key);
+    return (val && val !== key) ? val : fallback;
+}
+
+// Mostrar error de conexión a BD Central (usa estructura del login)
 function showConnectionError(connection) {
-    document.body.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #c0392b 0%, #8e2424 100%); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-            <div style="background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 500px; text-align: center;">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">🔌</div>
-                <h1 style="color: #c0392b; margin-bottom: 1rem; font-size: 1.5rem;">Error de Conexión</h1>
-                <p style="color: #666; margin-bottom: 1.5rem; line-height: 1.6;">
-                    No se pudo conectar con el servidor central.<br>
-                    El servicio no está disponible en este momento.
-                </p>
-                <div style="background: #fff3e0; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; color: #e65100; font-size: 0.85rem; font-family: monospace;">
-                    <strong>Connection ID:</strong> ${connection || 'N/A'}
-                </div>
-                <div style="background: #ffebee; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; color: #c0392b; font-size: 0.9rem; text-align: left;">
-                    <strong>Posibles causas:</strong><br>
-                    • Base de datos central no disponible<br>
-                    • Empresa no configurada en BD Central<br>
-                    • Configuración de conexión incorrecta<br>
-                    • Problemas de red
-                </div>
-                <button onclick="location.reload()" style="background: #c0392b; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-right: 10px;">
-                    🔄 Reintentar
-                </button>
+    const container = document.querySelector('.login-container');
+    const html = `
+        <div class="login-box" style="text-align:center;">
+            <div class="login-header">
+                <div style="font-size:3.5rem;margin-bottom:0.5rem;">⚠️</div>
+                <h1>${ts('auth.connectionErrorTitle', 'Error de conexión')}</h1>
+                <p class="login-subtitle">${ts('auth.connectionErrorMessage', 'No se puede conectar con el servidor de datos. Es posible que el servicio esté temporalmente no disponible.')}</p>
             </div>
+            <p style="color:var(--text-secondary, #888);font-size:0.85rem;margin-bottom:1.5rem;">
+                ${ts('auth.connectionErrorHint', 'Inténtalo de nuevo en unos minutos. Si el problema persiste, contacta con el administrador.')}
+            </p>
+            <button onclick="location.reload()" class="btn-login">
+                ${ts('common.retry', 'Reintentar')}
+            </button>
         </div>
     `;
+    if (container) {
+        container.innerHTML = html;
+    } else {
+        document.body.innerHTML = `
+            <div class="login-wrapper">
+                <div class="login-container">${html}</div>
+            </div>
+        `;
+    }
 }
 
 // Mostrar error crítico cuando falta el parámetro connection
 function showCriticalError() {
-    document.body.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-            <div style="background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 500px; text-align: center;">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
-                <h1 style="color: #333; margin-bottom: 1rem; font-size: 1.5rem;">Parámetro Obligatorio Faltante</h1>
-                <p style="color: #666; margin-bottom: 1.5rem; line-height: 1.6;">
-                    Esta aplicación requiere el parámetro <strong>connection</strong> en la URL para funcionar.
-                </p>
-                <div style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-family: 'Courier New', monospace; color: #333;">
-                    ${window.location.origin}${window.location.pathname}<strong style="color: #e74c3c;">?connection=XXXXX</strong>
-                </div>
-                <p style="color: #999; font-size: 0.9rem;">
-                    Por favor, contacte con el administrador del sistema para obtener la URL correcta.
-                </p>
+    const container = document.querySelector('.login-container');
+    const html = `
+        <div class="login-box" style="text-align:center;">
+            <div class="login-header">
+                <div style="font-size:3.5rem;margin-bottom:0.5rem;">⚠️</div>
+                <h1>${ts('auth.missingConnectionTitle', 'Parámetro obligatorio')}</h1>
+                <p class="login-subtitle">${ts('auth.missingConnectionMessage', 'Esta aplicación requiere un enlace válido para funcionar.')}</p>
             </div>
+            <p style="color:var(--text-secondary, #888);font-size:0.85rem;margin-bottom:1.5rem;">
+                ${ts('auth.missingConnectionHint', 'Por favor, contacta con el administrador del sistema para obtener la URL correcta.')}
+            </p>
         </div>
     `;
+    if (container) {
+        container.innerHTML = html;
+    } else {
+        document.body.innerHTML = `
+            <div class="login-wrapper">
+                <div class="login-container">${html}</div>
+            </div>
+        `;
+    }
 }
 
 // Mostrar error cuando se usa parámetro 'empresa' en lugar de 'connection'
 function showInvalidParamError() {
-    document.body.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-            <div style="background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 500px; text-align: center;">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">🚫</div>
-                <h1 style="color: #333; margin-bottom: 1rem; font-size: 1.5rem;">Parámetro Incorrecto</h1>
-                <p style="color: #666; margin-bottom: 1.5rem; line-height: 1.6;">
-                    El parámetro <strong style="color: #e74c3c;">empresa</strong> no es válido.
-                    Debe usar <strong style="color: #27ae60;">connection</strong> en su lugar.
-                </p>
-                <div style="background: #ffebee; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; font-family: 'Courier New', monospace; color: #c0392b; text-decoration: line-through;">
-                    ?empresa=XXXXX
-                </div>
-                <div style="background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-family: 'Courier New', monospace; color: #27ae60;">
-                    ?connection=XXXXX
-                </div>
-                <p style="color: #999; font-size: 0.9rem;">
-                    Por favor, actualice el enlace o contacte con el administrador.
-                </p>
+    const container = document.querySelector('.login-container');
+    const html = `
+        <div class="login-box" style="text-align:center;">
+            <div class="login-header">
+                <div style="font-size:3.5rem;margin-bottom:0.5rem;">🚫</div>
+                <h1>${ts('auth.invalidParamTitle', 'Enlace incorrecto')}</h1>
+                <p class="login-subtitle">${ts('auth.invalidParamMessage', 'El enlace utilizado no es válido.')}</p>
             </div>
+            <p style="color:var(--text-secondary, #888);font-size:0.85rem;margin-bottom:1.5rem;">
+                ${ts('auth.missingConnectionHint', 'Por favor, contacta con el administrador del sistema para obtener la URL correcta.')}
+            </p>
         </div>
     `;
+    if (container) {
+        container.innerHTML = html;
+    } else {
+        document.body.innerHTML = `
+            <div class="login-wrapper">
+                <div class="login-container">${html}</div>
+            </div>
+        `;
+    }
 }
 
 // Verificar si el usuario ya está autenticado
@@ -326,6 +343,9 @@ async function initLogin() {
         return; // Detener la inicialización
     }
 
+    // Inicializar i18n primero (necesario para mensajes de error)
+    await I18n.init();
+
     // Cargar tema de color (usa connection para conectar a BD del cliente)
     // También verifica si la conexión a BD Central funciona
     const conexionOk = await cargarTemaColor(connection);
@@ -337,9 +357,6 @@ async function initLogin() {
 
     // Cargar logo del cliente (si existe, reemplaza el logo estático)
     await cargarLogoCliente(connection);
-
-    // Inicializar i18n (necesario para mensajes)
-    await I18n.init();
 
     console.log(`Iniciando con connection: ${connection}`);
 
@@ -459,6 +476,10 @@ function setupLoginForm() {
                     (t('auth.tryAgainIn') || 'Intenta de nuevo en') + ' ' + mins + ' ' +
                     (mins === 1 ? 'minuto' : 'minutos') + '.';
                 showAlert(lockMsg);
+                setLoading(false);
+            } else if (response.status === 503 || data.error === 'database_connection') {
+                // Error de conexión a BD del cliente
+                showConnectionErrorModal();
                 setLoading(false);
             } else {
                 // Mostrar intentos restantes si están disponibles
@@ -659,6 +680,35 @@ function checkLoginPwdReq(password, container) {
         }
         item.classList.toggle('met', met);
     });
+}
+
+function showConnectionErrorModal() {
+    // Reemplazar el contenido del login-container con el mensaje de error
+    const container = document.querySelector('.login-container');
+    const html = `
+        <div class="login-box" style="text-align:center;">
+            <div class="login-header">
+                <div style="font-size:3.5rem;margin-bottom:0.5rem;">⚠️</div>
+                <h1>${ts('auth.connectionErrorTitle', 'Error de conexión')}</h1>
+                <p class="login-subtitle">${ts('auth.connectionErrorMessage', 'No se puede conectar con el servidor de datos. Es posible que el servicio esté temporalmente no disponible.')}</p>
+            </div>
+            <p style="color:var(--text-secondary, #888);font-size:0.85rem;margin-bottom:1.5rem;">
+                ${ts('auth.connectionErrorHint', 'Inténtalo de nuevo en unos minutos. Si el problema persiste, contacta con el administrador.')}
+            </p>
+            <button onclick="location.reload()" class="btn-login">
+                ${ts('common.retry', 'Reintentar')}
+            </button>
+        </div>
+    `;
+    if (container) {
+        container.innerHTML = html;
+    } else {
+        document.body.innerHTML = `
+            <div class="login-wrapper">
+                <div class="login-container">${html}</div>
+            </div>
+        `;
+    }
 }
 
 async function showPasswordChangeModal() {

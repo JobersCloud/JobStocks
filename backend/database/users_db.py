@@ -16,6 +16,12 @@
 # database/users_db.py
 from werkzeug.security import generate_password_hash, check_password_hash
 from config.database import Database
+import pyodbc
+
+
+class DatabaseConnectionError(Exception):
+    """Error específico cuando no se puede conectar a la BD del cliente"""
+    pass
 
 
 def verify_user(username, password, empresa_cli_id, empresa_erp=None):
@@ -31,6 +37,11 @@ def verify_user(username, password, empresa_cli_id, empresa_erp=None):
     conn = None
     try:
         conn = Database.get_connection(empresa_cli_id)
+    except (pyodbc.Error, Exception) as e:
+        print(f"[ERROR] verify_user - No se pudo conectar a BD del cliente: {e}")
+        raise DatabaseConnectionError(f"No se pudo conectar al servidor de datos: {e}")
+
+    try:
         cursor = conn.cursor()
 
         # Obtener usuario básico

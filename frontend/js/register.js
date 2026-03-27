@@ -190,21 +190,57 @@ async function initRegister() {
     verificarRegistroHabilitado();
     cargarPaises();
     setupRegisterForm();
+    setupEmailToUsername();
     injectRegPasswordRequirements();
+}
+
+// Datos de países cargados de la API (se reutilizan al cambiar idioma)
+let paisesData = [];
+
+// Obtener el campo de nombre según el idioma actual
+function getNombrePais(pais) {
+    const lang = (I18n && I18n.currentLang) || localStorage.getItem('i18n_lang') || 'es';
+    if (lang === 'en' && pais.nombre_en) return pais.nombre_en;
+    if (lang === 'fr' && pais.nombre_fr) return pais.nombre_fr;
+    return pais.nombre;
+}
+
+// Renderizar el select de países con el idioma actual (ordenados alfabéticamente)
+function renderPaises() {
+    const select = document.getElementById('pais');
+    const selectedValue = select.value;
+
+    // Quitar opciones existentes excepto la primera (placeholder)
+    while (select.options.length > 1) {
+        select.remove(1);
+    }
+
+    // Ordenar por nombre en el idioma actual
+    const sorted = [...paisesData].sort((a, b) => getNombrePais(a).localeCompare(getNombrePais(b)));
+
+    sorted.forEach(pais => {
+        const option = document.createElement('option');
+        option.value = pais.alfa2;
+        option.textContent = getNombrePais(pais);
+        select.appendChild(option);
+    });
+
+    // Restaurar selección previa
+    if (selectedValue) {
+        select.value = selectedValue;
+    }
 }
 
 // Cargar países al iniciar
 async function cargarPaises() {
     try {
         const response = await fetch(`${API_URL}/api/paises`);
-        const paises = await response.json();
+        paisesData = await response.json();
+        renderPaises();
 
-        const select = document.getElementById('pais');
-        paises.forEach(pais => {
-            const option = document.createElement('option');
-            option.value = pais.alfa2;
-            option.textContent = pais.nombre;
-            select.appendChild(option);
+        // Re-renderizar cuando cambie el idioma
+        document.addEventListener('languageChanged', () => {
+            renderPaises();
         });
     } catch (error) {
         console.error('Error al cargar países:', error);
@@ -299,6 +335,32 @@ async function injectRegPasswordRequirements() {
             checkRegPwdReq(this.value, reqContainer);
         });
     }
+}
+
+// Auto-rellenar usuario con el email introducido
+function setupEmailToUsername() {
+    const emailInput = document.getElementById('email');
+    const usernameInput = document.getElementById('username');
+    let userEditedUsername = false;
+
+    // Si el usuario edita manualmente el campo usuario, dejar de auto-rellenar
+    usernameInput.addEventListener('input', function() {
+        userEditedUsername = true;
+    });
+
+    // Al escribir el email, proponer como usuario (si no lo ha editado manualmente)
+    emailInput.addEventListener('input', function() {
+        if (!userEditedUsername) {
+            usernameInput.value = this.value.trim();
+        }
+    });
+
+    // Si el usuario borra todo el username, reactivar auto-relleno
+    usernameInput.addEventListener('change', function() {
+        if (this.value.trim() === '') {
+            userEditedUsername = false;
+        }
+    });
 }
 
 // Configurar formulario de registro

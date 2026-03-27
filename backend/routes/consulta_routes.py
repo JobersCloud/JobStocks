@@ -381,7 +381,7 @@ def enviar_notificacion_consulta(data, consulta_id, empresa_id, connection_id=No
         raise Exception("No hay configuración de email activa")
 
     msg = MIMEMultipart()
-    msg['From'] = email_config['email_from']
+    msg['From'] = f"Sistema de Stocks <{email_config['email_from']}>"
     msg['To'] = email_config['email_to']
     msg['Subject'] = f"Nueva consulta sobre producto: {data['codigo_producto']}"
     msg['Date'] = formatdate(localtime=True)
@@ -438,7 +438,7 @@ def enviar_respuesta_consulta(consulta, respuesta, empresa_id, connection_id=Non
         raise Exception("No hay configuración de email activa")
 
     msg = MIMEMultipart()
-    msg['From'] = email_config['email_from']
+    msg['From'] = f"Sistema de Stocks <{email_config['email_from']}>"
     msg['To'] = consulta['email_cliente']
     msg['Subject'] = f"Respuesta a tu consulta sobre: {consulta['codigo_producto']}"
     msg['Date'] = formatdate(localtime=True)
