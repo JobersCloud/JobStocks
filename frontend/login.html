@@ -307,6 +307,13 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.44.0', date: '2026-03-27', title: 'Backup de Base de Datos', items: [
+                {type: 'new', text: 'Sistema de backup de BD con soporte Local, FTP y SFTP'},
+                {type: 'new', text: 'Configuraciones guardadas con programacion automatica (diario, semanal, mensual)'},
+                {type: 'new', text: 'Historial de backups con estado, tamaño y duracion'},
+                {type: 'new', text: 'Backup rapido desde el panel de Control BD sin guardar configuracion'},
+                {type: 'new', text: 'Test de conexion FTP/SFTP antes de ejecutar'}
+            ]},
             { version: 'v1.43.8', date: '2026-03-24', title: 'Estabilidad del servidor', items: [
                 {type: 'fix', text: 'Corregida fuga de conexiones a BD en 29 funciones de 9 archivos que podían dejar conexiones abiertas ante errores'},
                 {type: 'improve', text: 'Los workers del servidor se reciclan periódicamente para prevenir acumulación de recursos'}

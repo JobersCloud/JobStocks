@@ -587,10 +587,274 @@
                                     <div id="reindex-progress-text" style="font-size: 0.78rem; color: var(--text-secondary, #888); margin-top: 6px;"></div>
                                 </div>
                             </div>
+
+                            <!-- ==================== SECCION: BACKUP DE BD ==================== -->
+
+                            <!-- Backup Rapido -->
+                            <div class="param-section">
+                                <div class="param-section-header">
+                                    <span class="param-section-icon">💾</span>
+                                    <div class="param-section-info">
+                                        <h3 data-i18n="dbControl.backup">Backup de BD</h3>
+                                        <p data-i18n="dbControl.backupQuickDesc">Ejecutar un backup sin guardar la configuracion</p>
+                                    </div>
+                                </div>
+
+                                <!-- Formulario backup rapido -->
+                                <div class="param-section-grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div class="param-card" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                                        <label class="param-key" data-i18n="dbControl.backupDb">Base de datos</label>
+                                        <select id="backup-quick-tipo-bd" class="form-control" style="width: 100%;">
+                                            <option value="cliente" data-i18n="dbControl.backupDbClient">BD Cliente</option>
+                                            <option value="central" data-i18n="dbControl.backupDbCentral">BD Central</option>
+                                        </select>
+                                    </div>
+                                    <div class="param-card" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                                        <label class="param-key" data-i18n="dbControl.backupProtocol">Protocolo</label>
+                                        <select id="backup-quick-protocolo" class="form-control" style="width: 100%;" onchange="toggleQuickProtocolFields()">
+                                            <option value="local">Local</option>
+                                            <option value="ftp">FTP</option>
+                                            <option value="sftp">SFTP</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Campos Local -->
+                                <div id="backup-quick-local-fields" style="margin-top: 12px;">
+                                    <div class="param-section-grid" style="grid-template-columns: 1fr;">
+                                        <div class="param-card" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                                            <label class="param-key" data-i18n="dbControl.backupLocalPath">Ruta local (en servidor SQL)</label>
+                                            <input type="text" id="backup-quick-ruta-local" class="form-control" placeholder="C:\Backups" style="width: 100%;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Campos FTP/SFTP -->
+                                <div id="backup-quick-remote-fields" style="display: none; margin-top: 12px;">
+                                    <div class="param-section-grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
+                                        <div class="param-card" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                                            <label class="param-key" data-i18n="dbControl.backupHost">Servidor</label>
+                                            <input type="text" id="backup-quick-host" class="form-control" placeholder="ftp.example.com" style="width: 100%;">
+                                        </div>
+                                        <div class="param-card" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                                            <label class="param-key" data-i18n="dbControl.backupPort">Puerto</label>
+                                            <input type="number" id="backup-quick-puerto" class="form-control" value="22" style="width: 100%;">
+                                        </div>
+                                        <div class="param-card" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                                            <label class="param-key" data-i18n="dbControl.backupUser">Usuario</label>
+                                            <input type="text" id="backup-quick-usuario" class="form-control" style="width: 100%;">
+                                        </div>
+                                        <div class="param-card" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                                            <label class="param-key" data-i18n="dbControl.backupPassword">Contraseña</label>
+                                            <input type="password" id="backup-quick-password" class="form-control" style="width: 100%;">
+                                        </div>
+                                    </div>
+                                    <div class="param-section-grid" style="grid-template-columns: 1fr; margin-top: 12px;">
+                                        <div class="param-card" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                                            <label class="param-key" data-i18n="dbControl.backupRemotePath">Ruta remota</label>
+                                            <input type="text" id="backup-quick-ruta-remota" class="form-control" placeholder="/backups" style="width: 100%;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Botones -->
+                                <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                    <button class="btn-primary" id="btn-backup-execute-now" onclick="executeBackupNow()" style="display: inline-flex; align-items: center; gap: 8px;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="7 10 12 15 17 10"></polyline>
+                                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                                        </svg>
+                                        <span data-i18n="dbControl.backupExecuteNow">Ejecutar Backup Ahora</span>
+                                    </button>
+                                    <button class="btn-secondary" id="btn-backup-test" onclick="testQuickConnection()" style="display: none; align-items: center; gap: 8px;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        </svg>
+                                        <span data-i18n="dbControl.backupTestConnection">Probar Conexion</span>
+                                    </button>
+                                </div>
+
+                                <!-- Progreso -->
+                                <div id="backup-progress" style="display: none; margin-top: 12px;">
+                                    <div style="height: 6px; border-radius: 3px; background: var(--border-color, #e0e0e0); overflow: hidden;">
+                                        <div id="backup-progress-fill" style="height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary, #e74c3c), var(--primary-dark, #c0392b)); width: 0%; transition: width 0.3s ease;"></div>
+                                    </div>
+                                    <div id="backup-progress-text" style="font-size: 0.78rem; color: var(--text-secondary, #888); margin-top: 6px;"></div>
+                                </div>
+
+                                <!-- Resultado -->
+                                <div id="backup-quick-result" style="display: none; margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 0.85rem;"></div>
+                            </div>
+
+                            <!-- Configuraciones Guardadas -->
+                            <div class="param-section">
+                                <div class="param-section-header">
+                                    <span class="param-section-icon">⚙️</span>
+                                    <div class="param-section-info">
+                                        <h3 data-i18n="dbControl.backupConfigs">Configuraciones Guardadas</h3>
+                                        <p data-i18n="dbControl.backupConfigsDesc">Configuraciones de backup reutilizables con programacion</p>
+                                    </div>
+                                    <button class="btn-primary" onclick="openBackupConfigModal()" style="margin-left: auto; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        </svg>
+                                        <span data-i18n="dbControl.backupNewConfig">Nueva Configuracion</span>
+                                    </button>
+                                </div>
+                                <div id="backup-configs-container">
+                                    <div class="params-loading" id="backup-configs-loading">
+                                        <div class="spinner"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Historial de Backups -->
+                            <div class="param-section">
+                                <div class="param-section-header">
+                                    <span class="param-section-icon">📋</span>
+                                    <div class="param-section-info">
+                                        <h3 data-i18n="dbControl.backupHistory">Historial de Backups</h3>
+                                        <p data-i18n="dbControl.backupHistoryDesc">Registro de backups ejecutados</p>
+                                    </div>
+                                    <button class="btn-secondary" onclick="cleanupBackupHistory()" style="margin-left: auto; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                        <span data-i18n="dbControl.backupCleanHistory">Limpiar historial</span>
+                                    </button>
+                                </div>
+                                <div id="backup-history-container">
+                                    <div class="params-loading" id="backup-history-loading">
+                                        <div class="spinner"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </main>
+        </div>
+    </div>
+
+    <!-- Modal de Configuracion de Backup -->
+    <div id="backup-config-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="backup-config-modal-title" data-i18n="dbControl.backupNewConfig">Nueva Configuracion</h2>
+                <button class="modal-close" onclick="closeBackupConfigModal()">&times;</button>
+            </div>
+            <div style="padding: 20px; max-height: 70vh; overflow-y: auto;">
+                <input type="hidden" id="backup-config-id" value="">
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label data-i18n="dbControl.backupConfigName">Nombre</label>
+                    <input type="text" id="backup-config-nombre" class="form-control" placeholder="Backup diario cliente">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label data-i18n="dbControl.backupDb">Base de datos</label>
+                        <select id="backup-config-tipo-bd" class="form-control">
+                            <option value="cliente" data-i18n="dbControl.backupDbClient">BD Cliente</option>
+                            <option value="central" data-i18n="dbControl.backupDbCentral">BD Central</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="dbControl.backupProtocol">Protocolo</label>
+                        <select id="backup-config-protocolo" class="form-control" onchange="toggleConfigProtocolFields()">
+                            <option value="local">Local</option>
+                            <option value="ftp">FTP</option>
+                            <option value="sftp">SFTP</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Campos Local -->
+                <div id="backup-config-local-fields">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label data-i18n="dbControl.backupLocalPath">Ruta local (en servidor SQL)</label>
+                        <input type="text" id="backup-config-ruta-local" class="form-control" placeholder="C:\Backups">
+                    </div>
+                </div>
+
+                <!-- Campos FTP/SFTP -->
+                <div id="backup-config-remote-fields" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div class="form-group">
+                            <label data-i18n="dbControl.backupHost">Servidor</label>
+                            <input type="text" id="backup-config-host" class="form-control" placeholder="ftp.example.com">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="dbControl.backupPort">Puerto</label>
+                            <input type="number" id="backup-config-puerto" class="form-control" value="22">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="dbControl.backupUser">Usuario</label>
+                            <input type="text" id="backup-config-usuario" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="dbControl.backupPassword">Contraseña</label>
+                            <input type="password" id="backup-config-password" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label data-i18n="dbControl.backupRemotePath">Ruta remota</label>
+                        <input type="text" id="backup-config-ruta-remota" class="form-control" placeholder="/backups">
+                    </div>
+                </div>
+
+                <hr style="border: none; border-top: 1px solid var(--border-color, #e0e0e0); margin: 20px 0;">
+
+                <!-- Programacion -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label data-i18n="dbControl.backupFrequency">Frecuencia</label>
+                        <select id="backup-config-frecuencia" class="form-control" onchange="toggleConfigScheduleFields()">
+                            <option value="manual" data-i18n="dbControl.backupManual">Manual</option>
+                            <option value="daily" data-i18n="dbControl.backupDaily">Diario</option>
+                            <option value="weekly" data-i18n="dbControl.backupWeekly">Semanal</option>
+                            <option value="monthly" data-i18n="dbControl.backupMonthly">Mensual</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="backup-config-hora-group" style="display: none;">
+                        <label data-i18n="dbControl.backupHour">Hora</label>
+                        <select id="backup-config-hora" class="form-control">
+                        </select>
+                    </div>
+                </div>
+
+                <div id="backup-config-schedule-extra" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div class="form-group" id="backup-config-dia-semana-group" style="display: none;">
+                            <label data-i18n="dbControl.backupDayWeek">Dia de la semana</label>
+                            <select id="backup-config-dia-semana" class="form-control">
+                                <option value="1" data-i18n="dbControl.backupMonday">Lunes</option>
+                                <option value="2" data-i18n="dbControl.backupTuesday">Martes</option>
+                                <option value="3" data-i18n="dbControl.backupWednesday">Miercoles</option>
+                                <option value="4" data-i18n="dbControl.backupThursday">Jueves</option>
+                                <option value="5" data-i18n="dbControl.backupFriday">Viernes</option>
+                                <option value="6" data-i18n="dbControl.backupSaturday">Sabado</option>
+                                <option value="7" data-i18n="dbControl.backupSunday">Domingo</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="backup-config-dia-mes-group" style="display: none;">
+                            <label data-i18n="dbControl.backupDayMonth">Dia del mes</label>
+                            <select id="backup-config-dia-mes" class="form-control">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                    <button class="btn-primary" onclick="saveBackupConfig()" style="flex: 1;" data-i18n="dbControl.backupSave">Guardar</button>
+                    <button class="btn-secondary" id="btn-config-test-conn" onclick="testConfigConnection()" style="display: none;" data-i18n="dbControl.backupTestConnection">Probar Conexion</button>
+                </div>
+                <div id="backup-config-result" style="display: none; margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 0.85rem;"></div>
+            </div>
         </div>
     </div>
 
@@ -641,6 +905,9 @@
             Notifications.init();
             await loadDbInfo();
             loadReindexStatus();
+            initBackupSection();
+            loadBackupConfigs();
+            loadBackupHistory();
         });
 
         // ==================== CARGAR INFO BD ====================
@@ -1005,10 +1272,620 @@
             }
         }
 
+        // ==================== BACKUP DE BD ====================
+
+        function initBackupSection() {
+            // Poblar select de horas (0-23)
+            const horaSelect = document.getElementById('backup-config-hora');
+            for (let i = 0; i < 24; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = `${String(i).padStart(2, '0')}:00`;
+                horaSelect.appendChild(opt);
+            }
+            horaSelect.value = '3';
+
+            // Poblar select de dias del mes (1-28)
+            const diaSelect = document.getElementById('backup-config-dia-mes');
+            for (let i = 1; i <= 28; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = i;
+                diaSelect.appendChild(opt);
+            }
+        }
+
+        function toggleQuickProtocolFields() {
+            const proto = document.getElementById('backup-quick-protocolo').value;
+            document.getElementById('backup-quick-local-fields').style.display = proto === 'local' ? '' : 'none';
+            document.getElementById('backup-quick-remote-fields').style.display = proto !== 'local' ? '' : 'none';
+            document.getElementById('btn-backup-test').style.display = proto !== 'local' ? 'inline-flex' : 'none';
+            // Ajustar puerto por defecto
+            if (proto === 'ftp') {
+                document.getElementById('backup-quick-puerto').value = '21';
+            } else if (proto === 'sftp') {
+                document.getElementById('backup-quick-puerto').value = '22';
+            }
+        }
+
+        function toggleConfigProtocolFields() {
+            const proto = document.getElementById('backup-config-protocolo').value;
+            document.getElementById('backup-config-local-fields').style.display = proto === 'local' ? '' : 'none';
+            document.getElementById('backup-config-remote-fields').style.display = proto !== 'local' ? '' : 'none';
+            document.getElementById('btn-config-test-conn').style.display = proto !== 'local' ? '' : 'none';
+            if (proto === 'ftp') {
+                document.getElementById('backup-config-puerto').value = '21';
+            } else if (proto === 'sftp') {
+                document.getElementById('backup-config-puerto').value = '22';
+            }
+        }
+
+        function toggleConfigScheduleFields() {
+            const freq = document.getElementById('backup-config-frecuencia').value;
+            const isScheduled = freq !== 'manual';
+            document.getElementById('backup-config-hora-group').style.display = isScheduled ? '' : 'none';
+            document.getElementById('backup-config-schedule-extra').style.display = isScheduled ? '' : 'none';
+            document.getElementById('backup-config-dia-semana-group').style.display = freq === 'weekly' ? '' : 'none';
+            document.getElementById('backup-config-dia-mes-group').style.display = freq === 'monthly' ? '' : 'none';
+        }
+
+        // ==================== BACKUP RAPIDO ====================
+
+        async function executeBackupNow() {
+            if (!confirm(t('dbControl.backupConfirmExecute') || '¿Ejecutar backup ahora?')) return;
+
+            const proto = document.getElementById('backup-quick-protocolo').value;
+            const data = {
+                tipo_bd: document.getElementById('backup-quick-tipo-bd').value,
+                protocolo: proto,
+            };
+
+            if (proto === 'local') {
+                data.ruta_local = document.getElementById('backup-quick-ruta-local').value;
+                if (!data.ruta_local) {
+                    alert(t('dbControl.backupLocalPath') || 'Ruta local requerida');
+                    return;
+                }
+            } else {
+                data.host = document.getElementById('backup-quick-host').value;
+                data.puerto = parseInt(document.getElementById('backup-quick-puerto').value) || 22;
+                data.usuario = document.getElementById('backup-quick-usuario').value;
+                data.password = document.getElementById('backup-quick-password').value;
+                data.ruta_remota = document.getElementById('backup-quick-ruta-remota').value;
+                if (!data.host) {
+                    alert(t('dbControl.backupHost') || 'Servidor requerido');
+                    return;
+                }
+            }
+
+            const btn = document.getElementById('btn-backup-execute-now');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/api/backup/execute-now`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': PageCommon.getCsrfToken()
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    pollBackupStatus();
+                } else {
+                    showBackupResult('error', result.error || 'Error');
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                showBackupResult('error', error.message);
+                btn.disabled = false;
+            }
+        }
+
+        async function testQuickConnection() {
+            const proto = document.getElementById('backup-quick-protocolo').value;
+            const data = {
+                protocolo: proto,
+                host: document.getElementById('backup-quick-host').value,
+                puerto: parseInt(document.getElementById('backup-quick-puerto').value) || 22,
+                usuario: document.getElementById('backup-quick-usuario').value,
+                password: document.getElementById('backup-quick-password').value,
+                ruta_remota: document.getElementById('backup-quick-ruta-remota').value,
+            };
+
+            const btn = document.getElementById('btn-backup-test');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/api/backup/test-connection`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': PageCommon.getCsrfToken()
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showBackupResult('success', t('dbControl.backupTestSuccess') || 'Conexion exitosa');
+                } else {
+                    showBackupResult('error', result.message || t('dbControl.backupTestFailed'));
+                }
+            } catch (error) {
+                showBackupResult('error', error.message);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function showBackupResult(type, message) {
+            const el = document.getElementById('backup-quick-result');
+            if (type === 'success') {
+                el.style.background = '#e8f5e9';
+                el.style.borderColor = '#4caf50';
+                el.style.color = '#2e7d32';
+                el.style.border = '1px solid #4caf50';
+                el.innerHTML = `<strong>✅</strong> ${message}`;
+            } else {
+                el.style.background = '#ffebee';
+                el.style.borderColor = '#f44336';
+                el.style.color = '#c62828';
+                el.style.border = '1px solid #f44336';
+                el.innerHTML = `<strong>❌</strong> ${message}`;
+            }
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 8000);
+        }
+
+        // ==================== POLLING ESTADO ====================
+
+        async function pollBackupStatus() {
+            const btn = document.getElementById('btn-backup-execute-now');
+            const progressEl = document.getElementById('backup-progress');
+            const progressFill = document.getElementById('backup-progress-fill');
+            const progressText = document.getElementById('backup-progress-text');
+
+            try {
+                const response = await fetch(`${API_URL}/api/backup/status`, { credentials: 'include' });
+                if (!response.ok) {
+                    btn.disabled = false;
+                    progressEl.style.display = 'none';
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.running) {
+                    progressEl.style.display = '';
+                    const pct = data.percent || 0;
+                    progressFill.style.width = pct + '%';
+
+                    const phaseMsg = {
+                        'preparing': t('dbControl.backupPreparing') || 'Preparando...',
+                        'backing_up': t('dbControl.backupBackingUp') || 'Respaldando BD...',
+                        'uploading': t('dbControl.backupUploading') || 'Subiendo archivo...',
+                    };
+                    progressText.textContent = phaseMsg[data.phase] || data.message || '';
+                    setTimeout(pollBackupStatus, 2000);
+                } else {
+                    btn.disabled = false;
+                    if (data.phase === 'completed') {
+                        progressFill.style.width = '100%';
+                        const sizeStr = data.tamano_mb ? ` (${data.tamano_mb} MB)` : '';
+                        const durStr = data.duracion_seg ? ` - ${data.duracion_seg}s` : '';
+                        progressText.textContent = (t('dbControl.backupCompleted') || 'Backup completado') + sizeStr + durStr;
+                        showBackupResult('success', (t('dbControl.backupCompleted') || 'Backup completado') + sizeStr);
+                    } else if (data.phase === 'failed') {
+                        progressFill.style.width = '0%';
+                        progressText.textContent = 'Error: ' + (data.message || '');
+                        showBackupResult('error', data.message || 'Error');
+                    }
+                    loadBackupHistory();
+                    setTimeout(() => { progressEl.style.display = 'none'; }, 5000);
+                }
+            } catch (error) {
+                btn.disabled = false;
+                progressEl.style.display = 'none';
+            }
+        }
+
+        // ==================== CONFIGURACIONES GUARDADAS ====================
+
+        async function loadBackupConfigs() {
+            const container = document.getElementById('backup-configs-container');
+            try {
+                const response = await fetch(`${API_URL}/api/backup/configs`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Error');
+                const configs = await response.json();
+
+                if (!configs || configs.length === 0) {
+                    container.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 0.9rem;">${t('dbControl.backupNoConfigs') || 'No hay configuraciones de backup'}</div>`;
+                    return;
+                }
+
+                // Tabla desktop
+                let html = '<div class="db-info-table-wrapper" style="overflow-x: auto;"><table class="db-info-table"><thead><tr>';
+                html += `<th>${t('dbControl.backupConfigName')}</th><th>${t('dbControl.backupDb')}</th><th>${t('dbControl.backupProtocol')}</th><th>${t('dbControl.backupFrequency')}</th><th>${t('dbControl.backupLastExecution')}</th><th>${t('dbControl.backupActive')}</th><th></th>`;
+                html += '</tr></thead><tbody>';
+
+                // Cards movil
+                let cardsHtml = '<div class="db-info-cards">';
+
+                const freqLabels = {
+                    'manual': t('dbControl.backupManual') || 'Manual',
+                    'daily': t('dbControl.backupDaily') || 'Diario',
+                    'weekly': t('dbControl.backupWeekly') || 'Semanal',
+                    'monthly': t('dbControl.backupMonthly') || 'Mensual',
+                };
+
+                configs.forEach(c => {
+                    const ultimaExec = c.ultima_ejecucion ? new Date(c.ultima_ejecucion).toLocaleString() : '-';
+                    const activoBadge = c.activo
+                        ? `<span style="background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">✓</span>`
+                        : `<span style="background: #ffebee; color: #c62828; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">✗</span>`;
+                    const actions = `
+                        <div style="display: flex; gap: 6px;">
+                            <button class="btn-icon btn-icon-primary" onclick="executeConfigBackup(${c.id})" title="${t('dbControl.backupExecute')}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            </button>
+                            <button class="btn-icon btn-icon-secondary" onclick="editBackupConfig(${c.id})" title="${t('dbControl.backupEdit')}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </button>
+                            <button class="btn-icon btn-icon-secondary" onclick="deleteBackupConfig(${c.id})" title="${t('dbControl.backupDelete')}" style="color: #c62828;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                        </div>`;
+
+                    html += `<tr>
+                        <td><strong>${c.nombre}</strong></td>
+                        <td>${c.tipo_bd === 'central' ? (t('dbControl.backupDbCentral') || 'Central') : (t('dbControl.backupDbClient') || 'Cliente')}</td>
+                        <td>${c.protocolo.toUpperCase()}</td>
+                        <td>${freqLabels[c.frecuencia] || c.frecuencia}</td>
+                        <td>${ultimaExec}</td>
+                        <td>${activoBadge}</td>
+                        <td>${actions}</td>
+                    </tr>`;
+
+                    cardsHtml += `<div class="db-info-card">
+                        <div class="db-info-card-header">${c.nombre}</div>
+                        <div class="db-info-card-row"><span class="db-info-card-label">${t('dbControl.backupDb')}</span><span class="db-info-card-value">${c.tipo_bd}</span></div>
+                        <div class="db-info-card-row"><span class="db-info-card-label">${t('dbControl.backupProtocol')}</span><span class="db-info-card-value">${c.protocolo.toUpperCase()}</span></div>
+                        <div class="db-info-card-row"><span class="db-info-card-label">${t('dbControl.backupFrequency')}</span><span class="db-info-card-value">${freqLabels[c.frecuencia] || c.frecuencia}</span></div>
+                        <div class="db-info-card-row"><span class="db-info-card-label">${t('dbControl.backupLastExecution')}</span><span class="db-info-card-value">${ultimaExec}</span></div>
+                        <div style="margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end;">${actions}</div>
+                    </div>`;
+                });
+
+                html += '</tbody></table></div>';
+                cardsHtml += '</div>';
+                container.innerHTML = html + cardsHtml;
+
+            } catch (error) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 20px;">Error al cargar configuraciones</div>`;
+            }
+        }
+
+        async function executeConfigBackup(configId) {
+            if (!confirm(t('dbControl.backupConfirmExecute') || '¿Ejecutar backup ahora?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/backup/execute/${configId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': PageCommon.getCsrfToken()
+                    },
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    document.getElementById('btn-backup-execute-now').disabled = true;
+                    pollBackupStatus();
+                } else {
+                    alert(result.error || 'Error');
+                }
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function deleteBackupConfig(configId) {
+            if (!confirm(t('dbControl.backupConfirmDelete') || '¿Eliminar esta configuracion?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/backup/configs/${configId}`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-Token': PageCommon.getCsrfToken() },
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    loadBackupConfigs();
+                } else {
+                    alert(result.error || 'Error');
+                }
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        // ==================== MODAL CONFIG ====================
+
+        function openBackupConfigModal(config) {
+            const modal = document.getElementById('backup-config-modal');
+            const title = document.getElementById('backup-config-modal-title');
+
+            // Reset
+            document.getElementById('backup-config-id').value = '';
+            document.getElementById('backup-config-nombre').value = '';
+            document.getElementById('backup-config-tipo-bd').value = 'cliente';
+            document.getElementById('backup-config-protocolo').value = 'local';
+            document.getElementById('backup-config-ruta-local').value = '';
+            document.getElementById('backup-config-host').value = '';
+            document.getElementById('backup-config-puerto').value = '22';
+            document.getElementById('backup-config-usuario').value = '';
+            document.getElementById('backup-config-password').value = '';
+            document.getElementById('backup-config-ruta-remota').value = '';
+            document.getElementById('backup-config-frecuencia').value = 'manual';
+            document.getElementById('backup-config-hora').value = '3';
+            document.getElementById('backup-config-dia-semana').value = '1';
+            document.getElementById('backup-config-dia-mes').value = '1';
+            document.getElementById('backup-config-result').style.display = 'none';
+
+            if (config) {
+                title.textContent = t('dbControl.backupEdit') || 'Editar';
+                document.getElementById('backup-config-id').value = config.id;
+                document.getElementById('backup-config-nombre').value = config.nombre || '';
+                document.getElementById('backup-config-tipo-bd').value = config.tipo_bd || 'cliente';
+                document.getElementById('backup-config-protocolo').value = config.protocolo || 'local';
+                document.getElementById('backup-config-ruta-local').value = config.ruta_local || '';
+                document.getElementById('backup-config-host').value = config.host || '';
+                document.getElementById('backup-config-puerto').value = config.puerto || 22;
+                document.getElementById('backup-config-usuario').value = config.usuario || '';
+                document.getElementById('backup-config-password').value = config.password || '';
+                document.getElementById('backup-config-ruta-remota').value = config.ruta_remota || '';
+                document.getElementById('backup-config-frecuencia').value = config.frecuencia || 'manual';
+                document.getElementById('backup-config-hora').value = config.hora != null ? config.hora : 3;
+                document.getElementById('backup-config-dia-semana').value = config.dia_semana || 1;
+                document.getElementById('backup-config-dia-mes').value = config.dia_mes || 1;
+            } else {
+                title.textContent = t('dbControl.backupNewConfig') || 'Nueva Configuracion';
+            }
+
+            toggleConfigProtocolFields();
+            toggleConfigScheduleFields();
+            modal.style.display = 'flex';
+        }
+
+        function closeBackupConfigModal() {
+            document.getElementById('backup-config-modal').style.display = 'none';
+        }
+
+        async function editBackupConfig(configId) {
+            try {
+                const response = await fetch(`${API_URL}/api/backup/configs`, { credentials: 'include' });
+                const configs = await response.json();
+                const config = configs.find(c => c.id === configId);
+                if (config) {
+                    openBackupConfigModal(config);
+                }
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function saveBackupConfig() {
+            const configId = document.getElementById('backup-config-id').value;
+            const data = {
+                nombre: document.getElementById('backup-config-nombre').value,
+                tipo_bd: document.getElementById('backup-config-tipo-bd').value,
+                protocolo: document.getElementById('backup-config-protocolo').value,
+                ruta_local: document.getElementById('backup-config-ruta-local').value,
+                host: document.getElementById('backup-config-host').value,
+                puerto: parseInt(document.getElementById('backup-config-puerto').value) || 22,
+                usuario: document.getElementById('backup-config-usuario').value,
+                password: document.getElementById('backup-config-password').value,
+                ruta_remota: document.getElementById('backup-config-ruta-remota').value,
+                frecuencia: document.getElementById('backup-config-frecuencia').value,
+                hora: parseInt(document.getElementById('backup-config-hora').value) || 3,
+                dia_semana: parseInt(document.getElementById('backup-config-dia-semana').value) || 1,
+                dia_mes: parseInt(document.getElementById('backup-config-dia-mes').value) || 1,
+                activo: true,
+            };
+
+            if (!data.nombre) {
+                alert(t('dbControl.backupConfigName') || 'Nombre requerido');
+                return;
+            }
+
+            const resultEl = document.getElementById('backup-config-result');
+
+            try {
+                const url = configId ? `${API_URL}/api/backup/configs/${configId}` : `${API_URL}/api/backup/configs`;
+                const method = configId ? 'PUT' : 'POST';
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': PageCommon.getCsrfToken()
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    closeBackupConfigModal();
+                    loadBackupConfigs();
+                } else {
+                    resultEl.style.display = 'block';
+                    resultEl.style.background = '#ffebee';
+                    resultEl.style.border = '1px solid #f44336';
+                    resultEl.style.color = '#c62828';
+                    resultEl.textContent = result.error || 'Error';
+                }
+            } catch (error) {
+                resultEl.style.display = 'block';
+                resultEl.style.background = '#ffebee';
+                resultEl.style.border = '1px solid #f44336';
+                resultEl.style.color = '#c62828';
+                resultEl.textContent = error.message;
+            }
+        }
+
+        async function testConfigConnection() {
+            const data = {
+                protocolo: document.getElementById('backup-config-protocolo').value,
+                host: document.getElementById('backup-config-host').value,
+                puerto: parseInt(document.getElementById('backup-config-puerto').value) || 22,
+                usuario: document.getElementById('backup-config-usuario').value,
+                password: document.getElementById('backup-config-password').value,
+                ruta_remota: document.getElementById('backup-config-ruta-remota').value,
+            };
+
+            const resultEl = document.getElementById('backup-config-result');
+            const btn = document.getElementById('btn-config-test-conn');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/api/backup/test-connection`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': PageCommon.getCsrfToken()
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                resultEl.style.display = 'block';
+                if (result.success) {
+                    resultEl.style.background = '#e8f5e9';
+                    resultEl.style.border = '1px solid #4caf50';
+                    resultEl.style.color = '#2e7d32';
+                    resultEl.textContent = t('dbControl.backupTestSuccess') || 'Conexion exitosa';
+                } else {
+                    resultEl.style.background = '#ffebee';
+                    resultEl.style.border = '1px solid #f44336';
+                    resultEl.style.color = '#c62828';
+                    resultEl.textContent = result.message || t('dbControl.backupTestFailed');
+                }
+            } catch (error) {
+                resultEl.style.display = 'block';
+                resultEl.style.background = '#ffebee';
+                resultEl.style.border = '1px solid #f44336';
+                resultEl.style.color = '#c62828';
+                resultEl.textContent = error.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // ==================== HISTORIAL ====================
+
+        async function loadBackupHistory() {
+            const container = document.getElementById('backup-history-container');
+            try {
+                const response = await fetch(`${API_URL}/api/backup/history`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Error');
+                const history = await response.json();
+
+                if (!history || history.length === 0) {
+                    container.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 0.9rem;">${t('dbControl.backupNoHistory') || 'No hay registros de backup'}</div>`;
+                    return;
+                }
+
+                const statusBadge = (estado) => {
+                    const colors = {
+                        'success': { bg: '#e8f5e9', color: '#2e7d32', icon: '✓' },
+                        'failed': { bg: '#ffebee', color: '#c62828', icon: '✗' },
+                        'running': { bg: '#fff3cd', color: '#856404', icon: '⏳' },
+                    };
+                    const s = colors[estado] || colors['running'];
+                    const label = t(`dbControl.backup${estado.charAt(0).toUpperCase() + estado.slice(1)}`) || estado;
+                    return `<span style="background: ${s.bg}; color: ${s.color}; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; white-space: nowrap;">${s.icon} ${label}</span>`;
+                };
+
+                // Tabla desktop
+                let html = '<div class="db-info-table-wrapper" style="overflow-x: auto;"><table class="db-info-table"><thead><tr>';
+                html += `<th>${t('dbControl.backupDate')}</th><th>${t('dbControl.backupDb')}</th><th>${t('dbControl.backupProtocol')}</th><th>${t('dbControl.backupFileName')}</th><th>${t('dbControl.backupSize')}</th><th>${t('dbControl.backupDuration')}</th><th>${t('dbControl.backupStatus')}</th>`;
+                html += '</tr></thead><tbody>';
+
+                // Cards movil
+                let cardsHtml = '<div class="db-info-cards">';
+
+                history.forEach(h => {
+                    const fecha = h.fecha_inicio ? new Date(h.fecha_inicio).toLocaleString() : '-';
+                    const tamano = h.tamano_mb ? `${h.tamano_mb} MB` : '-';
+                    const duracion = h.duracion_seg != null ? `${h.duracion_seg}s` : '-';
+
+                    html += `<tr>
+                        <td>${fecha}</td>
+                        <td>${h.tipo_bd}</td>
+                        <td>${(h.protocolo || '').toUpperCase()}</td>
+                        <td title="${h.nombre_archivo}">${h.nombre_archivo.length > 30 ? h.nombre_archivo.substring(0, 30) + '...' : h.nombre_archivo}</td>
+                        <td>${tamano}</td>
+                        <td>${duracion}</td>
+                        <td>${statusBadge(h.estado)}</td>
+                    </tr>`;
+
+                    cardsHtml += `<div class="db-info-card">
+                        <div class="db-info-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>${h.nombre_archivo.length > 25 ? h.nombre_archivo.substring(0, 25) + '...' : h.nombre_archivo}</span>
+                            ${statusBadge(h.estado)}
+                        </div>
+                        <div class="db-info-card-row"><span class="db-info-card-label">${t('dbControl.backupDate')}</span><span class="db-info-card-value">${fecha}</span></div>
+                        <div class="db-info-card-row"><span class="db-info-card-label">${t('dbControl.backupDb')}</span><span class="db-info-card-value">${h.tipo_bd}</span></div>
+                        <div class="db-info-card-row"><span class="db-info-card-label">${t('dbControl.backupProtocol')}</span><span class="db-info-card-value">${(h.protocolo || '').toUpperCase()}</span></div>
+                        <div class="db-info-card-row"><span class="db-info-card-label">${t('dbControl.backupSize')}</span><span class="db-info-card-value">${tamano}</span></div>
+                        <div class="db-info-card-row"><span class="db-info-card-label">${t('dbControl.backupDuration')}</span><span class="db-info-card-value">${duracion}</span></div>
+                        ${h.mensaje ? `<div style="margin-top: 6px; font-size: 0.78rem; color: var(--text-secondary);">${h.mensaje}</div>` : ''}
+                    </div>`;
+                });
+
+                html += '</tbody></table></div>';
+                cardsHtml += '</div>';
+                container.innerHTML = html + cardsHtml;
+
+            } catch (error) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 20px;">Error al cargar historial</div>`;
+            }
+        }
+
+        async function cleanupBackupHistory() {
+            if (!confirm(t('dbControl.backupCleanConfirm') || 'Se eliminaran los registros de mas de 90 dias. ¿Continuar?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/backup/history/cleanup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': PageCommon.getCsrfToken()
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ dias: 90 })
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    alert(`${result.deleted} registros eliminados`);
+                    loadBackupHistory();
+                } else {
+                    alert(result.error || 'Error');
+                }
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
     </script>
     <script>
         document.getElementById('change-password-modal').addEventListener('click', function(e) {
             if (e.target === this) hideChangePasswordModal();
+        });
+        document.getElementById('backup-config-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeBackupConfigModal();
         });
     </script>
 </body>

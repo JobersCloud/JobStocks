@@ -43,6 +43,9 @@ gunicorn==23.0.0
 # OAuth2 (Office 365)
 msal==1.31.1
 
+# SFTP (Backup)
+paramiko>=3.4.0
+
 # Dependencies
 attrs==25.4.0
 blinker==1.9.0

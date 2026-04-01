@@ -43,6 +43,7 @@ from routes.almacen_routes import almacen_bp
 from routes.notification_routes import notification_bp
 from routes.image_search_routes import image_search_bp
 from routes.favoritos_routes import favoritos_bp
+from routes.backup_routes import backup_bp
 from database.users_db import verify_user, get_user_by_id
 from models.user import User
 from models.user_session_model import UserSessionModel
@@ -152,7 +153,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.43.8'
+APP_VERSION = 'v1.44.0'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -289,6 +290,7 @@ app.register_blueprint(almacen_bp)
 app.register_blueprint(notification_bp)
 app.register_blueprint(image_search_bp)
 app.register_blueprint(favoritos_bp)
+app.register_blueprint(backup_bp)
 
 # ==================== RUTAS DE AUTENTICACIÓN ====================
 
@@ -1318,6 +1320,11 @@ def internal_error_handler(e):
         'message': 'Error interno del servidor.',
         'error': 'internal_error'
     }), 500
+
+# Iniciar scheduler de backups programados
+from utils.backup_scheduler import BackupScheduler
+_backup_scheduler = BackupScheduler()
+_backup_scheduler.start()
 
 if __name__ == '__main__':
     print("=" * 60)

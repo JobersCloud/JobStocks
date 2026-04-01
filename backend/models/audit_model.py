@@ -54,6 +54,10 @@ class AuditAction:
     # Articulos
     ARTICLE_VIEW = 'ARTICLE_VIEW'
 
+    # Backups
+    BACKUP_EXECUTE = 'BACKUP_EXECUTE'
+    BACKUP_CONFIG_CHANGE = 'BACKUP_CONFIG_CHANGE'
+
     @classmethod
     def get_all_actions(cls):
         """Retorna lista de todas las acciones disponibles"""
@@ -67,7 +71,8 @@ class AuditAction:
             cls.PROPUESTA_SEND, cls.PROPUESTA_STATUS_CHANGE,
             cls.CONSULTA_SEND, cls.CONSULTA_RESPOND,
             cls.ACCOUNT_LOCKED, cls.ACCOUNT_UNLOCKED,
-            cls.ARTICLE_VIEW
+            cls.ARTICLE_VIEW,
+            cls.BACKUP_EXECUTE, cls.BACKUP_CONFIG_CHANGE
         ]
 
 

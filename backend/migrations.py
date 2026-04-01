@@ -1402,4 +1402,73 @@ MIGRATIONS = [
         ]
     },
 
+    # ================================================================
+    # TABLA BACKUP_CONFIG - Configuraciones de backup
+    # ================================================================
+
+    {
+        'version': 56,
+        'description': 'Crear tabla backup_config para configuraciones de backup de BD',
+        'app_version': 'v1.44.0',
+        'sql': [
+            """IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'backup_config')
+            BEGIN
+                CREATE TABLE backup_config (
+                    id INT IDENTITY(1,1) PRIMARY KEY,
+                    empresa_id VARCHAR(5) NOT NULL,
+                    nombre VARCHAR(100) NOT NULL,
+                    tipo_bd VARCHAR(10) NOT NULL DEFAULT 'cliente',
+                    protocolo VARCHAR(10) NOT NULL DEFAULT 'local',
+                    ruta_local VARCHAR(500) NULL,
+                    host VARCHAR(255) NULL,
+                    puerto INT NULL DEFAULT 22,
+                    usuario VARCHAR(100) NULL,
+                    password VARCHAR(500) NULL,
+                    ruta_remota VARCHAR(500) NULL,
+                    frecuencia VARCHAR(20) NOT NULL DEFAULT 'manual',
+                    hora INT NULL DEFAULT 3,
+                    dia_semana INT NULL DEFAULT 1,
+                    dia_mes INT NULL DEFAULT 1,
+                    activo BIT DEFAULT 1,
+                    fecha_creacion DATETIME DEFAULT GETDATE(),
+                    fecha_modificacion DATETIME DEFAULT GETDATE(),
+                    ultima_ejecucion DATETIME NULL,
+                    CONSTRAINT UQ_backup_config_nombre UNIQUE (empresa_id, nombre)
+                );
+            END""",
+        ]
+    },
+
+    # ================================================================
+    # TABLA BACKUP_HISTORY - Historial de backups
+    # ================================================================
+
+    {
+        'version': 57,
+        'description': 'Crear tabla backup_history para historial de backups',
+        'app_version': 'v1.44.0',
+        'sql': [
+            """IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'backup_history')
+            BEGIN
+                CREATE TABLE backup_history (
+                    id INT IDENTITY(1,1) PRIMARY KEY,
+                    config_id INT NULL,
+                    empresa_id VARCHAR(5) NOT NULL,
+                    tipo_bd VARCHAR(10) NOT NULL,
+                    nombre_archivo VARCHAR(255) NOT NULL,
+                    tamano_mb DECIMAL(18,2) NULL,
+                    estado VARCHAR(20) NOT NULL DEFAULT 'running',
+                    mensaje NVARCHAR(MAX) NULL,
+                    protocolo VARCHAR(10) NULL,
+                    destino VARCHAR(500) NULL,
+                    fecha_inicio DATETIME NOT NULL DEFAULT GETDATE(),
+                    fecha_fin DATETIME NULL,
+                    duracion_seg INT NULL,
+                    usuario_id INT NULL
+                );
+                CREATE INDEX idx_backup_history_empresa ON backup_history(empresa_id, fecha_inicio DESC);
+            END""",
+        ]
+    },
+
 ]
