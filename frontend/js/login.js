@@ -720,7 +720,8 @@ async function showPasswordChangeModal() {
     const newPwdInput = document.getElementById('new-password');
     let reqContainer = modal.querySelector('.password-requirements');
     if (!reqContainer && newPwdInput) {
-        newPwdInput.insertAdjacentHTML('afterend', buildLoginPwdReqHtml(policy));
+        const formGroup = newPwdInput.closest('.form-group');
+        formGroup.insertAdjacentHTML('afterend', buildLoginPwdReqHtml(policy));
         reqContainer = modal.querySelector('.password-requirements');
         newPwdInput.addEventListener('input', function() {
             checkLoginPwdReq(this.value, reqContainer);
