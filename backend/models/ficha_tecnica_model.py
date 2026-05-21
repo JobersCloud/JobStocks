@@ -39,20 +39,23 @@ class FichaTecnicaModel:
         cursor = conn.cursor()
         ficha = None
 
-        # 1) Buscar ficha específica por tono
+        # 1) Buscar ficha específica por tono (requiere view_articulo_ficha_tecnica_tono)
         if tono:
-            cursor.execute("""
-                SELECT empresa, articulo, ficha
-                FROM cristal.dbo.articulo_ficha_tecnica_tono WITH (NOLOCK)
-                WHERE articulo = ? AND empresa = ? AND tono = ?
-            """, (codigo, empresa_id, tono))
-            row = cursor.fetchone()
-            if row and row[2]:
-                ficha = {
-                    'empresa': row[0],
-                    'articulo': row[1],
-                    'ficha': base64.b64encode(row[2]).decode('utf-8')
-                }
+            try:
+                cursor.execute("""
+                    SELECT empresa, articulo, ficha
+                    FROM view_articulo_ficha_tecnica_tono WITH (NOLOCK)
+                    WHERE articulo = ? AND empresa = ? AND tono = ?
+                """, (codigo, empresa_id, tono))
+                row = cursor.fetchone()
+                if row and row[2]:
+                    ficha = {
+                        'empresa': row[0],
+                        'articulo': row[1],
+                        'ficha': base64.b64encode(row[2]).decode('utf-8')
+                    }
+            except Exception:
+                pass  # Vista no existe en esta instalación
 
         # 2) Fallback: ficha genérica (sin tono)
         if not ficha:
@@ -90,17 +93,20 @@ class FichaTecnicaModel:
         conn = Database.get_connection()
         cursor = conn.cursor()
 
-        # 1) Buscar ficha específica por tono
+        # 1) Buscar ficha específica por tono (requiere view_articulo_ficha_tecnica_tono)
         if tono:
-            cursor.execute("""
-                SELECT COUNT(*)
-                FROM cristal.dbo.articulo_ficha_tecnica_tono WITH (NOLOCK)
-                WHERE articulo = ? AND empresa = ? AND tono = ?
-            """, (codigo, empresa_id, tono))
-            if cursor.fetchone()[0] > 0:
-                cursor.close()
-                conn.close()
-                return True
+            try:
+                cursor.execute("""
+                    SELECT COUNT(*)
+                    FROM view_articulo_ficha_tecnica_tono WITH (NOLOCK)
+                    WHERE articulo = ? AND empresa = ? AND tono = ?
+                """, (codigo, empresa_id, tono))
+                if cursor.fetchone()[0] > 0:
+                    cursor.close()
+                    conn.close()
+                    return True
+            except Exception:
+                pass  # Vista no existe en esta instalación
 
         # 2) Fallback: ficha genérica
         cursor.execute("""

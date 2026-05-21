@@ -167,7 +167,7 @@ class ClienteModel:
             if cif_nif and cif_nif.strip():
                 cif_normalizado = cif_nif.strip().upper()
                 cursor.execute("""
-                    SELECT RTRIM(codigo) FROM cristal.dbo.genter
+                    SELECT RTRIM(codigo) FROM dbo.view_genter_completa
                     WHERE tipoter = 'C' AND RTRIM(empresa) = ?
                     AND UPPER(RTRIM(cif)) = ?
                 """, (empresa_id, cif_normalizado))
@@ -180,7 +180,7 @@ class ClienteModel:
                 dominio = email.split('@')[1].strip().lower()
                 if dominio not in ClienteModel.DOMINIOS_GENERICOS:
                     cursor.execute("""
-                        SELECT RTRIM(codigo) FROM cristal.dbo.genter
+                        SELECT RTRIM(codigo) FROM dbo.view_genter_completa
                         WHERE tipoter = 'C' AND RTRIM(empresa) = ?
                         AND RTRIM(e_mail) LIKE ?
                     """, (empresa_id, f'%@{dominio}'))
@@ -206,7 +206,7 @@ class ClienteModel:
                 nombre_norm = normalizar(company_name)
                 if len(nombre_norm) >= 3:
                     cursor.execute("""
-                        SELECT RTRIM(codigo) FROM cristal.dbo.genter
+                        SELECT RTRIM(codigo) FROM dbo.view_genter_completa
                         WHERE tipoter = 'C' AND RTRIM(empresa) = ?
                         AND (UPPER(RTRIM(razon)) LIKE ? OR UPPER(RTRIM(nombre_comercial)) LIKE ?)
                     """, (empresa_id, f'%{nombre_norm}%', f'%{nombre_norm}%'))
