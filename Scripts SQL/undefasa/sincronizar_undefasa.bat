@@ -3,59 +3,45 @@ setlocal enabledelayedexpansion
 chcp 65001 > nul
 REM ============================================
 REM Script: sincronizar_undefasa.bat
-REM Sincronizacion con BCP (CON MENSAJES)
-REM
-REM Tablas normales: Compara CHECKSUM (detecta inserts/updates/deletes)
-REM Tablas con blobs: Compara COUNT (mas rapido, evita leer blobs)
-REM
-REM ORIGEN:  192.168.0.73 / euro (Undefasa ERP)
-REM DESTINO: 192.168.0.50 / Undefasa (Docker SQL Server 2025)
+REM ORIGEN:  192.168.0.73 / euro
+REM DESTINO: 192.168.0.50 / Undefasa
+REM BCP usa -w (compatible 2008 a 2025)
 REM ============================================
 
 SET SERVIDOR_ORIGEN=192.168.0.73
 SET SERVIDOR_DESTINO=192.168.0.50,1433
 SET BD_ORIGEN=euro
 SET BD_DESTINO=Undefasa
-
 SET USUARIO_ORIGEN=sa
 SET CLAVE_ORIGEN=FLASH
-
 SET USUARIO_DESTINO=sa
 SET "PW_DEST=Undef@s@2026%%$"
-
-REM Rutas a herramientas nuevas (ODBC 17 - soporta -C para TLS)
 SET "SQLCMD170=C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\SQLCMD.EXE"
 SET "BCP170=C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\bcp.exe"
-
-REM Usar ruta sin espacios para evitar problemas con sqlcmd/bcp
 SET DATOS=C:\TEMP\sync_undefasa
+SET RUTA_IMAGENES=Z:\
+SET EMPRESA_ID=1
 
 cls
 echo.
 echo ============================================
 echo    SINCRONIZACION DE UNDEFASA
 echo ============================================
-echo.
 echo    ORIGEN:  %SERVIDOR_ORIGEN% / %BD_ORIGEN%
 echo    DESTINO: %SERVIDOR_DESTINO% / %BD_DESTINO%
-echo.
 echo ============================================
 echo.
 
 if not exist "%DATOS%" mkdir "%DATOS%"
 
-REM ============================================
-REM VERIFICAR CONEXIONES
-REM ============================================
 echo [1/5] Verificando conexiones...
-sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -Q "SELECT 1" -h -1 -W > nul 2>&1
+"!SQLCMD170!" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -Q "SELECT 1" -h -1 -W > nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo     ERROR: No se puede conectar al ORIGEN
     pause
     exit /b 1
 )
 echo     ORIGEN: OK
-
 "!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -Q "SELECT 1" -h -1 -W -C > nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo     ERROR: No se puede conectar al DESTINO
@@ -65,73 +51,52 @@ if %ERRORLEVEL% NEQ 0 (
 echo     DESTINO: OK
 echo.
 
-REM ============================================
-REM SINCRONIZAR TABLAS NORMALES
-REM ============================================
 echo [2/5] Sincronizando tablas normales...
 echo.
-
-call :sync_tabla empresas
-call :sync_tabla unidades
-call :sync_tabla formatos
-call :sync_tabla calidades
-call :sync_tabla almmodelos
-call :sync_tabla almcolores
-call :sync_tabla pallets
-call :sync_tabla articulos
-call :sync_tabla almalmacen
-call :sync_tabla almubimapa
-call :sync_tabla almlinubica
-call :sync_tabla almlinubica_bloqueo
-call :sync_tabla almartcajas
-call :sync_tabla palarticulo
-call :sync_tabla almcajas
-call :sync_tabla almartcal
-call :sync_tabla almarttonopeso
-call :sync_tabla venliped
-call :sync_venped
-call :sync_tabla genter
-call :sync_tabla paises
-call :sync_tabla provincias
-
+call :st empresas
+call :st unidades
+call :st formatos
+call :st calidades
+call :st almmodelos
+call :st almcolores
+call :st pallets
+call :st articulos
+call :st almalmacen
+call :st almubimapa
+call :st almlinubica
+call :st almlinubica_bloqueo
+call :st almartcajas
+call :st palarticulo
+call :st almcajas
+call :st almartcal
+REM call :st almarttonopeso
+call :st venliped
+call :sv
+call :st genter
+call :st paises
+call :st provincias
+call :st tono
+call :st calibre
+call :st ean13
+call :st almartpallet
 echo.
 
-REM ============================================
-REM SINCRONIZAR TABLAS CON BLOBS
-REM ============================================
 echo [3/5] Sincronizando tablas con blobs...
 echo.
-
-call :sync_imagenes
-call :sync_fichas
-call :sync_fichas_tono
-
+REM call :st articulo_ficha_tecnica
+REM call :st articulo_ficha_tecnica_tono
 echo.
 
-REM ============================================
-REM VACIAR LOG DE TRANSACCIONES EN DESTINO
-REM ============================================
-echo [4/5] Vaciando log de transacciones en destino...
+echo [4/5] Sincronizando imagenes desde %RUTA_IMAGENES%...
+echo.
+call :si
+echo.
+
+echo [5/5] Finalizando...
 "!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -C -Q "DECLARE @logName NVARCHAR(128); SELECT @logName = name FROM sys.master_files WHERE database_id = DB_ID('%BD_DESTINO%') AND type_desc = 'LOG'; ALTER DATABASE %BD_DESTINO% SET RECOVERY SIMPLE; DBCC SHRINKFILE (@logName, 1); ALTER DATABASE %BD_DESTINO% SET RECOVERY FULL;" > nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    echo     OK
-) else (
-    echo     No se pudo vaciar - puede requerir permisos
-)
-
-echo.
-
-REM ============================================
-REM ACTUALIZAR FECHA DE SINCRONIZACION
-REM ============================================
-echo [5/5] Registrando fecha de sincronizacion...
+echo     Log vaciado
 "!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d ApiRestStocks -C -Q "UPDATE parametros SET valor = CONVERT(VARCHAR(19), GETDATE(), 120), fecha_modificacion = GETDATE() WHERE clave = 'FECHA_ULTIMA_SINCRONIZACION'" > nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    echo     OK
-) else (
-    echo     No se pudo actualizar - verificar que existe el parametro
-)
-
+echo     Fecha registrada
 echo.
 echo ============================================
 echo SINCRONIZACION COMPLETADA
@@ -141,134 +106,115 @@ pause
 exit /b 0
 
 REM ============================================
-REM FUNCION: sync_tabla (compara CHECKSUM)
+REM :st - Sync tabla: compara checksum, si difiere TRUNCATE+BCP -w
 REM ============================================
-:sync_tabla
-set TABLA=%~1
-<nul set /p="     %TABLA%... "
-
-REM Obtener checksum ORIGEN (NOLOCK para no bloquear)
-sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -h -1 -W -Q "SET NOCOUNT ON; SELECT ISNULL(CHECKSUM_AGG(BINARY_CHECKSUM(*)),0) FROM dbo.%TABLA% WITH (NOLOCK)" > "%DATOS%\chk_o.txt" 2>nul
-set /p CHK_O=<"%DATOS%\chk_o.txt"
-
-REM Obtener checksum DESTINO
-"!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -h -1 -W -C -Q "SET NOCOUNT ON; SELECT ISNULL(CHECKSUM_AGG(BINARY_CHECKSUM(*)),0) FROM dbo.%TABLA% WITH (NOLOCK)" > "%DATOS%\chk_d.txt" 2>nul
-set /p CHK_D=<"%DATOS%\chk_d.txt"
-
-REM Obtener count para mostrar
-sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.%TABLA% WITH (NOLOCK)" > "%DATOS%\cnt_o.txt" 2>nul
-set /p CNT_O=<"%DATOS%\cnt_o.txt"
-
-REM Comparar checksums
-if "!CHK_O!"=="!CHK_D!" (
-    echo !CNT_O! registros [=]
-) else (
-    bcp "SELECT * FROM %BD_ORIGEN%.dbo.%TABLA% WITH (NOLOCK)" queryout "%DATOS%\%TABLA%.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
-    "!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -C -Q "TRUNCATE TABLE dbo.%TABLA%" > nul 2>&1
-    "!BCP170!" %BD_DESTINO%.dbo.%TABLA% in "%DATOS%\%TABLA%.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -n -C > nul 2>&1
-    echo !CNT_O! registros [sync]
-)
+:st
+set T=%~1
+<nul set /p="     %T%... "
+REM Contar columnas en origen y destino (numero simple, sin caracteres especiales)
+"!SQLCMD170!" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='%T%' AND TABLE_SCHEMA='dbo'" > "%DATOS%\so.txt" 2>nul
+set /p SO=<"%DATOS%\so.txt"
+"!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -h -1 -W -C -Q "SET NOCOUNT ON; IF OBJECT_ID('dbo.%T%','U') IS NULL SELECT '0' ELSE SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='%T%' AND TABLE_SCHEMA='dbo'" > "%DATOS%\sd.txt" 2>nul
+set /p SD=<"%DATOS%\sd.txt"
+REM Si columnas difieren o tabla no existe: recrear
+if NOT "!SO!"=="!SD!" call :cr %T%
+REM Comparar checksums de datos
+"!SQLCMD170!" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -h -1 -W -Q "SET NOCOUNT ON; SELECT ISNULL(CHECKSUM_AGG(BINARY_CHECKSUM(*)),0) FROM dbo.%T% WITH (NOLOCK)" > "%DATOS%\co.txt" 2>nul
+set /p CO=<"%DATOS%\co.txt"
+"!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -h -1 -W -C -Q "SET NOCOUNT ON; SELECT ISNULL(CHECKSUM_AGG(BINARY_CHECKSUM(*)),0) FROM dbo.%T% WITH (NOLOCK)" > "%DATOS%\cd.txt" 2>nul
+set /p CD=<"%DATOS%\cd.txt"
+REM Count para mostrar
+"!SQLCMD170!" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.%T% WITH (NOLOCK)" > "%DATOS%\cn.txt" 2>nul
+set /p CN=<"%DATOS%\cn.txt"
+REM Si checksums iguales, no copiar
+if "!CO!"=="!CD!" echo !CN! registros [=]&goto :eof
+REM BCP export + TRUNCATE + import
+"!BCP170!" "SELECT * FROM %BD_ORIGEN%.dbo.%T% WITH (NOLOCK)" queryout "%DATOS%\%T%.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -w > nul 2>&1
+"!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -C -Q "TRUNCATE TABLE dbo.%T%" > nul 2>&1
+"!BCP170!" %BD_DESTINO%.dbo.%T% in "%DATOS%\%T%.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -w > nul 2>&1
+if NOT "!SO!"=="!SD!" echo !CN! registros [schema+sync]&goto :eof
+echo !CN! registros [sync]
 goto :eof
 
 REM ============================================
-REM FUNCION: sync_imagenes (compara COUNT - evita leer blobs)
+REM :cr - Create tabla en destino desde esquema origen
 REM ============================================
-:sync_imagenes
-<nul set /p="     ps_articulo_imagen... "
-
-REM Obtener count ORIGEN (NOLOCK)
-sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.ps_articulo_imagen WITH (NOLOCK)" > "%DATOS%\cnt_o.txt" 2>nul
-set /p CNT_O=<"%DATOS%\cnt_o.txt"
-
-REM Obtener count DESTINO
-"!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -h -1 -W -C -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.ps_articulo_imagen WITH (NOLOCK)" > "%DATOS%\cnt_d.txt" 2>nul
-set /p CNT_D=<"%DATOS%\cnt_d.txt"
-
-REM Comparar counts
-if "!CNT_O!"=="!CNT_D!" (
-    echo !CNT_O! registros [=]
-) else (
-    echo sincronizando...
-    <nul set /p="                              exportando... "
-    bcp "SELECT * FROM %BD_ORIGEN%.dbo.ps_articulo_imagen WITH (NOLOCK)" queryout "%DATOS%\ps_articulo_imagen.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
-    echo OK
-    <nul set /p="                              importando... "
-    "!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -C -Q "TRUNCATE TABLE dbo.ps_articulo_imagen" > nul 2>&1
-    "!BCP170!" %BD_DESTINO%.dbo.ps_articulo_imagen in "%DATOS%\ps_articulo_imagen.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -n -C > nul 2>&1
-    echo OK [!CNT_O! registros] [sync]
-)
+:cr
+set TR=%~1
+"!SQLCMD170!" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -h -1 -y 8000 -o "%DATOS%\create_%TR%.sql" -Q "SET NOCOUNT ON; DECLARE @cols NVARCHAR(MAX) = ''; SELECT @cols = @cols + ', ' + QUOTENAME(COLUMN_NAME) + ' ' + DATA_TYPE + CASE WHEN DATA_TYPE IN ('char','varchar','nchar','nvarchar') THEN '(' + CASE WHEN CHARACTER_MAXIMUM_LENGTH = -1 THEN 'MAX' ELSE CAST(CHARACTER_MAXIMUM_LENGTH AS VARCHAR) END + ')' WHEN DATA_TYPE IN ('decimal','numeric') THEN '(' + CAST(NUMERIC_PRECISION AS VARCHAR) + ',' + CAST(NUMERIC_SCALE AS VARCHAR) + ')' ELSE '' END + ' NULL' FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '%TR%' AND TABLE_SCHEMA = 'dbo' ORDER BY ORDINAL_POSITION; SET @cols = STUFF(@cols, 1, 2, ''); SELECT 'IF OBJECT_ID(''dbo.%TR%'',''U'') IS NOT NULL DROP TABLE dbo.%TR%; CREATE TABLE dbo.%TR% (' + @cols + ');';" 2>nul
+"!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -C -i "%DATOS%\create_%TR%.sql" > nul 2>&1
 goto :eof
 
 REM ============================================
-REM FUNCION: sync_fichas (compara COUNT - evita leer blobs)
+REM :sv - Sync venped (solo pedidos con lineas)
 REM ============================================
-:sync_fichas
-<nul set /p="     articulo_ficha_tecnica... "
-
-REM Obtener count ORIGEN (NOLOCK)
-sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.articulo_ficha_tecnica WITH (NOLOCK)" > "%DATOS%\cnt_o.txt" 2>nul
-set /p CNT_O=<"%DATOS%\cnt_o.txt"
-
-REM Obtener count DESTINO
-"!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -h -1 -W -C -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.articulo_ficha_tecnica WITH (NOLOCK)" > "%DATOS%\cnt_d.txt" 2>nul
-set /p CNT_D=<"%DATOS%\cnt_d.txt"
-
-REM Comparar counts
-if "!CNT_O!"=="!CNT_D!" (
-    echo !CNT_O! registros [=]
-) else (
-    echo sincronizando...
-    <nul set /p="                              exportando... "
-    bcp "SELECT * FROM %BD_ORIGEN%.dbo.articulo_ficha_tecnica WITH (NOLOCK)" queryout "%DATOS%\articulo_ficha_tecnica.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
-    echo OK
-    <nul set /p="                              importando... "
-    "!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -C -Q "TRUNCATE TABLE dbo.articulo_ficha_tecnica" > nul 2>&1
-    "!BCP170!" %BD_DESTINO%.dbo.articulo_ficha_tecnica in "%DATOS%\articulo_ficha_tecnica.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -n -C > nul 2>&1
-    echo OK [!CNT_O! registros] [sync]
-)
-goto :eof
-
-REM ============================================
-REM FUNCION: sync_fichas_tono (compara COUNT - evita leer blobs)
-REM ============================================
-:sync_fichas_tono
-<nul set /p="     articulo_ficha_tecnica_tono... "
-
-REM Obtener count ORIGEN (NOLOCK)
-sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.articulo_ficha_tecnica_tono WITH (NOLOCK)" > "%DATOS%\cnt_o.txt" 2>nul
-set /p CNT_O=<"%DATOS%\cnt_o.txt"
-
-REM Obtener count DESTINO
-"!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -h -1 -W -C -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.articulo_ficha_tecnica_tono WITH (NOLOCK)" > "%DATOS%\cnt_d.txt" 2>nul
-set /p CNT_D=<"%DATOS%\cnt_d.txt"
-
-REM Comparar counts
-if "!CNT_O!"=="!CNT_D!" (
-    echo !CNT_O! registros [=]
-) else (
-    echo sincronizando...
-    <nul set /p="                              exportando... "
-    bcp "SELECT * FROM %BD_ORIGEN%.dbo.articulo_ficha_tecnica_tono WITH (NOLOCK)" queryout "%DATOS%\articulo_ficha_tecnica_tono.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
-    echo OK
-    <nul set /p="                              importando... "
-    "!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -C -Q "TRUNCATE TABLE dbo.articulo_ficha_tecnica_tono" > nul 2>&1
-    "!BCP170!" %BD_DESTINO%.dbo.articulo_ficha_tecnica_tono in "%DATOS%\articulo_ficha_tecnica_tono.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -n -C > nul 2>&1
-    echo OK [!CNT_O! registros] [sync]
-)
-goto :eof
-
-REM ============================================
-REM FUNCION: sync_venped (siempre sincroniza - solo pedidos con lineas)
-REM ============================================
-:sync_venped
+:sv
 <nul set /p="     venped (con lineas)... "
-
-REM Exportar solo venped que tienen lineas en venliped (todas las empresas) - NOLOCK
-bcp "SELECT * FROM %BD_ORIGEN%.dbo.venped WITH (NOLOCK) WHERE pedido IN (SELECT venliped.pedido FROM %BD_ORIGEN%.dbo.venliped WITH (NOLOCK) WHERE venliped.empresa = venped.empresa AND venliped.anyo = venped.anyo)" queryout "%DATOS%\venped.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
-
-REM Truncar e importar
+"!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -h -1 -W -C -Q "SET NOCOUNT ON; IF OBJECT_ID('dbo.venped','U') IS NULL SELECT 'NOTABLE' ELSE SELECT '0'" > "%DATOS%\cd.txt" 2>nul
+set /p CD=<"%DATOS%\cd.txt"
+if "!CD!"=="NOTABLE" call :cr venped
 "!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -C -Q "TRUNCATE TABLE dbo.venped" > nul 2>&1
-"!BCP170!" %BD_DESTINO%.dbo.venped in "%DATOS%\venped.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -n -C > nul 2>&1
-
+"!BCP170!" "SELECT * FROM %BD_ORIGEN%.dbo.venped WITH (NOLOCK) WHERE pedido IN (SELECT venliped.pedido FROM %BD_ORIGEN%.dbo.venliped WITH (NOLOCK) WHERE venliped.empresa = venped.empresa AND venliped.anyo = venped.anyo)" queryout "%DATOS%\venped.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -w > nul 2>&1
+"!BCP170!" %BD_DESTINO%.dbo.venped in "%DATOS%\venped.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -w > nul 2>&1
 echo [sync]
+goto :eof
+
+REM ============================================
+REM :si - Sync imagenes desde Z:\ (solo nuevas, solo web='S')
+REM ============================================
+:si
+"!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -C -Q "IF OBJECT_ID('dbo.ps_articulo_imagen','U') IS NULL CREATE TABLE dbo.ps_articulo_imagen (id numeric(18,0) IDENTITY(1,1) NOT NULL, empresa varchar(5) NULL, articulo varchar(20) NULL, foto image NULL, predeterminada int NULL, width_thumbnail int NULL, height_thumbnail int NULL, thumbnail image NULL, nombre varchar(100) NULL, web_id numeric(18,0) NULL);" > nul 2>&1
+"!SQLCMD170!" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -h -1 -W -o "%DATOS%\articulos_web.txt" -Q "SET NOCOUNT ON; SELECT RTRIM(codigo) FROM dbo.articulos WITH (NOLOCK) WHERE web = 'S'"
+"!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -h -1 -W -C -o "%DATOS%\imagenes_existentes.txt" -Q "SET NOCOUNT ON; SELECT RTRIM(nombre) FROM dbo.ps_articulo_imagen"
+echo     Buscando imagenes nuevas...
+powershell -ExecutionPolicy Bypass -Command ^
+ "$webCodes = Get-Content '%DATOS%\articulos_web.txt' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }; " ^
+ "$webSet = New-Object System.Collections.Generic.HashSet[string]; " ^
+ "foreach ($c in $webCodes) { [void]$webSet.Add($c) }; " ^
+ "$existentes = Get-Content '%DATOS%\imagenes_existentes.txt' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }; " ^
+ "$existSet = New-Object System.Collections.Generic.HashSet[string]; " ^
+ "foreach ($e in $existentes) { [void]$existSet.Add($e) }; " ^
+ "Write-Host \"     Articulos web: $($webSet.Count) - Imagenes ya en BD: $($existSet.Count)\"; " ^
+ "$connStr = 'Server=%SERVIDOR_DESTINO%;Database=%BD_DESTINO%;User Id=%USUARIO_DESTINO%;Password=!PW_DEST!;TrustServerCertificate=True;Connection Timeout=30'; " ^
+ "$conn = New-Object System.Data.SqlClient.SqlConnection($connStr); " ^
+ "$conn.Open(); " ^
+ "Add-Type -AssemblyName System.Drawing; " ^
+ "$files = Get-ChildItem -Path '%RUTA_IMAGENES%*@1.jpg' -File; " ^
+ "$nuevas = 0; $saltadas = 0; $maxWidth = 800; " ^
+ "foreach ($f in $files) { " ^
+ "  $codigo = $f.BaseName.Split('@')[0]; " ^
+ "  if (-not $webSet.Contains($codigo)) { continue }; " ^
+ "  if ($existSet.Contains($f.Name)) { $saltadas++; continue }; " ^
+ "  $nuevas++; " ^
+ "  try { " ^
+ "    $img = [System.Drawing.Image]::FromFile($f.FullName); " ^
+ "    if ($img.Width -gt $maxWidth) { " ^
+ "      $ratio = $maxWidth / $img.Width; " ^
+ "      $newH = [int]($img.Height * $ratio); " ^
+ "      $bmp = New-Object System.Drawing.Bitmap($maxWidth, $newH); " ^
+ "      $g = [System.Drawing.Graphics]::FromImage($bmp); " ^
+ "      $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic; " ^
+ "      $g.DrawImage($img, 0, 0, $maxWidth, $newH); " ^
+ "      $g.Dispose(); $img.Dispose(); " ^
+ "      $ms = New-Object System.IO.MemoryStream; " ^
+ "      $bmp.Save($ms, [System.Drawing.Imaging.ImageFormat]::Jpeg); " ^
+ "      $bytes = $ms.ToArray(); $ms.Dispose(); $bmp.Dispose(); " ^
+ "    } else { " ^
+ "      $img.Dispose(); " ^
+ "      $bytes = [System.IO.File]::ReadAllBytes($f.FullName); " ^
+ "    } " ^
+ "  } catch { $bytes = [System.IO.File]::ReadAllBytes($f.FullName) }; " ^
+ "  $cmd = $conn.CreateCommand(); " ^
+ "  $cmd.CommandTimeout = 300; " ^
+ "  $cmd.CommandText = 'INSERT INTO dbo.ps_articulo_imagen (empresa, articulo, foto, nombre) VALUES (@e, @a, @f, @n)'; " ^
+ "  [void]$cmd.Parameters.AddWithValue('@e', '%EMPRESA_ID%'); " ^
+ "  [void]$cmd.Parameters.AddWithValue('@a', $codigo); " ^
+ "  $p = $cmd.Parameters.Add('@f', [System.Data.SqlDbType]::Image); $p.Value = $bytes; " ^
+ "  [void]$cmd.Parameters.AddWithValue('@n', $f.Name); " ^
+ "  $cmd.ExecuteNonQuery() ^| Out-Null; " ^
+ "  if ($nuevas %% 100 -eq 0) { Write-Host \"     $nuevas imagenes nuevas insertadas...\" } " ^
+ "} " ^
+ "$conn.Close(); " ^
+ "if ($nuevas -eq 0) { Write-Host \"     [=] Sin imagenes nuevas ($saltadas ya existian)\" } " ^
+ "else { Write-Host \"     OK [$nuevas nuevas, $saltadas ya existian]\" }"
 goto :eof
