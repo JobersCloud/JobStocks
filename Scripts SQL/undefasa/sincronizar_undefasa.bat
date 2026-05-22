@@ -79,6 +79,10 @@ call :st tono
 call :st calibre
 call :st ean13
 call :st almartpallet
+call :st venfac
+call :st venlifac
+call :st venalb
+call :st venlialb
 echo.
 
 echo [3/5] Sincronizando tablas con blobs...
@@ -179,7 +183,7 @@ powershell -ExecutionPolicy Bypass -Command ^
  "$conn = New-Object System.Data.SqlClient.SqlConnection($connStr); " ^
  "$conn.Open(); " ^
  "Add-Type -AssemblyName System.Drawing; " ^
- "$files = Get-ChildItem -Path '%RUTA_IMAGENES%*@1.jpg' -File; " ^
+ "$files = Get-ChildItem -Path '%RUTA_IMAGENES%*@1.jpg' | Where-Object { -not $_.PSIsContainer }; " ^
  "$nuevas = 0; $saltadas = 0; $maxWidth = 800; " ^
  "foreach ($f in $files) { " ^
  "  $codigo = $f.BaseName.Split('@')[0]; " ^
