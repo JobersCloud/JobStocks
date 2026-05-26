@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>RocaNET - Requisitos de Instalacion</title>
+    <style>
+        @page { margin: 2cm; size: A4; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; font-size: 11pt; color: #333; line-height: 1.6; padding: 40px 60px; }
+
+        .cover { text-align: center; padding: 120px 0 60px; page-break-after: always; }
+        .cover h1 { font-size: 36pt; color: #1a3a5c; margin-bottom: 10px; letter-spacing: 2px; }
+        .cover .subtitle { font-size: 16pt; color: #666; margin-bottom: 40px; }
+        .cover .line { width: 100px; height: 3px; background: #1a3a5c; margin: 30px auto; }
+        .cover .info { font-size: 11pt; color: #888; margin-top: 80px; }
+        .cover .info p { margin: 5px 0; }
+        .cover .version { font-size: 10pt; color: #aaa; margin-top: 40px; }
+
+        h2 { font-size: 16pt; color: #1a3a5c; border-bottom: 2px solid #1a3a5c; padding-bottom: 5px; margin: 30px 0 15px; }
+        h3 { font-size: 13pt; color: #2c5f8a; margin: 20px 0 10px; }
+        h4 { font-size: 11pt; color: #444; margin: 15px 0 8px; }
+
+        p { margin: 8px 0; text-align: justify; }
+        ul, ol { margin: 8px 0 8px 25px; }
+        li { margin: 4px 0; }
+
+        table { width: 100%; border-collapse: collapse; margin: 10px 0 20px; font-size: 10pt; }
+        th { background: #1a3a5c; color: white; padding: 8px 12px; text-align: left; font-weight: 600; }
+        td { padding: 6px 12px; border-bottom: 1px solid #ddd; }
+        tr:nth-child(even) { background: #f8f9fa; }
+
+        .note { background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px 15px; margin: 15px 0; font-size: 10pt; }
+        .important { background: #f8d7da; border-left: 4px solid #dc3545; padding: 10px 15px; margin: 15px 0; font-size: 10pt; }
+        .info-box { background: #d1ecf1; border-left: 4px solid #17a2b8; padding: 10px 15px; margin: 15px 0; font-size: 10pt; }
+
+        .code { background: #f4f4f4; border: 1px solid #ddd; border-radius: 3px; padding: 8px 12px; font-family: 'Consolas', monospace; font-size: 9pt; margin: 8px 0; white-space: pre-wrap; }
+
+        .page-break { page-break-before: always; }
+
+        .toc { margin: 20px 0; }
+        .toc a { color: #1a3a5c; text-decoration: none; }
+        .toc li { margin: 6px 0; }
+
+        .footer { text-align: center; font-size: 8pt; color: #aaa; margin-top: 40px; border-top: 1px solid #ddd; padding-top: 10px; }
+
+        .diagram { background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 5px; padding: 20px; margin: 15px 0; text-align: center; font-family: 'Consolas', monospace; font-size: 9pt; line-height: 1.8; }
+    </style>
+</head>
+<body>
+
+<!-- PORTADA -->
+<div class="cover">
+    <img src="../frontend/assets/logojobers.png" alt="Jobers" style="width: 200px; margin-bottom: 40px;">
+    <h1>RocaNET</h1>
+    <div class="line"></div>
+    <div class="subtitle">Portal Web de Consulta de Stocks</div>
+    <p style="font-size: 13pt; color: #555; margin-top: 20px;">Documento de Requisitos e Instalacion</p>
+
+    <div class="info">
+        <p><strong>Preparado por:</strong> Jobers Cloud Solutions</p>
+        <p><strong>Fecha:</strong> Mayo 2026</p>
+    </div>
+    <div class="version">
+        Documento confidencial - Uso interno
+    </div>
+</div>
+
+<!-- INDICE -->
+<h2>Indice</h2>
+<ol class="toc">
+    <li><a href="#intro">Introduccion y Alcance del Proyecto</a></li>
+    <li><a href="#arquitectura">Arquitectura del Sistema</a></li>
+    <li><a href="#requisitos-servidor">Requisitos del Servidor</a></li>
+    <li><a href="#datos-erp">Datos Necesarios del ERP</a></li>
+    <li><a href="#tablas">Tablas a Sincronizar</a></li>
+    <li><a href="#imagenes">Imagenes de Articulos</a></li>
+    <li><a href="#vistas">Vistas SQL Necesarias</a></li>
+    <li><a href="#instalacion">Proceso de Instalacion</a></li>
+    <li><a href="#sincronizacion">Sincronizacion de Datos</a></li>
+    <li><a href="#red">Requisitos de Red y Acceso</a></li>
+    <li><a href="#dns">Dominio y Certificado SSL</a></li>
+    <li><a href="#mantenimiento">Mantenimiento</a></li>
+</ol>
+
+<!-- 1. INTRODUCCION -->
+<h2 class="page-break" id="intro">1. Introduccion y Alcance del Proyecto</h2>
+
+<p>RocaNET es un portal web que permite a los clientes de la empresa consultar en tiempo real el stock disponible de productos ceramicos, visualizar imagenes, descargar fichas tecnicas, y realizar solicitudes de material.</p>
+
+<p>El sistema se alimenta de los datos del ERP existente de la empresa, sincronizando periodicamente las tablas de articulos, stocks, clientes, pedidos, albaranes y facturas hacia una base de datos replicada en un servidor dedicado.</p>
+
+<h3>Funcionalidades principales</h3>
+<ul>
+    <li>Consulta de stocks en tiempo real con filtros avanzados (formato, serie, calidad, tono, calibre)</li>
+    <li>Visualizacion de imagenes de productos</li>
+    <li>Descarga de fichas tecnicas en PDF</li>
+    <li>Sistema de propuestas / solicitudes de material con generacion de PDF y envio por email</li>
+    <li>Consulta de pedidos, albaranes y facturas</li>
+    <li>Dashboard de estadisticas para administradores</li>
+    <li>Gestion de usuarios con roles (usuario, administrador, superusuario)</li>
+    <li>Soporte multi-idioma (espanol, ingles, frances)</li>
+    <li>Personalizacion visual por empresa (logo, favicon, tema de colores)</li>
+    <li>Acceso via API REST para integraciones externas</li>
+</ul>
+
+<!-- 2. ARQUITECTURA -->
+<h2 class="page-break" id="arquitectura">2. Arquitectura del Sistema</h2>
+
+<p>El sistema puede desplegarse en dos modalidades segun las necesidades y la infraestructura del cliente:</p>
+
+<h3>2.1 Modalidad A: Conexion directa al ERP</h3>
+<p>La aplicacion web se conecta directamente a la base de datos del ERP. No requiere sincronizacion ni servidor de base de datos adicional. Es la opcion mas sencilla cuando el servidor ERP es accesible desde el servidor web.</p>
+
+<table>
+    <tr><th style="width:30%">Elemento</th><th>Descripcion</th></tr>
+    <tr><td><strong>Servidor Linux</strong></td><td>Aplicacion web (Flask + Nginx + Redis) en contenedores Docker</td></tr>
+    <tr><td><strong>SQL Server ERP</strong></td><td>La aplicacion lee directamente de las tablas del ERP</td></tr>
+    <tr><td><strong>Ventajas</strong></td><td>Sin replicacion, datos siempre en tiempo real, menos infraestructura</td></tr>
+    <tr><td><strong>Requisitos</strong></td><td>El servidor Linux debe tener conectividad al puerto 1433 del SQL Server ERP</td></tr>
+</table>
+
+<h3>2.2 Modalidad B: Base de datos espejo (replicada)</h3>
+<p>Se despliega un SQL Server adicional en el servidor Linux (Docker) y se replican periodicamente las tablas del ERP. La aplicacion web lee de la copia local. Es la opcion recomendada cuando:</p>
+<ul>
+    <li>El servidor ERP no es accesible desde Internet o desde el servidor web</li>
+    <li>Se desea aislar la carga de la web del servidor ERP de produccion</li>
+    <li>Se necesita mayor rendimiento en las consultas web</li>
+</ul>
+
+<table>
+    <tr><th style="width:30%">Elemento</th><th>Descripcion</th></tr>
+    <tr><td><strong>Servidor ERP (origen)</strong></td><td>SQL Server con las tablas de gestion (articulos, stocks, pedidos, facturas). Imagenes en carpeta de red o tabla de BD</td></tr>
+    <tr><td><strong>Servidor Linux (destino)</strong></td><td>SQL Server 2025 en Docker con la copia de las tablas. Aplicacion web (Flask + Nginx + Redis)</td></tr>
+    <tr><td><strong>Sincronizacion</strong></td><td>Script BCP ejecutado desde un PC Windows con acceso a ambos servidores (tarea programada cada 30 min - 4 horas)</td></tr>
+    <tr><td><strong>Ventajas</strong></td><td>Aislamiento total del ERP, funciona aunque el ERP este apagado, mejor rendimiento</td></tr>
+</table>
+
+<h3>2.3 Componentes del servidor Linux</h3>
+<p>Independientemente de la modalidad elegida, el servidor Linux contiene los siguientes servicios en contenedores Docker:</p>
+
+<table>
+    <tr><th style="width:15%">Servicio</th><th style="width:20%">Tecnologia</th><th style="width:15%">Puerto</th><th>Funcion</th></tr>
+    <tr><td><strong>Nginx</strong></td><td>Nginx (Docker)</td><td>80 / 443</td><td>Proxy inverso, certificado SSL (HTTPS), punto de entrada web</td></tr>
+    <tr><td><strong>Backend</strong></td><td>Python 3.11 + Flask + Gunicorn</td><td>5000 (interno)</td><td>API REST, logica de negocio, servir frontend</td></tr>
+    <tr><td><strong>Redis</strong></td><td>Redis 7 Alpine</td><td>6379 (interno)</td><td>Cache de sesiones, rate limiting (proteccion contra ataques)</td></tr>
+    <tr><td><strong>SQL Server</strong></td><td>SQL Server 2025 (Docker)</td><td>1433</td><td>Base de datos replicada (solo en modalidad B)</td></tr>
+</table>
+
+<h3>2.4 Flujo de datos</h3>
+<table>
+    <tr><th style="width:5%">Paso</th><th>Descripcion</th></tr>
+    <tr><td>1</td><td>El usuario accede a <code>https://stocks.empresa.com</code> desde su navegador</td></tr>
+    <tr><td>2</td><td>Nginx recibe la peticion HTTPS y la redirige al backend Flask (puerto 5000)</td></tr>
+    <tr><td>3</td><td>Flask procesa la peticion, consulta la base de datos y devuelve los datos en formato JSON</td></tr>
+    <tr><td>4</td><td>El frontend JavaScript renderiza los datos en la interfaz del usuario</td></tr>
+    <tr><td>5</td><td>(Solo modalidad B) El script de sincronizacion actualiza periodicamente la BD replicada con los datos del ERP</td></tr>
+</table>
+
+<h3>Componentes tecnologicos</h3>
+<table>
+    <tr><th>Componente</th><th>Tecnologia</th><th>Descripcion</th></tr>
+    <tr><td>Backend</td><td>Python 3.11 + Flask</td><td>API REST, logica de negocio</td></tr>
+    <tr><td>Frontend</td><td>HTML5 + JavaScript + CSS3</td><td>Interfaz web responsive</td></tr>
+    <tr><td>Base de datos</td><td>SQL Server 2025 (Docker)</td><td>Almacenamiento de datos</td></tr>
+    <tr><td>Cache</td><td>Redis 7</td><td>Sesiones, rate limiting</td></tr>
+    <tr><td>Proxy web</td><td>Nginx</td><td>HTTPS, certificados SSL</td></tr>
+    <tr><td>Contenedores</td><td>Docker + Docker Compose</td><td>Despliegue y gestion</td></tr>
+    <tr><td>Sincronizacion</td><td>BCP + sqlcmd + PowerShell</td><td>Replicacion de datos ERP</td></tr>
+</table>
+
+<!-- 3. REQUISITOS SERVIDOR -->
+<h2 class="page-break" id="requisitos-servidor">3. Requisitos del Servidor</h2>
+
+<h3>3.1 Servidor Linux (destino)</h3>
+<p>Servidor dedicado donde se instalara la aplicacion web y la base de datos replicada.</p>
+
+<table>
+    <tr><th>Requisito</th><th>Minimo</th><th>Recomendado</th></tr>
+    <tr><td>Sistema operativo</td><td>Ubuntu 22.04 LTS</td><td>Ubuntu 24.04 LTS</td></tr>
+    <tr><td>CPU</td><td>2 cores</td><td>4 cores</td></tr>
+    <tr><td>RAM</td><td>4 GB</td><td>8 GB</td></tr>
+    <tr><td>Disco</td><td>40 GB SSD</td><td>80 GB SSD</td></tr>
+    <tr><td>Docker</td><td>Docker Engine 24+</td><td>Ultima version estable</td></tr>
+    <tr><td>Acceso SSH</td><td>Si (puerto 22)</td><td>Si</td></tr>
+</table>
+
+<div class="note">
+    <strong>Nota sobre disco:</strong> El tamano necesario depende del numero de articulos e imagenes. Cada imagen ocupa aproximadamente 50-100 KB (redimensionada). Para 2.000 articulos con imagen se necesitan unos 200 MB adicionales.
+</div>
+
+<h3>3.2 Servidor ERP (origen)</h3>
+<p>No requiere instalacion. Solo necesita:</p>
+<ul>
+    <li>SQL Server accesible desde la red local (puerto 1433)</li>
+    <li>Usuario SQL con permisos de lectura sobre las tablas del ERP</li>
+    <li>Si las imagenes estan en carpeta de red: acceso desde el equipo que ejecuta la sincronizacion</li>
+</ul>
+
+<h3>3.3 Equipo de sincronizacion</h3>
+<p>Un PC Windows en la misma red local que ejecutara el script de sincronizacion periodicamente (tarea programada).</p>
+<table>
+    <tr><th>Requisito</th><th>Detalle</th></tr>
+    <tr><td>Sistema operativo</td><td>Windows 10/11</td></tr>
+    <tr><td>ODBC Driver</td><td>Microsoft ODBC Driver 17 o 18 for SQL Server</td></tr>
+    <tr><td>sqlcmd / bcp</td><td>Version incluida con ODBC Driver 17+</td></tr>
+    <tr><td>PowerShell</td><td>Version 3.0 o superior (incluido en Windows)</td></tr>
+    <tr><td>Acceso red</td><td>Conectividad al servidor ERP y al servidor Linux</td></tr>
+</table>
+
+<!-- 4. DATOS DEL ERP -->
+<h2 class="page-break" id="datos-erp">4. Datos Necesarios del ERP</h2>
+
+<p>El sistema necesita acceso de <strong>solo lectura</strong> a las siguientes areas del ERP:</p>
+
+<h3>4.1 Datos maestros</h3>
+<ul>
+    <li><strong>Empresas:</strong> Codigo y nombre de las empresas gestionadas</li>
+    <li><strong>Articulos:</strong> Catalogo completo de productos (codigo, descripcion, formato, modelo, unidad, estado web)</li>
+    <li><strong>Formatos:</strong> Dimensiones y tipos de producto</li>
+    <li><strong>Calidades:</strong> Niveles de calidad</li>
+    <li><strong>Modelos:</strong> Series/colecciones de producto</li>
+    <li><strong>Colores:</strong> Catalogo de colores</li>
+    <li><strong>Tonos y Calibres:</strong> Variaciones de tono y calibre</li>
+    <li><strong>Unidades de medida:</strong> M2, ML, unidades, etc.</li>
+    <li><strong>Pallets:</strong> Tipos de pallet y configuraciones</li>
+    <li><strong>Clientes:</strong> Datos de clientes (razon social, CIF, email, direccion)</li>
+    <li><strong>Paises y Provincias:</strong> Tablas geograficas</li>
+</ul>
+
+<h3>4.2 Datos de stock y almacen</h3>
+<ul>
+    <li><strong>Stock por ubicacion:</strong> Existencias por articulo, calidad, tono, calibre, pallet</li>
+    <li><strong>Configuracion de empaquetado:</strong> Piezas por caja, cajas por pallet, pesos</li>
+    <li><strong>Codigos EAN13:</strong> Codigos de barras por articulo y calidad</li>
+    <li><strong>Ubicaciones de almacen:</strong> Mapa de ubicaciones</li>
+</ul>
+
+<h3>4.3 Datos comerciales</h3>
+<ul>
+    <li><strong>Pedidos:</strong> Cabecera y lineas de pedidos de venta</li>
+    <li><strong>Albaranes:</strong> Cabecera y lineas de albaranes de entrega</li>
+    <li><strong>Facturas:</strong> Cabecera y lineas de facturas</li>
+</ul>
+
+<h3>4.4 Imagenes y documentos</h3>
+<ul>
+    <li><strong>Imagenes de articulos:</strong> Fotografias de producto (JPG). Pueden estar en tabla de base de datos o en carpeta de red</li>
+    <li><strong>Fichas tecnicas:</strong> Documentos PDF con especificaciones tecnicas (opcional)</li>
+</ul>
+
+<!-- 5. TABLAS -->
+<h2 class="page-break" id="tablas">5. Tablas a Sincronizar</h2>
+
+<p>Las siguientes tablas del ERP se replican en el servidor destino. La sincronizacion se realiza mediante BCP (Bulk Copy Program) comparando checksums para detectar cambios.</p>
+
+<h3>5.1 Tablas maestras</h3>
+<table>
+    <tr><th>Tabla</th><th>Descripcion</th><th>Registros tipicos</th></tr>
+    <tr><td>empresas</td><td>Datos de empresas</td><td>1-5</td></tr>
+    <tr><td>articulos</td><td>Catalogo de productos</td><td>5.000 - 50.000</td></tr>
+    <tr><td>formatos</td><td>Formatos / dimensiones</td><td>100 - 500</td></tr>
+    <tr><td>calidades</td><td>Niveles de calidad</td><td>5 - 20</td></tr>
+    <tr><td>almmodelos</td><td>Series / colecciones</td><td>500 - 5.000</td></tr>
+    <tr><td>almcolores</td><td>Colores disponibles</td><td>200 - 2.000</td></tr>
+    <tr><td>unidades</td><td>Unidades de medida</td><td>5 - 10</td></tr>
+    <tr><td>pallets</td><td>Tipos de pallet</td><td>50 - 200</td></tr>
+    <tr><td>tono</td><td>Tonos de producto</td><td>100 - 1.000</td></tr>
+    <tr><td>calibre</td><td>Calibres de producto</td><td>20 - 100</td></tr>
+    <tr><td>genter</td><td>Clientes / terceros</td><td>5.000 - 50.000</td></tr>
+    <tr><td>paises</td><td>Tabla de paises</td><td>200 - 250</td></tr>
+    <tr><td>provincias</td><td>Tabla de provincias</td><td>200 - 300</td></tr>
+</table>
+
+<h3>5.2 Tablas de stock y almacen</h3>
+<table>
+    <tr><th>Tabla</th><th>Descripcion</th><th>Registros tipicos</th></tr>
+    <tr><td>almalmacen</td><td>Almacenes</td><td>10 - 100</td></tr>
+    <tr><td>almubimapa</td><td>Mapa de ubicaciones</td><td>1.000 - 5.000</td></tr>
+    <tr><td>almlinubica</td><td>Stock por ubicacion</td><td>10.000 - 50.000</td></tr>
+    <tr><td>almlinubica_bloqueo</td><td>Ubicaciones bloqueadas</td><td>50 - 500</td></tr>
+    <tr><td>almartcajas</td><td>Configuracion de cajas</td><td>500 - 5.000</td></tr>
+    <tr><td>almartpallet</td><td>Configuracion articulo-pallet</td><td>5.000 - 50.000</td></tr>
+    <tr><td>almartcal</td><td>Articulos por calidad</td><td>5.000 - 50.000</td></tr>
+    <tr><td>palarticulo</td><td>Pallets por articulo</td><td>500 - 5.000</td></tr>
+    <tr><td>almcajas</td><td>Tipos de caja</td><td>100 - 500</td></tr>
+    <tr><td>ean13</td><td>Codigos de barras</td><td>10.000 - 100.000</td></tr>
+</table>
+
+<h3>5.3 Tablas comerciales</h3>
+<table>
+    <tr><th>Tabla</th><th>Descripcion</th><th>Registros tipicos</th></tr>
+    <tr><td>venped</td><td>Cabecera de pedidos</td><td>1.000 - 20.000</td></tr>
+    <tr><td>venliped</td><td>Lineas de pedidos</td><td>2.000 - 50.000</td></tr>
+    <tr><td>venalb</td><td>Cabecera de albaranes</td><td>1.000 - 20.000</td></tr>
+    <tr><td>venlialb</td><td>Lineas de albaranes</td><td>2.000 - 50.000</td></tr>
+    <tr><td>venfac</td><td>Cabecera de facturas</td><td>1.000 - 20.000</td></tr>
+    <tr><td>venlifac</td><td>Lineas de facturas</td><td>2.000 - 50.000</td></tr>
+</table>
+
+<!-- 6. IMAGENES -->
+<h2 class="page-break" id="imagenes">6. Imagenes de Articulos</h2>
+
+<p>Las imagenes de los articulos pueden provenir de dos fuentes segun la instalacion del ERP:</p>
+
+<h3>6.1 Opcion A: Tabla en base de datos</h3>
+<p>Las imagenes se almacenan como campo binario (IMAGE/VARBINARY) en una tabla del ERP. Se sincronizan junto con el resto de tablas mediante BCP.</p>
+
+<h3>6.2 Opcion B: Carpeta de red</h3>
+<p>Las imagenes se almacenan como ficheros JPG en una unidad de red compartida. El formato del nombre de fichero es:</p>
+<div class="code">CODIGO_ARTICULO@NUMERO.jpg
+
+Ejemplos:
+0000000000004@1.jpg    (primera imagen del articulo 0000000000004)
+0000000000004@2.jpg    (segunda imagen del mismo articulo)
+0000000000012@1.jpg    (primera imagen del articulo 0000000000012)
+</div>
+
+<p>El script de sincronizacion:</p>
+<ul>
+    <li>Lee solo la imagen principal (@1) de cada articulo marcado como visible en web</li>
+    <li>Redimensiona las imagenes a un maximo de 800px de ancho para optimizar el almacenamiento</li>
+    <li>Solo inserta imagenes nuevas (no borra ni reemplaza las existentes)</li>
+    <li>Utiliza PowerShell para la lectura de ficheros y la insercion en base de datos</li>
+</ul>
+
+<div class="info-box">
+    <strong>Requisito:</strong> El equipo que ejecuta la sincronizacion debe tener acceso a la unidad de red donde se almacenan las imagenes (por ejemplo Z:\).
+</div>
+
+<!-- 7. VISTAS -->
+<h2 class="page-break" id="vistas">7. Vistas SQL Necesarias</h2>
+
+<p>La aplicacion web consulta los datos a traves de vistas SQL definidas en la base de datos de la aplicacion (ApiRestStocks). Estas vistas actuan como capa de abstraccion entre la aplicacion y las tablas del ERP replicadas.</p>
+
+<h3>Vistas principales</h3>
+<table>
+    <tr><th>Vista</th><th>Tablas origen</th><th>Funcion</th></tr>
+    <tr><td>view_externos_stock</td><td>almlinubica, articulos, formatos, calidades, tono, calibre, ean13, almartpallet, pallets, almcolores, unidades, palarticulo, almartcal, almlinubica_bloqueo, venliped</td><td>Stock disponible calculado (existencias - reservas)</td></tr>
+    <tr><td>view_externos_clientes</td><td>genter, paises, provincias</td><td>Datos basicos de clientes</td></tr>
+    <tr><td>view_genter_completa</td><td>genter</td><td>Datos completos de terceros (CIF, email, razon social)</td></tr>
+    <tr><td>view_articulo_imagen</td><td>ps_articulo_imagen</td><td>Imagenes de articulos</td></tr>
+    <tr><td>view_externos_formatos</td><td>formatos</td><td>Formatos disponibles</td></tr>
+    <tr><td>view_externos_venped</td><td>venped, genter</td><td>Cabecera de pedidos</td></tr>
+    <tr><td>view_externos_venliped</td><td>venliped, formatos</td><td>Lineas de pedidos</td></tr>
+    <tr><td>view_externos_venalb</td><td>venalb, genter</td><td>Cabecera de albaranes</td></tr>
+    <tr><td>view_externos_venlialb</td><td>venlialb</td><td>Lineas de albaranes</td></tr>
+    <tr><td>view_externos_venfac</td><td>venfac, genter</td><td>Cabecera de facturas</td></tr>
+    <tr><td>view_externos_venlifac</td><td>venlifac</td><td>Lineas de facturas</td></tr>
+</table>
+
+<div class="note">
+    <strong>Importante:</strong> Las vistas se crean manualmente en cada instalacion referenciando el nombre correcto de la base de datos del ERP. Esto permite que la aplicacion funcione con cualquier nombre de base de datos sin modificar el codigo.
+</div>
+
+<!-- 8. INSTALACION -->
+<h2 class="page-break" id="instalacion">8. Proceso de Instalacion</h2>
+
+<h3>8.1 Preparacion del servidor Linux</h3>
+<ol>
+    <li>Instalar Ubuntu Server 22.04/24.04 LTS</li>
+    <li>Configurar IP fija, DNS y zona horaria (<code>Europe/Madrid</code>)</li>
+    <li>Instalar Docker y Docker Compose</li>
+    <li>Crear usuario de aplicacion</li>
+    <li>Abrir puertos necesarios en firewall (22, 80, 443, 1433)</li>
+</ol>
+
+<h3>8.2 Despliegue de SQL Server (Docker)</h3>
+<div class="code">docker run -d \
+  --name sqlserver2025 \
+  --restart unless-stopped \
+  --network jobers-net \
+  -e 'ACCEPT_EULA=Y' \
+  -e 'MSSQL_SA_PASSWORD=&lt;contrasena_segura&gt;' \
+  -e 'MSSQL_PID=developer' \
+  -e 'TZ=Europe/Madrid' \
+  -p 1433:1433 \
+  -v sqldata:/var/opt/mssql \
+  mcr.microsoft.com/mssql/server:2025-latest</div>
+
+<div class="important">
+    <strong>Zona horaria:</strong> Es imprescindible configurar <code>TZ=Europe/Madrid</code> tanto en el contenedor de SQL Server como en el de la aplicacion. Sin esta configuracion, las fechas se almacenaran en UTC.
+</div>
+
+<h3>8.3 Creacion de bases de datos</h3>
+<ol>
+    <li><strong>Base de datos ERP replicada</strong> (ej: <code>RocaNET_ERP</code>): Contendra las tablas sincronizadas del ERP</li>
+    <li><strong>Base de datos de aplicacion</strong> (ej: <code>ApiRestStocks</code>): Contendra usuarios, parametros, configuracion, y las vistas SQL</li>
+    <li><strong>Base de datos central</strong> (ej: <code>jobers_control_usuarios</code>): Gestion centralizada de conexiones multi-empresa</li>
+</ol>
+
+<h3>8.4 Despliegue de la aplicacion (Docker Compose)</h3>
+<p>La aplicacion se despliega con Docker Compose incluyendo:</p>
+<ul>
+    <li>Contenedor backend (Python/Flask + Gunicorn)</li>
+    <li>Contenedor Redis (cache y sesiones)</li>
+    <li>Volumen para el frontend (servido por Flask)</li>
+</ul>
+
+<h3>8.5 Configuracion de Nginx (proxy inverso + SSL)</h3>
+<ul>
+    <li>Redireccion HTTP a HTTPS</li>
+    <li>Certificado SSL via Let's Encrypt (certbot)</li>
+    <li>Proxy pass al backend en puerto 5000</li>
+</ul>
+
+<!-- 9. SINCRONIZACION -->
+<h2 class="page-break" id="sincronizacion">9. Sincronizacion de Datos</h2>
+
+<p>La sincronizacion se ejecuta desde un equipo Windows de la red local mediante un script .bat programado como tarea de Windows.</p>
+
+<h3>9.1 Proceso de sincronizacion</h3>
+<ol>
+    <li><strong>Verificacion de conexiones:</strong> Comprueba conectividad con servidor origen y destino</li>
+    <li><strong>Comparacion de esquemas:</strong> Si el numero de columnas de una tabla ha cambiado en el origen, recrea la tabla en el destino automaticamente (DROP + CREATE)</li>
+    <li><strong>Comparacion de datos:</strong> Calcula CHECKSUM_AGG de cada tabla en origen y destino. Si difiere, ejecuta TRUNCATE + BCP para actualizar</li>
+    <li><strong>Imagenes:</strong> Compara ficheros de la carpeta de red con registros existentes. Solo inserta las imagenes nuevas</li>
+    <li><strong>Finalizacion:</strong> Compacta el log de transacciones y registra la fecha de ultima sincronizacion</li>
+</ol>
+
+<h3>9.2 Frecuencia recomendada</h3>
+<table>
+    <tr><th>Frecuencia</th><th>Uso recomendado</th></tr>
+    <tr><td>Cada 30 minutos</td><td>Entornos con actualizacion frecuente de stock</td></tr>
+    <tr><td>Cada 2-4 horas</td><td>Entornos con volumen moderado</td></tr>
+    <tr><td>1 vez al dia (noche)</td><td>Entornos con poco cambio o tablas muy grandes</td></tr>
+</table>
+
+<div class="note">
+    <strong>Nota:</strong> Las tablas se leen con <code>WITH (NOLOCK)</code> para minimizar el impacto en el rendimiento del ERP origen. No obstante, la sincronizacion de tablas muy grandes (>50.000 registros) puede generar carga momentanea en el servidor ERP.
+</div>
+
+<h3>9.3 Compatibilidad BCP</h3>
+<p>El script utiliza BCP en formato <code>-w</code> (wide character) que garantiza compatibilidad entre diferentes versiones de SQL Server (2008, 2012, 2019, 2025) y entre plataformas Windows y Linux.</p>
+
+<!-- 10. RED -->
+<h2 class="page-break" id="red">10. Requisitos de Red y Acceso</h2>
+
+<h3>10.1 Puertos necesarios</h3>
+<table>
+    <tr><th>Puerto</th><th>Protocolo</th><th>Direccion</th><th>Uso</th></tr>
+    <tr><td>22</td><td>TCP</td><td>Entrante</td><td>SSH (administracion remota)</td></tr>
+    <tr><td>80</td><td>TCP</td><td>Entrante</td><td>HTTP (redireccion a HTTPS)</td></tr>
+    <tr><td>443</td><td>TCP</td><td>Entrante</td><td>HTTPS (acceso web)</td></tr>
+    <tr><td>1433</td><td>TCP</td><td>Entrante (red local)</td><td>SQL Server (sincronizacion)</td></tr>
+    <tr><td>5000</td><td>TCP</td><td>Interno (Docker)</td><td>Backend Flask (no expuesto)</td></tr>
+</table>
+
+<h3>10.2 NAT / Port Forwarding (router)</h3>
+<p>Para acceso desde Internet, el router de la empresa debe redirigir los siguientes puertos a la IP interna del servidor Linux:</p>
+<ul>
+    <li>Puerto 22 (SSH) - opcional, solo para administracion remota</li>
+    <li>Puerto 80 (HTTP) - necesario para Let's Encrypt y redireccion</li>
+    <li>Puerto 443 (HTTPS) - acceso web de usuarios</li>
+</ul>
+
+<div class="important">
+    <strong>Importante:</strong> Los puertos 80 y 443 deben estar abiertos a todo Internet (sin restriccion de IP de origen) para que el certificado SSL de Let's Encrypt pueda validarse correctamente.
+</div>
+
+<h3>10.3 Conectividad entre servidores</h3>
+<ul>
+    <li>El equipo de sincronizacion debe poder conectar al puerto 1433 del servidor ERP (origen)</li>
+    <li>El equipo de sincronizacion debe poder conectar al puerto 1433 del servidor Linux (destino)</li>
+    <li>Si las imagenes estan en carpeta de red, el equipo de sincronizacion debe tener la unidad mapeada</li>
+</ul>
+
+<!-- 11. DNS -->
+<h2 id="dns">11. Dominio y Certificado SSL</h2>
+
+<h3>11.1 Registro DNS</h3>
+<p>Se necesita un registro DNS tipo A que apunte el subdominio elegido a la IP publica del router de la empresa:</p>
+<div class="code">stocks.empresa.com  A  &lt;IP_publica&gt;</div>
+
+<div class="note">
+    <strong>Importante:</strong> Debe haber un unico registro A para el dominio. Si hay multiples registros A apuntando a diferentes IPs, el certificado SSL no se podra generar correctamente.
+</div>
+
+<h3>11.2 Certificado SSL</h3>
+<p>Se utiliza Let's Encrypt (gratuito) para generar el certificado HTTPS. El certificado se renueva automaticamente cada 90 dias mediante certbot.</p>
+
+<!-- 12. MANTENIMIENTO -->
+<h2 class="page-break" id="mantenimiento">12. Mantenimiento</h2>
+
+<h3>12.1 Tareas periodicas</h3>
+<table>
+    <tr><th>Tarea</th><th>Frecuencia</th><th>Automatizada</th></tr>
+    <tr><td>Sincronizacion de datos</td><td>Segun configuracion</td><td>Si (tarea programada Windows)</td></tr>
+    <tr><td>Renovacion certificado SSL</td><td>Cada 90 dias</td><td>Si (certbot)</td></tr>
+    <tr><td>Compactacion log SQL Server</td><td>En cada sincronizacion</td><td>Si</td></tr>
+    <tr><td>Monitorizacion espacio en disco</td><td>Mensual</td><td>No</td></tr>
+    <tr><td>Actualizacion de la aplicacion</td><td>Segun necesidad</td><td>Script de despliegue</td></tr>
+</table>
+
+<h3>12.2 Actualizaciones</h3>
+<p>Las actualizaciones de la aplicacion se despliegan mediante un script que:</p>
+<ol>
+    <li>Sube los archivos actualizados al servidor</li>
+    <li>Reconstruye la imagen Docker</li>
+    <li>Reinicia los contenedores con tiempo de inactividad minimo (< 30 segundos)</li>
+</ol>
+
+<h3>12.3 Copias de seguridad</h3>
+<p>La aplicacion incluye un sistema integrado de backup que permite:</p>
+<ul>
+    <li>Backup manual o programado de la base de datos</li>
+    <li>Subida automatica a servidor FTP/SFTP externo</li>
+    <li>Programacion diaria, semanal o mensual</li>
+    <li>Historial de backups con estado y tamano</li>
+</ul>
+
+<div class="footer">
+    <p>RocaNET - Documento de Requisitos e Instalacion</p>
+    <p>Jobers Cloud Solutions - Mayo 2026</p>
+</div>
+
+</body>
+</html>
