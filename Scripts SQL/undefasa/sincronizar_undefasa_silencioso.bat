@@ -58,10 +58,10 @@ call :st tono
 call :st calibre
 call :st ean13
 call :st almartpallet
-call :st venfac
-call :st venlifac
-call :st venalb
-call :st venlialb
+call :sta venfac
+call :sta venlifac
+call :sta venalb
+call :sta venlialb
 
 REM Tablas con blobs
 REM call :st articulo_ficha_tecnica
@@ -95,6 +95,21 @@ set /p CD=<"%DATOS%\cd.txt"
 if "!CO!"=="!CD!" goto :eof
 "!BCP170!" "SELECT * FROM %BD_ORIGEN%.dbo.%T% WITH (NOLOCK)" queryout "%DATOS%\%T%.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -w > nul 2>&1
 "!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -C -Q "TRUNCATE TABLE dbo.%T%" > nul 2>&1
+"!BCP170!" %BD_DESTINO%.dbo.%T% in "%DATOS%\%T%.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -w > nul 2>&1
+goto :eof
+
+REM ============================================
+REM :sta - Sync tabla filtrada por anyo actual
+REM ============================================
+:sta
+set T=%~1
+"!SQLCMD170!" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='%T%' AND TABLE_SCHEMA='dbo'" > "%DATOS%\so.txt" 2>nul
+set /p SO=<"%DATOS%\so.txt"
+"!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -h -1 -W -C -Q "SET NOCOUNT ON; IF OBJECT_ID('dbo.%T%','U') IS NULL SELECT '0' ELSE SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='%T%' AND TABLE_SCHEMA='dbo'" > "%DATOS%\sd.txt" 2>nul
+set /p SD=<"%DATOS%\sd.txt"
+if NOT "!SO!"=="!SD!" call :cr %T%
+"!BCP170!" "SELECT * FROM %BD_ORIGEN%.dbo.%T% WITH (NOLOCK) WHERE anyo = YEAR(GETDATE())" queryout "%DATOS%\%T%.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -w > nul 2>&1
+"!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -C -Q "DELETE FROM dbo.%T% WHERE anyo = YEAR(GETDATE())" > nul 2>&1
 "!BCP170!" %BD_DESTINO%.dbo.%T% in "%DATOS%\%T%.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -w > nul 2>&1
 goto :eof
 

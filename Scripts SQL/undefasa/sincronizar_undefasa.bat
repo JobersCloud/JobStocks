@@ -79,10 +79,10 @@ call :st tono
 call :st calibre
 call :st ean13
 call :st almartpallet
-call :st venfac
-call :st venlifac
-call :st venalb
-call :st venlialb
+call :sta venfac
+call :sta venlifac
+call :sta venalb
+call :sta venlialb
 echo.
 
 echo [3/5] Sincronizando tablas con blobs...
@@ -147,6 +147,25 @@ REM ============================================
 set TR=%~1
 "!SQLCMD170!" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -h -1 -y 8000 -o "%DATOS%\create_%TR%.sql" -Q "SET NOCOUNT ON; DECLARE @cols NVARCHAR(MAX) = ''; SELECT @cols = @cols + ', ' + QUOTENAME(COLUMN_NAME) + ' ' + DATA_TYPE + CASE WHEN DATA_TYPE IN ('char','varchar','nchar','nvarchar') THEN '(' + CASE WHEN CHARACTER_MAXIMUM_LENGTH = -1 THEN 'MAX' ELSE CAST(CHARACTER_MAXIMUM_LENGTH AS VARCHAR) END + ')' WHEN DATA_TYPE IN ('decimal','numeric') THEN '(' + CAST(NUMERIC_PRECISION AS VARCHAR) + ',' + CAST(NUMERIC_SCALE AS VARCHAR) + ')' ELSE '' END + ' NULL' FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '%TR%' AND TABLE_SCHEMA = 'dbo' ORDER BY ORDINAL_POSITION; SET @cols = STUFF(@cols, 1, 2, ''); SELECT 'IF OBJECT_ID(''dbo.%TR%'',''U'') IS NOT NULL DROP TABLE dbo.%TR%; CREATE TABLE dbo.%TR% (' + @cols + ');';" 2>nul
 "!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -C -i "%DATOS%\create_%TR%.sql" > nul 2>&1
+goto :eof
+
+REM ============================================
+REM :sta - Sync tabla filtrada por anyo actual
+REM ============================================
+:sta
+set T=%~1
+<nul set /p="     %T% (anyo actual)... "
+"!SQLCMD170!" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='%T%' AND TABLE_SCHEMA='dbo'" > "%DATOS%\so.txt" 2>nul
+set /p SO=<"%DATOS%\so.txt"
+"!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -h -1 -W -C -Q "SET NOCOUNT ON; IF OBJECT_ID('dbo.%T%','U') IS NULL SELECT '0' ELSE SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='%T%' AND TABLE_SCHEMA='dbo'" > "%DATOS%\sd.txt" 2>nul
+set /p SD=<"%DATOS%\sd.txt"
+if NOT "!SO!"=="!SD!" call :cr %T%
+"!SQLCMD170!" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD_ORIGEN% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.%T% WITH (NOLOCK) WHERE anyo = YEAR(GETDATE())" > "%DATOS%\cn.txt" 2>nul
+set /p CN=<"%DATOS%\cn.txt"
+"!BCP170!" "SELECT * FROM %BD_ORIGEN%.dbo.%T% WITH (NOLOCK) WHERE anyo = YEAR(GETDATE())" queryout "%DATOS%\%T%.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -w > nul 2>&1
+"!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -C -Q "DELETE FROM dbo.%T% WHERE anyo = YEAR(GETDATE())" > nul 2>&1
+"!BCP170!" %BD_DESTINO%.dbo.%T% in "%DATOS%\%T%.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -w > nul 2>&1
+echo !CN! registros [sync]
 goto :eof
 
 REM ============================================
