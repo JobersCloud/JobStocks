@@ -568,10 +568,16 @@
 
                     <div class="form-group" id="admin-clientes-group">
                         <label class="checkbox-label">
-                            <input type="checkbox" id="user-admin-clientes">
+                            <input type="checkbox" id="user-admin-clientes" onchange="document.getElementById('control-group').style.display = this.checked ? '' : 'none'">
                             <span data-i18n="users.clientAdmin">Admin. Clientes</span>
                         </label>
-                        <p class="form-help" data-i18n="users.clientAdminHelp">Permite al usuario cambiar el cliente al confirmar una propuesta</p>
+                        <p class="form-help" data-i18n="users.clientAdminHelp">Permite al usuario gestionar los clientes asignados a su código de comercial</p>
+                    </div>
+
+                    <div class="form-group" id="control-group" style="display: none;">
+                        <label>Código Comercial (Control)</label>
+                        <input type="text" id="user-control" maxlength="20" placeholder="Ej: 1010">
+                        <p class="form-help">Código del comercial en el ERP para filtrar clientes</p>
                     </div>
 
                     <div class="form-group" id="role-group" style="display: none;">
@@ -689,6 +695,7 @@
                 gridColumns.push({ key: 'visible_facturas', label: t('users.showInvoices') || 'Ver Facturas', tipo: 'texto' });
             }
             gridColumns.push({ key: 'administrador_clientes', label: t('users.clientAdmin') || 'Admin. Clientes', tipo: 'texto' });
+            gridColumns.push({ key: 'control', label: 'Control', tipo: 'texto' });
             gridColumns.push({ key: '_actions', label: t('users.actions') || 'Acciones', sortable: false, filterable: false });
 
             grid = new DataGrid({
@@ -720,6 +727,7 @@
                         case 'visible_albaranes': return item.visible_albaranes ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>';
                         case 'visible_facturas': return item.visible_facturas ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>';
                         case 'administrador_clientes': return item.administrador_clientes ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>';
+                        case 'control': return item.control || '-';
                         case 'created_at': return item.created_at ? new Date(item.created_at).toLocaleDateString('es-ES') : '-';
                         case '_actions': return getActionButtons(item);
                         default: return null;
@@ -745,6 +753,7 @@
                                 ${albaranesGlobalHabilitado ? `<div class="user-card-info-item"><label>${t('users.showDeliveryNotes') || 'Ver Albaranes'}:</label> ${item.visible_albaranes ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>'}</div>` : ''}
                                 ${facturasGlobalHabilitado ? `<div class="user-card-info-item"><label>${t('users.showInvoices') || 'Ver Facturas'}:</label> ${item.visible_facturas ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>'}</div>` : ''}
                                 <div class="user-card-info-item"><label>${t('users.clientAdmin') || 'Admin. Clientes'}:</label> ${item.administrador_clientes ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>'}</div>
+                                ${item.control ? `<div class="user-card-info-item"><label>Control:</label> ${item.control}</div>` : ''}
                                 <div class="user-card-info-item"><label>${t('users.registrationDate') || 'Fecha Alta'}:</label> ${item.created_at ? new Date(item.created_at).toLocaleDateString('es-ES') : '-'}</div>
                             </div>
                             <div class="user-card-actions">${getActionButtons(item)}</div>
@@ -1202,6 +1211,8 @@
             document.getElementById('user-show-prices').checked = false;
             document.getElementById('admin-clientes-group').style.display = 'none';
             document.getElementById('user-admin-clientes').checked = false;
+            document.getElementById('control-group').style.display = 'none';
+            document.getElementById('user-control').value = '';
             const currentUser = PageCommon.getCurrentUser();
             document.getElementById('role-group').style.display = currentUser && currentUser.rol === 'superusuario' ? 'block' : 'none';
             clearClientSelection();
@@ -1235,6 +1246,8 @@
                 document.getElementById('user-show-prices').checked = !!user.mostrar_precios;
                 document.getElementById('user-show-orders').checked = user.visible_pedidos !== false;
                 document.getElementById('user-admin-clientes').checked = !!user.administrador_clientes;
+                document.getElementById('user-control').value = user.control || '';
+                document.getElementById('control-group').style.display = user.administrador_clientes ? '' : 'none';
                 if (user.cliente_id) {
                     document.getElementById('user-cliente-id').value = user.cliente_id;
                     document.getElementById('selected-client-code').textContent = user.cliente_id;
@@ -1272,6 +1285,7 @@
                     userData.visible_pedidos = document.getElementById('user-show-orders').checked;
                 }
                 userData.administrador_clientes = document.getElementById('user-admin-clientes').checked;
+                userData.control = document.getElementById('user-control').value.trim() || null;
                 try {
                     const response = await fetch(`${API_URL}/api/usuarios/${editingUserId}`, { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() }, body: JSON.stringify(userData) });
                     const data = await response.json();

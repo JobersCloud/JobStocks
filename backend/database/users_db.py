@@ -371,6 +371,17 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
         except Exception:
             pass
 
+        # Intentar incluir campo control (puede no existir aún)
+        control_col = ''
+        has_control = False
+        try:
+            cursor.execute("SELECT TOP 1 control FROM users_empresas")
+            cursor.fetchone()
+            control_col = ', ue.control'
+            has_control = True
+        except Exception:
+            pass
+
         cursor.execute(f"""
             SELECT
                 u.id, u.username, u.email, u.full_name, u.pais,
@@ -383,6 +394,7 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
                 {visible_pedidos_col}
                 {visible_albaranes_col}
                 {visible_facturas_col}
+                {control_col}
                 , u.token_expiracion
             FROM users u
             INNER JOIN users_empresas ue ON u.id = ue.user_id
@@ -427,6 +439,9 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
                 col_idx += 1
             if has_visible_facturas:
                 user_dict['visible_facturas'] = bool(row[col_idx]) if row[col_idx] is not None else False
+                col_idx += 1
+            if has_control:
+                user_dict['control'] = row[col_idx].strip() if row[col_idx] else None
                 col_idx += 1
             # token_expiracion siempre es la última columna
             user_dict['token_expiracion'] = row[col_idx].isoformat() if row[col_idx] else None
