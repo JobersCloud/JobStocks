@@ -20,7 +20,7 @@ import time
 import logging
 from flask import Blueprint, jsonify, request, session
 from flask_login import login_required, current_user
-from utils.auth import api_key_or_login_required, administrador_required
+from utils.auth import api_key_or_login_required, administrador_required, get_clientes_comercial
 from config.database import Database
 from models.albaran_model import AlbaranModel
 from models.imagen_model import ImagenModel
@@ -179,10 +179,9 @@ def get_mis_albaranes():
 
 @albaran_bp.route('', methods=['GET'])
 @login_required
-@administrador_required
 def get_todos_albaranes():
     """
-    Obtener todos los albaranes con paginacion (solo administradores).
+    Obtener todos los albaranes con paginacion (administradores o administrador_clientes).
     ---
     tags:
       - Albaranes
@@ -222,6 +221,12 @@ def get_todos_albaranes():
         description: Lista paginada de todos los albaranes
     """
     t0 = time.time()
+
+    is_admin = current_user.rol in ('administrador', 'superusuario')
+    is_admin_clientes = getattr(current_user, 'administrador_clientes', False)
+    if not is_admin and not is_admin_clientes:
+        return jsonify({'success': False, 'message': 'Acceso denegado'}), 403
+
     empresa_id = session.get('empresa_id', '1')
     anyo = request.args.get('anyo', type=int)
     fecha_desde = request.args.get('fecha_desde')
@@ -231,6 +236,14 @@ def get_todos_albaranes():
     provincia = request.args.get('provincia')
     page = request.args.get('page', 1, type=int)
     page_size = min(request.args.get('page_size', 50, type=int), 200)
+
+    clientes_permitidos = None
+    if is_admin_clientes and not is_admin:
+        control = getattr(current_user, 'control', None)
+        if control:
+            clientes_permitidos = get_clientes_comercial(control, empresa_id)
+        else:
+            clientes_permitidos = []
 
     logger.warning(f'[PERF] GET /api/albaranes empresa={empresa_id} anyo={anyo} cliente={cliente} pais={pais} provincia={provincia} page={page}')
 
@@ -245,7 +258,8 @@ def get_todos_albaranes():
             pais=pais,
             provincia=provincia,
             page=page,
-            page_size=page_size
+            page_size=page_size,
+            clientes_permitidos=clientes_permitidos
         )
         t2 = time.time()
         logger.warning(f'[PERF] DB query + fetch: {t2-t1:.3f}s | rows={len(result["albaranes"])}')

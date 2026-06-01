@@ -153,7 +153,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.45.0'
+APP_VERSION = 'v1.46.0'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -262,7 +262,8 @@ def load_user(user_id):
             administrador_clientes=user_data.get('administrador_clientes', False),
             visible_pedidos=user_data.get('visible_pedidos', True),
             visible_albaranes=user_data.get('visible_albaranes', False),
-            visible_facturas=user_data.get('visible_facturas', False)
+            visible_facturas=user_data.get('visible_facturas', False),
+            control=user_data.get('control')
         )
     return None
 
@@ -623,7 +624,8 @@ def login():
             administrador_clientes=user_data.get('administrador_clientes', False),
             visible_pedidos=user_data.get('visible_pedidos', True),
             visible_albaranes=user_data.get('visible_albaranes', False),
-            visible_facturas=user_data.get('visible_facturas', False)
+            visible_facturas=user_data.get('visible_facturas', False),
+            control=user_data.get('control')
         )
         login_user(user)
 
@@ -962,7 +964,8 @@ def get_current_user():
         'cliente_id': cliente_id,
         'cliente_razon': cliente_razon,
         'company_name': getattr(current_user, 'company_name', None),
-        'administrador_clientes': getattr(current_user, 'administrador_clientes', False)
+        'administrador_clientes': getattr(current_user, 'administrador_clientes', False),
+        'control': getattr(current_user, 'control', None)
     })
 
 @app.route('/api/context-info')

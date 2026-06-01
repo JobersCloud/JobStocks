@@ -228,7 +228,7 @@ class FacturaModel:
             conn.close()
 
     @staticmethod
-    def get_all(empresa_id=None, anyo=None, fecha_desde=None, fecha_hasta=None, cliente=None, pais=None, provincia=None, page=1, page_size=50):
+    def get_all(empresa_id=None, anyo=None, fecha_desde=None, fecha_hasta=None, cliente=None, pais=None, provincia=None, page=1, page_size=50, clientes_permitidos=None):
         """
         Obtiene todas las facturas con paginacion servidor (para administradores).
 
@@ -269,6 +269,13 @@ class FacturaModel:
             if cliente:
                 where_parts.append("v.cliente = ?")
                 params.append(cliente)
+            if clientes_permitidos is not None:
+                if len(clientes_permitidos) == 0:
+                    where_parts.append("1=0")
+                else:
+                    placeholders = ','.join(['?' for _ in clientes_permitidos])
+                    where_parts.append(f"v.cliente IN ({placeholders})")
+                    params.extend(clientes_permitidos)
             if pais and has_clientes_dir:
                 where_parts.append("v.cliente IN (SELECT codigo FROM view_externos_clientes WHERE RTRIM(ISNULL(pais, '')) = ?)")
                 params.append(pais)

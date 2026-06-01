@@ -87,7 +87,7 @@ def verify_user(username, password, empresa_cli_id, empresa_erp=None):
         if empresa_erp:
             try:
                 cursor.execute("""
-                    SELECT empresa_id, cliente_id, rol, mostrar_precios, administrador_clientes, visible_pedidos, visible_albaranes, visible_facturas
+                    SELECT empresa_id, cliente_id, rol, mostrar_precios, administrador_clientes, visible_pedidos, visible_albaranes, visible_facturas, control
                     FROM users_empresas
                     WHERE user_id = ? AND empresa_id = ?
                 """, (user['id'], empresa_erp))
@@ -102,6 +102,7 @@ def verify_user(username, password, empresa_cli_id, empresa_erp=None):
                     user['visible_pedidos'] = bool(emp_row[5]) if emp_row[5] is not None else True
                     user['visible_albaranes'] = bool(emp_row[6]) if emp_row[6] is not None else False
                     user['visible_facturas'] = bool(emp_row[7]) if emp_row[7] is not None else False
+                    user['control'] = emp_row[8].strip() if emp_row[8] else None
             except Exception:
                 # Columnas pueden no existir aún
                 try:
@@ -197,7 +198,7 @@ def get_user_by_id(user_id, empresa_cli_id, empresa_erp=None):
         if empresa_erp:
             try:
                 cursor.execute("""
-                    SELECT empresa_id, cliente_id, rol, mostrar_precios, administrador_clientes, visible_pedidos
+                    SELECT empresa_id, cliente_id, rol, mostrar_precios, administrador_clientes, visible_pedidos, control
                     FROM users_empresas
                     WHERE user_id = ? AND empresa_id = ?
                 """, (user_id, empresa_erp))
@@ -210,6 +211,7 @@ def get_user_by_id(user_id, empresa_cli_id, empresa_erp=None):
                     user['mostrar_precios'] = bool(emp_row[3]) if emp_row[3] is not None else False
                     user['administrador_clientes'] = bool(emp_row[4]) if emp_row[4] is not None else False
                     user['visible_pedidos'] = bool(emp_row[5]) if emp_row[5] is not None else True
+                    user['control'] = emp_row[6].strip() if emp_row[6] else None
             except Exception:
                 # Columnas pueden no existir aún
                 try:
@@ -714,6 +716,10 @@ def update_user_full(user_id, data, empresa_cli_id, empresa_erp):
             emp_updates.append("administrador_clientes = ?")
             emp_params.append(1 if data['administrador_clientes'] else 0)
 
+        if 'control' in data:
+            emp_updates.append("control = ?")
+            emp_params.append(data['control'] if data['control'] else None)
+
         if 'visible_pedidos' in data:
             emp_updates.append("visible_pedidos = ?")
             emp_params.append(1 if data['visible_pedidos'] else 0)
@@ -747,7 +753,7 @@ def get_user_by_id_and_empresa(user_id, empresa_cli_id, empresa_erp):
                     u.id, u.username, u.email, u.full_name, u.pais,
                     ue.rol, u.active, u.email_verificado,
                     ue.empresa_id, ue.cliente_id, u.company_name,
-                    ue.mostrar_precios, ue.administrador_clientes, ue.visible_pedidos, ue.visible_albaranes, ue.visible_facturas
+                    ue.mostrar_precios, ue.administrador_clientes, ue.visible_pedidos, ue.visible_albaranes, ue.visible_facturas, ue.control
                 FROM users u
                 INNER JOIN users_empresas ue ON u.id = ue.user_id
                 WHERE u.id = ? AND ue.empresa_id = ?
@@ -807,7 +813,8 @@ def get_user_by_id_and_empresa(user_id, empresa_cli_id, empresa_erp):
                 'administrador_clientes': bool(row[12]) if len(row) > 12 and row[12] is not None else False,
                 'visible_pedidos': bool(row[13]) if len(row) > 13 and row[13] is not None else True,
                 'visible_albaranes': bool(row[14]) if len(row) > 14 and row[14] is not None else False,
-                'visible_facturas': bool(row[15]) if len(row) > 15 and row[15] is not None else False
+                'visible_facturas': bool(row[15]) if len(row) > 15 and row[15] is not None else False,
+                'control': row[16].strip() if len(row) > 16 and row[16] else None
             }
             # Resolver nombre del cliente en paso separado
             if usuario['cliente_id']:

@@ -1471,4 +1471,20 @@ MIGRATIONS = [
         ]
     },
 
+    # ============================================================
+    # v59 - Campo control en users_empresas (código comercial ERP)
+    # ============================================================
+    {
+        'version': 59,
+        'description': 'Campo control en users_empresas para mapear usuario web con comercial del ERP',
+        'app_version': 'v1.46.0',
+        'sql': [
+            """IF OBJECT_ID('users_empresas') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users_empresas') AND name = 'control')
+            BEGIN
+                ALTER TABLE users_empresas ADD control VARCHAR(20) NULL;
+            END""",
+        ]
+    },
+
 ]

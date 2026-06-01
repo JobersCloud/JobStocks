@@ -23,7 +23,7 @@ ROLES = {
 }
 
 class User(UserMixin):
-    def __init__(self, id, username, email=None, full_name=None, rol='usuario', empresa_id='1', cliente_id=None, debe_cambiar_password=False, company_name=None, mostrar_precios=False, administrador_clientes=False, visible_pedidos=True, visible_albaranes=False, visible_facturas=False):
+    def __init__(self, id, username, email=None, full_name=None, rol='usuario', empresa_id='1', cliente_id=None, debe_cambiar_password=False, company_name=None, mostrar_precios=False, administrador_clientes=False, visible_pedidos=True, visible_albaranes=False, visible_facturas=False, control=None):
         self.id = id
         self.username = username
         self.email = email
@@ -38,6 +38,7 @@ class User(UserMixin):
         self.visible_pedidos = visible_pedidos
         self.visible_albaranes = visible_albaranes
         self.visible_facturas = visible_facturas
+        self.control = control
 
     def get_id(self):
         return str(self.id)

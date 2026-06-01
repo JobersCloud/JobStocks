@@ -220,3 +220,26 @@ def csrf_required(f):
 
         return f(*args, **kwargs)
     return decorated_function
+
+
+def get_clientes_comercial(control, empresa_id, connection=None):
+    """
+    Obtiene la lista de clientes asignados a un comercial desde view_comercial_clientes.
+    Returns: lista de códigos de cliente, o lista vacía si no hay resultados o la vista no existe.
+    """
+    from config.database import Database
+    try:
+        conn = Database.get_connection(connection)
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                SELECT RTRIM(cliente) FROM view_comercial_clientes
+                WHERE RTRIM(control) = ? AND RTRIM(empresa) = ?
+            """, (control.strip(), empresa_id.strip() if empresa_id else empresa_id))
+            rows = cursor.fetchall()
+            return [row[0].strip() for row in rows if row[0]]
+        finally:
+            cursor.close()
+            conn.close()
+    except Exception:
+        return []
