@@ -422,6 +422,10 @@
                 <div class="filters" style="visibility:hidden">
                     <h2 data-i18n="filters.title">Filtros de Búsqueda</h2>
                     <div class="filter-grid">
+                        <div class="form-group" data-optional-column="busqueda_descripcion" style="display:none;grid-column: 1 / -1;">
+                            <label data-i18n="filters.search">Buscar</label>
+                            <input type="text" id="filter-descripcion" data-i18n-placeholder="filters.searchPlaceholder" placeholder="Ej: gris muretto 60x60" onkeydown="if(event.key==='Enter')buscarStocks()">
+                        </div>
                         <div class="form-group">
                             <label data-i18n="filters.format">Formato</label>
                             <select id="filter-formato">
@@ -446,13 +450,13 @@
                                 <option value="" data-i18n="filters.allColors">Todos los colores</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" data-optional-column="calidad" style="display:none">
                             <label data-i18n="filters.quality">Calidad</label>
                             <select id="filter-calidad">
                                 <option value="" data-i18n="filters.allQualities">Todas las calidades</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" data-optional-column="existencias_min" style="display:none">
                             <label data-i18n="filters.minStock">Existencias Mínimas</label>
                             <input type="number" id="filter-existencias" data-i18n-placeholder="filters.placeholder" placeholder="Ej: 100">
                         </div>

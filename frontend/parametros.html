@@ -596,10 +596,13 @@
             const isColumnas = param.clave === 'STOCK_COLUMNAS_OPCIONALES';
 
             if (isColumnas) {
-                const allCols = ['color', 'tipo_producto'];
+                const allCols = ['color', 'tipo_producto', 'calidad', 'busqueda_descripcion', 'existencias_min'];
                 const colLabels = {
                     color: t('filters.color') || 'Color',
-                    tipo_producto: t('filters.productType') || 'Tipo Producto'
+                    tipo_producto: t('filters.productType') || 'Tipo Producto',
+                    calidad: t('filters.quality') || 'Calidad',
+                    busqueda_descripcion: t('filters.search') || 'Buscar por descripcion',
+                    existencias_min: t('filters.minStock') || 'Existencias Minimas'
                 };
                 let selected = [];
                 try { selected = JSON.parse(param.valor || '[]'); } catch(e) { selected = []; }

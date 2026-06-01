@@ -121,6 +121,8 @@
     "model": "Modèle",
     "quality": "Qualité",
     "color": "Couleur",
+    "search": "Rechercher",
+    "searchPlaceholder": "Ex: gris muretto 60x60",
     "minStock": "Stock Minimum",
     "allFormats": "Tous les formats",
     "allModels": "Tous les modèles",

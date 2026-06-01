@@ -121,6 +121,8 @@
     "model": "Model",
     "quality": "Quality",
     "color": "Color",
+    "search": "Search",
+    "searchPlaceholder": "E.g.: grey muretto 60x60",
     "minStock": "Minimum Stock",
     "allFormats": "All formats",
     "allModels": "All models",

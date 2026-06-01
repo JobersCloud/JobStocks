@@ -277,6 +277,12 @@ class StockModel:
                         # Para existencias, usar >= si viene como filtro simple
                         where_conditions.append("existencias >= ?")
                         params.append(float(valor))
+                    elif key == 'descripcion':
+                        # Búsqueda inteligente: partir por espacios, buscar cada palabra
+                        palabras = [p.strip() for p in valor.split() if p.strip()]
+                        for palabra in palabras:
+                            where_conditions.append("descripcion LIKE ?")
+                            params.append(f"%{palabra}%")
                     else:
                         where_conditions.append(f"{key} LIKE ?")
                         params.append(f"%{valor}%")

@@ -1132,7 +1132,7 @@ async function verificarColumnasOpcionales() {
 
 // Comprobar si una columna es visible según la configuración
 function esColumnaVisible(col) {
-    const fijas = ['codigo', 'descripcion', 'formato', 'serie', 'calidad', 'tono', 'calibre', 'existencias'];
+    const fijas = ['codigo', 'descripcion', 'formato', 'serie', 'tono', 'calibre', 'existencias'];
     if (fijas.includes(col)) return true;
     if (col === 'precio') return mostrarPrecios;
     return columnasOpcionales.includes(col);
@@ -2841,6 +2841,7 @@ async function buscarPorCodigo(codigo) {
 async function buscarStocks() {
     try {
         // Obtener filtros del panel lateral
+        const descripcion = document.getElementById('filter-descripcion') ? document.getElementById('filter-descripcion').value.trim() : '';
         const formato = document.getElementById('filter-formato').value.trim();
         const serie = document.getElementById('filter-serie').value.trim();
         const calidadEl = document.getElementById('filter-calidad');
@@ -2854,9 +2855,10 @@ async function buscarStocks() {
         // Recoger descripción pendiente de búsqueda por voz (si existe)
         const descripcionVoz = window._vozDescripcion || null;
         window._vozDescripcion = null;
+        const descripcionFinal = descripcion || descripcionVoz || '';
 
         // Verificar si hay algún filtro
-        const hayFiltros = formato || serie || calidad || color || existencias_min || descripcionVoz || tipo_producto;
+        const hayFiltros = formato || serie || calidad || color || existencias_min || descripcionFinal || tipo_producto;
 
         // Si no hay filtros, cargar todos los datos
         if (!hayFiltros) {
@@ -2877,7 +2879,7 @@ async function buscarStocks() {
         if (color) params.append('color', color);
         if (existencias_min) params.append('existencias_min', existencias_min);
         if (tipo_producto) params.append('tipo_producto', tipo_producto);
-        if (descripcionVoz) params.append('descripcion', descripcionVoz);
+        if (descripcionFinal) params.append('descripcion', descripcionFinal);
 
         console.log('🔍 Buscando con filtros:', params.toString());
 
@@ -2934,7 +2936,7 @@ async function buscarStocks() {
 // Limpiar filtros (panel lateral + barra de filtros)
 function limpiarFiltros() {
     // Limpiar filtros laterales (inputs)
-    ['filter-formato', 'filter-serie', 'filter-calidad', 'filter-color', 'filter-existencias', 'filter-tipo-producto'].forEach(id => {
+    ['filter-descripcion', 'filter-formato', 'filter-serie', 'filter-calidad', 'filter-color', 'filter-existencias', 'filter-tipo-producto'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
