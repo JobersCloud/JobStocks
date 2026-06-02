@@ -308,6 +308,7 @@
     "dbControl": "Control BD",
     "apiKeys": "API Keys",
     "myFavorites": "Mis Favoritos",
+    "myClients": "Mis Clientes",
     "contextInfo": "Info de Contexto",
     "logout": "Cerrar Sesión"
   },

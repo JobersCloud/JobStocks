@@ -238,6 +238,12 @@
                 if (configSection) configSection.style.display = 'block';
             }
 
+            // Mostrar "Mis Clientes" si tiene administrador_clientes
+            if (data.administrador_clientes) {
+                const misClientes = document.getElementById('sidebar-mis-clientes');
+                if (misClientes) misClientes.style.display = '';
+            }
+
             // Ocultar Parámetros y Control BD si no es superusuario
             if (data.rol !== 'superusuario') {
                 const sidebarParametros = document.getElementById('sidebar-parametros');

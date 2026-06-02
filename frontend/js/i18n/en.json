@@ -308,6 +308,7 @@
     "dbControl": "DB Control",
     "apiKeys": "API Keys",
     "myFavorites": "My Favorites",
+    "myClients": "My Clients",
     "contextInfo": "Context Info",
     "logout": "Logout"
   },

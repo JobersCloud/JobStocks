@@ -153,7 +153,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.46.0'
+APP_VERSION = 'v1.47.0'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -433,6 +433,11 @@ def busqueda_magica_page():
 @login_required
 def mis_favoritos_page():
     return send_from_directory(FRONTEND_DIR, 'mis-favoritos.html')
+
+@app.route('/mis-clientes.html')
+@login_required
+def mis_clientes_page():
+    return send_from_directory(FRONTEND_DIR, 'mis-clientes.html')
 
 @app.route('/api/login', methods=['POST'])
 @limiter.limit("5 per minute")  # Máximo 5 intentos por minuto por IP
