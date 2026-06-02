@@ -51,6 +51,7 @@ call :st almartcal
 REM call :st almarttonopeso
 call :st venliped
 call :sv
+call :st venclientes
 call :st genter
 call :st paises
 call :st provincias
