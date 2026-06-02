@@ -3856,15 +3856,14 @@ function mostrarModalCantidad(stock) {
                         </div>
                         ` : ''}
                         <div class="quantity-control">
-                            <button class="quantity-btn quantity-btn-minus" onclick="cambiarCantidad(-1)">−</button>
+                            <button class="quantity-btn quantity-btn-minus" onclick="cambiarCantidadSmart(-1)">−</button>
                             <input type="number"
                                    id="quantity-input"
                                    class="quantity-input"
                                    value="0"
                                    min="0"
-                                   max="${stock.existencias}"
-                                   step="1">
-                            <button class="quantity-btn quantity-btn-plus" onclick="cambiarCantidad(1)">+</button>
+                                   step="any">
+                            <button class="quantity-btn quantity-btn-plus" onclick="cambiarCantidadSmart(1)">+</button>
                         </div>
                         <div class="quantity-quick-buttons">
                             ${stock.unidadescaja && stock.unidadescaja > 0 ? `
@@ -3954,6 +3953,17 @@ function cambiarCantidad(delta) {
 
 // Unidad de entrada: 'unidad' (M2/ML/etc) o 'caja'
 window._unidadEntrada = 'unidad';
+
+function cambiarCantidadSmart(dir) {
+    const stock = window.stockTemporal;
+    if (window._unidadEntrada === 'unidad' && stock && stock.unidadescaja > 0) {
+        // En modo M2: cada clic = 1 caja en m2
+        cambiarCantidadPorUnidad(dir * stock.unidadescaja);
+    } else {
+        // En modo Cajas: cada clic = 1 caja
+        cambiarCantidad(dir);
+    }
+}
 
 function setUnidadEntrada(modo) {
     window._unidadEntrada = modo;
