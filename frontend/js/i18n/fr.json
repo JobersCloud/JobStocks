@@ -1118,5 +1118,14 @@
     "remove": "Retirer des favoris",
     "addFavorite": "Ajouter aux favoris",
     "viewInStocks": "Voir dans les stocks"
+  },
+  "myClients": {
+    "title": "Mes Clients",
+    "businessName": "Raison Sociale",
+    "city": "Ville",
+    "province": "Province",
+    "country": "Pays",
+    "noClients": "Vous n'avez pas de clients assignés",
+    "totalClients": "Total clients"
   }
 }

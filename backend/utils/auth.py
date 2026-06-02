@@ -232,10 +232,7 @@ def get_clientes_comercial(control, empresa_id, connection=None):
         conn = Database.get_connection(connection)
         cursor = conn.cursor()
         try:
-            cursor.execute("""
-                SELECT RTRIM(cliente) FROM view_comercial_clientes
-                WHERE RTRIM(control) = ? AND RTRIM(empresa) = ?
-            """, (control.strip(), empresa_id.strip() if empresa_id else empresa_id))
+            cursor.execute("SELECT cliente FROM view_comercial_clientes WHERE control = ? AND empresa = ?", (control.strip(), empresa_id))
             rows = cursor.fetchall()
             return [row[0].strip() for row in rows if row[0]]
         finally:

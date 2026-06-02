@@ -1118,5 +1118,14 @@
     "remove": "Remove from favorites",
     "addFavorite": "Add to favorites",
     "viewInStocks": "View in stocks"
+  },
+  "myClients": {
+    "title": "My Clients",
+    "businessName": "Business Name",
+    "city": "City",
+    "province": "Province",
+    "country": "Country",
+    "noClients": "You have no assigned clients",
+    "totalClients": "Total clients"
   }
 }

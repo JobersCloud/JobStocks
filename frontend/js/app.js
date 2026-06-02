@@ -1363,6 +1363,12 @@ async function displayUserInfo(user) {
         sidebarConfigSection.style.display = (user.rol === 'administrador' || user.rol === 'superusuario') ? 'block' : 'none';
     }
 
+    // Mostrar "Mis Clientes" si tiene administrador_clientes
+    if (user.administrador_clientes) {
+        const misClientes = document.getElementById('sidebar-mis-clientes');
+        if (misClientes) misClientes.style.display = '';
+    }
+
     // Ocultar Parámetros y Control BD si no es superusuario
     if (user.rol !== 'superusuario') {
         const sidebarParametros = document.getElementById('sidebar-parametros');

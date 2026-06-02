@@ -162,26 +162,23 @@ def get_mis_clientes():
         return jsonify({'success': False, 'message': 'No tiene clientes asignados'}), 403
 
     empresa_id = session.get('empresa_id', '1')
-    clientes_ids = get_clientes_comercial(control, empresa_id)
-    if not clientes_ids:
-        return jsonify({'success': True, 'clientes': [], 'total': 0})
 
     try:
         conn = Database.get_connection()
         cursor = conn.cursor()
         try:
-            placeholders = ','.join(['?' for _ in clientes_ids])
-            cursor.execute(f"""
-                SELECT RTRIM(codigo) as codigo, RTRIM(razon) as razon,
-                       RTRIM(ISNULL(domicilio,'')) as domicilio,
-                       RTRIM(ISNULL(codpos,'')) as codpos,
-                       RTRIM(ISNULL(poblacion,'')) as poblacion,
-                       RTRIM(ISNULL(provincia,'')) as provincia,
-                       RTRIM(ISNULL(pais,'')) as pais
-                FROM view_externos_clientes
-                WHERE empresa = ? AND codigo IN ({placeholders})
-                ORDER BY razon
-            """, [empresa_id] + clientes_ids)
+            cursor.execute("""
+                SELECT RTRIM(c.codigo) as codigo, RTRIM(c.razon) as razon,
+                       RTRIM(ISNULL(c.domicilio,'')) as domicilio,
+                       RTRIM(ISNULL(c.codpos,'')) as codpos,
+                       RTRIM(ISNULL(c.poblacion,'')) as poblacion,
+                       RTRIM(ISNULL(c.provincia,'')) as provincia,
+                       RTRIM(ISNULL(c.pais,'')) as pais
+                FROM view_externos_clientes c
+                INNER JOIN view_comercial_clientes vc ON c.codigo = vc.cliente AND c.empresa = vc.empresa
+                WHERE vc.control = ? AND vc.empresa = ?
+                ORDER BY c.razon
+            """, (control, empresa_id))
             rows = cursor.fetchall()
             clientes = [{
                 'codigo': row[0], 'razon': row[1], 'domicilio': row[2],
@@ -209,14 +206,14 @@ def get_comerciales():
                 cursor.execute("""
                     SELECT DISTINCT RTRIM(control) as control, RTRIM(nombre) as nombre
                     FROM view_comerciales
-                    WHERE empresa = ? AND (RTRIM(control) LIKE ? OR RTRIM(nombre) LIKE ?)
+                    WHERE RTRIM(empresa) = ? AND (RTRIM(control) LIKE ? OR RTRIM(nombre) LIKE ?)
                     ORDER BY nombre
                 """, (empresa_id, f'%{q}%', f'%{q}%'))
             else:
                 cursor.execute("""
                     SELECT DISTINCT RTRIM(control) as control, RTRIM(nombre) as nombre
                     FROM view_comerciales
-                    WHERE empresa = ?
+                    WHERE RTRIM(empresa) = ?
                     ORDER BY nombre
                 """, (empresa_id,))
             rows = cursor.fetchall()
