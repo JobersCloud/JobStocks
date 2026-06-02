@@ -587,8 +587,22 @@
 
                     <div class="form-group" id="control-group" style="display: none;">
                         <label>Código Comercial (Control)</label>
-                        <input type="text" id="user-control" maxlength="20" placeholder="Ej: 1010">
-                        <p class="form-help">Código del comercial en el ERP para filtrar clientes</p>
+                        <div class="client-search-container">
+                            <div class="client-search-input-wrapper" id="control-search-wrapper">
+                                <input type="text" id="control-search" placeholder="Buscar comercial..." autocomplete="off">
+                                <span class="client-search-icon">🔍</span>
+                            </div>
+                            <div class="client-suggestions" id="control-suggestions"></div>
+                            <div class="client-selected" id="control-selected" style="display:none">
+                                <div class="client-selected-info">
+                                    <span class="client-selected-code" id="selected-control-code"></span>
+                                    <span class="client-selected-name" id="selected-control-name"></span>
+                                </div>
+                                <button type="button" class="client-clear-btn" onclick="clearControlSelection()" title="Limpiar">×</button>
+                            </div>
+                        </div>
+                        <input type="hidden" id="user-control">
+                        <p class="form-help">Escribe al menos 2 caracteres para buscar</p>
                     </div>
 
                     <div class="form-group" id="role-group" style="display: none;">
@@ -780,6 +794,7 @@
 
             await Promise.all([loadPaises(), loadUsers()]);
             initClientAutocomplete();
+            initControlAutocomplete();
 
             // Aplicar filtro si viene de auditoria con ?buscar=
             const urlBuscar = new URLSearchParams(window.location.search).get('buscar');
@@ -1223,7 +1238,7 @@
             document.getElementById('admin-clientes-group').style.display = 'none';
             document.getElementById('user-admin-clientes').checked = false;
             document.getElementById('control-group').style.display = 'none';
-            document.getElementById('user-control').value = '';
+            clearControlSelection();
             const currentUser = PageCommon.getCurrentUser();
             document.getElementById('role-group').style.display = currentUser && currentUser.rol === 'superusuario' ? 'block' : 'none';
             clearClientSelection();
@@ -1257,8 +1272,12 @@
                 document.getElementById('user-show-prices').checked = !!user.mostrar_precios;
                 document.getElementById('user-show-orders').checked = user.visible_pedidos !== false;
                 document.getElementById('user-admin-clientes').checked = !!user.administrador_clientes;
-                document.getElementById('user-control').value = user.control || '';
                 document.getElementById('control-group').style.display = user.administrador_clientes ? '' : 'none';
+                if (user.control) {
+                    selectControl(user.control, '');
+                } else {
+                    clearControlSelection();
+                }
                 if (user.cliente_id) {
                     document.getElementById('user-cliente-id').value = user.cliente_id;
                     document.getElementById('selected-client-code').textContent = user.cliente_id;
@@ -1382,6 +1401,76 @@
             document.getElementById('client-selected').style.display = 'none';
             document.getElementById('client-search-wrapper').style.display = 'block';
             document.getElementById('client-search').value = '';
+        }
+
+        // ==================== AUTOCOMPLETE COMERCIALES ====================
+        let controlSearchTimeout = null;
+
+        function initControlAutocomplete() {
+            const input = document.getElementById('control-search');
+            if (!input) return;
+            input.addEventListener('input', function() {
+                clearTimeout(controlSearchTimeout);
+                const query = this.value.trim();
+                if (query.length < 2) {
+                    const s = document.getElementById('control-suggestions');
+                    s.innerHTML = '';
+                    s.classList.remove('show');
+                    return;
+                }
+                controlSearchTimeout = setTimeout(() => searchComerciales(query), 300);
+            });
+            document.addEventListener('click', function(e) {
+                const container = document.querySelector('#control-search-wrapper')?.closest('.client-search-container');
+                if (container && !container.contains(e.target)) {
+                    const s = document.getElementById('control-suggestions');
+                    s.innerHTML = '';
+                    s.classList.remove('show');
+                }
+            });
+        }
+
+        async function searchComerciales(query) {
+            const suggestionsEl = document.getElementById('control-suggestions');
+            suggestionsEl.innerHTML = '<div class="client-suggestions-loading">Buscando...</div>';
+            suggestionsEl.classList.add('show');
+            try {
+                const response = await fetch(`${API_URL}/api/comerciales?q=${encodeURIComponent(query)}`, { credentials: 'include' });
+                if (!response.ok) throw new Error(response.status);
+                const comerciales = await response.json();
+                if (!comerciales || comerciales.length === 0) {
+                    suggestionsEl.innerHTML = '<div class="client-suggestions-empty">Sin resultados</div>';
+                    return;
+                }
+                suggestionsEl.innerHTML = comerciales.slice(0, 15).map(c => `
+                    <div class="client-suggestion" onclick="selectControl('${c.control}', '${(c.nombre || '').replace(/'/g, "\\'")}')">
+                        <span class="client-suggestion-code">${c.control}</span>
+                        <span class="client-suggestion-name">${c.nombre}</span>
+                    </div>
+                `).join('');
+            } catch (e) {
+                suggestionsEl.innerHTML = '<div class="client-suggestions-empty">Error o vista no disponible</div>';
+            }
+        }
+
+        function selectControl(codigo, nombre) {
+            document.getElementById('user-control').value = codigo;
+            document.getElementById('selected-control-code').textContent = codigo;
+            document.getElementById('selected-control-name').textContent = nombre;
+            document.getElementById('control-selected').style.display = 'flex';
+            document.getElementById('control-search-wrapper').style.display = 'none';
+            const s = document.getElementById('control-suggestions');
+            s.innerHTML = '';
+            s.classList.remove('show');
+        }
+
+        function clearControlSelection() {
+            document.getElementById('user-control').value = '';
+            document.getElementById('selected-control-code').textContent = '';
+            document.getElementById('selected-control-name').textContent = '';
+            document.getElementById('control-selected').style.display = 'none';
+            document.getElementById('control-search-wrapper').style.display = 'block';
+            document.getElementById('control-search').value = '';
         }
 
         // ==================== EVENT LISTENERS ====================
