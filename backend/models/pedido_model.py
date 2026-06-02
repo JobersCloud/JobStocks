@@ -88,10 +88,12 @@ class PedidoModel:
             'numpedcli': numpedcli_val,
         }
 
-        # pais/provincia only in paginated queries (offset=1)
+        # pais/provincia + completo only in paginated queries (offset=1)
         if offset == 1:
             result['pais_nombre'] = row[pais_idx] if row[pais_idx] else ''
             result['provincia_nombre'] = row[prov_idx] if row[prov_idx] else ''
+            completo_idx = prov_idx + 1
+            result['completo'] = bool(row[completo_idx]) if len(row) > completo_idx and row[completo_idx] is not None else True
 
         return result
 
@@ -157,7 +159,8 @@ class PedidoModel:
                        CAST(v.total AS DECIMAL(18,2)) AS total, CAST(v.peso AS DECIMAL(18,2)) AS peso,
                        v.divisa, v.usuario, v.fecha_alta,
                        {numpedcli_sql}
-                       {location_sql}
+                       {location_sql},
+                       CASE WHEN EXISTS (SELECT 1 FROM view_externos_venliped l WHERE l.empresa = v.empresa AND l.anyo = v.anyo AND l.pedido = v.pedido AND RTRIM(ISNULL(l.articulo,'')) <> '' AND l.situacion = 'F') THEN 0 ELSE 1 END AS completo
                 FROM view_externos_venped v
                 {join_sql}
                 WHERE {where}
@@ -331,7 +334,8 @@ class PedidoModel:
                        CAST(v.total AS DECIMAL(18,2)) AS total, CAST(v.peso AS DECIMAL(18,2)) AS peso,
                        v.divisa, v.usuario, v.fecha_alta,
                        {numpedcli_sql}
-                       {location_sql}
+                       {location_sql},
+                       CASE WHEN EXISTS (SELECT 1 FROM view_externos_venliped l WHERE l.empresa = v.empresa AND l.anyo = v.anyo AND l.pedido = v.pedido AND RTRIM(ISNULL(l.articulo,'')) <> '' AND l.situacion = 'F') THEN 0 ELSE 1 END AS completo
                 FROM view_externos_venped v
                 {join_sql}
                 WHERE {where}

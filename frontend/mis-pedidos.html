@@ -515,6 +515,7 @@
                 { key: 'total', label: t('orders.total') || 'Total', tipo: 'numero', align: 'right' },
                 { key: 'serie', label: 'Serie', tipo: 'texto' },
                 { key: 'peso', label: 'Peso', tipo: 'numero', align: 'right' },
+                { key: 'completo', label: 'Completo', tipo: 'texto' },
                 { key: '_actions', label: 'Acciones', sortable: false, filterable: false }
             );
             grid = new DataGrid({
@@ -526,6 +527,7 @@
                         case 'fecha': return PageCommon.formatDate(item.fecha);
                         case 'total': return `${PageCommon.formatCurrency(item.total)} €`;
                         case 'peso': return item.peso != null ? PageCommon.formatCurrency(item.peso) : '-';
+                        case 'completo': return item.completo ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>';
                         case '_actions': return `
                             <div class="action-buttons btn-icon-group">
                                 <button class="btn-icon btn-icon-primary btn-icon-sm" onclick="viewOrderDetails(${item.empresa}, ${item.anyo}, ${item.pedido})" title="${t('orders.viewDetails')}">

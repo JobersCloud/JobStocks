@@ -568,6 +568,7 @@
                     { key: 'total', label: t('orders.total') || 'Total', tipo: 'numero', align: 'right' },
                     { key: 'serie', label: 'Serie', tipo: 'texto' },
                     { key: 'peso', label: 'Peso', tipo: 'numero', align: 'right' },
+                    { key: 'completo', label: 'Completo', tipo: 'texto' },
                     { key: '_actions', label: 'Acciones', sortable: false, filterable: false }
                 ],
                 renderCell(item, col) {
@@ -577,6 +578,7 @@
                         case 'cliente_nombre': return item.cliente_nombre || item.cliente;
                         case 'total': return `${PageCommon.formatCurrency(item.total)} €`;
                         case 'peso': return item.peso != null ? PageCommon.formatCurrency(item.peso) : '-';
+                        case 'completo': return item.completo ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>';
                         case '_actions': {
                             const codSafe = String(item.cliente || '').replace(/'/g, "\\'");
                             const nomSafe = String(item.cliente_nombre || item.cliente || '').replace(/'/g, "\\'");
