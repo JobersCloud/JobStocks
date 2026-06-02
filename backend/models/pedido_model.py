@@ -257,7 +257,7 @@ class PedidoModel:
         return pedido_data
 
     @staticmethod
-    def get_all(empresa_id=None, anyo=None, fecha_desde=None, fecha_hasta=None, cliente=None, pais=None, provincia=None, page=1, page_size=50, clientes_permitidos=None):
+    def get_all(empresa_id=None, anyo=None, fecha_desde=None, fecha_hasta=None, cliente=None, pais=None, provincia=None, page=1, page_size=50, clientes_permitidos=None, control_comercial=None):
         """
         Obtiene todos los pedidos con paginacion servidor (para administradores).
 
@@ -299,13 +299,10 @@ class PedidoModel:
         if cliente:
             where_parts.append("v.cliente = ?")
             params.append(cliente)
-        if clientes_permitidos is not None:
-            if len(clientes_permitidos) == 0:
-                where_parts.append("1=0")  # Sin clientes asignados → sin resultados
-            else:
-                placeholders = ','.join(['?' for _ in clientes_permitidos])
-                where_parts.append(f"v.cliente IN ({placeholders})")
-                params.extend(clientes_permitidos)
+        if control_comercial:
+            where_parts.append("v.cliente IN (SELECT cliente FROM view_comercial_clientes WHERE control = ? AND empresa = ?)")
+            params.append(control_comercial)
+            params.append(empresa_id)
         if pais and has_clientes_dir:
             where_parts.append("v.cliente IN (SELECT codigo FROM view_externos_clientes WHERE RTRIM(ISNULL(pais, '')) = ?)")
             params.append(pais)

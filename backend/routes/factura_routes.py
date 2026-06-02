@@ -147,8 +147,7 @@ def get_mis_facturas():
     try:
         t1 = time.time()
         if is_admin_clientes and control:
-            clientes_permitidos = get_clientes_comercial(control, empresa_id)
-            logger.warning(f'[PERF] GET /api/facturas/mis-facturas admin_clientes control={control} clientes={len(clientes_permitidos)} anyo={anyo} page={page}')
+            logger.warning(f'[PERF] GET /api/facturas/mis-facturas admin_clientes control={control} anyo={anyo} page={page}')
             result = FacturaModel.get_all(
                 empresa_id=empresa_id,
                 anyo=anyo,
@@ -156,7 +155,7 @@ def get_mis_facturas():
                 fecha_hasta=fecha_hasta,
                 page=page,
                 page_size=page_size,
-                clientes_permitidos=clientes_permitidos
+                control_comercial=control
             )
         else:
             logger.warning(f'[PERF] GET /api/facturas/mis-facturas cliente={cliente_id} anyo={anyo} page={page}')
@@ -252,14 +251,6 @@ def get_todas_facturas():
     page = request.args.get('page', 1, type=int)
     page_size = min(request.args.get('page_size', 50, type=int), 200)
 
-    clientes_permitidos = None
-    if is_admin_clientes and not is_admin:
-        control = getattr(current_user, 'control', None)
-        if control:
-            clientes_permitidos = get_clientes_comercial(control, empresa_id)
-        else:
-            clientes_permitidos = []
-
     logger.warning(f'[PERF] GET /api/facturas empresa={empresa_id} anyo={anyo} cliente={cliente} pais={pais} provincia={provincia} page={page}')
 
     try:
@@ -273,8 +264,7 @@ def get_todas_facturas():
             pais=pais,
             provincia=provincia,
             page=page,
-            page_size=page_size,
-            clientes_permitidos=clientes_permitidos
+            page_size=page_size
         )
         t2 = time.time()
         logger.warning(f'[PERF] DB query + fetch: {t2-t1:.3f}s | rows={len(result["facturas"])}')

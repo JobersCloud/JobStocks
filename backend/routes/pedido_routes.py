@@ -147,8 +147,7 @@ def get_mis_pedidos():
     try:
         t1 = time.time()
         if is_admin_clientes and control:
-            clientes_permitidos = get_clientes_comercial(control, empresa_id)
-            logger.warning(f'[PERF] GET /api/pedidos/mis-pedidos admin_clientes control={control} clientes={len(clientes_permitidos)} anyo={anyo} page={page}')
+            logger.warning(f'[PERF] GET /api/pedidos/mis-pedidos admin_clientes control={control} anyo={anyo} page={page}')
             result = PedidoModel.get_all(
                 empresa_id=empresa_id,
                 anyo=anyo,
@@ -156,11 +155,8 @@ def get_mis_pedidos():
                 fecha_hasta=fecha_hasta,
                 page=page,
                 page_size=page_size,
-                clientes_permitidos=clientes_permitidos
+                control_comercial=control
             )
-            # Renombrar clave para compatibilidad con frontend
-            if 'pedidos' in result:
-                result['pedidos'] = result['pedidos']
         else:
             logger.warning(f'[PERF] GET /api/pedidos/mis-pedidos cliente={cliente_id} anyo={anyo} page={page}')
             result = PedidoModel.get_by_user(
@@ -256,15 +252,6 @@ def get_todos_pedidos():
     page = request.args.get('page', 1, type=int)
     page_size = min(request.args.get('page_size', 50, type=int), 200)
 
-    # Si es administrador_clientes (no admin), filtrar por sus clientes
-    clientes_permitidos = None
-    if is_admin_clientes and not is_admin:
-        control = getattr(current_user, 'control', None)
-        if control:
-            clientes_permitidos = get_clientes_comercial(control, empresa_id)
-        else:
-            clientes_permitidos = []  # Sin control → sin resultados
-
     logger.warning(f'[PERF] GET /api/pedidos empresa={empresa_id} anyo={anyo} cliente={cliente} pais={pais} provincia={provincia} page={page}')
 
     try:
@@ -278,8 +265,7 @@ def get_todos_pedidos():
             pais=pais,
             provincia=provincia,
             page=page,
-            page_size=page_size,
-            clientes_permitidos=clientes_permitidos
+            page_size=page_size
         )
         t2 = time.time()
         logger.warning(f'[PERF] DB query + fetch: {t2-t1:.3f}s | rows={len(result["pedidos"])}')
