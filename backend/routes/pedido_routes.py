@@ -127,8 +127,11 @@ def get_mis_pedidos():
         description: Lista paginada de pedidos del usuario
     """
     t0 = time.time()
+    is_admin_clientes = getattr(current_user, 'administrador_clientes', False)
     cliente_id = current_user.cliente_id
-    if not cliente_id:
+    control = getattr(current_user, 'control', None)
+
+    if not is_admin_clientes and not cliente_id:
         return jsonify({
             'success': False,
             'error': 'No tienes un cliente asociado en el sistema'
@@ -141,19 +144,34 @@ def get_mis_pedidos():
     page = request.args.get('page', 1, type=int)
     page_size = min(request.args.get('page_size', 50, type=int), 200)
 
-    logger.warning(f'[PERF] GET /api/pedidos/mis-pedidos cliente={cliente_id} anyo={anyo} page={page}')
-
     try:
         t1 = time.time()
-        result = PedidoModel.get_by_user(
-            cliente_id=cliente_id,
-            empresa_id=empresa_id,
-            anyo=anyo,
-            fecha_desde=fecha_desde,
-            fecha_hasta=fecha_hasta,
-            page=page,
-            page_size=page_size
-        )
+        if is_admin_clientes and control:
+            clientes_permitidos = get_clientes_comercial(control, empresa_id)
+            logger.warning(f'[PERF] GET /api/pedidos/mis-pedidos admin_clientes control={control} clientes={len(clientes_permitidos)} anyo={anyo} page={page}')
+            result = PedidoModel.get_all(
+                empresa_id=empresa_id,
+                anyo=anyo,
+                fecha_desde=fecha_desde,
+                fecha_hasta=fecha_hasta,
+                page=page,
+                page_size=page_size,
+                clientes_permitidos=clientes_permitidos
+            )
+            # Renombrar clave para compatibilidad con frontend
+            if 'pedidos' in result:
+                result['pedidos'] = result['pedidos']
+        else:
+            logger.warning(f'[PERF] GET /api/pedidos/mis-pedidos cliente={cliente_id} anyo={anyo} page={page}')
+            result = PedidoModel.get_by_user(
+                cliente_id=cliente_id,
+                empresa_id=empresa_id,
+                anyo=anyo,
+                fecha_desde=fecha_desde,
+                fecha_hasta=fecha_hasta,
+                page=page,
+                page_size=page_size
+            )
         t2 = time.time()
         logger.warning(f'[PERF] DB query + fetch: {t2-t1:.3f}s | rows={len(result["pedidos"])}')
 

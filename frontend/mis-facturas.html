@@ -488,19 +488,24 @@
             Notifications.init();
 
             // Crear grid
+            const esAdminClientes = PageCommon.getCurrentUser()?.administrador_clientes || false;
+            const cols = [
+                { key: 'factura', label: '# Factura', tipo: 'numero' },
+                { key: 'fecha', label: t('invoices.date') || 'Fecha', tipo: 'texto' },
+            ];
+            if (esAdminClientes) cols.push({ key: 'cliente_nombre', label: t('invoices.client') || 'Cliente', tipo: 'texto' });
+            cols.push(
+                { key: 'pais_nombre', label: t('invoices.filterCountry') || 'Pais', tipo: 'texto' },
+                { key: 'provincia_nombre', label: t('invoices.filterProvince') || 'Provincia', tipo: 'texto' },
+                { key: 'base_imponible', label: t('invoices.taxBase') || 'Base Imponible', tipo: 'numero', align: 'right' },
+                { key: 'iva', label: t('invoices.vat') || 'IVA', tipo: 'numero', align: 'right' },
+                { key: 'total', label: t('invoices.total') || 'Total', tipo: 'numero', align: 'right' },
+                { key: 'serie', label: 'Serie', tipo: 'texto' },
+                { key: '_actions', label: 'Acciones', sortable: false, filterable: false }
+            );
             grid = new DataGrid({
                 el: '#invoices-grid',
-                columns: [
-                    { key: 'factura', label: '# Factura', tipo: 'numero' },
-                    { key: 'fecha', label: t('invoices.date') || 'Fecha', tipo: 'texto' },
-                    { key: 'pais_nombre', label: t('invoices.filterCountry') || 'Pais', tipo: 'texto' },
-                    { key: 'provincia_nombre', label: t('invoices.filterProvince') || 'Provincia', tipo: 'texto' },
-                    { key: 'base_imponible', label: t('invoices.taxBase') || 'Base Imponible', tipo: 'numero', align: 'right' },
-                    { key: 'iva', label: t('invoices.vat') || 'IVA', tipo: 'numero', align: 'right' },
-                    { key: 'total', label: t('invoices.total') || 'Total', tipo: 'numero', align: 'right' },
-                    { key: 'serie', label: 'Serie', tipo: 'texto' },
-                    { key: '_actions', label: 'Acciones', sortable: false, filterable: false }
-                ],
+                columns: cols,
                 renderCell(item, col) {
                     switch (col.key) {
                         case 'factura': return `<strong>${item.anyo}/${item.factura}</strong>`;
