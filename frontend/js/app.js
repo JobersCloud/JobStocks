@@ -3849,6 +3849,12 @@ function mostrarModalCantidad(stock) {
 
                     <div class="quantity-input-section">
                         <label class="quantity-label">${t('cart.quantity')}:</label>
+                        ${stock.unidadescaja && stock.unidadescaja > 0 ? `
+                        <div class="quantity-unit-toggle" style="display:flex;gap:4px;margin-bottom:8px;">
+                            <button id="unit-btn-unidad" class="quantity-package-btn quantity-package-btn-primary" onclick="setUnidadEntrada('unidad')" style="flex:1;padding:4px 8px;font-size:0.8rem;">${stock.unidad || 'M2'}</button>
+                            <button id="unit-btn-caja" class="quantity-package-btn" onclick="setUnidadEntrada('caja')" style="flex:1;padding:4px 8px;font-size:0.8rem;">${t('cart.box') || 'Cajas'}</button>
+                        </div>
+                        ` : ''}
                         <div class="quantity-control">
                             <button class="quantity-btn quantity-btn-minus" onclick="cambiarCantidad(-1)">−</button>
                             <input type="number"
@@ -3946,6 +3952,27 @@ function cambiarCantidad(delta) {
     input.focus();
 }
 
+// Unidad de entrada: 'unidad' (M2/ML/etc) o 'caja'
+window._unidadEntrada = 'unidad';
+
+function setUnidadEntrada(modo) {
+    window._unidadEntrada = modo;
+    const btnUnidad = document.getElementById('unit-btn-unidad');
+    const btnCaja = document.getElementById('unit-btn-caja');
+    if (btnUnidad && btnCaja) {
+        if (modo === 'caja') {
+            btnCaja.classList.add('quantity-package-btn-primary');
+            btnUnidad.classList.remove('quantity-package-btn-primary');
+        } else {
+            btnUnidad.classList.add('quantity-package-btn-primary');
+            btnCaja.classList.remove('quantity-package-btn-primary');
+        }
+    }
+    // Resetear input al cambiar modo
+    const input = document.getElementById('quantity-input');
+    if (input) input.value = 0;
+}
+
 // Cambiar cantidad por unidades de empaquetado (caja/pallet)
 function cambiarCantidadPorUnidad(unidades) {
     const input = document.getElementById('quantity-input');
@@ -4005,13 +4032,19 @@ function cerrarModalCantidad() {
     }
     window.stockTemporal = null;
     window.agregandoDesdeDetalle = false;  // Reset flag al cancelar
+    window._unidadEntrada = 'unidad';  // Reset unidad de entrada
 }
 
 // Confirmar y agregar al carrito
 async function confirmarAgregarAlCarrito() {
     const input = document.getElementById('quantity-input');
-    const cantidadNum = parseFloat(input.value);
+    let cantidadNum = parseFloat(input.value);
     const stock = window.stockTemporal;
+
+    // Si el usuario introdujo en cajas, convertir a unidades (M2, ML, etc)
+    if (window._unidadEntrada === 'caja' && stock && stock.unidadescaja > 0) {
+        cantidadNum = redondearADecimales(cantidadNum * stock.unidadescaja, getDecimalPlaces(stock.unidadescaja));
+    }
 
     if (!stock) {
         UIFeedback.toast(t('common.error') + ': ' + t('cart.noProductSelected'), 'error');
