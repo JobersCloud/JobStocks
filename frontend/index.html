@@ -437,7 +437,7 @@
                             <label data-i18n="filters.search">Buscar</label>
                             <input type="text" id="filter-descripcion" data-i18n-placeholder="filters.searchPlaceholder" placeholder="Ej: gris muretto 60x60" onkeydown="if(event.key==='Enter')buscarStocks()">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" data-optional-column="formato" style="display:none">
                             <label data-i18n="filters.format">Formato</label>
                             <select id="filter-formato">
                                 <option value="" data-i18n="filters.allFormats">Todos los formatos</option>
@@ -449,7 +449,7 @@
                                 <option value="" data-i18n="filters.allProductTypes">Todos los tipos</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" data-optional-column="modelo" style="display:none">
                             <label data-i18n="filters.model">Modelo</label>
                             <select id="filter-serie">
                                 <option value="" data-i18n="filters.allModels">Todos los modelos</option>

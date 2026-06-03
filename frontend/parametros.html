@@ -607,8 +607,10 @@
             const isColumnas = param.clave === 'STOCK_COLUMNAS_OPCIONALES';
 
             if (isColumnas) {
-                const allCols = ['color', 'tipo_producto', 'calidad', 'busqueda_descripcion', 'existencias_min'];
+                const allCols = ['formato', 'modelo', 'color', 'tipo_producto', 'calidad', 'busqueda_descripcion', 'existencias_min'];
                 const colLabels = {
+                    formato: t('filters.format') || 'Formato',
+                    modelo: t('filters.model') || 'Modelo',
                     color: t('filters.color') || 'Color',
                     tipo_producto: t('filters.productType') || 'Tipo Producto',
                     calidad: t('filters.quality') || 'Calidad',

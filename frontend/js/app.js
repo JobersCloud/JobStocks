@@ -1132,9 +1132,11 @@ async function verificarColumnasOpcionales() {
 
 // Comprobar si una columna es visible según la configuración
 function esColumnaVisible(col) {
-    const fijas = ['codigo', 'descripcion', 'formato', 'serie', 'tono', 'calibre', 'existencias'];
+    const fijas = ['codigo', 'descripcion', 'tono', 'calibre', 'existencias'];
     if (fijas.includes(col)) return true;
     if (col === 'precio') return mostrarPrecios;
+    // 'serie' en el grid corresponde a 'modelo' en los parámetros
+    if (col === 'serie') return columnasOpcionales.includes('modelo');
     return columnasOpcionales.includes(col);
 }
 
