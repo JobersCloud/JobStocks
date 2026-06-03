@@ -409,6 +409,12 @@ a:not(.sidebar-item):not(.btn):hover {
     color: var(--text-primary);
 }
 
+[data-theme="dark"] .quantity-package-btn.quantity-package-btn-primary {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
 [data-theme="dark"] .quantity-btn-cancel {
     background: #5a6268;
     color: white;
