@@ -12,8 +12,8 @@ echo.
 
 cd /d "C:\Users\jobers\Documents\Ejercicios Python\JobStocks"
 
-echo [1/5] Subiendo archivos (sin .env ni videos promocionales)...
-scp docker-compose.yml undefasa@62.15.189.138:/home/undefasa/apirest/
+echo [1/5] Subiendo archivos (sin docker-compose.yml ni videos)...
+REM NO subir docker-compose.yml - UNDEFASA tiene su propia config con jobers-net
 scp -r backend undefasa@62.15.189.138:/home/undefasa/apirest/
 REM Subir frontend excluyendo videos (.mp4) via tar+ssh
 tar cf - --exclude="*.mp4" frontend | ssh undefasa@62.15.189.138 "cd /home/undefasa/apirest && tar xf -"
