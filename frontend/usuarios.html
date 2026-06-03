@@ -1274,7 +1274,15 @@
                 document.getElementById('user-admin-clientes').checked = !!user.administrador_clientes;
                 document.getElementById('control-group').style.display = user.administrador_clientes ? '' : 'none';
                 if (user.control) {
-                    selectControl(user.control, '');
+                    // Buscar nombre del comercial
+                    try {
+                        const resp = await fetch(`${API_URL}/api/comerciales?q=${encodeURIComponent(user.control)}`, { credentials: 'include' });
+                        const comerciales = await resp.json();
+                        const match = comerciales.find(c => c.control === user.control);
+                        selectControl(user.control, match ? match.nombre : '');
+                    } catch(e) {
+                        selectControl(user.control, '');
+                    }
                 } else {
                     clearControlSelection();
                 }
