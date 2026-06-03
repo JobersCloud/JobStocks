@@ -278,10 +278,11 @@ class StockModel:
                         where_conditions.append("existencias >= ?")
                         params.append(float(valor))
                     elif key == 'descripcion':
-                        # Búsqueda inteligente: partir por espacios, buscar cada palabra
+                        # Búsqueda inteligente: partir por espacios, buscar cada palabra en descripcion O formato
                         palabras = [p.strip() for p in valor.split() if p.strip()]
                         for palabra in palabras:
-                            where_conditions.append("descripcion LIKE ?")
+                            where_conditions.append("(descripcion LIKE ? OR formato LIKE ?)")
+                            params.append(f"%{palabra}%")
                             params.append(f"%{palabra}%")
                     else:
                         where_conditions.append(f"{key} LIKE ?")
