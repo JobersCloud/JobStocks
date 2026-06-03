@@ -94,6 +94,7 @@ call :sync_tabla venliped
 call :sync_venped
 call :sync_tabla venclientes
 call :sync_tabla vencomerciales
+call :sync_tabla venagentes
 call :sync_tabla genter
 call :sync_tabla paises
 call :sync_tabla provincias
