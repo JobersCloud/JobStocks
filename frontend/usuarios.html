@@ -700,28 +700,16 @@
             const gridColumns = [
                 { key: 'username', label: t('users.username') || 'Usuario', tipo: 'texto' },
                 { key: 'full_name', label: t('users.fullName') || 'Nombre Completo', tipo: 'texto' },
-                { key: 'email', label: 'Email', tipo: 'texto' },
-                { key: 'company_name', label: t('users.companyName') || 'Empresa', tipo: 'texto' },
-                { key: 'pais', label: t('users.country') || 'País', tipo: 'texto' },
+                { key: 'email', label: 'Email', tipo: 'texto', hideable: true },
+                { key: 'company_name', label: t('users.companyName') || 'Empresa', tipo: 'texto', hideable: true },
+                { key: 'pais', label: t('users.country') || 'País', tipo: 'texto', hideable: true },
                 { key: 'rol', label: t('users.role') || 'Rol', tipo: 'texto' },
                 { key: 'active', label: t('users.status') || 'Estado', tipo: 'texto' },
-                { key: 'created_at', label: t('users.registrationDate') || 'Fecha Alta', sortable: true },
+                { key: '_permisos', label: 'Permisos', tipo: 'texto', sortable: false, filterable: false },
+                { key: 'created_at', label: t('users.registrationDate') || 'Fecha Alta', sortable: true, hideable: true },
+                { key: 'control', label: 'Control', tipo: 'texto', hideable: true },
+                { key: '_actions', label: t('users.actions') || 'Acciones', sortable: false, filterable: false },
             ];
-            if (preciosGlobalHabilitado) {
-                gridColumns.push({ key: 'mostrar_precios', label: t('users.showPrices') || 'Ver Precios', tipo: 'texto' });
-            }
-            if (pedidosGlobalHabilitado) {
-                gridColumns.push({ key: 'visible_pedidos', label: t('users.showOrders') || 'Ver Pedidos', tipo: 'texto' });
-            }
-            if (albaranesGlobalHabilitado) {
-                gridColumns.push({ key: 'visible_albaranes', label: t('users.showDeliveryNotes') || 'Ver Albaranes', tipo: 'texto' });
-            }
-            if (facturasGlobalHabilitado) {
-                gridColumns.push({ key: 'visible_facturas', label: t('users.showInvoices') || 'Ver Facturas', tipo: 'texto' });
-            }
-            gridColumns.push({ key: 'administrador_clientes', label: t('users.clientAdmin') || 'Admin. Clientes', tipo: 'texto' });
-            gridColumns.push({ key: 'control', label: 'Control', tipo: 'texto' });
-            gridColumns.push({ key: '_actions', label: t('users.actions') || 'Acciones', sortable: false, filterable: false });
 
             grid = new DataGrid({
                 el: '#users-grid',
@@ -747,11 +735,15 @@
                         case 'pais': return getPaisNombre(item.pais);
                         case 'rol': return getRoleBadge(item.rol);
                         case 'active': return getStatusBadge(item.active, item);
-                        case 'mostrar_precios': return item.mostrar_precios ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>';
-                        case 'visible_pedidos': return item.visible_pedidos ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>';
-                        case 'visible_albaranes': return item.visible_albaranes ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>';
-                        case 'visible_facturas': return item.visible_facturas ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>';
-                        case 'administrador_clientes': return item.administrador_clientes ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>';
+                        case '_permisos': {
+                            const badges = [];
+                            if (preciosGlobalHabilitado && item.mostrar_precios) badges.push('<span class="perm-badge perm-pre" title="Ver Precios">PRE</span>');
+                            if (pedidosGlobalHabilitado && item.visible_pedidos) badges.push('<span class="perm-badge perm-ped" title="Ver Pedidos">PED</span>');
+                            if (albaranesGlobalHabilitado && item.visible_albaranes) badges.push('<span class="perm-badge perm-alb" title="Ver Albaranes">ALB</span>');
+                            if (facturasGlobalHabilitado && item.visible_facturas) badges.push('<span class="perm-badge perm-fac" title="Ver Facturas">FAC</span>');
+                            if (item.administrador_clientes) badges.push('<span class="perm-badge perm-adm" title="Admin. Clientes">ADM</span>');
+                            return badges.length > 0 ? `<div class="perm-badges">${badges.join('')}</div>` : '<span style="color:#aaa">-</span>';
+                        }
                         case 'control': return item.control || '-';
                         case 'created_at': return item.created_at ? new Date(item.created_at).toLocaleDateString('es-ES') : '-';
                         case '_actions': return getActionButtons(item);
@@ -773,11 +765,13 @@
                                 <div class="user-card-info-item"><label>${t('users.companyName')}:</label> ${item.company_name || '-'}</div>
                                 <div class="user-card-info-item"><label>${t('users.role')}:</label> ${getRoleBadge(item.rol)}</div>
                                 <div class="user-card-info-item"><label>${t('users.country')}:</label> ${getPaisNombre(item.pais)}</div>
-                                ${preciosGlobalHabilitado ? `<div class="user-card-info-item"><label>${t('users.showPrices')}:</label> ${item.mostrar_precios ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>'}</div>` : ''}
-                                ${pedidosGlobalHabilitado ? `<div class="user-card-info-item"><label>${t('users.showOrders') || 'Ver Pedidos'}:</label> ${item.visible_pedidos ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>'}</div>` : ''}
-                                ${albaranesGlobalHabilitado ? `<div class="user-card-info-item"><label>${t('users.showDeliveryNotes') || 'Ver Albaranes'}:</label> ${item.visible_albaranes ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>'}</div>` : ''}
-                                ${facturasGlobalHabilitado ? `<div class="user-card-info-item"><label>${t('users.showInvoices') || 'Ver Facturas'}:</label> ${item.visible_facturas ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>'}</div>` : ''}
-                                <div class="user-card-info-item"><label>${t('users.clientAdmin') || 'Admin. Clientes'}:</label> ${item.administrador_clientes ? '<span class="status-badge status-active">&#10003;</span>' : '<span class="status-badge status-inactive">&#10007;</span>'}</div>
+                                <div class="user-card-info-item"><label>Permisos:</label> <div class="perm-badges">
+                                    ${preciosGlobalHabilitado && item.mostrar_precios ? '<span class="perm-badge perm-pre">PRE</span>' : ''}
+                                    ${pedidosGlobalHabilitado && item.visible_pedidos ? '<span class="perm-badge perm-ped">PED</span>' : ''}
+                                    ${albaranesGlobalHabilitado && item.visible_albaranes ? '<span class="perm-badge perm-alb">ALB</span>' : ''}
+                                    ${facturasGlobalHabilitado && item.visible_facturas ? '<span class="perm-badge perm-fac">FAC</span>' : ''}
+                                    ${item.administrador_clientes ? '<span class="perm-badge perm-adm">ADM</span>' : ''}
+                                </div></div>
                                 ${item.control ? `<div class="user-card-info-item"><label>Control:</label> ${item.control}</div>` : ''}
                                 <div class="user-card-info-item"><label>${t('users.registrationDate') || 'Fecha Alta'}:</label> ${item.created_at ? new Date(item.created_at).toLocaleDateString('es-ES') : '-'}</div>
                             </div>

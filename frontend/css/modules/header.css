@@ -178,14 +178,14 @@
     border-top: 4px solid var(--primary);
 }
 
-/* Headers de tablas con gradiente del tema */
+/* Headers de tablas con color plano del tema */
 .users-table thead,
 .proposals-table thead,
 .inquiries-table thead,
 .config-list thead,
 .audit-table thead,
 table thead {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+    background: var(--primary) !important;
 }
 
 .users-table th,
@@ -782,7 +782,7 @@ a:not(.sidebar-item):not(.btn):hover {
 [data-theme="dark"] .proposals-table th,
 [data-theme="dark"] .inquiries-table th,
 [data-theme="dark"] .users-table th {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    background: var(--primary);
     color: white;
 }
 

@@ -651,30 +651,46 @@ tbody tr:hover {
 /* Handle de redimensionado de columnas */
 .column-resize-handle {
     position: absolute;
-    right: 0;
+    right: -4px;
     top: 0;
     bottom: 0;
-    width: 4px;
+    width: 9px;
     cursor: col-resize;
-    background: rgba(0, 0, 0, 0.15);
-    transition: background 0.2s;
+    background: transparent;
     z-index: 10;
 }
 
-.column-resize-handle:hover,
-.sortable-th.resizing .column-resize-handle {
-    background: var(--primary);
-    width: 4px;
+.column-resize-handle::after {
+    content: '';
+    position: absolute;
+    right: 4px;
+    top: 25%;
+    bottom: 25%;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 1px;
+    transition: background 0.15s, top 0.15s, bottom 0.15s;
+}
+
+.column-resize-handle:hover::after,
+.sortable-th.resizing .column-resize-handle::after {
+    background: rgba(255, 255, 255, 0.7);
+    top: 10%;
+    bottom: 10%;
+}
+
+.sortable-th.resizing .column-resize-handle::after {
+    background: #fff;
 }
 
 /* Dark mode para resize handle */
-[data-theme="dark"] .column-resize-handle {
-    background: rgba(255, 255, 255, 0.2);
+[data-theme="dark"] .column-resize-handle::after {
+    background: rgba(255, 255, 255, 0.15);
 }
 
-[data-theme="dark"] .column-resize-handle:hover,
-[data-theme="dark"] .sortable-th.resizing .column-resize-handle {
-    background: var(--primary);
+[data-theme="dark"] .column-resize-handle:hover::after,
+[data-theme="dark"] .sortable-th.resizing .column-resize-handle::after {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .sortable-th.resizing {

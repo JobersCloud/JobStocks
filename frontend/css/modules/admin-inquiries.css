@@ -28,7 +28,7 @@
 
 .inquiries-table th,
 .inquiries-table td {
-    padding: 12px 15px;
+    padding: 7px 12px;
     text-align: left;
     border-bottom: 1px solid #eee;
     white-space: nowrap;
@@ -37,12 +37,12 @@
 }
 
 .inquiries-table th {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    background: var(--primary);
     color: white;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 11.5px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     position: sticky;
     top: 0;
     z-index: 10;
@@ -502,8 +502,8 @@
 }
 
 [data-theme="dark"] .inquiries-table th {
-    background: #2d2d2d;
-    color: #e0e0e0;
+    background: var(--primary);
+    color: white;
 }
 
 [data-theme="dark"] .inquiries-table td {

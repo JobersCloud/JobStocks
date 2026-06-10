@@ -194,18 +194,136 @@ data-grid {
     position: relative;
 }
 
-.dg-resize-handle {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 5px;
-    cursor: col-resize;
-    user-select: none;
+/* ==================== COLUMN VISIBILITY TOGGLE ==================== */
+.dg-footer-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
 }
 
-.dg-resize-handle:hover {
-    background: rgba(255, 255, 255, 0.3);
+.dg-colvis-btn {
+    background: none;
+    border: 1px solid var(--border, #ddd);
+    border-radius: 4px;
+    padding: 3px 6px;
+    cursor: pointer;
+    color: var(--text-secondary, #666);
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.15s;
+}
+
+.dg-colvis-btn:hover {
+    background: var(--bg-secondary, #f5f5f5);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.dg-colvis-dropdown {
+    background: var(--bg-primary, #fff);
+    border: 1px solid var(--border, #ddd);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    z-index: 9999;
+    min-width: 180px;
+    overflow: hidden;
+}
+
+.dg-colvis-header {
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--text-secondary, #888);
+    border-bottom: 1px solid var(--border, #eee);
+}
+
+.dg-colvis-list {
+    padding: 4px 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.dg-colvis-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.1s;
+    color: var(--text-primary, #333);
+}
+
+.dg-colvis-item:hover {
+    background: var(--bg-secondary, #f5f5f5);
+}
+
+.dg-colvis-item input[type="checkbox"] {
+    accent-color: var(--primary);
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}
+
+[data-theme="dark"] .dg-colvis-dropdown {
+    background: var(--bg-primary, #1e1e1e);
+    border-color: var(--border, #444);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+[data-theme="dark"] .dg-colvis-btn {
+    border-color: var(--border, #555);
+    color: var(--text-secondary, #aaa);
+}
+
+[data-theme="dark"] .dg-colvis-btn:hover {
+    background: var(--bg-secondary, #333);
+}
+
+.dg-resize-handle {
+    position: absolute;
+    right: -4px;
+    top: 0;
+    bottom: 0;
+    width: 9px;
+    cursor: col-resize;
+    user-select: none;
+    z-index: 10;
+}
+
+.dg-resize-handle::after {
+    content: '';
+    position: absolute;
+    right: 4px;
+    top: 25%;
+    bottom: 25%;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 1px;
+    transition: background 0.15s, top 0.15s, bottom 0.15s;
+}
+
+.dg-resize-handle:hover::after,
+th.dg-resizing .dg-resize-handle::after {
+    background: rgba(255, 255, 255, 0.7);
+    top: 10%;
+    bottom: 10%;
+}
+
+th.dg-resizing .dg-resize-handle::after {
+    background: #fff;
+}
+
+[data-theme="dark"] .dg-resize-handle::after {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .dg-resize-handle:hover::after,
+[data-theme="dark"] th.dg-resizing .dg-resize-handle::after {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 /* Column drag & drop reorder */
@@ -254,7 +372,7 @@ th.dg-drag-over-right {
 }
 
 .dg-table thead {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    background: var(--primary);
     color: white;
     position: sticky;
     top: 0;
@@ -262,7 +380,7 @@ th.dg-drag-over-right {
 }
 
 .dg-th {
-    padding: 12px 15px;
+    padding: 7px 12px;
     text-align: left;
     font-weight: 600;
     white-space: nowrap;
@@ -325,7 +443,7 @@ th.dg-drag-over-right {
 }
 
 .dg-td {
-    padding: 12px 15px;
+    padding: 7px 12px;
     border-bottom: 1px solid #e0e0e0;
     color: var(--text-primary, #333);
 }

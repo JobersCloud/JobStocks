@@ -82,7 +82,7 @@
 
 .proposals-table th,
 .proposals-table td {
-    padding: 12px 15px;
+    padding: 7px 12px;
     text-align: left;
     border-bottom: 1px solid #eee;
     white-space: nowrap;
@@ -91,12 +91,12 @@
 }
 
 .proposals-table th {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    background: var(--primary);
     color: white;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 11.5px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     position: sticky;
     top: 0;
     z-index: 10;

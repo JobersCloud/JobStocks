@@ -45,8 +45,8 @@ class DataGrid {
         this.el = typeof config.el === 'string' ? document.querySelector(config.el) : config.el;
         if (!this.el) throw new Error(`DataGrid: elemento '${config.el}' no encontrado`);
 
-        this.columns = config.columns || [];
-        this._originalColumns = [...this.columns];
+        this._allColumns = config.columns || [];
+        this._originalColumns = [...this._allColumns];
         this.renderCell = config.renderCell || (() => null);
         this.renderCard = config.renderCard || (() => '');
         this.tableClass = config.tableClass || 'proposals-table';
@@ -56,6 +56,11 @@ class DataGrid {
         this.storageKey = config.storageKey || 'filtrosGuardados';
         this.onSort = config.onSort || null;
         this.onPageChange = config.onPageChange || null;
+
+        // Column visibility
+        this._hiddenColumns = new Set();
+        this._loadHiddenColumns();
+        this.columns = this._getVisibleColumns();
 
         // Sort state
         this.ordenActual = {
@@ -286,24 +291,72 @@ class DataGrid {
 
     // ==================== COLUMN RESIZE ====================
 
+    _loadColumnWidths() {
+        try {
+            const saved = localStorage.getItem(`${this.storageKey}_colWidths`);
+            if (saved) this._columnWidths = JSON.parse(saved);
+        } catch (e) { /* ignore */ }
+    }
+
+    _saveColumnWidths() {
+        try {
+            localStorage.setItem(`${this.storageKey}_colWidths`, JSON.stringify(this._columnWidths));
+        } catch (e) { /* ignore */ }
+    }
+
+    _applyColumnWidths() {
+        if (!this._columnWidths) return;
+        const ths = this.el.querySelectorAll('thead th');
+        ths.forEach(th => {
+            const col = th.dataset.column;
+            if (col && this._columnWidths[col]) {
+                th.style.width = this._columnWidths[col] + 'px';
+                th.style.minWidth = this._columnWidths[col] + 'px';
+            }
+        });
+    }
+
     _initColumnResize() {
+        if (!this._columnWidths) {
+            this._columnWidths = {};
+            this._loadColumnWidths();
+        }
+        this._applyColumnWidths();
+
         const handles = this.el.querySelectorAll('.dg-resize-handle');
         handles.forEach(handle => {
             handle.addEventListener('mousedown', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
+
                 const th = handle.parentElement;
-                const colIndex = Array.from(th.parentElement.children).indexOf(th);
-                const startX = e.pageX;
+                const colKey = th.dataset.column;
+                const startX = e.clientX;
                 const startWidth = th.offsetWidth;
 
+                // Visual feedback
+                th.classList.add('dg-resizing');
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+
                 const onMouseMove = (ev) => {
-                    const newWidth = Math.max(30, startWidth + (ev.pageX - startX));
+                    const newWidth = Math.max(40, startWidth + (ev.clientX - startX));
                     th.style.width = newWidth + 'px';
-                    th.style.maxWidth = newWidth + 'px';
+                    th.style.minWidth = newWidth + 'px';
                 };
 
                 const onMouseUp = () => {
+                    // Persist width
+                    if (colKey) {
+                        this._columnWidths[colKey] = th.offsetWidth;
+                        this._saveColumnWidths();
+                    }
+
+                    // Clean up
+                    th.classList.remove('dg-resizing');
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+
                     document.removeEventListener('mousemove', onMouseMove);
                     document.removeEventListener('mouseup', onMouseUp);
                 };
@@ -314,6 +367,124 @@ class DataGrid {
         });
     }
 
+    // ==================== COLUMN VISIBILITY ====================
+
+    _loadHiddenColumns() {
+        try {
+            const saved = localStorage.getItem(`${this.storageKey}_hiddenCols`);
+            if (saved) {
+                const arr = JSON.parse(saved);
+                // Validate keys still exist
+                const allKeys = this._allColumns.map(c => c.key);
+                arr.forEach(k => { if (allKeys.includes(k)) this._hiddenColumns.add(k); });
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    _saveHiddenColumns() {
+        try {
+            localStorage.setItem(`${this.storageKey}_hiddenCols`, JSON.stringify([...this._hiddenColumns]));
+        } catch (e) { /* ignore */ }
+    }
+
+    _getVisibleColumns() {
+        return this._allColumns.filter(c => !this._hiddenColumns.has(c.key));
+    }
+
+    _hasHideableColumns() {
+        return this._allColumns.some(c => c.hideable === true);
+    }
+
+    _toggleColumnVisibility(key, visible) {
+        if (visible) {
+            this._hiddenColumns.delete(key);
+        } else {
+            this._hiddenColumns.add(key);
+        }
+        this._saveHiddenColumns();
+        this.columns = this._getVisibleColumns();
+
+        // Rebuild everything
+        this._buildDOM();
+        this._initGridFilters();
+        this._initEventListeners();
+        this._initColumnResize();
+        this._initColumnReorder();
+        this._updateSortIcons();
+
+        // Re-render data
+        if (this._allData.length > 0) {
+            this._applyFiltersAndSort();
+        }
+
+        requestAnimationFrame(() => this._fitToViewport());
+    }
+
+    _columnVisibilityButtonHtml() {
+        if (!this._hasHideableColumns()) return '';
+        return `<button class="dg-colvis-btn" title="Configurar columnas visibles">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+        </button>`;
+    }
+
+    _attachColumnVisibilityHandler() {
+        const btn = this._refs.footer?.querySelector('.dg-colvis-btn');
+        if (!btn) return;
+
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Remove existing dropdown
+            const existing = document.querySelector('.dg-colvis-dropdown');
+            if (existing) { existing.remove(); return; }
+
+            const hideableCols = this._allColumns.filter(c => c.hideable === true);
+            if (hideableCols.length === 0) return;
+
+            const dropdown = document.createElement('div');
+            dropdown.className = 'dg-colvis-dropdown';
+
+            dropdown.innerHTML = `
+                <div class="dg-colvis-header">Columnas visibles</div>
+                <div class="dg-colvis-list">
+                    ${hideableCols.map(col => {
+                        const checked = !this._hiddenColumns.has(col.key) ? 'checked' : '';
+                        return `<label class="dg-colvis-item">
+                            <input type="checkbox" data-col="${col.key}" ${checked}>
+                            <span>${col.label}</span>
+                        </label>`;
+                    }).join('')}
+                </div>
+            `;
+
+            // Position near button
+            const rect = btn.getBoundingClientRect();
+            dropdown.style.position = 'fixed';
+            dropdown.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+            dropdown.style.right = (window.innerWidth - rect.right) + 'px';
+
+            document.body.appendChild(dropdown);
+
+            // Handle checkbox changes
+            dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    this._toggleColumnVisibility(cb.dataset.col, cb.checked);
+                    dropdown.remove();
+                });
+            });
+
+            // Close on click outside
+            const closeHandler = (ev) => {
+                if (!dropdown.contains(ev.target) && ev.target !== btn) {
+                    dropdown.remove();
+                    document.removeEventListener('click', closeHandler);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', closeHandler), 0);
+        });
+    }
+
     // ==================== COLUMN REORDER (DRAG & DROP) ====================
 
     _loadColumnOrder() {
@@ -321,12 +492,12 @@ class DataGrid {
             const saved = localStorage.getItem(`${this.storageKey}_colOrder`);
             if (!saved) return;
             const order = JSON.parse(saved);
-            const currentKeys = this.columns.map(c => c.key);
-            // Validate saved order matches current columns
-            if (order.length !== currentKeys.length || !order.every(k => currentKeys.includes(k))) return;
             const colMap = {};
             this.columns.forEach(c => colMap[c.key] = c);
-            this.columns = order.map(k => colMap[k]);
+            // Reorder known columns, append any new ones at the end
+            const ordered = order.filter(k => colMap[k]).map(k => colMap[k]);
+            const remaining = this.columns.filter(c => !order.includes(c.key));
+            if (ordered.length > 0) this.columns = [...ordered, ...remaining];
         } catch (e) { /* ignore corrupt data */ }
     }
 
@@ -802,10 +973,14 @@ class DataGrid {
         this._refs.footer.innerHTML = `
             <div class="dg-footer-row">
                 <span>${infoText}</span>
-                ${count > 0 ? this._exportButtonHtml() : ''}
+                <div class="dg-footer-actions">
+                    ${this._columnVisibilityButtonHtml()}
+                    ${count > 0 ? this._exportButtonHtml() : ''}
+                </div>
             </div>
         `;
         this._attachExportHandler();
+        this._attachColumnVisibilityHandler();
     }
 
     _renderPaginationFooter(filteredCount) {
@@ -826,7 +1001,7 @@ class DataGrid {
             <div class="dg-pagination">
                 <div class="dg-pagination-info">
                     ${start}-${end} de ${total} registros${filterInfo}
-                    ${this._allData.length > 0 ? this._exportButtonHtml() : ''}
+                    <span class="dg-footer-actions">${this._columnVisibilityButtonHtml()}${this._allData.length > 0 ? this._exportButtonHtml() : ''}</span>
                 </div>
                 <div class="dg-pagination-controls">
                     <button class="dg-page-btn" data-page="1" ${page <= 1 ? 'disabled' : ''} title="Primera">&laquo;</button>
@@ -838,6 +1013,7 @@ class DataGrid {
             </div>
         `;
         this._attachExportHandler();
+        this._attachColumnVisibilityHandler();
 
         // Attach click handlers for pagination buttons
         this._refs.footer.querySelectorAll('.dg-page-btn').forEach(btn => {
