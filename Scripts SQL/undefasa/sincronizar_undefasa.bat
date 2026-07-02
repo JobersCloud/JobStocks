@@ -284,11 +284,15 @@ powershell -ExecutionPolicy Bypass -Command ^
  "if ($facturas.Count -eq 0) { exit }; " ^
  "$cd = New-Object System.Data.SqlClient.SqlConnection($connDestino); " ^
  "$cd.Open(); " ^
- "$cmdTrunc = $cd.CreateCommand(); " ^
- "$cmdTrunc.CommandText = 'IF OBJECT_ID(''factura_pdf'') IS NOT NULL TRUNCATE TABLE factura_pdf'; " ^
- "$cmdTrunc.ExecuteNonQuery() ^| Out-Null; " ^
- "$copiados = 0; $errores = 0; " ^
+ "$existentes = New-Object System.Collections.Generic.HashSet[string]; " ^
+ "$cmdEx = $cd.CreateCommand(); " ^
+ "$cmdEx.CommandText = 'IF OBJECT_ID(''factura_pdf'') IS NOT NULL SELECT RTRIM(empresa) + ''-'' + CAST(anyo AS VARCHAR) + ''-'' + CAST(factura AS VARCHAR) FROM factura_pdf'; " ^
+ "$rdEx = $cmdEx.ExecuteReader(); " ^
+ "while ($rdEx.Read()) { [void]$existentes.Add($rdEx[0].ToString()) }; " ^
+ "$rdEx.Close(); " ^
+ "$copiados = 0; $saltados = 0; $errores = 0; " ^
  "foreach ($k in $facturas.Keys) { " ^
+ "  if ($existentes.Contains($k)) { $saltados++; continue }; " ^
  "  $f = $facturas[$k]; " ^
  "  $rutaPdf = $f.ruta; " ^
  "  if (-not (Test-Path $rutaPdf)) { $errores++; continue }; " ^
@@ -307,5 +311,6 @@ powershell -ExecutionPolicy Bypass -Command ^
  "  } catch { $errores++ } " ^
  "} " ^
  "$cd.Close(); " ^
- "Write-Host \"     $copiados copiados, $errores errores\""
+ "if ($copiados -eq 0) { Write-Host \"[=] $saltados ya existian\" } " ^
+ "else { Write-Host \"$copiados nuevos, $saltados ya existian, $errores errores\" }"
 goto :eof
