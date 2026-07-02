@@ -557,6 +557,9 @@
         let columnasOpcionales = ['color'];
         let stockActualDetalle = null;
         let grid;
+        let gridConImagenes = false;
+        let thumbnailQueue = [];
+        let thumbnailTimeout = null;
 
         // ==================== HELPERS ====================
         function getEmpresaId() {
@@ -593,8 +596,9 @@
             await PageCommon.obtenerCsrfToken();
             Notifications.init();
 
-            // Cargar columnas opcionales
+            // Cargar columnas opcionales e imágenes
             await verificarColumnasOpcionales();
+            await verificarGridConImagenes();
 
             // Crear DataGrid
             grid = crearGrid();
@@ -672,10 +676,76 @@
             }
         }
 
+        // ==================== THUMBNAILS ====================
+        async function verificarGridConImagenes() {
+            try {
+                const empresaId = getEmpresaId();
+                const resp = await fetch(`${API_URL}/api/parametros/grid-con-imagenes?empresa_id=${empresaId}`, { credentials: 'include' });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    gridConImagenes = data.habilitado;
+                }
+            } catch (e) { gridConImagenes = false; }
+        }
+
+        async function cargarThumbnailsBatch(codigos) {
+            if (codigos.length === 0) return;
+            try {
+                const resp = await fetch(`${API_URL}/api/stocks/thumbnails`, {
+                    method: 'POST', credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ codigos, quality: 'grid' })
+                });
+                if (resp.ok) {
+                    const thumbnails = await resp.json();
+                    document.querySelectorAll('.stock-thumb[data-codigo]').forEach(img => {
+                        const codigo = img.dataset.codigo.trim();
+                        const imagen = thumbnails[codigo];
+                        if (imagen && !img.classList.contains('loaded')) {
+                            img.src = `data:image/jpeg;base64,${imagen}`;
+                            img.classList.add('loaded');
+                        }
+                    });
+                }
+            } catch (e) {}
+        }
+
+        function procesarColaThumbnails() {
+            if (thumbnailQueue.length === 0) return;
+            const codigos = thumbnailQueue.splice(0, 50);
+            cargarThumbnailsBatch(codigos);
+        }
+
+        function encolarThumbnail(codigo) {
+            const c = codigo.trim();
+            if (!thumbnailQueue.includes(c)) thumbnailQueue.push(c);
+            if (thumbnailTimeout) clearTimeout(thumbnailTimeout);
+            thumbnailTimeout = setTimeout(procesarColaThumbnails, 50);
+        }
+
+        function initImageObserver() {
+            if (!gridConImagenes) return;
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        if (img.dataset.codigo && !img.classList.contains('loaded')) {
+                            encolarThumbnail(img.dataset.codigo);
+                        }
+                        observer.unobserve(img);
+                    }
+                });
+            }, { rootMargin: '100px', threshold: 0.1 });
+            document.querySelectorAll('.stock-thumb[data-codigo]').forEach(img => observer.observe(img));
+        }
+
         // ==================== GRID ====================
         function crearGrid() {
-            const cols = [
-                { key: 'codigo', label: t('table.code') || 'Código', tipo: 'texto' },
+            const cols = [];
+            if (gridConImagenes) {
+                cols.push({ key: '_thumb', label: '', sortable: false, filterable: false, width: 60 });
+            }
+            cols.push({ key: 'codigo', label: t('table.code') || 'Código', tipo: 'texto' },
                 { key: 'descripcion', label: t('table.description') || 'Descripción', tipo: 'texto' },
                 { key: 'formato', label: t('table.format') || 'Formato', tipo: 'texto' },
                 { key: 'tipo_producto', label: t('filters.productType') || 'Tipo', tipo: 'texto' },
@@ -693,6 +763,8 @@
                 columns: cols,
                 renderCell(item, col) {
                     switch (col.key) {
+                        case '_thumb':
+                            return `<img class="stock-thumb" data-codigo="${item.codigo}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:50px;height:50px;object-fit:cover;border-radius:4px;background:#f0f0f0">`;
                         case 'existencias': {
                             const val = parseFloat(item.existencias);
                             return `<strong>${val.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${item.unidad || ''}</strong>`;
@@ -775,6 +847,7 @@
                 const items = Array.isArray(data) ? data : (data.data || []);
                 allStocksAnuladosData = items;
                 grid.setData(items);
+                setTimeout(initImageObserver, 100);
             } catch (error) {
                 console.error('Error al cargar stocks anulados:', error);
                 grid.setData([]);
@@ -825,6 +898,7 @@
                 const items = Array.isArray(data) ? data : (data.data || []);
                 allStocksAnuladosData = items;
                 grid.setData(items);
+                setTimeout(initImageObserver, 100);
             } catch (error) {
                 console.error('Error al buscar stocks anulados:', error);
                 grid.setData([]);
