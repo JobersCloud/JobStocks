@@ -739,13 +739,41 @@
             document.querySelectorAll('.stock-thumb[data-codigo]').forEach(img => observer.observe(img));
         }
 
+        // ==================== VISTA TARJETAS CON IMAGEN ====================
+        function mostrarTarjetasConImagen(stocks) {
+            const container = document.getElementById('table-container');
+            if (!stocks || stocks.length === 0) {
+                container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📦</div><h3>No hay artículos anulados con existencias</h3></div>`;
+                return;
+            }
+            container.innerHTML = `
+                <div class="stock-grid-images">
+                    ${stocks.map(stock => `
+                        <div class="stock-image-card" onclick='verDetalleAnulado(${JSON.stringify(stock).replace(/'/g, "&apos;")})'>
+                            <div class="stock-image-card-img">
+                                <img class="stock-thumb" data-codigo="${stock.codigo}"
+                                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
+                                     alt="${stock.descripcion}" loading="lazy">
+                            </div>
+                            <div class="stock-image-card-info">
+                                <div class="stock-image-card-code">${stock.codigo}</div>
+                                <div class="stock-image-card-desc" title="${stock.descripcion}">${stock.descripcion}</div>
+                                <div class="stock-image-card-details">
+                                    ${stock.formato || '-'} | ${stock.calidad || '-'} | ${stock.tono || '-'}/${stock.calibre || '-'}${stock.pallet ? ` | ${stock.pallet}` : ''}
+                                </div>
+                                <div class="stock-image-card-stock">
+                                    <span class="badge ${stock.existencias > 100 ? 'badge-success' : stock.existencias > 0 ? 'badge-warning' : 'badge-danger'}">${parseFloat(stock.existencias).toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2})} ${stock.unidad || ''}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
+            initImageObserver();
+        }
+
         // ==================== GRID ====================
         function crearGrid() {
-            const cols = [];
-            if (gridConImagenes) {
-                cols.push({ key: '_thumb', label: '', sortable: false, filterable: false, width: 60 });
-            }
-            cols.push(
+            const cols = [
                 { key: 'codigo', label: t('table.code') || 'Código', tipo: 'texto' },
                 { key: 'descripcion', label: t('table.description') || 'Descripción', tipo: 'texto' },
                 { key: 'formato', label: t('table.format') || 'Formato', tipo: 'texto' },
@@ -764,8 +792,6 @@
                 columns: cols,
                 renderCell(item, col) {
                     switch (col.key) {
-                        case '_thumb':
-                            return `<img class="stock-thumb" data-codigo="${item.codigo}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:50px;height:50px;object-fit:cover;border-radius:4px;background:#f0f0f0">`;
                         case 'existencias': {
                             const val = parseFloat(item.existencias);
                             return `<strong>${val.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${item.unidad || ''}</strong>`;
@@ -847,11 +873,15 @@
                 const data = await response.json();
                 const items = Array.isArray(data) ? data : (data.data || []);
                 allStocksAnuladosData = items;
-                grid.setData(items);
-                setTimeout(initImageObserver, 100);
+                if (gridConImagenes) {
+                    mostrarTarjetasConImagen(items);
+                } else {
+                    grid = crearGrid();
+                    grid.setData(items);
+                }
             } catch (error) {
                 console.error('Error al cargar stocks anulados:', error);
-                grid.setData([]);
+                if (!gridConImagenes && grid) grid.setData([]);
             }
         }
 
@@ -898,11 +928,15 @@
                 const data = await response.json();
                 const items = Array.isArray(data) ? data : (data.data || []);
                 allStocksAnuladosData = items;
-                grid.setData(items);
-                setTimeout(initImageObserver, 100);
+                if (gridConImagenes) {
+                    mostrarTarjetasConImagen(items);
+                } else {
+                    grid = crearGrid();
+                    grid.setData(items);
+                }
             } catch (error) {
                 console.error('Error al buscar stocks anulados:', error);
-                grid.setData([]);
+                if (!gridConImagenes && grid) grid.setData([]);
             }
         }
 
