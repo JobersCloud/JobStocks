@@ -238,9 +238,8 @@ powershell -ExecutionPolicy Bypass -Command ^
  "  $rutaPdf = $f.ruta; " ^
  "  if (-not (Test-Path $rutaPdf)) { continue }; " ^
  "  $nombreArchivo = [System.IO.Path]::GetFileName($rutaPdf); " ^
- "  $destino = '%DATOS%\facturas_pdf\' + $nombreArchivo; " ^
  "  try { " ^
- "    Copy-Item -Path $rutaPdf -Destination $destino -Force; " ^
+ "    scp -q $rutaPdf undefasa@192.168.0.50:/home/undefasa/facturas-pdf/$nombreArchivo 2^>^&1 ^| Out-Null; " ^
  "    $ins = $cd.CreateCommand(); " ^
  "    $ins.CommandText = 'INSERT INTO factura_pdf (empresa, anyo, factura, filename) VALUES (@e, @a, @f, @n)'; " ^
  "    [void]$ins.Parameters.AddWithValue('@e', $f.empresa); " ^
