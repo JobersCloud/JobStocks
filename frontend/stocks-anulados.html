@@ -745,7 +745,8 @@
             if (gridConImagenes) {
                 cols.push({ key: '_thumb', label: '', sortable: false, filterable: false, width: 60 });
             }
-            cols.push({ key: 'codigo', label: t('table.code') || 'Código', tipo: 'texto' },
+            cols.push(
+                { key: 'codigo', label: t('table.code') || 'Código', tipo: 'texto' },
                 { key: 'descripcion', label: t('table.description') || 'Descripción', tipo: 'texto' },
                 { key: 'formato', label: t('table.format') || 'Formato', tipo: 'texto' },
                 { key: 'tipo_producto', label: t('filters.productType') || 'Tipo', tipo: 'texto' },
@@ -756,7 +757,7 @@
                 { key: 'calibre', label: t('table.caliber') || 'Calibre', tipo: 'texto' },
                 { key: 'existencias', label: t('table.stock') || 'Existencias', tipo: 'numero', align: 'right' },
                 { key: '_actions', label: '', sortable: false, filterable: false }
-            ];
+            );
 
             return new DataGrid({
                 el: '#table-container',
