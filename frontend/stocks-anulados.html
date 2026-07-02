@@ -752,7 +752,7 @@
 
         // ==================== CARGA DE DATOS ====================
         async function cargarTodosAnulados() {
-            if (!grid) return;
+            grid = crearGrid();
             grid.showLoading();
 
             // Limpiar filtros del panel
@@ -800,7 +800,7 @@
                 return;
             }
 
-            if (!grid) return;
+            grid = crearGrid();
             grid.showLoading();
 
             try {
