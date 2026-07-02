@@ -72,6 +72,9 @@ REM call :st articulo_ficha_tecnica_tono
 REM Imagenes
 call :si
 
+REM PDFs facturas
+call :spdf
+
 REM Vaciar log
 "!SQLCMD170!" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P"!PW_DEST!" -d %BD_DESTINO% -C -Q "DECLARE @logName NVARCHAR(128); SELECT @logName = name FROM sys.master_files WHERE database_id = DB_ID('%BD_DESTINO%') AND type_desc = 'LOG'; ALTER DATABASE %BD_DESTINO% SET RECOVERY SIMPLE; DBCC SHRINKFILE (@logName, 1); ALTER DATABASE %BD_DESTINO% SET RECOVERY FULL;" > nul 2>&1
 
@@ -189,4 +192,63 @@ powershell -ExecutionPolicy Bypass -Command ^
  "  $cmd.ExecuteNonQuery() ^| Out-Null; " ^
  "} " ^
  "$conn.Close();"
+goto :eof
+
+REM ============================================
+REM :spdf - Sync PDFs de facturas desde gestion_documental
+REM   Clave formato: empresa-anyo-factura-2
+REM   Coge solo el primer documento por factura
+REM   Solo copia nuevos (si ya existe en destino, salta)
+REM ============================================
+:spdf
+if not exist "%DATOS%\facturas_pdf" mkdir "%DATOS%\facturas_pdf"
+powershell -ExecutionPolicy Bypass -Command ^
+ "$connOrigen = 'Server=%SERVIDOR_ORIGEN%;Database=%BD_ORIGEN%;User Id=%USUARIO_ORIGEN%;Password=%CLAVE_ORIGEN%;Connection Timeout=30'; " ^
+ "$connDestino = 'Server=%SERVIDOR_DESTINO%;Database=ApiRestStocks;User Id=%USUARIO_DESTINO%;Password=!PW_DEST!;TrustServerCertificate=True;Connection Timeout=30'; " ^
+ "$co = New-Object System.Data.SqlClient.SqlConnection($connOrigen); " ^
+ "$co.Open(); " ^
+ "$cmd = $co.CreateCommand(); " ^
+ "$cmd.CommandText = 'SELECT clave, documento FROM gestion_documental WHERE tabla = ''venfac_documentacion'' AND clave LIKE ''%-2'' ORDER BY clave, id'; " ^
+ "$reader = $cmd.ExecuteReader(); " ^
+ "$facturas = @{}; " ^
+ "while ($reader.Read()) { " ^
+ "  $clave = $reader['clave'].ToString().Trim(); " ^
+ "  $doc = $reader['documento'].ToString().Trim(); " ^
+ "  $partes = $clave.Split('-'); " ^
+ "  if ($partes.Count -ge 4) { " ^
+ "    $key = $partes[0] + '-' + $partes[1] + '-' + $partes[2]; " ^
+ "    if (-not $facturas.ContainsKey($key)) { " ^
+ "      $facturas[$key] = @{ empresa=$partes[0]; anyo=$partes[1]; factura=$partes[2]; ruta=$doc }; " ^
+ "    } " ^
+ "  } " ^
+ "} " ^
+ "$reader.Close(); $co.Close(); " ^
+ "if ($facturas.Count -eq 0) { exit }; " ^
+ "$cd = New-Object System.Data.SqlClient.SqlConnection($connDestino); " ^
+ "$cd.Open(); " ^
+ "$existentes = New-Object System.Collections.Generic.HashSet[string]; " ^
+ "$cmdEx = $cd.CreateCommand(); " ^
+ "$cmdEx.CommandText = 'IF OBJECT_ID(''factura_pdf'') IS NOT NULL SELECT RTRIM(empresa) + ''-'' + CAST(anyo AS VARCHAR) + ''-'' + CAST(factura AS VARCHAR) FROM factura_pdf'; " ^
+ "$rdEx = $cmdEx.ExecuteReader(); " ^
+ "while ($rdEx.Read()) { [void]$existentes.Add($rdEx[0].ToString()) }; " ^
+ "$rdEx.Close(); " ^
+ "foreach ($k in $facturas.Keys) { " ^
+ "  if ($existentes.Contains($k)) { continue }; " ^
+ "  $f = $facturas[$k]; " ^
+ "  $rutaPdf = $f.ruta; " ^
+ "  if (-not (Test-Path $rutaPdf)) { continue }; " ^
+ "  $nombreArchivo = [System.IO.Path]::GetFileName($rutaPdf); " ^
+ "  $destino = '%DATOS%\facturas_pdf\' + $nombreArchivo; " ^
+ "  try { " ^
+ "    Copy-Item -Path $rutaPdf -Destination $destino -Force; " ^
+ "    $ins = $cd.CreateCommand(); " ^
+ "    $ins.CommandText = 'INSERT INTO factura_pdf (empresa, anyo, factura, filename) VALUES (@e, @a, @f, @n)'; " ^
+ "    [void]$ins.Parameters.AddWithValue('@e', $f.empresa); " ^
+ "    [void]$ins.Parameters.AddWithValue('@a', [int]$f.anyo); " ^
+ "    [void]$ins.Parameters.AddWithValue('@f', [int]$f.factura); " ^
+ "    [void]$ins.Parameters.AddWithValue('@n', $nombreArchivo); " ^
+ "    $ins.ExecuteNonQuery() ^| Out-Null; " ^
+ "  } catch { } " ^
+ "} " ^
+ "$cd.Close();"
 goto :eof
