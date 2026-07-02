@@ -1525,7 +1525,8 @@ MIGRATIONS = [
             AND NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users_empresas') AND name = 'visible_propuestas')
             BEGIN
                 ALTER TABLE users_empresas ADD visible_propuestas BIT DEFAULT 1;
-            END""",
+            END;
+            UPDATE users_empresas SET visible_propuestas = 1 WHERE visible_propuestas IS NULL;""",
         ]
     },
 
