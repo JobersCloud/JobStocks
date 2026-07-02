@@ -664,6 +664,8 @@
     "clientAdminDisabled": "Client admin disabled",
     "enableClientAdmin": "Enable client admin",
     "disableClientAdmin": "Disable client admin",
+    "showProposals": "View Proposals",
+    "showCancelledStocks": "View Cancelled Stocks",
     "showOrders": "View Orders",
     "showOrdersHelp": "Allows user to see the My Orders section",
     "enableOrders": "Enable orders",

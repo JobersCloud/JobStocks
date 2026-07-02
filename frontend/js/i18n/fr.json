@@ -664,6 +664,8 @@
     "clientAdminDisabled": "Admin. clients désactivé",
     "enableClientAdmin": "Activer admin. clients",
     "disableClientAdmin": "Désactiver admin. clients",
+    "showProposals": "Voir Propositions",
+    "showCancelledStocks": "Voir Stocks Annulés",
     "showOrders": "Voir Commandes",
     "showOrdersHelp": "Permet à l'utilisateur de voir la section Mes Commandes",
     "enableOrders": "Activer commandes",
