@@ -42,8 +42,6 @@ class FacturaPdfModel:
         Check masivo: dada una lista de (empresa, anyo, factura),
         retorna un set de las que tienen PDFs.
         """
-        if not keys:
-            return set()
         conn = Database.get_connection(connection_id)
         try:
             cursor = conn.cursor()
