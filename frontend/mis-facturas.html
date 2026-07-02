@@ -824,13 +824,13 @@
                 const oldModal = document.getElementById('pdf-viewer-modal');
                 if (oldModal) oldModal.remove();
                 document.body.insertAdjacentHTML('beforeend', `
-                    <div class="proposal-detail-modal" id="pdf-viewer-modal" style="display:flex">
-                        <div class="proposal-detail-content" style="max-width:900px;width:95%;height:90vh">
-                            <div class="proposal-detail-header">
-                                <h2>Factura ${anyo}/${factura}</h2>
-                                <button class="close-btn" onclick="document.getElementById('pdf-viewer-modal').remove()">&times;</button>
+                    <div id="pdf-viewer-modal" style="display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center" onclick="if(event.target===this)this.remove()">
+                        <div style="background:var(--bg-primary,#fff);border-radius:12px;max-width:900px;width:95%;height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;border-radius:12px 12px 0 0">
+                                <h2 style="margin:0;font-size:16px">Factura ${anyo}/${factura}</h2>
+                                <button onclick="document.getElementById('pdf-viewer-modal').remove()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer">&times;</button>
                             </div>
-                            <div class="proposal-detail-body" style="flex:1;padding:0;overflow:hidden">
+                            <div style="flex:1;overflow:hidden">
                                 <iframe src="${pdfUrl}" style="width:100%;height:100%;border:none"></iframe>
                             </div>
                         </div>
