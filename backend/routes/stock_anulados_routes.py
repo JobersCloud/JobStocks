@@ -103,3 +103,24 @@ def get_imagenes(codigo):
         return jsonify(imagenes)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@stock_anulados_bp.route('/api/stocks-anulados/valores-unicos/<string:columna>', methods=['GET'])
+@api_key_or_login_required
+def get_valores_unicos(columna):
+    """
+    Obtener valores únicos de una columna para filtros
+    ---
+    tags:
+      - Stocks Anulados
+    """
+    try:
+        limite = request.args.get('limite', 100, type=int)
+        valores = StockAnuladosModel.get_valores_unicos(columna, limite)
+        return jsonify({
+            'columna': columna,
+            'valores': valores,
+            'total': len(valores)
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

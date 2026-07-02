@@ -193,3 +193,22 @@ class StockAnuladosModel:
             return stocks
         finally:
             conn.close()
+
+    @staticmethod
+    def get_valores_unicos(columna, limite=100):
+        if columna not in StockAnuladosModel.VALID_FILTER_COLUMNS:
+            return []
+        conn = Database.get_connection()
+        empresa_erp = Database.get_empresa_erp()
+        try:
+            cursor = conn.cursor()
+            query = f"""
+                SELECT DISTINCT TOP {min(limite, 500)} {columna}
+                FROM {VIEW_NAME}
+                WHERE empresa = ? AND {columna} IS NOT NULL AND {columna} <> ''
+                ORDER BY {columna}
+            """
+            cursor.execute(query, (empresa_erp,))
+            return [_s(row[0]) for row in cursor.fetchall()]
+        finally:
+            conn.close()
