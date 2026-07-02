@@ -579,12 +579,28 @@
                         <p class="form-help" data-i18n="users.showPricesHelp">Permite al usuario ver precios en el grid</p>
                     </div>
 
+                    <div class="form-group" id="show-proposals-group" style="display: none;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="user-show-proposals">
+                            <span data-i18n="users.showProposals">Ver Propuestas</span>
+                        </label>
+                        <p class="form-help">Permite al usuario ver la sección Mis Propuestas</p>
+                    </div>
+
                     <div class="form-group" id="show-orders-group" style="display: none;">
                         <label class="checkbox-label">
                             <input type="checkbox" id="user-show-orders">
                             <span data-i18n="users.showOrders">Ver Pedidos</span>
                         </label>
                         <p class="form-help" data-i18n="users.showOrdersHelp">Permite al usuario ver la sección Mis Pedidos</p>
+                    </div>
+
+                    <div class="form-group" id="show-stock-anulados-group" style="display: none;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="user-show-stock-anulados">
+                            <span data-i18n="users.showCancelledStocks">Ver Stocks Anulados</span>
+                        </label>
+                        <p class="form-help">Permite al usuario ver la sección Stocks Anulados</p>
                     </div>
 
                     <div class="form-group" id="admin-clientes-group">
@@ -1335,6 +1351,8 @@
             document.getElementById('send-email-group').style.display = 'none';
             document.getElementById('show-prices-group').style.display = preciosGlobalHabilitado ? 'block' : 'none';
             document.getElementById('show-orders-group').style.display = pedidosGlobalHabilitado ? 'block' : 'none';
+            document.getElementById('show-proposals-group').style.display = propuestasGlobalHabilitado ? 'block' : 'none';
+            document.getElementById('show-stock-anulados-group').style.display = stockAnuladosGlobalHabilitado ? 'block' : 'none';
             document.getElementById('admin-clientes-group').style.display = 'block';
             const currentUser = PageCommon.getCurrentUser();
             document.getElementById('role-group').style.display = currentUser && currentUser.rol === 'superusuario' ? 'block' : 'none';
@@ -1353,6 +1371,8 @@
                 document.getElementById('user-rol').value = user.rol || 'usuario';
                 document.getElementById('user-show-prices').checked = !!user.mostrar_precios;
                 document.getElementById('user-show-orders').checked = user.visible_pedidos !== false;
+                document.getElementById('user-show-proposals').checked = user.visible_propuestas !== false;
+                document.getElementById('user-show-stock-anulados').checked = !!user.visible_stock_anulados;
                 document.getElementById('user-admin-clientes').checked = !!user.administrador_clientes;
                 document.getElementById('control-group').style.display = user.administrador_clientes ? '' : 'none';
                 if (user.control) {
@@ -1403,6 +1423,12 @@
                 }
                 if (pedidosGlobalHabilitado) {
                     userData.visible_pedidos = document.getElementById('user-show-orders').checked;
+                }
+                if (propuestasGlobalHabilitado) {
+                    userData.visible_propuestas = document.getElementById('user-show-proposals').checked;
+                }
+                if (stockAnuladosGlobalHabilitado) {
+                    userData.visible_stock_anulados = document.getElementById('user-show-stock-anulados').checked;
                 }
                 userData.administrador_clientes = document.getElementById('user-admin-clientes').checked;
                 userData.control = document.getElementById('user-control').value.trim() || null;
