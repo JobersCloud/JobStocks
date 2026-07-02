@@ -803,14 +803,8 @@
                 if (!response.ok) throw new Error(data.error || 'Error loading invoices');
 
                 allInvoices = data.facturas || [];
-                grid.setPaginatedData(allInvoices, {
-                    page: data.page,
-                    page_size: data.page_size,
-                    total: data.total,
-                    total_pages: data.total_pages
-                });
 
-                // Check which invoices have PDFs
+                // Cargar PDFs ANTES de renderizar el grid
                 try {
                     const pdfResp = await fetch(`${API_URL}/api/facturas-pdf/batch-check`, {
                         method: 'POST',
@@ -820,10 +814,15 @@
                     if (pdfResp.ok) {
                         const pdfData = await pdfResp.json();
                         facturasConPdf = new Set(pdfData.map(p => `${String(p.empresa).trim()}_${p.anyo}_${p.factura}`));
-                        // Re-render grid to show PDF icons
-                        if (grid && typeof grid.refresh === 'function') grid.refresh();
                     }
                 } catch (e) { /* ignore */ }
+
+                grid.setPaginatedData(allInvoices, {
+                    page: data.page,
+                    page_size: data.page_size,
+                    total: data.total,
+                    total_pages: data.total_pages
+                });
             } catch (error) {
                 console.error('Error loading invoices:', error);
                 grid.setData([]);
