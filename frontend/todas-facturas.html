@@ -597,7 +597,7 @@
                                 <button class="btn-icon btn-icon-ghost btn-icon-sm" onclick="showClientMap('${codSafe}','${nomSafe}')" title="${t('invoices.viewLocation') || 'Ver ubicación'}">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                                 </button>
-                                ${facturasConPdf.has(`${item.empresa}_${item.anyo}_${item.factura}`) ? `
+                                ${facturasConPdf.has(`${String(item.empresa).trim()}_${item.anyo}_${item.factura}`) ? `
                                 <button class="btn-icon btn-icon-success btn-icon-sm" onclick="downloadInvoicePdfs('${item.empresa}', ${item.anyo}, ${item.factura})" title="Descargar PDF">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
                                 </button>` : ''}
@@ -819,7 +819,7 @@
                     });
                     if (pdfResp.ok) {
                         const pdfData = await pdfResp.json();
-                        facturasConPdf = new Set(pdfData.map(p => `${p.empresa}_${p.anyo}_${p.factura}`));
+                        facturasConPdf = new Set(pdfData.map(p => `${String(p.empresa).trim()}_${p.anyo}_${p.factura}`));
                         // Re-render grid to show PDF icons
                         if (grid && typeof grid.refresh === 'function') grid.refresh();
                     }
@@ -1017,20 +1017,29 @@
         // ==================== PDF DOWNLOAD ====================
         async function downloadInvoicePdfs(empresa, anyo, factura) {
             try {
-                const resp = await fetch(`${API_URL}/api/facturas/${empresa}/${anyo}/${factura}/pdfs`, { credentials: 'include' });
+                const resp = await fetch(`${API_URL}/api/facturas/${empresa.trim()}/${anyo}/${factura}/pdfs`, { credentials: 'include' });
                 if (!resp.ok) throw new Error('Error');
                 const pdfs = await resp.json();
                 if (pdfs.length === 0) {
                     UIFeedback.toast('No hay PDFs para esta factura', 'info');
                     return;
                 }
-                if (pdfs.length === 1) {
-                    window.open(`${API_URL}/api/facturas-pdf/download/${pdfs[0].id}`, '_blank');
-                } else {
-                    // Multiple PDFs - show in detail modal
-                    viewInvoiceDetails(empresa, anyo, factura);
-                }
-            } catch (e) { UIFeedback.toast('Error al descargar PDF', 'error'); }
+                const pdfUrl = `${API_URL}/api/facturas-pdf/download/${pdfs[0].id}`;
+                const oldModal = document.getElementById('pdf-viewer-modal');
+                if (oldModal) oldModal.remove();
+                document.body.insertAdjacentHTML('beforeend', `
+                    <div class="proposal-detail-modal" id="pdf-viewer-modal" style="display:flex">
+                        <div class="proposal-detail-content" style="max-width:900px;width:95%;height:90vh">
+                            <div class="proposal-detail-header">
+                                <h2>Factura ${anyo}/${factura}</h2>
+                                <button class="close-btn" onclick="document.getElementById('pdf-viewer-modal').remove()">&times;</button>
+                            </div>
+                            <div class="proposal-detail-body" style="flex:1;padding:0;overflow:hidden">
+                                <iframe src="${pdfUrl}" style="width:100%;height:100%;border:none"></iframe>
+                            </div>
+                        </div>
+                    </div>`);
+            } catch (e) { UIFeedback.toast('Error al abrir PDF', 'error'); }
         }
         window.downloadInvoicePdfs = downloadInvoicePdfs;
 
@@ -1101,7 +1110,7 @@
                 });
                 if (pdfResp.ok) {
                     const pdfData = await pdfResp.json();
-                    facturasConPdf = new Set(pdfData.map(p => `${p.empresa}_${p.anyo}_${p.factura}`));
+                    facturasConPdf = new Set(pdfData.map(p => `${String(p.empresa).trim()}_${p.anyo}_${p.factura}`));
                     if (grid) grid.refresh();
                 }
             } catch (e) { UIFeedback.toast('Error al vincular PDF', 'error'); }
