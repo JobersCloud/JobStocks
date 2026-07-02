@@ -359,6 +359,96 @@ def visible_facturas():
     }), 200
 
 
+@parametros_bp.route('/visible-propuestas', methods=['GET'])
+def visible_propuestas():
+    """
+    Verificar si la sección Propuestas es visible.
+    Para ver propuestas, AMBOS deben estar activos: parámetro global de empresa Y flag del usuario.
+    ---
+    tags:
+      - Parámetros
+    parameters:
+      - name: empresa_id
+        in: query
+        type: string
+        required: false
+    responses:
+      200:
+        description: Estado del parámetro visible propuestas
+        schema:
+          type: object
+          properties:
+            habilitado:
+              type: boolean
+            global_habilitado:
+              type: boolean
+              description: Si el parámetro global de empresa está activo
+    """
+    from flask_login import current_user as cu
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+    global_habilitado = ParametrosModel.visible_propuestas(empresa_id, connection)
+
+    # Admins/superusuarios siempre ven si el global está activo; usuarios normales necesitan flag individual
+    habilitado = global_habilitado
+    if global_habilitado and cu and cu.is_authenticated:
+        rol = getattr(cu, 'rol', 'usuario')
+        if rol in ('administrador', 'superusuario'):
+            habilitado = True
+        else:
+            habilitado = getattr(cu, 'visible_propuestas', True)
+
+    return jsonify({
+        'habilitado': habilitado,
+        'global_habilitado': global_habilitado
+    }), 200
+
+
+@parametros_bp.route('/visible-stock-anulados', methods=['GET'])
+def visible_stock_anulados():
+    """
+    Verificar si la sección Stocks Anulados es visible.
+    Para ver stocks anulados, AMBOS deben estar activos: parámetro global de empresa Y flag del usuario.
+    ---
+    tags:
+      - Parámetros
+    parameters:
+      - name: empresa_id
+        in: query
+        type: string
+        required: false
+    responses:
+      200:
+        description: Estado del parámetro visible stocks anulados
+        schema:
+          type: object
+          properties:
+            habilitado:
+              type: boolean
+            global_habilitado:
+              type: boolean
+              description: Si el parámetro global de empresa está activo
+    """
+    from flask_login import current_user as cu
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+    global_habilitado = ParametrosModel.visible_stock_anulados(empresa_id, connection)
+
+    # Admins/superusuarios siempre ven si el global está activo; usuarios normales necesitan flag individual
+    habilitado = global_habilitado
+    if global_habilitado and cu and cu.is_authenticated:
+        rol = getattr(cu, 'rol', 'usuario')
+        if rol in ('administrador', 'superusuario'):
+            habilitado = True
+        else:
+            habilitado = getattr(cu, 'visible_stock_anulados', False)
+
+    return jsonify({
+        'habilitado': habilitado,
+        'global_habilitado': global_habilitado
+    }), 200
+
+
 @parametros_bp.route('/columnas-opcionales', methods=['GET'])
 def get_columnas_opcionales():
     """

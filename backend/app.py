@@ -153,7 +153,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.47.4'
+APP_VERSION = 'v1.48.0'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -263,12 +263,16 @@ def load_user(user_id):
             visible_pedidos=user_data.get('visible_pedidos', True),
             visible_albaranes=user_data.get('visible_albaranes', False),
             visible_facturas=user_data.get('visible_facturas', False),
+            visible_propuestas=user_data.get('visible_propuestas', True),
+            visible_stock_anulados=user_data.get('visible_stock_anulados', False),
             control=user_data.get('control')
         )
     return None
 
 # Registrar blueprints
 app.register_blueprint(stock_bp)
+from routes.stock_anulados_routes import stock_anulados_bp
+app.register_blueprint(stock_anulados_bp)
 app.register_blueprint(carrito_bp)
 app.register_blueprint(api_key_bp)
 app.register_blueprint(register_bp)
@@ -286,6 +290,8 @@ app.register_blueprint(audit_bp)
 app.register_blueprint(pedido_bp)
 app.register_blueprint(albaran_bp)
 app.register_blueprint(factura_bp)
+from routes.factura_pdf_routes import factura_pdf_bp
+app.register_blueprint(factura_pdf_bp)
 app.register_blueprint(db_info_bp)
 app.register_blueprint(almacen_bp)
 app.register_blueprint(notification_bp)
@@ -428,6 +434,11 @@ def informe_almacen_page():
 @login_required
 def busqueda_magica_page():
     return send_from_directory(FRONTEND_DIR, 'busqueda-magica.html')
+
+@app.route('/stocks-anulados.html')
+@login_required
+def stocks_anulados_page():
+    return send_from_directory(FRONTEND_DIR, 'stocks-anulados.html')
 
 @app.route('/mis-favoritos.html')
 @login_required

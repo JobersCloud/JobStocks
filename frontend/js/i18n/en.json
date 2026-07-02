@@ -281,6 +281,7 @@
   "menu": {
     "main": "Main",
     "stocks": "Stocks",
+    "cancelledStocks": "Cancelled Stocks",
     "myProposals": "My Proposals",
     "myOrders": "My Orders",
     "myDeliveryNotes": "My Delivery Notes",
@@ -675,6 +676,10 @@
     "showInvoicesHelp": "Allows user to see the My Invoices section",
     "enableInvoices": "Enable invoices",
     "disableInvoices": "Disable invoices",
+    "enableProposals": "Enable proposals",
+    "disableProposals": "Disable proposals",
+    "enableCancelledStocks": "Enable cancelled stocks",
+    "disableCancelledStocks": "Disable cancelled stocks",
     "verifyEmail": "Verify email",
     "resendWelcome": "Resend welcome email",
     "detailInfo": "Info",

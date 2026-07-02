@@ -305,12 +305,50 @@ h1 {
     gap: 8px;
 }
 
+.filters-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+
+.filters-toggle:hover {
+    opacity: 0.8;
+}
+
+.filters-chevron {
+    margin-left: auto;
+    transition: transform 0.25s ease;
+    opacity: 0.5;
+}
+
+.filters-collapsed .filters-chevron {
+    transform: rotate(-90deg);
+}
+
+.filters-collapsed .filters-toggle {
+    margin-bottom: 0;
+}
+
+.filters-collapsible {
+    overflow: hidden;
+    max-height: 500px;
+    opacity: 1;
+    transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
+}
+
+.filters-collapsed .filters-collapsible {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
 .filters h2::before {
     content: '';
     width: 4px;
     height: 24px;
     background: linear-gradient(180deg, var(--primary), var(--primary-dark));
     border-radius: 2px;
+    flex-shrink: 0;
 }
 
 .filter-grid {

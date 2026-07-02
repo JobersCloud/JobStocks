@@ -294,6 +294,32 @@
                 }
             } catch (e) {}
 
+            // Propuestas
+            try {
+                const respPro = await fetch(`${API_URL}/api/parametros/visible-propuestas`, { credentials: 'include' });
+                if (respPro.ok) {
+                    const dPro = await respPro.json();
+                    if (dPro.habilitado) {
+                        const el1 = document.getElementById('sidebar-mis-propuestas');
+                        const el2 = document.getElementById('sidebar-todas-propuestas');
+                        if (el1) el1.style.display = 'flex';
+                        if (el2) el2.style.display = 'flex';
+                    }
+                }
+            } catch (e) {}
+
+            // Stocks Anulados
+            try {
+                const respAnu = await fetch(`${API_URL}/api/parametros/visible-stock-anulados`, { credentials: 'include' });
+                if (respAnu.ok) {
+                    const dAnu = await respAnu.json();
+                    if (dAnu.habilitado) {
+                        const el = document.getElementById('sidebar-stocks-anulados');
+                        if (el) el.style.display = 'flex';
+                    }
+                }
+            } catch (e) {}
+
             return data;
         } catch (error) {
             console.error('Error checking auth:', error);

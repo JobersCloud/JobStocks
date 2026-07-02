@@ -87,7 +87,7 @@ def verify_user(username, password, empresa_cli_id, empresa_erp=None):
         if empresa_erp:
             try:
                 cursor.execute("""
-                    SELECT empresa_id, cliente_id, rol, mostrar_precios, administrador_clientes, visible_pedidos, visible_albaranes, visible_facturas, control
+                    SELECT empresa_id, cliente_id, rol, mostrar_precios, administrador_clientes, visible_pedidos, visible_albaranes, visible_facturas, control, visible_propuestas, visible_stock_anulados
                     FROM users_empresas
                     WHERE user_id = ? AND empresa_id = ?
                 """, (user['id'], empresa_erp))
@@ -103,6 +103,8 @@ def verify_user(username, password, empresa_cli_id, empresa_erp=None):
                     user['visible_albaranes'] = bool(emp_row[6]) if emp_row[6] is not None else False
                     user['visible_facturas'] = bool(emp_row[7]) if emp_row[7] is not None else False
                     user['control'] = emp_row[8].strip() if emp_row[8] else None
+                    user['visible_propuestas'] = bool(emp_row[9]) if emp_row[9] is not None else True
+                    user['visible_stock_anulados'] = bool(emp_row[10]) if emp_row[10] is not None else False
             except Exception:
                 # Columnas pueden no existir aún
                 try:
@@ -198,7 +200,7 @@ def get_user_by_id(user_id, empresa_cli_id, empresa_erp=None):
         if empresa_erp:
             try:
                 cursor.execute("""
-                    SELECT empresa_id, cliente_id, rol, mostrar_precios, administrador_clientes, visible_pedidos, control
+                    SELECT empresa_id, cliente_id, rol, mostrar_precios, administrador_clientes, visible_pedidos, control, visible_albaranes, visible_facturas, visible_propuestas, visible_stock_anulados
                     FROM users_empresas
                     WHERE user_id = ? AND empresa_id = ?
                 """, (user_id, empresa_erp))
@@ -212,6 +214,10 @@ def get_user_by_id(user_id, empresa_cli_id, empresa_erp=None):
                     user['administrador_clientes'] = bool(emp_row[4]) if emp_row[4] is not None else False
                     user['visible_pedidos'] = bool(emp_row[5]) if emp_row[5] is not None else True
                     user['control'] = emp_row[6].strip() if emp_row[6] else None
+                    user['visible_albaranes'] = bool(emp_row[7]) if emp_row[7] is not None else False
+                    user['visible_facturas'] = bool(emp_row[8]) if emp_row[8] is not None else False
+                    user['visible_propuestas'] = bool(emp_row[9]) if emp_row[9] is not None else True
+                    user['visible_stock_anulados'] = bool(emp_row[10]) if emp_row[10] is not None else False
             except Exception:
                 # Columnas pueden no existir aún
                 try:
@@ -371,6 +377,28 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
         except Exception:
             pass
 
+        # Intentar incluir campo visible_propuestas (puede no existir aún)
+        visible_propuestas_col = ''
+        has_visible_propuestas = False
+        try:
+            cursor.execute("SELECT TOP 1 visible_propuestas FROM users_empresas")
+            cursor.fetchone()
+            visible_propuestas_col = ', ue.visible_propuestas'
+            has_visible_propuestas = True
+        except Exception:
+            pass
+
+        # Intentar incluir campo visible_stock_anulados (puede no existir aún)
+        visible_stock_anulados_col = ''
+        has_visible_stock_anulados = False
+        try:
+            cursor.execute("SELECT TOP 1 visible_stock_anulados FROM users_empresas")
+            cursor.fetchone()
+            visible_stock_anulados_col = ', ue.visible_stock_anulados'
+            has_visible_stock_anulados = True
+        except Exception:
+            pass
+
         # Intentar incluir campo control (puede no existir aún)
         control_col = ''
         has_control = False
@@ -394,6 +422,8 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
                 {visible_pedidos_col}
                 {visible_albaranes_col}
                 {visible_facturas_col}
+                {visible_propuestas_col}
+                {visible_stock_anulados_col}
                 {control_col}
                 , u.token_expiracion
             FROM users u
@@ -439,6 +469,12 @@ def get_all_users_by_empresa(empresa_erp, empresa_cli_id):
                 col_idx += 1
             if has_visible_facturas:
                 user_dict['visible_facturas'] = bool(row[col_idx]) if row[col_idx] is not None else False
+                col_idx += 1
+            if has_visible_propuestas:
+                user_dict['visible_propuestas'] = bool(row[col_idx]) if row[col_idx] is not None else True
+                col_idx += 1
+            if has_visible_stock_anulados:
+                user_dict['visible_stock_anulados'] = bool(row[col_idx]) if row[col_idx] is not None else False
                 col_idx += 1
             if has_control:
                 user_dict['control'] = row[col_idx].strip() if row[col_idx] else None
@@ -739,6 +775,14 @@ def update_user_full(user_id, data, empresa_cli_id, empresa_erp):
             emp_updates.append("visible_pedidos = ?")
             emp_params.append(1 if data['visible_pedidos'] else 0)
 
+        if 'visible_propuestas' in data:
+            emp_updates.append("visible_propuestas = ?")
+            emp_params.append(1 if data['visible_propuestas'] else 0)
+
+        if 'visible_stock_anulados' in data:
+            emp_updates.append("visible_stock_anulados = ?")
+            emp_params.append(1 if data['visible_stock_anulados'] else 0)
+
         if emp_updates:
             emp_params.extend([user_id, empresa_erp])
             query = f"UPDATE users_empresas SET {', '.join(emp_updates)} WHERE user_id = ? AND empresa_id = ?"
@@ -768,7 +812,7 @@ def get_user_by_id_and_empresa(user_id, empresa_cli_id, empresa_erp):
                     u.id, u.username, u.email, u.full_name, u.pais,
                     ue.rol, u.active, u.email_verificado,
                     ue.empresa_id, ue.cliente_id, u.company_name,
-                    ue.mostrar_precios, ue.administrador_clientes, ue.visible_pedidos, ue.visible_albaranes, ue.visible_facturas, ue.control
+                    ue.mostrar_precios, ue.administrador_clientes, ue.visible_pedidos, ue.visible_albaranes, ue.visible_facturas, ue.visible_propuestas, ue.visible_stock_anulados, ue.control
                 FROM users u
                 INNER JOIN users_empresas ue ON u.id = ue.user_id
                 WHERE u.id = ? AND ue.empresa_id = ?
@@ -829,7 +873,9 @@ def get_user_by_id_and_empresa(user_id, empresa_cli_id, empresa_erp):
                 'visible_pedidos': bool(row[13]) if len(row) > 13 and row[13] is not None else True,
                 'visible_albaranes': bool(row[14]) if len(row) > 14 and row[14] is not None else False,
                 'visible_facturas': bool(row[15]) if len(row) > 15 and row[15] is not None else False,
-                'control': row[16].strip() if len(row) > 16 and row[16] else None
+                'visible_propuestas': bool(row[16]) if len(row) > 16 and row[16] is not None else True,
+                'visible_stock_anulados': bool(row[17]) if len(row) > 17 and row[17] is not None else False,
+                'control': row[18].strip() if len(row) > 18 and row[18] else None
             }
             # Resolver nombre del cliente en paso separado
             if usuario['cliente_id']:

@@ -281,6 +281,7 @@
   "menu": {
     "main": "Principal",
     "stocks": "Stocks",
+    "cancelledStocks": "Stocks Annulés",
     "myProposals": "Mes Propositions",
     "myOrders": "Mes Commandes",
     "myDeliveryNotes": "Mes Bons de Livraison",
@@ -675,6 +676,10 @@
     "showInvoicesHelp": "Permet à l'utilisateur de voir la section Mes Factures",
     "enableInvoices": "Activer factures",
     "disableInvoices": "Désactiver factures",
+    "enableProposals": "Activer propositions",
+    "disableProposals": "Désactiver propositions",
+    "enableCancelledStocks": "Activer stocks annulés",
+    "disableCancelledStocks": "Désactiver stocks annulés",
     "verifyEmail": "Vérifier l'email",
     "resendWelcome": "Renvoyer l'email de bienvenue",
     "detailInfo": "Informations",

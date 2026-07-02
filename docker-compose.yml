@@ -38,6 +38,8 @@ services:
     volumes:
       # Frontend montado como solo lectura
       - ./frontend:/frontend:ro
+      # Directorio de PDFs de facturas (configurable via FACTURAS_PDF_DIR)
+      - ${FACTURAS_PDF_DIR:-/opt/facturas-pdf}:/facturas-pdf:ro
     environment:
       - FLASK_ENV=production
       - FLASK_DEBUG=0

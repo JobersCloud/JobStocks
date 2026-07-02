@@ -1336,6 +1336,164 @@ def toggle_visible_facturas(user_id):
         }), 500
 
 
+@usuario_bp.route('/<int:user_id>/visible-propuestas', methods=['PUT'])
+@login_required
+@csrf_required
+@administrador_required
+def toggle_visible_propuestas(user_id):
+    """
+    Activar/desactivar visibilidad de propuestas para un usuario (solo administradores)
+    ---
+    tags:
+      - Usuarios
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: user_id
+        in: path
+        type: integer
+        required: true
+        description: ID del usuario
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - visible_propuestas
+          properties:
+            visible_propuestas:
+              type: boolean
+    responses:
+      200:
+        description: Campo actualizado
+      400:
+        description: Datos inválidos
+      404:
+        description: Usuario no encontrado
+    """
+    data = request.json
+    if not data or 'visible_propuestas' not in data:
+        return jsonify({
+            'success': False,
+            'error': 'Campo "visible_propuestas" es requerido'
+        }), 400
+
+    try:
+        from config.database import Database
+        connection = session.get('connection')
+        empresa_id = session.get('empresa_id', '1')
+
+        conn = Database.get_connection(connection)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE users_empresas SET visible_propuestas = ?
+            WHERE user_id = ? AND empresa_id = ?
+        """, (1 if data['visible_propuestas'] else 0, user_id, empresa_id))
+
+        affected = cursor.rowcount
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        if affected == 0:
+            return jsonify({
+                'success': False,
+                'error': 'Usuario no encontrado en esta empresa'
+            }), 404
+
+        estado = 'habilitadas' if data['visible_propuestas'] else 'deshabilitadas'
+        return jsonify({
+            'success': True,
+            'message': f'Propuestas {estado} para el usuario'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@usuario_bp.route('/<int:user_id>/visible-stock-anulados', methods=['PUT'])
+@login_required
+@csrf_required
+@administrador_required
+def toggle_visible_stock_anulados(user_id):
+    """
+    Activar/desactivar visibilidad de stocks anulados para un usuario (solo administradores)
+    ---
+    tags:
+      - Usuarios
+    security:
+      - cookieAuth: []
+    parameters:
+      - name: user_id
+        in: path
+        type: integer
+        required: true
+        description: ID del usuario
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - visible_stock_anulados
+          properties:
+            visible_stock_anulados:
+              type: boolean
+    responses:
+      200:
+        description: Campo actualizado
+      400:
+        description: Datos inválidos
+      404:
+        description: Usuario no encontrado
+    """
+    data = request.json
+    if not data or 'visible_stock_anulados' not in data:
+        return jsonify({
+            'success': False,
+            'error': 'Campo "visible_stock_anulados" es requerido'
+        }), 400
+
+    try:
+        from config.database import Database
+        connection = session.get('connection')
+        empresa_id = session.get('empresa_id', '1')
+
+        conn = Database.get_connection(connection)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE users_empresas SET visible_stock_anulados = ?
+            WHERE user_id = ? AND empresa_id = ?
+        """, (1 if data['visible_stock_anulados'] else 0, user_id, empresa_id))
+
+        affected = cursor.rowcount
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        if affected == 0:
+            return jsonify({
+                'success': False,
+                'error': 'Usuario no encontrado en esta empresa'
+            }), 404
+
+        estado = 'habilitados' if data['visible_stock_anulados'] else 'deshabilitados'
+        return jsonify({
+            'success': True,
+            'message': f'Stocks anulados {estado} para el usuario'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
 @usuario_bp.route('/<int:user_id>/administrador-clientes', methods=['PUT'])
 @login_required
 @csrf_required

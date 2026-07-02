@@ -119,7 +119,17 @@
                         </span>
                         <span class="sidebar-item-text" data-i18n="menu.stocks">Stocks</span>
                     </a>
-                    <a class="sidebar-item" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')">
+                    <a class="sidebar-item" id="sidebar-stocks-anulados" data-page="stocks-anulados.html" data-tooltip="Stocks Anulados" onclick="SidebarNav.navigateTo('stocks-anulados.html')" style="display:none">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="9" y1="15" x2="15" y2="9"></line>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.cancelledStocks">Stocks Anulados</span>
+                    </a>
+                    <a class="sidebar-item" id="sidebar-mis-propuestas" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')" style="display:none">
                         <span class="sidebar-item-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -233,7 +243,7 @@
                             </span>
                             <span class="sidebar-item-text" data-i18n="menu.dashboard">Dashboard</span>
                         </a>
-                        <a class="sidebar-item" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')">
+                        <a class="sidebar-item" id="sidebar-todas-propuestas" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')" style="display:none">
                             <span class="sidebar-item-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
@@ -706,7 +716,7 @@
                         <div class="proposal-info-item"><label>${t('orders.deliveryDate')}</label><span>${order.fecha_entrega ? PageCommon.formatDate(order.fecha_entrega) : '-'}</span></div>
                         <div class="proposal-info-item"><label>${t('orders.client')}</label><span>${order.cliente_nombre || order.cliente}</span></div>
                         ${order.numpedcli ? `<div class="proposal-info-item"><label>${t('orders.reference') || 'Referencia'}</label><span>${order.numpedcli}</span></div>` : ''}
-                        <div class="proposal-info-item"><label>${t('orders.total')}</label><span style="font-weight:600;color:var(--primary);">${PageCommon.formatCurrency(order.total)} €</span></div>
+                        <div class="proposal-info-item"><label>${t('orders.total')}</label><span class="total-amount">${PageCommon.formatCurrency(order.total)} €</span></div>
                     </div>
                     <h3 class="proposal-lines-title">${t('orders.lines')}</h3>
                     <div class="order-lines-table">

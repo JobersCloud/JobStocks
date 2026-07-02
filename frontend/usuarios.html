@@ -137,7 +137,17 @@
                         </span>
                         <span class="sidebar-item-text" data-i18n="menu.stocks">Stocks</span>
                     </a>
-                    <a class="sidebar-item" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')">
+                    <a class="sidebar-item" id="sidebar-stocks-anulados" data-page="stocks-anulados.html" data-tooltip="Stocks Anulados" onclick="SidebarNav.navigateTo('stocks-anulados.html')" style="display:none">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="9" y1="15" x2="15" y2="9"></line>
+                            </svg>
+                        </span>
+                        <span class="sidebar-item-text" data-i18n="menu.cancelledStocks">Stocks Anulados</span>
+                    </a>
+                    <a class="sidebar-item" id="sidebar-mis-propuestas" data-page="mis-propuestas.html" data-tooltip="Mis Propuestas" onclick="SidebarNav.navigateTo('mis-propuestas.html')" style="display:none">
                         <span class="sidebar-item-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -251,7 +261,7 @@
                             </span>
                             <span class="sidebar-item-text" data-i18n="menu.dashboard">Dashboard</span>
                         </a>
-                        <a class="sidebar-item" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')">
+                        <a class="sidebar-item" id="sidebar-todas-propuestas" data-page="todas-propuestas.html" data-tooltip="Propuestas" onclick="SidebarNav.navigateTo('todas-propuestas.html')" style="display:none">
                             <span class="sidebar-item-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-width="2">
                                     <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
@@ -649,6 +659,8 @@
         let pedidosGlobalHabilitado = false;
         let albaranesGlobalHabilitado = false;
         let facturasGlobalHabilitado = false;
+        let propuestasGlobalHabilitado = false;
+        let stockAnuladosGlobalHabilitado = false;
 
         // ==================== INICIALIZACION ====================
         document.addEventListener('DOMContentLoaded', async function() {
@@ -697,6 +709,24 @@
                 }
             } catch (e) { /* ignorar */ }
 
+            // Comprobar si el parámetro global de propuestas está activo
+            try {
+                const propuestasResp = await fetch(`${API_URL}/api/parametros/visible-propuestas`, { credentials: 'include' });
+                if (propuestasResp.ok) {
+                    const propuestasData = await propuestasResp.json();
+                    propuestasGlobalHabilitado = propuestasData.global_habilitado || false;
+                }
+            } catch (e) { /* ignorar */ }
+
+            // Comprobar si el parámetro global de stocks anulados está activo
+            try {
+                const anuladosResp = await fetch(`${API_URL}/api/parametros/visible-stock-anulados`, { credentials: 'include' });
+                if (anuladosResp.ok) {
+                    const anuladosData = await anuladosResp.json();
+                    stockAnuladosGlobalHabilitado = anuladosData.global_habilitado || false;
+                }
+            } catch (e) { /* ignorar */ }
+
             const gridColumns = [
                 { key: 'username', label: t('users.username') || 'Usuario', tipo: 'texto' },
                 { key: 'full_name', label: t('users.fullName') || 'Nombre Completo', tipo: 'texto' },
@@ -741,6 +771,8 @@
                             if (pedidosGlobalHabilitado && item.visible_pedidos) badges.push('<span class="perm-badge perm-ped" title="Ver Pedidos">PED</span>');
                             if (albaranesGlobalHabilitado && item.visible_albaranes) badges.push('<span class="perm-badge perm-alb" title="Ver Albaranes">ALB</span>');
                             if (facturasGlobalHabilitado && item.visible_facturas) badges.push('<span class="perm-badge perm-fac" title="Ver Facturas">FAC</span>');
+                            if (propuestasGlobalHabilitado && item.visible_propuestas) badges.push('<span class="perm-badge perm-pro" title="Ver Propuestas">PRO</span>');
+                            if (stockAnuladosGlobalHabilitado && item.visible_stock_anulados) badges.push('<span class="perm-badge perm-anu" title="Ver Stocks Anulados">ANU</span>');
                             if (item.administrador_clientes) badges.push('<span class="perm-badge perm-adm" title="Admin. Clientes">ADM</span>');
                             return badges.length > 0 ? `<div class="perm-badges">${badges.join('')}</div>` : '<span style="color:#aaa">-</span>';
                         }
@@ -770,6 +802,8 @@
                                     ${pedidosGlobalHabilitado && item.visible_pedidos ? '<span class="perm-badge perm-ped">PED</span>' : ''}
                                     ${albaranesGlobalHabilitado && item.visible_albaranes ? '<span class="perm-badge perm-alb">ALB</span>' : ''}
                                     ${facturasGlobalHabilitado && item.visible_facturas ? '<span class="perm-badge perm-fac">FAC</span>' : ''}
+                                    ${propuestasGlobalHabilitado && item.visible_propuestas ? '<span class="perm-badge perm-pro">PRO</span>' : ''}
+                                    ${stockAnuladosGlobalHabilitado && item.visible_stock_anulados ? '<span class="perm-badge perm-anu">ANU</span>' : ''}
                                     ${item.administrador_clientes ? '<span class="perm-badge perm-adm">ADM</span>' : ''}
                                 </div></div>
                                 ${item.control ? `<div class="user-card-info-item"><label>Control:</label> ${item.control}</div>` : ''}
@@ -948,6 +982,26 @@
                     : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
                 items += `<div class="action-menu-item" onclick="closeActionMenu(); toggleVisibleFacturas(${user.id}, ${user.visible_facturas ? 'true' : 'false'})">
                     ${facturasIcon} ${facturasLabel}
+                </div>`;
+            }
+
+            if (propuestasGlobalHabilitado) {
+                const propuestasLabel = user.visible_propuestas ? (t('users.disableProposals') || 'Desactivar propuestas') : (t('users.enableProposals') || 'Activar propuestas');
+                const propuestasIcon = user.visible_propuestas
+                    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`
+                    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+                items += `<div class="action-menu-item" onclick="closeActionMenu(); toggleVisiblePropuestas(${user.id}, ${user.visible_propuestas ? 'true' : 'false'})">
+                    ${propuestasIcon} ${propuestasLabel}
+                </div>`;
+            }
+
+            if (stockAnuladosGlobalHabilitado) {
+                const anuLabel = user.visible_stock_anulados ? (t('users.disableCancelledStocks') || 'Desactivar stocks anulados') : (t('users.enableCancelledStocks') || 'Activar stocks anulados');
+                const anuIcon = user.visible_stock_anulados
+                    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="9"/></svg>`
+                    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+                items += `<div class="action-menu-item" onclick="closeActionMenu(); toggleVisibleStockAnulados(${user.id}, ${user.visible_stock_anulados ? 'true' : 'false'})">
+                    ${anuIcon} ${anuLabel}
                 </div>`;
             }
 
@@ -1134,6 +1188,40 @@
             } catch (error) { UIFeedback.toast('Error al cambiar la visibilidad de facturas', 'error'); }
         }
         window.toggleVisibleFacturas = toggleVisibleFacturas;
+
+        async function toggleVisiblePropuestas(userId, valorActual) {
+            const nuevoValor = !valorActual;
+            try {
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}/visible-propuestas`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() },
+                    body: JSON.stringify({ visible_propuestas: nuevoValor })
+                });
+                if (!response.ok) throw new Error('Error toggling proposals');
+                const idx = users.findIndex(u => u.id === userId);
+                if (idx !== -1) users[idx].visible_propuestas = nuevoValor;
+                grid.setData(users);
+            } catch (error) { UIFeedback.toast('Error al cambiar la visibilidad de propuestas', 'error'); }
+        }
+        window.toggleVisiblePropuestas = toggleVisiblePropuestas;
+
+        async function toggleVisibleStockAnulados(userId, valorActual) {
+            const nuevoValor = !valorActual;
+            try {
+                const response = await fetch(`${API_URL}/api/usuarios/${userId}/visible-stock-anulados`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': PageCommon.getCsrfToken() },
+                    body: JSON.stringify({ visible_stock_anulados: nuevoValor })
+                });
+                if (!response.ok) throw new Error('Error toggling cancelled stocks');
+                const idx = users.findIndex(u => u.id === userId);
+                if (idx !== -1) users[idx].visible_stock_anulados = nuevoValor;
+                grid.setData(users);
+            } catch (error) { UIFeedback.toast('Error al cambiar la visibilidad de stocks anulados', 'error'); }
+        }
+        window.toggleVisibleStockAnulados = toggleVisibleStockAnulados;
 
         async function toggleAdminClientes(userId, valorActual) {
             const nuevoValor = !valorActual;

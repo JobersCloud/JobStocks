@@ -1487,4 +1487,137 @@ MIGRATIONS = [
         ]
     },
 
+    # ============================================================
+    # v60 - Parámetro VISIBLE_PROPUESTAS para todas las empresas
+    # ============================================================
+    {
+        'version': 60,
+        'description': 'Parametro VISIBLE_PROPUESTAS para todas las empresas',
+        'app_version': 'v1.48.0',
+        'sql': [
+            """DECLARE @emp_id VARCHAR(5);
+            DECLARE emp_cursor CURSOR FOR SELECT DISTINCT empresa_id FROM parametros;
+            OPEN emp_cursor;
+            FETCH NEXT FROM emp_cursor INTO @emp_id;
+            WHILE @@FETCH_STATUS = 0
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM parametros WHERE clave = 'VISIBLE_PROPUESTAS' AND empresa_id = @emp_id)
+                BEGIN
+                    INSERT INTO parametros (clave, valor, descripcion, empresa_id, fecha_modificacion)
+                    VALUES ('VISIBLE_PROPUESTAS', '1', 'Mostrar seccion Propuestas (0=No, 1=Si)', @emp_id, GETDATE());
+                END
+                FETCH NEXT FROM emp_cursor INTO @emp_id;
+            END;
+            CLOSE emp_cursor;
+            DEALLOCATE emp_cursor;""",
+        ]
+    },
+
+    # ============================================================
+    # v61 - Campo visible_propuestas en users_empresas
+    # ============================================================
+    {
+        'version': 61,
+        'description': 'Campo visible_propuestas en users_empresas',
+        'app_version': 'v1.48.0',
+        'sql': [
+            """IF OBJECT_ID('users_empresas') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users_empresas') AND name = 'visible_propuestas')
+            BEGIN
+                ALTER TABLE users_empresas ADD visible_propuestas BIT DEFAULT 1;
+            END""",
+        ]
+    },
+
+    # ============================================================
+    # v62 - Parámetro VISIBLE_STOCK_ANULADOS para todas las empresas
+    # ============================================================
+    {
+        'version': 62,
+        'description': 'Parametro VISIBLE_STOCK_ANULADOS para todas las empresas',
+        'app_version': 'v1.48.0',
+        'sql': [
+            """DECLARE @emp_id VARCHAR(5);
+            DECLARE emp_cursor CURSOR FOR SELECT DISTINCT empresa_id FROM parametros;
+            OPEN emp_cursor;
+            FETCH NEXT FROM emp_cursor INTO @emp_id;
+            WHILE @@FETCH_STATUS = 0
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM parametros WHERE clave = 'VISIBLE_STOCK_ANULADOS' AND empresa_id = @emp_id)
+                BEGIN
+                    INSERT INTO parametros (clave, valor, descripcion, empresa_id, fecha_modificacion)
+                    VALUES ('VISIBLE_STOCK_ANULADOS', '0', 'Mostrar seccion Stocks Anulados (0=No, 1=Si)', @emp_id, GETDATE());
+                END
+                FETCH NEXT FROM emp_cursor INTO @emp_id;
+            END;
+            CLOSE emp_cursor;
+            DEALLOCATE emp_cursor;""",
+        ]
+    },
+
+    # ============================================================
+    # v63 - Campo visible_stock_anulados en users_empresas
+    # ============================================================
+    {
+        'version': 63,
+        'description': 'Campo visible_stock_anulados en users_empresas',
+        'app_version': 'v1.48.0',
+        'sql': [
+            """IF OBJECT_ID('users_empresas') IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('users_empresas') AND name = 'visible_stock_anulados')
+            BEGIN
+                ALTER TABLE users_empresas ADD visible_stock_anulados BIT DEFAULT 0;
+            END""",
+        ]
+    },
+
+    # ============================================================
+    # v64 - Tabla factura_pdf para mapear facturas a ficheros PDF
+    # ============================================================
+    {
+        'version': 64,
+        'description': 'Crear tabla factura_pdf para mapear facturas a ficheros PDF',
+        'app_version': 'v1.48.0',
+        'sql': [
+            """IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'factura_pdf')
+            BEGIN
+                CREATE TABLE factura_pdf (
+                    id INT IDENTITY(1,1) PRIMARY KEY,
+                    empresa VARCHAR(5) NOT NULL,
+                    anyo INT NOT NULL,
+                    factura INT NOT NULL,
+                    filename VARCHAR(500) NOT NULL,
+                    fecha_registro DATETIME DEFAULT GETDATE()
+                );
+                CREATE INDEX idx_factura_pdf_lookup ON factura_pdf(empresa, anyo, factura);
+            END""",
+        ]
+    },
+
+    # ============================================================
+    # v65 - Parámetro FACTURAS_PDF_DIRECTORIO
+    # ============================================================
+    {
+        'version': 65,
+        'description': 'Parametro FACTURAS_PDF_DIRECTORIO para ruta de PDFs de facturas',
+        'app_version': 'v1.48.0',
+        'sql': [
+            """DECLARE @emp_id VARCHAR(5);
+            DECLARE emp_cursor CURSOR FOR SELECT DISTINCT empresa_id FROM parametros;
+            OPEN emp_cursor;
+            FETCH NEXT FROM emp_cursor INTO @emp_id;
+            WHILE @@FETCH_STATUS = 0
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM parametros WHERE clave = 'FACTURAS_PDF_DIRECTORIO' AND empresa_id = @emp_id)
+                BEGIN
+                    INSERT INTO parametros (clave, valor, descripcion, empresa_id, fecha_modificacion)
+                    VALUES ('FACTURAS_PDF_DIRECTORIO', '', 'Ruta del directorio de PDFs de facturas (ej: /facturas-pdf)', @emp_id, GETDATE());
+                END
+                FETCH NEXT FROM emp_cursor INTO @emp_id;
+            END;
+            CLOSE emp_cursor;
+            DEALLOCATE emp_cursor;""",
+        ]
+    },
+
 ]

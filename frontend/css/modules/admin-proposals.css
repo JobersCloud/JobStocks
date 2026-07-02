@@ -659,6 +659,20 @@
     color: var(--text-primary);
 }
 
+/* Total amount en detalle de pedido/factura/albaran */
+.proposal-info-item span.total-amount {
+    font-weight: 700 !important;
+    font-size: 17px !important;
+    color: var(--primary) !important;
+}
+
+[data-theme="dark"] .proposal-info-item span.total-amount {
+    color: #fff !important;
+    background: var(--primary);
+    padding: 2px 10px;
+    border-radius: 6px;
+}
+
 [data-theme="dark"] .proposal-lines-title {
     color: var(--text-primary);
     border-color: var(--border);

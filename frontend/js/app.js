@@ -1421,6 +1421,32 @@ async function displayUserInfo(user) {
         }
     } catch (e) {}
 
+    // Mostrar Mis Propuestas / Propuestas solo si está habilitado (ocultos por defecto)
+    try {
+        const respPro = await fetch(`${API_URL}/api/parametros/visible-propuestas`, { credentials: 'include' });
+        if (respPro.ok) {
+            const dPro = await respPro.json();
+            if (dPro.habilitado) {
+                const elMisPro = document.getElementById('sidebar-mis-propuestas');
+                const elTodasPro = document.getElementById('sidebar-todas-propuestas');
+                if (elMisPro) elMisPro.style.display = 'flex';
+                if (elTodasPro) elTodasPro.style.display = 'flex';
+            }
+        }
+    } catch (e) {}
+
+    // Mostrar Stocks Anulados solo si está habilitado (oculto por defecto)
+    try {
+        const respAnu = await fetch(`${API_URL}/api/parametros/visible-stock-anulados`, { credentials: 'include' });
+        if (respAnu.ok) {
+            const dAnu = await respAnu.json();
+            if (dAnu.habilitado) {
+                const elStocksAnu = document.getElementById('sidebar-stocks-anulados');
+                if (elStocksAnu) elStocksAnu.style.display = 'flex';
+            }
+        }
+    } catch (e) {}
+
     // Mostrar opción de contexto solo para superusuarios
     const menuItemContext = document.getElementById('menu-item-context');
     const menuDividerContext = document.getElementById('menu-divider-context');
@@ -2966,6 +2992,23 @@ function limpiarFiltros() {
     paginaActual = 1;
     mostrarEstadoInicial();
 }
+
+// ==================== TOGGLE PANEL DE FILTROS ====================
+function toggleFiltersPanel() {
+    const filters = document.querySelector('.filters');
+    const collapsed = filters.classList.toggle('filters-collapsed');
+    localStorage.setItem('filtersCollapsed', collapsed ? '1' : '0');
+}
+
+// Restaurar estado del panel al cargar
+(function restoreFiltersState() {
+    if (localStorage.getItem('filtersCollapsed') === '1') {
+        const filters = document.querySelector('.filters');
+        if (filters) filters.classList.add('filters-collapsed');
+    }
+})();
+
+window.toggleFiltersPanel = toggleFiltersPanel;
 
 function mostrarTabla(stocks) {
     const container = document.getElementById('table-container');
