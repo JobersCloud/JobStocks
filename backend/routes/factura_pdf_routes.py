@@ -48,7 +48,7 @@ def download_pdf(pdf_id):
         path = FacturaPdfModel.get_pdf_path(pdf_id, empresa_id, _get_connection())
         if not path:
             return jsonify({'error': 'PDF no encontrado'}), 404
-        return send_file(path, as_attachment=True)
+        return send_file(path, mimetype='application/pdf')
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
