@@ -265,7 +265,7 @@ powershell -ExecutionPolicy Bypass -Command ^
  "$co = New-Object System.Data.SqlClient.SqlConnection($connOrigen); " ^
  "$co.Open(); " ^
  "$cmd = $co.CreateCommand(); " ^
- "$cmd.CommandText = 'SELECT RTRIM(clave) AS clave, RTRIM(documento) AS documento FROM gestion_documental WHERE RTRIM(tabla) = ''venfac_documentacion'' AND RTRIM(clave) LIKE ''%%-13'' ORDER BY clave'; " ^
+ "$cmd.CommandText = 'SELECT RTRIM(g.clave) AS clave, RTRIM(g.documento) AS documento FROM venfac f INNER JOIN gestion_documental g ON RTRIM(g.tabla) = ''venfac_documentacion'' AND RTRIM(g.clave) = LTRIM(RTRIM(f.empresa)) + ''-'' + LTRIM(RTRIM(CAST(CONVERT(INT,f.anyo) AS VARCHAR))) + ''-'' + RTRIM(LTRIM(CAST(CONVERT(NUMERIC,f.factura) AS VARCHAR))) + ''-13'' WHERE f.empresa = ''1'' AND f.anyo = YEAR(GETDATE())'; " ^
  "$reader = $cmd.ExecuteReader(); " ^
  "$facturas = @{}; " ^
  "while ($reader.Read()) { " ^
