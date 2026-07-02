@@ -252,7 +252,7 @@ goto :eof
 REM ============================================
 REM :spdf - Sync PDFs de facturas desde gestion_documental
 REM   Lee tabla gestion_documental del ORIGEN (tabla='venfac_documentacion')
-REM   Clave formato: empresa-anyo-factura-2
+REM   Clave formato: empresa-anyo-factura-13
 REM   Coge solo el primer documento por factura
 REM   Copia el PDF al directorio local e indexa en factura_pdf
 REM ============================================
@@ -265,7 +265,7 @@ powershell -ExecutionPolicy Bypass -Command ^
  "$co = New-Object System.Data.SqlClient.SqlConnection($connOrigen); " ^
  "$co.Open(); " ^
  "$cmd = $co.CreateCommand(); " ^
- "$cmd.CommandText = 'SELECT clave, documento FROM gestion_documental WHERE tabla = ''venfac_documentacion'' AND clave LIKE ''%-2'' ORDER BY clave, id'; " ^
+ "$cmd.CommandText = 'SELECT clave, documento FROM gestion_documental WHERE tabla = ''venfac_documentacion'' AND clave LIKE ''%-13'' ORDER BY clave, id'; " ^
  "$reader = $cmd.ExecuteReader(); " ^
  "$facturas = @{}; " ^
  "while ($reader.Read()) { " ^
