@@ -260,12 +260,12 @@ REM ============================================
 <nul set /p="     PDFs facturas... "
 if not exist "%DATOS%\facturas_pdf" mkdir "%DATOS%\facturas_pdf"
 powershell -ExecutionPolicy Bypass -Command ^
- "$connOrigen = 'Server=%SERVIDOR_ORIGEN%;Database=%BD_ORIGEN%;User Id=%USUARIO_ORIGEN%;Password=%CLAVE_ORIGEN%;Connection Timeout=30'; " ^
+ "$connOrigen = 'Server=%SERVIDOR_ORIGEN%;Database=%BD_ORIGEN%;User Id=%USUARIO_ORIGEN%;Password=%CLAVE_ORIGEN%;TrustServerCertificate=True;Connection Timeout=30'; " ^
  "$connDestino = 'Server=%SERVIDOR_DESTINO%;Database=ApiRestStocks;User Id=%USUARIO_DESTINO%;Password=!PW_DEST!;TrustServerCertificate=True;Connection Timeout=30'; " ^
  "$co = New-Object System.Data.SqlClient.SqlConnection($connOrigen); " ^
  "$co.Open(); " ^
  "$cmd = $co.CreateCommand(); " ^
- "$cmd.CommandText = 'SELECT RTRIM(clave) AS clave, RTRIM(documento) AS documento FROM gestion_documental WHERE RTRIM(tabla) = ''venfac_documentacion'' AND RTRIM(clave) LIKE ''%-13'' ORDER BY clave'; " ^
+ "$cmd.CommandText = 'SELECT RTRIM(clave) AS clave, RTRIM(documento) AS documento FROM gestion_documental WHERE RTRIM(tabla) = ''venfac_documentacion'' AND RTRIM(clave) LIKE ''%%-13'' ORDER BY clave'; " ^
  "$reader = $cmd.ExecuteReader(); " ^
  "$facturas = @{}; " ^
  "while ($reader.Read()) { " ^
