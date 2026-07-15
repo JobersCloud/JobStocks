@@ -1621,4 +1621,30 @@ MIGRATIONS = [
         ]
     },
 
+    # ============================================================
+    # v66 - Parámetro VISIBLE_BUSQUEDA_MAGICA
+    # ============================================================
+    {
+        'version': 66,
+        'description': 'Parametro VISIBLE_BUSQUEDA_MAGICA para todas las empresas',
+        'app_version': 'v1.48.1',
+        'sql': [
+            """DECLARE @emp_id VARCHAR(5);
+            DECLARE emp_cursor CURSOR FOR SELECT DISTINCT empresa_id FROM parametros;
+            OPEN emp_cursor;
+            FETCH NEXT FROM emp_cursor INTO @emp_id;
+            WHILE @@FETCH_STATUS = 0
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM parametros WHERE clave = 'VISIBLE_BUSQUEDA_MAGICA' AND empresa_id = @emp_id)
+                BEGIN
+                    INSERT INTO parametros (clave, valor, descripcion, empresa_id, fecha_modificacion)
+                    VALUES ('VISIBLE_BUSQUEDA_MAGICA', '1', 'Mostrar seccion Busqueda Magica en el menu (0=No, 1=Si)', @emp_id, GETDATE());
+                END
+                FETCH NEXT FROM emp_cursor INTO @emp_id;
+            END;
+            CLOSE emp_cursor;
+            DEALLOCATE emp_cursor;""",
+        ]
+    },
+
 ]

@@ -154,6 +154,11 @@ class ParametrosModel:
         return ParametrosModel.get_bool('VISIBLE_STOCK_ANULADOS', empresa_id, connection)
 
     @staticmethod
+    def visible_busqueda_magica(empresa_id, connection=None):
+        """Verifica si la sección Búsqueda Mágica es visible para una empresa"""
+        return ParametrosModel.get_bool('VISIBLE_BUSQUEDA_MAGICA', empresa_id, connection)
+
+    @staticmethod
     def columnas_opcionales(empresa_id, connection=None):
         """Devuelve lista de columnas opcionales visibles para la empresa."""
         import json

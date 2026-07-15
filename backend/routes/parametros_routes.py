@@ -449,6 +449,33 @@ def visible_stock_anulados():
     }), 200
 
 
+@parametros_bp.route('/visible-busqueda-magica', methods=['GET'])
+def visible_busqueda_magica():
+    """
+    Verificar si la sección Búsqueda Mágica es visible.
+    ---
+    tags:
+      - Parámetros
+    parameters:
+      - name: empresa_id
+        in: query
+        type: string
+        required: false
+    responses:
+      200:
+        description: Estado del parámetro visible búsqueda mágica
+        schema:
+          type: object
+          properties:
+            habilitado:
+              type: boolean
+    """
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+    habilitado = ParametrosModel.visible_busqueda_magica(empresa_id, connection)
+    return jsonify({'habilitado': habilitado}), 200
+
+
 @parametros_bp.route('/columnas-opcionales', methods=['GET'])
 def get_columnas_opcionales():
     """

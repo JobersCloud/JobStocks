@@ -1447,6 +1447,18 @@ async function displayUserInfo(user) {
         }
     } catch (e) {}
 
+    // Mostrar Búsqueda Mágica solo si está habilitado (oculto por defecto)
+    try {
+        const respBM = await fetch(`${API_URL}/api/parametros/visible-busqueda-magica`, { credentials: 'include' });
+        if (respBM.ok) {
+            const dBM = await respBM.json();
+            if (dBM.habilitado) {
+                const elBM = document.getElementById('sidebar-busqueda-magica');
+                if (elBM) elBM.style.display = 'flex';
+            }
+        }
+    } catch (e) {}
+
     // Mostrar opción de contexto solo para superusuarios
     const menuItemContext = document.getElementById('menu-item-context');
     const menuDividerContext = document.getElementById('menu-divider-context');

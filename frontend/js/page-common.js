@@ -320,6 +320,18 @@
                 }
             } catch (e) {}
 
+            // Búsqueda Mágica
+            try {
+                const respBM = await fetch(`${API_URL}/api/parametros/visible-busqueda-magica`, { credentials: 'include' });
+                if (respBM.ok) {
+                    const dBM = await respBM.json();
+                    if (dBM.habilitado) {
+                        const el = document.getElementById('sidebar-busqueda-magica');
+                        if (el) el.style.display = 'flex';
+                    }
+                }
+            } catch (e) {}
+
             return data;
         } catch (error) {
             console.error('Error checking auth:', error);
