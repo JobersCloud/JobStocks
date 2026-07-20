@@ -139,8 +139,8 @@
         </div>
         <span class="diagram-arrow">&larr;&rarr;</span>
         <div class="diagram-box sync">
-            PC Sincronizaci&oacute;n
-            <span class="diagram-label">Windows 10/11</span>
+            Equipo de Sincronizaci&oacute;n
+            <span class="diagram-label">Red local del cliente</span>
             <span class="diagram-label">Scripts BCP (tarea programada)</span>
         </div>
     </div>
@@ -160,7 +160,7 @@
                 </td>
                 <td style="border: none; text-align: center; vertical-align: top; padding: 5px;">
                     <div class="diagram-box docker">
-                        Backend Flask
+                        Backend Python
                         <span class="diagram-label">Puerto 5000 (interno)</span>
                         <span class="diagram-label">API REST + Gunicorn</span>
                     </div>
@@ -212,7 +212,7 @@
     <span class="diagram-arrow">&rarr;</span>
     <code style="background: #e3f2fd; padding: 2px 6px; border-radius: 3px;">Nginx (HTTPS)</code>
     <span class="diagram-arrow">&rarr;</span>
-    <code style="background: #e3f2fd; padding: 2px 6px; border-radius: 3px;">Flask (API REST)</code>
+    <code style="background: #e3f2fd; padding: 2px 6px; border-radius: 3px;">Python (API REST)</code>
     <span class="diagram-arrow">&rarr;</span>
     <code style="background: #e3f2fd; padding: 2px 6px; border-radius: 3px;">SQL Server (espejo)</code>
     <span class="diagram-arrow">&rarr;</span>
@@ -238,7 +238,7 @@
 <table>
     <tr><th style="width:15%">Servicio</th><th style="width:20%">Tecnolog&iacute;a</th><th style="width:15%">Puerto</th><th>Funci&oacute;n</th></tr>
     <tr><td><strong>Nginx</strong></td><td>Nginx (Docker)</td><td>80 / 443</td><td>Proxy inverso, certificado SSL (HTTPS), punto de entrada web</td></tr>
-    <tr><td><strong>Backend</strong></td><td>Python 3.11 + Flask + Gunicorn</td><td>5000 (interno)</td><td>API REST, l&oacute;gica de negocio, servir frontend</td></tr>
+    <tr><td><strong>Backend</strong></td><td>Python 3.11 + Gunicorn</td><td>5000 (interno)</td><td>API REST, l&oacute;gica de negocio, servir frontend</td></tr>
     <tr><td><strong>Redis</strong></td><td>Redis 7 Alpine</td><td>6379 (interno)</td><td>Cach&eacute; de sesiones, rate limiting (protecci&oacute;n contra ataques)</td></tr>
     <tr><td><strong>SQL Server</strong></td><td>SQL Server 2025 (Docker)</td><td>1433</td><td>Base de datos replicada del ERP</td></tr>
 </table>
@@ -246,7 +246,7 @@
 <h3>2.4 Componentes tecnol&oacute;gicos</h3>
 <table>
     <tr><th>Componente</th><th>Tecnolog&iacute;a</th><th>Descripci&oacute;n</th></tr>
-    <tr><td>Backend</td><td>Python 3.11 + Flask</td><td>API REST, l&oacute;gica de negocio</td></tr>
+    <tr><td>Backend</td><td>Python 3.11</td><td>API REST, l&oacute;gica de negocio</td></tr>
     <tr><td>Frontend</td><td>HTML5 + JavaScript + CSS3</td><td>Interfaz web responsive</td></tr>
     <tr><td>Base de datos</td><td>SQL Server 2025 (Docker)</td><td>Almacenamiento de datos</td></tr>
     <tr><td>Cach&eacute;</td><td>Redis 7</td><td>Sesiones, rate limiting</td></tr>
@@ -284,14 +284,12 @@
 </ul>
 
 <h3>3.3 Equipo de sincronizaci&oacute;n</h3>
-<p>Un PC Windows en la misma red local que ejecutar&aacute; el script de sincronizaci&oacute;n peri&oacute;dicamente (tarea programada).</p>
+<p>Un equipo dedicado en la misma red local ser&aacute; el encargado de transferir los datos desde el ERP hacia el servidor de producci&oacute;n, ejecutando el proceso de forma autom&aacute;tica y peri&oacute;dica.</p>
 <table>
     <tr><th>Requisito</th><th>Detalle</th></tr>
-    <tr><td>Sistema operativo</td><td>Windows 10/11</td></tr>
     <tr><td>ODBC Driver</td><td>Microsoft ODBC Driver 17 o 18 for SQL Server</td></tr>
     <tr><td>sqlcmd / bcp</td><td>Versi&oacute;n incluida con ODBC Driver 17+</td></tr>
-    <tr><td>PowerShell</td><td>Versi&oacute;n 3.0 o superior (incluido en Windows)</td></tr>
-    <tr><td>Acceso red</td><td>Conectividad al servidor ERP y al servidor Linux</td></tr>
+    <tr><td>Acceso red</td><td>Conectividad al servidor ERP y al servidor de producci&oacute;n</td></tr>
 </table>
 
 <!-- 4. DATOS DEL ERP -->
@@ -458,7 +456,6 @@ Ejemplos:
   --network jobers-net \
   -e 'ACCEPT_EULA=Y' \
   -e 'MSSQL_SA_PASSWORD=&lt;contrase&ntilde;a_segura&gt;' \
-  -e 'MSSQL_PID=developer' \
   -e 'TZ=Europe/Madrid' \
   -p 1433:1433 \
   -v sqldata:/var/opt/mssql \
@@ -478,9 +475,9 @@ Ejemplos:
 <h3>8.4 Despliegue de la aplicaci&oacute;n (Docker Compose)</h3>
 <p>La aplicaci&oacute;n se despliega con Docker Compose incluyendo:</p>
 <ul>
-    <li>Contenedor backend (Python/Flask + Gunicorn)</li>
+    <li>Contenedor backend (Python + Gunicorn)</li>
     <li>Contenedor Redis (cach&eacute; y sesiones)</li>
-    <li>Volumen para el frontend (servido por Flask)</li>
+    <li>Volumen para el frontend (servido por el backend)</li>
 </ul>
 
 <h3>8.5 Configuraci&oacute;n de Nginx (proxy inverso + SSL)</h3>
@@ -493,7 +490,7 @@ Ejemplos:
 <!-- 9. SINCRONIZACI&Oacute;N -->
 <h2 class="page-break" id="sincronizacion">9. Sincronizaci&oacute;n de Datos</h2>
 
-<p>La sincronizaci&oacute;n se ejecuta desde un equipo Windows de la red local mediante un script .bat programado como tarea de Windows.</p>
+<p>La sincronizaci&oacute;n se ejecuta desde un equipo dedicado en la red local que se encarga de transferir autom&aacute;ticamente los datos del ERP al servidor de producci&oacute;n mediante un proceso programado.</p>
 
 <h3>9.1 Proceso de sincronizaci&oacute;n</h3>
 <ol>
@@ -517,7 +514,7 @@ Ejemplos:
 </div>
 
 <h3>9.3 Compatibilidad BCP</h3>
-<p>El script utiliza BCP en formato <code>-w</code> (wide character) que garantiza compatibilidad entre diferentes versiones de SQL Server (2008, 2012, 2019, 2025) y entre plataformas Windows y Linux.</p>
+<p>El script utiliza BCP en formato <code>-w</code> (wide character) que garantiza compatibilidad entre diferentes versiones de SQL Server (2008, 2012, 2019, 2025) y entre diferentes plataformas.</p>
 
 <!-- 10. SEGURIDAD -->
 <h2 class="page-break" id="seguridad">10. Seguridad</h2>
@@ -530,7 +527,7 @@ Ejemplos:
     <tr><th style="width:35%">Medida</th><th>Descripci&oacute;n</th></tr>
     <tr><td><strong>HTTPS obligatorio</strong></td><td>Todo el tr&aacute;fico web se cifra con TLS mediante certificado Let's Encrypt. Nginx redirige autom&aacute;ticamente HTTP a HTTPS</td></tr>
     <tr><td><strong>Conexi&oacute;n cifrada a BD</strong></td><td>Las conexiones a SQL Server usan <code>Encrypt=yes</code> con TLS, tanto desde la aplicaci&oacute;n como desde la sincronizaci&oacute;n</td></tr>
-    <tr><td><strong>Puertos internos no expuestos</strong></td><td>Flask (5000) y Redis (6379) solo son accesibles dentro de la red Docker. Solo Nginx (80/443) est&aacute; expuesto a Internet</td></tr>
+    <tr><td><strong>Puertos internos no expuestos</strong></td><td>El backend (5000) y Redis (6379) solo son accesibles dentro de la red Docker. Solo Nginx (80/443) est&aacute; expuesto a Internet</td></tr>
     <tr><td><strong>SQL Server 1433 solo red local</strong></td><td>El puerto de base de datos solo acepta conexiones desde la red interna, nunca desde Internet</td></tr>
 </table>
 
@@ -550,7 +547,7 @@ Ejemplos:
 
 <table>
     <tr><th style="width:35%">Medida</th><th>Descripci&oacute;n</th></tr>
-    <tr><td><strong>Rate limiting</strong></td><td>M&aacute;ximo 5 intentos de login por minuto por IP (Flask-Limiter + Redis). Devuelve HTTP 429 con mensaje amigable</td></tr>
+    <tr><td><strong>Rate limiting</strong></td><td>M&aacute;ximo 5 intentos de login por minuto por IP (Rate Limiter + Redis). Devuelve HTTP 429 con mensaje amigable</td></tr>
     <tr><td><strong>Protecci&oacute;n CSRF</strong></td><td>Token CSRF generado en login (<code>secrets.token_hex(32)</code>), enviado en header <code>X-CSRF-Token</code> en todas las peticiones mutantes (POST/PUT/DELETE)</td></tr>
     <tr><td><strong>CORS controlado</strong></td><td>Or&iacute;genes permitidos configurables por variable de entorno <code>CORS_ORIGINS</code>, no abierto a todos los dominios</td></tr>
     <tr><td><strong>Contrase&ntilde;as ocultas</strong></td><td>Las contrase&ntilde;as de configuraci&oacute;n SMTP nunca se devuelven en las respuestas de la API</td></tr>
@@ -562,7 +559,7 @@ Ejemplos:
 
 <table>
     <tr><th style="width:20%">Mecanismo</th><th style="width:25%">Uso</th><th>Detalles</th></tr>
-    <tr><td><strong>Sesi&oacute;n (cookies)</strong></td><td>Frontend web (navegador)</td><td>Flask-Login con cookies HttpOnly. Token CSRF obligatorio para operaciones de escritura</td></tr>
+    <tr><td><strong>Sesi&oacute;n (cookies)</strong></td><td>Frontend web (navegador)</td><td>Cookies HttpOnly. Token CSRF obligatorio para operaciones de escritura</td></tr>
     <tr><td><strong>API Key</strong></td><td>Integraciones externas (ERP, PowerBuilder)</td><td>Clave &uacute;nica por usuario, enviada en header <code>X-API-Key</code> o query param <code>?apikey=</code>. No requiere CSRF</td></tr>
 </table>
 
@@ -604,7 +601,7 @@ Ejemplos:
 
 <table>
     <tr><th>Variable</th><th>Funci&oacute;n</th></tr>
-    <tr><td><code>SECRET_KEY</code></td><td>Clave secreta de Flask para firmar sesiones</td></tr>
+    <tr><td><code>SECRET_KEY</code></td><td>Clave secreta para firmar sesiones</td></tr>
     <tr><td><code>CORS_ORIGINS</code></td><td>Or&iacute;genes permitidos para peticiones CORS</td></tr>
     <tr><td><code>DB_SERVER</code>, <code>DB_NAME</code>, <code>DB_USER</code>, <code>DB_PASSWORD</code></td><td>Credenciales de conexi&oacute;n a base de datos</td></tr>
     <tr><td><code>REDIS_URL</code></td><td>URL de conexi&oacute;n a Redis</td></tr>
@@ -625,7 +622,7 @@ Ejemplos:
     <tr><td>80</td><td>TCP</td><td>Entrante</td><td>HTTP (redirecci&oacute;n a HTTPS)</td></tr>
     <tr><td>443</td><td>TCP</td><td>Entrante</td><td>HTTPS (acceso web)</td></tr>
     <tr><td>1433</td><td>TCP</td><td>Entrante (red local)</td><td>SQL Server (sincronizaci&oacute;n)</td></tr>
-    <tr><td>5000</td><td>TCP</td><td>Interno (Docker)</td><td>Backend Flask (no expuesto)</td></tr>
+    <tr><td>5000</td><td>TCP</td><td>Interno (Docker)</td><td>Backend Python (no expuesto)</td></tr>
 </table>
 
 <h3>11.2 NAT / Port Forwarding (router)</h3>
@@ -667,7 +664,7 @@ Ejemplos:
 <h3>13.1 Tareas peri&oacute;dicas</h3>
 <table>
     <tr><th>Tarea</th><th>Frecuencia</th><th>Automatizada</th></tr>
-    <tr><td>Sincronizaci&oacute;n de datos</td><td>Seg&uacute;n configuraci&oacute;n</td><td>S&iacute; (tarea programada Windows)</td></tr>
+    <tr><td>Sincronizaci&oacute;n de datos</td><td>Seg&uacute;n configuraci&oacute;n</td><td>S&iacute; (tarea programada)</td></tr>
     <tr><td>Renovaci&oacute;n certificado SSL</td><td>Cada 90 d&iacute;as</td><td>S&iacute; (certbot)</td></tr>
     <tr><td>Compactaci&oacute;n log SQL Server</td><td>En cada sincronizaci&oacute;n</td><td>S&iacute;</td></tr>
     <tr><td>Monitorizaci&oacute;n espacio en disco</td><td>Mensual</td><td>No</td></tr>
