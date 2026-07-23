@@ -16,7 +16,8 @@
         'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
         'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
         'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
-        'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
+        'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' },
+        'cristacer': { primary: '#1a1a1a', primaryDark: '#000000', primaryLight: '#444444' }
     };
     var theme = localStorage.getItem('theme') || 'dark';
     var colorTheme = localStorage.getItem('colorTheme') || 'rubi';
@@ -28,7 +29,31 @@
     // Inyectar colores como CSS inline con !important para ganar especificidad
     var style = document.createElement('style');
     style.id = 'theme-colors-inline';
-    style.textContent = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
+    var css = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
+
+    // Cristacer: inyectar estilos críticos para evitar flash (fondo, header, sidebar, logo)
+    if (colorTheme === 'cristacer') {
+        if (theme === 'dark') {
+            css += 'body{background:#1a1815!important}';
+            css += '.top-header{background:#1a1815!important;border-bottom:1px solid #3d3a36!important}';
+            css += '.sidebar{background:#22201d!important;border-right:1px solid #3d3a36!important}';
+        } else {
+            css += 'body{background:#F5F0EB!important}';
+            css += '.top-header{background:#fff!important;border-bottom:1px solid #d4ccc3!important}';
+            css += '.top-header-title,.header-logo-text,.top-header .user-name-display{color:#1a1a1a!important;-webkit-text-fill-color:#1a1a1a!important}';
+            css += '.top-header .menu-icon,.top-header .mobile-menu-btn svg{stroke:#1a1a1a!important}';
+            css += '.header-logo img{filter:none!important}';
+            css += '.sidebar{background:#fff!important;border-right:1px solid #d4ccc3!important}';
+            css += '.sidebar-item{color:#444!important}';
+            css += '.sidebar-item svg{stroke:#444!important}';
+            css += '.login-wrapper{background:#F5F0EB!important}';
+            css += '.login-sidebar{border-right:none!important}';
+            css += '.login-sidebar::before{display:none!important}';
+            css += '.btn-login{background:#1a1a1a!important}';
+        }
+    }
+
+    style.textContent = css;
     document.head.appendChild(style);
 
     // Favicon desde cache

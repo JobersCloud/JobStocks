@@ -228,6 +228,23 @@
     --row-hover: #f8efe0;
 }
 
+/* Tema Cristacer (Beige/Negro - Diseño exclusivo Cristal Cerámicas) */
+[data-color-theme="cristacer"] {
+    --primary: #1a1a1a;
+    --primary-dark: #000000;
+    --primary-light: #444444;
+    --secondary: #333333;
+    --accent: #F5F0EB;
+    --row-odd: #f5f0eb;
+    --row-hover: #ede6df;
+    --bg-primary: #F5F0EB;
+    --bg-secondary: #EDE6DF;
+    --bg-tertiary: #E5DDD5;
+    --border: #d4ccc3;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b6560;
+}
+
 /* Asegurar que los temas de color funcionen con dark mode */
 [data-theme="dark"][data-color-theme="rubi"] {
     --accent: #4a1e1e;
@@ -333,6 +350,17 @@
     --row-even: #1e293b;
     --row-odd: #1a1512;
     --row-hover: #4a3020;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] {
+    --accent: #2a2520;
+    --row-even: #1e1b18;
+    --row-odd: #252220;
+    --row-hover: #332e2a;
+    --bg-primary: #1a1815;
+    --bg-secondary: #22201d;
+    --bg-tertiary: #2a2825;
+    --border: #3d3a36;
 }
 
 /* ==================== MODO OSCURO ==================== */

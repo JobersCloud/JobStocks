@@ -549,6 +549,10 @@
                                     <div class="theme-preview" style="background: linear-gradient(135deg, #FF4438 0%, #1a1a1a 100%);"></div>
                                     <span class="theme-name">Elegante</span>
                                 </div>
+                                <div class="theme-card" data-theme="cristacer" onclick="selectTheme('cristacer')" style="display:none" data-exclusive>
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #F5F0EB 0%, #1a1a1a 100%);"></div>
+                                    <span class="theme-name">Cristacer</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -904,7 +908,12 @@
                     credentials: 'include'
                 });
                 const config = await response.json();
-                applyColorTheme(config.tema || 'rubi');
+                const tema = config.tema || 'rubi';
+                applyColorTheme(tema);
+                // Mostrar temas exclusivos solo si la empresa los tiene asignados
+                document.querySelectorAll('.theme-card[data-exclusive]').forEach(card => {
+                    card.style.display = card.dataset.theme === tema ? '' : 'none';
+                });
             } catch (error) {
                 applyColorTheme('rubi');
             }

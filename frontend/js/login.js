@@ -78,7 +78,8 @@ function applyColorTheme(tema) {
         'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
         'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
         'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
-        'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
+        'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' },
+        'cristacer': { primary: '#1a1a1a', primaryDark: '#000000', primaryLight: '#444444' }
     };
     if (!themes[tema]) tema = 'rubi';
     const colors = themes[tema];
@@ -87,6 +88,33 @@ function applyColorTheme(tema) {
     document.documentElement.style.setProperty('--primary', colors.primary, 'important');
     document.documentElement.style.setProperty('--primary-dark', colors.primaryDark, 'important');
     document.documentElement.style.setProperty('--primary-light', colors.primaryLight, 'important');
+
+    // Cristacer: textos personalizados del login (como en el mockup del diseñador)
+    if (tema === 'cristacer') {
+        applyCristacerLoginTexts();
+    }
+}
+
+function applyCristacerLoginTexts() {
+    const h1 = document.querySelector('.login-header h1');
+    if (h1) { h1.textContent = 'Área privada y stock'; h1.removeAttribute('data-i18n'); }
+
+    const subtitle = document.querySelector('.login-header .login-subtitle');
+    if (subtitle) { subtitle.textContent = 'Inicia sesión para acceder al sistema de consulta y gestión de inventario en tiempo real y otros servicios.'; subtitle.removeAttribute('data-i18n'); }
+
+    const btn = document.querySelector('.btn-login');
+    if (btn) { btn.textContent = 'Entrar'; btn.removeAttribute('data-i18n'); }
+
+    const regLink = document.querySelector('#register-link-container');
+    if (regLink) {
+        const span = regLink.querySelector('span');
+        const a = regLink.querySelector('a');
+        if (span) { span.textContent = '¿No eres miembro?'; span.removeAttribute('data-i18n'); }
+        if (a) { a.textContent = 'Solicita tu registro'; a.removeAttribute('data-i18n'); }
+    }
+
+    const forgotLink = document.querySelector('#forgot-password-container a');
+    if (forgotLink) { forgotLink.textContent = 'He olvidado mi contraseña'; forgotLink.removeAttribute('data-i18n'); }
 }
 
 // ==================== MODO OSCURO ====================

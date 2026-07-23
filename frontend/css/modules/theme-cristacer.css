@@ -1,0 +1,659 @@
+/* ==================== TEMA CRISTACER ==================== */
+/* Diseño exclusivo para Cristal Cerámicas, S.A.             */
+/* Estética: beige/crema con negro, minimalista, elegante    */
+/* NO afecta a ninguna otra empresa (AZULFER, Undefasa, etc) */
+/* ========================================================= */
+
+/* --- Body --- */
+[data-color-theme="cristacer"] body {
+    background: #F5F0EB !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] body {
+    background: #1a1815 !important;
+}
+
+/* --- Header: mismo fondo beige, línea divisoria oscura --- */
+[data-color-theme="cristacer"] .top-header {
+    background: #F5F0EB !important;
+    border-bottom: 1px solid #1a1a1a !important;
+    box-shadow: none !important;
+}
+
+[data-color-theme="cristacer"] .top-header-title {
+    color: #1a1a1a !important;
+    -webkit-text-fill-color: #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .header-logo-text {
+    color: #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .header-divider {
+    background: #d4ccc3 !important;
+}
+
+/* Logo NO invertido (se muestra en negro original) */
+[data-color-theme="cristacer"] .header-logo img {
+    filter: none !important;
+}
+
+/* Botones del header con estilo claro */
+[data-color-theme="cristacer"] .top-header .theme-toggle-btn,
+[data-color-theme="cristacer"] .top-header .lang-selector-header,
+[data-color-theme="cristacer"] .top-header .menu-btn {
+    background: rgba(0, 0, 0, 0.05) !important;
+    border-color: #d4ccc3 !important;
+    color: #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .top-header .theme-toggle-btn:hover,
+[data-color-theme="cristacer"] .top-header .lang-selector-header:hover,
+[data-color-theme="cristacer"] .top-header .menu-btn:hover {
+    background: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-color-theme="cristacer"] .top-header .menu-icon {
+    stroke: #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .top-header .user-name-display {
+    color: #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .top-header .mobile-menu-btn {
+    background: rgba(0, 0, 0, 0.05) !important;
+    border-color: #d4ccc3 !important;
+}
+
+[data-color-theme="cristacer"] .top-header .mobile-menu-btn svg {
+    stroke: #1a1a1a !important;
+}
+
+/* Mirror indicator */
+[data-color-theme="cristacer"] .mirror-indicator {
+    background: rgba(0, 0, 0, 0.05) !important;
+    border-color: #d4ccc3 !important;
+    color: #1a1a1a !important;
+}
+
+/* Notification bell */
+[data-color-theme="cristacer"] .notification-btn {
+    color: #1a1a1a !important;
+}
+
+/* --- Sidebar: mismo fondo beige, línea divisoria oscura --- */
+[data-color-theme="cristacer"] .sidebar {
+    background: #F5F0EB !important;
+    border-right: 1px solid #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-toggle-container {
+    border-bottom: 1px solid #e5ddd5 !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-toggle {
+    background: #1a1a1a !important;
+    border-color: #1a1a1a !important;
+    color: white !important;
+    border-radius: 50% !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-toggle:hover {
+    background: #333333 !important;
+    border-color: #333333 !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-toggle svg path,
+[data-color-theme="cristacer"] .sidebar-toggle svg rect {
+    fill: white !important;
+    stroke: white !important;
+}
+
+/* --- Tipografía sidebar: fina, limpia, sin negrita --- */
+[data-color-theme="cristacer"] .sidebar-item {
+    color: #1a1a1a !important;
+    font-weight: 400 !important;
+    font-size: 0.9rem !important;
+    letter-spacing: 0.01em !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-item svg {
+    stroke: #1a1a1a !important;
+    stroke-width: 1.5 !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-item .sidebar-item-text {
+    font-weight: 400 !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-item:hover {
+    background: #F5F0EB !important;
+    color: #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-item:hover svg {
+    stroke: #1a1a1a !important;
+}
+
+/* Item activo: fondo oscuro, texto blanco, bordes redondeados */
+[data-color-theme="cristacer"] .sidebar-item.active {
+    background: #1a1a1a !important;
+    color: white !important;
+    border-left: none !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-item.active svg {
+    stroke: white !important;
+}
+
+/* Títulos de sección */
+[data-color-theme="cristacer"] .sidebar-section-title {
+    color: #999 !important;
+    font-weight: 400 !important;
+    font-size: 0.7rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+/* Acordeones: misma tipografía fina */
+[data-color-theme="cristacer"] .sidebar-accordion-header {
+    color: #1a1a1a !important;
+    font-weight: 400 !important;
+    font-size: 0.9rem !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-accordion-header svg {
+    stroke: #1a1a1a !important;
+    stroke-width: 1.5 !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-accordion-header:hover {
+    background: #F5F0EB !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-accordion.expanded > .sidebar-accordion-header {
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: #1a1a1a !important;
+    font-weight: 500 !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-accordion.expanded > .sidebar-accordion-header svg {
+    stroke: #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-accordion-title span {
+    color: #1a1a1a !important;
+    font-weight: 400 !important;
+    font-size: 0.9rem !important;
+}
+
+/* Sub-items dentro de acordeones */
+[data-color-theme="cristacer"] .sidebar-accordion-content .sidebar-item {
+    font-size: 0.85rem !important;
+    font-weight: 400 !important;
+}
+
+/* Header title: tipografía fina */
+[data-color-theme="cristacer"] .top-header-title {
+    font-weight: 500 !important;
+    font-size: 1rem !important;
+    letter-spacing: 0.01em !important;
+}
+
+/* Company name */
+[data-color-theme="cristacer"] .header-logo-text {
+    font-weight: 400 !important;
+    font-size: 0.85rem !important;
+}
+
+/* Cerrar sesión en footer */
+[data-color-theme="cristacer"] .sidebar-footer .sidebar-item {
+    font-weight: 400 !important;
+    font-size: 0.85rem !important;
+    color: #666 !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-footer .sidebar-item svg {
+    stroke: #666 !important;
+}
+
+/* Footer del sidebar */
+[data-color-theme="cristacer"] .sidebar-footer {
+    border-top: 1px solid #e5ddd5 !important;
+    background: rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Texto vertical sidebar (móvil) */
+[data-color-theme="cristacer"] .sidebar-vertical-text {
+    color: #999 !important;
+}
+
+/* --- Menú de usuario dropdown --- */
+[data-color-theme="cristacer"] .menu-dropdown {
+    background: #F5F0EB !important;
+}
+
+[data-color-theme="cristacer"] .menu-dropdown .menu-header {
+    background: #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .menu-dropdown .menu-item {
+    color: #333 !important;
+}
+
+[data-color-theme="cristacer"] .menu-dropdown .menu-item:hover {
+    background: #F5F0EB !important;
+}
+
+/* --- Modales: header oscuro (negro en vez de color) --- */
+[data-color-theme="cristacer"] .modal-header,
+[data-color-theme="cristacer"] #edit-modal .modal-header,
+[data-color-theme="cristacer"] #detail-modal .modal-header,
+[data-color-theme="cristacer"] .quantity-modal-header,
+[data-color-theme="cristacer"] .changelog-modal-header {
+    background: #1a1a1a !important;
+}
+
+/* --- Botones icono: borde fino, flat --- */
+[data-color-theme="cristacer"] .btn-icon {
+    border-color: #d4ccc3;
+}
+
+[data-color-theme="cristacer"] .btn-icon-primary {
+    background: #1a1a1a !important;
+    border-color: #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .btn-icon-primary:hover {
+    background: #333333 !important;
+    border-color: #333333 !important;
+}
+
+/* --- Botones primarios: negro --- */
+[data-color-theme="cristacer"] .btn-primary,
+[data-color-theme="cristacer"] .btn-action.btn-edit,
+[data-color-theme="cristacer"] button[type="submit"]:not(.btn-delete) {
+    background: #1a1a1a !important;
+    border-color: #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .btn-primary:hover,
+[data-color-theme="cristacer"] .btn-action.btn-edit:hover,
+[data-color-theme="cristacer"] button[type="submit"]:not(.btn-delete):hover {
+    background: #333333 !important;
+    border-color: #333333 !important;
+}
+
+/* --- Tablas: header negro --- */
+[data-color-theme="cristacer"] .users-table thead,
+[data-color-theme="cristacer"] .proposals-table thead,
+[data-color-theme="cristacer"] .inquiries-table thead,
+[data-color-theme="cristacer"] .config-list thead,
+[data-color-theme="cristacer"] .audit-table thead,
+[data-color-theme="cristacer"] table thead {
+    background: #1a1a1a !important;
+}
+
+/* --- Cards/paneles: mismo fondo beige, borde negro --- */
+[data-color-theme="cristacer"] .logo-card,
+[data-color-theme="cristacer"] .config-card,
+[data-color-theme="cristacer"] .email-config-card,
+[data-color-theme="cristacer"] .param-section,
+[data-color-theme="cristacer"] .proposal-card,
+[data-color-theme="cristacer"] .user-card,
+[data-color-theme="cristacer"] .inquiry-card {
+    border-top-color: #1a1a1a;
+    background: #F5F0EB;
+}
+
+/* --- Stock cards: fondo beige, borde negro, esquinas rectas --- */
+[data-color-theme="cristacer"] .stock-card {
+    background: #F5F0EB;
+    border: 1px solid #1a1a1a !important;
+    border-radius: 2px !important;
+}
+
+/* --- Tarjetas con imagen (grid con miniaturas): borde negro, flat --- */
+[data-color-theme="cristacer"] .stock-image-card {
+    border: 1px solid #1a1a1a !important;
+    border-radius: 2px !important;
+    box-shadow: none !important;
+    background: #F5F0EB !important;
+}
+
+[data-color-theme="cristacer"] .stock-image-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* --- Contenedores principales con fondo blanco --- */
+[data-color-theme="cristacer"] .main-content-area {
+    background: transparent;
+}
+
+[data-color-theme="cristacer"] .table-container {
+    background: transparent;
+}
+
+/* --- Filtros --- */
+[data-color-theme="cristacer"] .filters,
+[data-color-theme="cristacer"] .filters-container {
+    background: transparent !important;
+    border-color: #d4ccc3 !important;
+}
+
+/* --- Paginación --- */
+[data-color-theme="cristacer"] .pagination-btn.active {
+    background: #1a1a1a;
+    border-color: #1a1a1a;
+}
+
+/* --- Inputs/selects: esquinas rectas, borde fino, flat --- */
+[data-color-theme="cristacer"] input,
+[data-color-theme="cristacer"] select,
+[data-color-theme="cristacer"] textarea {
+    border-radius: 2px !important;
+    border: 1px solid #1a1a1a !important;
+    box-shadow: none !important;
+}
+
+[data-color-theme="cristacer"] input:focus,
+[data-color-theme="cristacer"] select:focus,
+[data-color-theme="cristacer"] textarea:focus {
+    border-color: #1a1a1a !important;
+    box-shadow: none !important;
+}
+
+/* --- Scrollbar sidebar --- */
+[data-color-theme="cristacer"] .sidebar-nav::-webkit-scrollbar-thumb {
+    background: #d4ccc3;
+}
+
+[data-color-theme="cristacer"] .sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: #b8b0a7;
+}
+
+/* --- Carrito flotante: negro flat sin gradiente --- */
+[data-color-theme="cristacer"] .carrito-btn {
+    background: #1a1a1a !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-color-theme="cristacer"] .carrito-btn:hover {
+    background: #333333 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* --- Links --- */
+[data-color-theme="cristacer"] a:not(.sidebar-item):not(.btn):hover {
+    color: #1a1a1a;
+}
+
+/* ==================== LOGIN CRISTACER ==================== */
+/* Estilo flat minimalista: foto izquierda, form derecha      */
+/* Basado en mockup del diseñador de Cristal Cerámicas        */
+
+/* Fondo general beige */
+[data-color-theme="cristacer"] .login-wrapper {
+    background: #F5F0EB !important;
+}
+
+/* Sidebar izquierdo = foto a pantalla completa */
+[data-color-theme="cristacer"] .login-sidebar {
+    background: url('/assets/cristal/login-bg.jpg') center/cover no-repeat !important;
+    border-right: none !important;
+    flex: 1 !important;
+}
+
+/* Quitar animación de fondo */
+[data-color-theme="cristacer"] .login-sidebar::before {
+    display: none !important;
+}
+
+/* Ocultar texto y logo del sidebar (la foto es el contenido) */
+[data-color-theme="cristacer"] .sidebar-content {
+    display: none !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-developer {
+    display: none !important;
+}
+
+/* Ocultar controles superiores flotantes (tema/idioma) */
+[data-color-theme="cristacer"] .login-top-controls {
+    display: none !important;
+}
+
+/* Contenedor derecho: fondo beige, centrado */
+[data-color-theme="cristacer"] .login-container {
+    background: #F5F0EB !important;
+    flex: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Login box: SIN tarjeta, sin borde, sin sombra, fondo transparente */
+[data-color-theme="cristacer"] .login-box {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    max-width: 400px !important;
+    padding: 40px 20px !important;
+}
+
+/* Logo visible arriba del form (mobile-logo se reutiliza) — grande como en el mockup */
+[data-color-theme="cristacer"] .mobile-logo {
+    display: block !important;
+    height: 90px !important;
+    margin: 0 auto 40px !important;
+}
+
+/* Título y subtítulo del login */
+[data-color-theme="cristacer"] .login-header h1 {
+    color: #1a1a1a !important;
+    -webkit-text-fill-color: #1a1a1a !important;
+    font-size: 1.6rem !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+}
+
+[data-color-theme="cristacer"] .login-subtitle {
+    color: #6b6560 !important;
+    font-size: 0.88rem !important;
+    text-align: left !important;
+    line-height: 1.5 !important;
+    max-width: 380px !important;
+}
+
+/* Labels: normal case, peso normal */
+[data-color-theme="cristacer"] .login-form .form-group label {
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    color: #1a1a1a !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+}
+
+/* Inputs: borde fino, fondo blanco, flat */
+[data-color-theme="cristacer"] .login-form input {
+    background: #FFFFFF !important;
+    border: 1px solid #d4ccc3 !important;
+    border-radius: 6px !important;
+    padding: 14px 16px !important;
+    font-size: 0.9rem !important;
+    color: #1a1a1a !important;
+    box-shadow: none !important;
+}
+
+[data-color-theme="cristacer"] .login-form input:focus {
+    border-color: #1a1a1a !important;
+    box-shadow: none !important;
+}
+
+[data-color-theme="cristacer"] .login-form input::placeholder {
+    color: #b8b0a7 !important;
+}
+
+/* Botón "Entrar": negro, compacto, pill shape, alineado izquierda como el mockup */
+[data-color-theme="cristacer"] .btn-login {
+    background: #1a1a1a !important;
+    box-shadow: none !important;
+    border-radius: 25px !important;
+    padding: 13px 36px !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    width: auto !important;
+    align-self: flex-start !important;
+    margin-top: 8px !important;
+}
+
+[data-color-theme="cristacer"] .btn-login:hover {
+    background: #333333 !important;
+    transform: none !important;
+}
+
+/* Links del login: pequeños, sin decoración */
+[data-color-theme="cristacer"] .login-link {
+    text-align: left !important;
+    font-size: 0.8rem !important;
+}
+
+[data-color-theme="cristacer"] .login-link a {
+    color: #1a1a1a !important;
+    text-decoration: underline !important;
+    font-weight: 400 !important;
+}
+
+/* Password toggle */
+[data-color-theme="cristacer"] .password-toggle {
+    color: #999 !important;
+}
+
+/* Password modal header */
+[data-color-theme="cristacer"] .password-modal-header {
+    background: #1a1a1a !important;
+}
+
+/* Version indicator */
+[data-color-theme="cristacer"] .version-indicator {
+    background: rgba(245, 240, 235, 0.9) !important;
+    border-color: #d4ccc3 !important;
+}
+
+/* Responsive: en móvil ocultar foto, solo form */
+@media (max-width: 1024px) {
+    [data-color-theme="cristacer"] .login-sidebar {
+        display: none !important;
+    }
+    [data-color-theme="cristacer"] .login-container {
+        flex: 1 !important;
+    }
+    [data-color-theme="cristacer"] .login-mobile-footer {
+        display: block !important;
+    }
+}
+
+/* ==================== CRISTACER DARK MODE ==================== */
+
+[data-theme="dark"][data-color-theme="cristacer"] .top-header {
+    background: #1a1815 !important;
+    border-bottom-color: #3d3a36 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .top-header-title,
+[data-theme="dark"][data-color-theme="cristacer"] .header-logo-text,
+[data-theme="dark"][data-color-theme="cristacer"] .top-header .user-name-display {
+    color: #e5ddd5 !important;
+    -webkit-text-fill-color: #e5ddd5 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .top-header .menu-icon,
+[data-theme="dark"][data-color-theme="cristacer"] .top-header .mobile-menu-btn svg {
+    stroke: #e5ddd5 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .sidebar {
+    background: #22201d !important;
+    border-right-color: #3d3a36 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .sidebar-item {
+    color: #b8b0a7 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .sidebar-item svg {
+    stroke: #b8b0a7 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .sidebar-item:hover {
+    background: #2a2825 !important;
+    color: #e5ddd5 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .sidebar-item:hover svg {
+    stroke: #e5ddd5 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .sidebar-item.active {
+    background: #e5ddd5 !important;
+    color: #1a1815 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .sidebar-item.active svg {
+    stroke: #1a1815 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .login-wrapper {
+    background: #1a1815 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .login-sidebar {
+    /* La foto se mantiene, se oscurece con overlay */
+    filter: brightness(0.7) !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .login-container {
+    background: #1a1815 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .login-box {
+    background: transparent !important;
+    border: none !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .login-header h1 {
+    color: #e5ddd5 !important;
+    -webkit-text-fill-color: #e5ddd5 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .login-subtitle {
+    color: #b8b0a7 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .login-form .form-group label {
+    color: #e5ddd5 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .login-form input {
+    background: #22201d !important;
+    border-color: #3d3a36 !important;
+    color: #e5ddd5 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .login-link,
+[data-theme="dark"][data-color-theme="cristacer"] .login-link a {
+    color: #b8b0a7 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .btn-login {
+    background: #e5ddd5 !important;
+    color: #1a1815 !important;
+}
+
+[data-theme="dark"][data-color-theme="cristacer"] .btn-login:hover {
+    background: #d4ccc3 !important;
+}

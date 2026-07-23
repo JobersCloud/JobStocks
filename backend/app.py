@@ -153,7 +153,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.48.1'
+APP_VERSION = 'v1.49.1'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -1262,6 +1262,10 @@ def favicon_jobers():
 def favicon_root():
     return send_from_directory(os.path.join(FRONTEND_DIR, 'assets'), 'favicon.ico')
 
+@app.route('/assets/<path:filename>')
+def serve_assets(filename):
+    return send_from_directory(os.path.join(FRONTEND_DIR, 'assets'), filename)
+
 @app.route('/media/<path:filename>')
 def serve_media(filename):
     return send_from_directory(os.path.join(FRONTEND_DIR, 'media'), filename)
@@ -1270,7 +1274,7 @@ def serve_media(filename):
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login_page', 'login', 'register_page', 'verify_email_page', 'reset_password_page', 'serve_css', 'serve_css_module', 'serve_theme_init_js', 'serve_ui_feedback_js', 'serve_login_js', 'serve_register_js', 'serve_reset_password_js', 'serve_i18n_js', 'serve_i18n_lang', 'logo', 'logo_png', 'logo_jobers', 'favicon', 'favicon_jobers', 'favicon_root', 'serve_media', 'static', 'flasgger.static', 'flasgger.apispec', 'empresa_logo.get_logo', 'empresa_logo.get_favicon', 'empresa_logo.logo_exists', 'empresa_logo.get_config', 'empresa_logo.get_tema', 'empresa_logo.get_invertir', 'get_version']
+    allowed_routes = ['login_page', 'login', 'register_page', 'verify_email_page', 'reset_password_page', 'serve_css', 'serve_css_module', 'serve_theme_init_js', 'serve_ui_feedback_js', 'serve_login_js', 'serve_register_js', 'serve_reset_password_js', 'serve_i18n_js', 'serve_i18n_lang', 'logo', 'logo_png', 'logo_jobers', 'favicon', 'favicon_jobers', 'favicon_root', 'serve_assets', 'serve_media', 'static', 'flasgger.static', 'flasgger.apispec', 'empresa_logo.get_logo', 'empresa_logo.get_favicon', 'empresa_logo.logo_exists', 'empresa_logo.get_config', 'empresa_logo.get_tema', 'empresa_logo.get_invertir', 'get_version']
     # Permitir acceso a Swagger UI
     if request.path.startswith('/apidocs') or request.path.startswith('/flasgger_static') or request.path.startswith('/apispec'):
         return None

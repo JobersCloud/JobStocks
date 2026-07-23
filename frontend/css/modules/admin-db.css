@@ -1434,12 +1434,14 @@ th.dg-drag-over-right {
     min-width: 38px;
     min-height: 38px;
     padding: 0;
-    border: none;
-    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    border-radius: 50%;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     position: relative;
     flex-shrink: 0;
+    background: transparent;
+    color: var(--text-secondary);
 }
 
 .btn-icon svg {
@@ -1494,12 +1496,12 @@ th.dg-drag-over-right {
 .btn-icon-primary {
     background: var(--primary);
     color: white;
+    border-color: var(--primary);
 }
 
 .btn-icon-primary:hover {
     background: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary-dark);
 }
 
 .btn-icon-primary svg {
@@ -1508,15 +1510,13 @@ th.dg-drag-over-right {
 }
 
 .btn-icon-secondary {
-    background: var(--bg-tertiary);
+    background: transparent;
     color: var(--text-secondary);
-    border: 1px solid var(--border);
 }
 
 .btn-icon-secondary:hover {
-    background: var(--bg-secondary);
+    background: var(--bg-tertiary);
     color: var(--text-primary);
-    border-color: var(--text-light);
 }
 
 .btn-icon-secondary svg {
@@ -1527,11 +1527,11 @@ th.dg-drag-over-right {
 .btn-icon-success {
     background: var(--success);
     color: white;
+    border-color: var(--success);
 }
 
 .btn-icon-success:hover {
     background: #0d9668;
-    transform: translateY(-2px);
 }
 
 .btn-icon-success svg {
@@ -1542,11 +1542,11 @@ th.dg-drag-over-right {
 .btn-icon-danger {
     background: var(--danger);
     color: white;
+    border-color: var(--danger);
 }
 
 .btn-icon-danger:hover {
     background: #dc2626;
-    transform: translateY(-2px);
 }
 
 .btn-icon-danger svg {
@@ -1557,11 +1557,11 @@ th.dg-drag-over-right {
 .btn-icon-warning {
     background: var(--warning);
     color: white;
+    border-color: var(--warning);
 }
 
 .btn-icon-warning:hover {
     background: #d97706;
-    transform: translateY(-2px);
 }
 
 .btn-icon-warning svg {
@@ -1577,7 +1577,7 @@ th.dg-drag-over-right {
 
 .btn-icon-ghost:hover {
     background: var(--bg-tertiary);
-    color: var(--primary);
+    color: var(--text-primary);
 }
 
 .btn-icon-ghost svg {
@@ -1590,13 +1590,11 @@ th.dg-drag-over-right {
     position: relative;
     background: transparent;
     color: var(--text-secondary);
-    border: 1px solid var(--border);
 }
 
 .btn-icon-voice:hover {
     background: var(--bg-tertiary);
-    color: var(--primary);
-    border-color: var(--primary);
+    color: var(--text-primary);
 }
 
 .btn-icon-voice svg {
