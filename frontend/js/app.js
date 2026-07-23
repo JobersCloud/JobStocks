@@ -494,7 +494,8 @@ function applyColorTheme(tema) {
         'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
         'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
         'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' },
-        'cristacer': { primary: '#1a1a1a', primaryDark: '#000000', primaryLight: '#444444' }
+        'cristacer': { primary: '#1a1a1a', primaryDark: '#000000', primaryLight: '#444444' },
+        'rocanet': { primary: '#334FB4', primaryDark: '#1a2d7a', primaryLight: '#5B78D0' }
     };
 
     if (!themes[tema]) {
