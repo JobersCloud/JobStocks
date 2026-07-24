@@ -2,11 +2,23 @@
 /* Diseño exclusivo para Cristal Cerámicas, S.A.             */
 /* Estética: beige/crema con negro, minimalista, elegante    */
 /* NO afecta a ninguna otra empresa (AZULFER, Undefasa, etc) */
+/* Tipografía: Neue Haas Grotesk (Adobe Typekit cfu7yaq)     */
+/* Colores: Crema #F6EEE3, Rojo #FF4438, Verde #9FC46D,     */
+/*          Amarillo #EACB45                                  */
 /* ========================================================= */
+
+/* --- Tipografía Neue Haas Grotesk --- */
+[data-color-theme="cristacer"] body,
+[data-color-theme="cristacer"] input,
+[data-color-theme="cristacer"] select,
+[data-color-theme="cristacer"] textarea,
+[data-color-theme="cristacer"] button {
+    font-family: "neue-haas-grotesk-text", sans-serif !important;
+}
 
 /* --- Body --- */
 [data-color-theme="cristacer"] body {
-    background: #F5F0EB !important;
+    background: #F6EEE3 !important;
 }
 
 [data-theme="dark"][data-color-theme="cristacer"] body {
@@ -15,7 +27,7 @@
 
 /* --- Header: mismo fondo beige, línea divisoria oscura --- */
 [data-color-theme="cristacer"] .top-header {
-    background: #F5F0EB !important;
+    background: #F6EEE3 !important;
     border-bottom: 1px solid #1a1a1a !important;
     box-shadow: none !important;
 }
@@ -84,7 +96,7 @@
 
 /* --- Sidebar: mismo fondo beige, línea divisoria oscura --- */
 [data-color-theme="cristacer"] .sidebar {
-    background: #F5F0EB !important;
+    background: #F6EEE3 !important;
     border-right: 1px solid #1a1a1a !important;
 }
 
@@ -128,7 +140,7 @@
 }
 
 [data-color-theme="cristacer"] .sidebar-item:hover {
-    background: #F5F0EB !important;
+    background: #F6EEE3 !important;
     color: #1a1a1a !important;
 }
 
@@ -171,7 +183,7 @@
 }
 
 [data-color-theme="cristacer"] .sidebar-accordion-header:hover {
-    background: #F5F0EB !important;
+    background: #F6EEE3 !important;
 }
 
 [data-color-theme="cristacer"] .sidebar-accordion.expanded > .sidebar-accordion-header {
@@ -233,7 +245,7 @@
 
 /* --- Menú de usuario dropdown --- */
 [data-color-theme="cristacer"] .menu-dropdown {
-    background: #F5F0EB !important;
+    background: #F6EEE3 !important;
 }
 
 [data-color-theme="cristacer"] .menu-dropdown .menu-header {
@@ -245,7 +257,7 @@
 }
 
 [data-color-theme="cristacer"] .menu-dropdown .menu-item:hover {
-    background: #F5F0EB !important;
+    background: #F6EEE3 !important;
 }
 
 /* --- Modales: header oscuro (negro en vez de color) --- */
@@ -306,12 +318,12 @@
 [data-color-theme="cristacer"] .user-card,
 [data-color-theme="cristacer"] .inquiry-card {
     border-top-color: #1a1a1a;
-    background: #F5F0EB;
+    background: #F6EEE3;
 }
 
 /* --- Stock cards: fondo beige, borde negro, esquinas rectas --- */
 [data-color-theme="cristacer"] .stock-card {
-    background: #F5F0EB;
+    background: #F6EEE3;
     border: 1px solid #1a1a1a !important;
     border-radius: 2px !important;
 }
@@ -321,12 +333,34 @@
     border: 1px solid #1a1a1a !important;
     border-radius: 2px !important;
     box-shadow: none !important;
-    background: #F5F0EB !important;
+    background: #F6EEE3 !important;
 }
 
 [data-color-theme="cristacer"] .stock-image-card:hover {
     transform: none !important;
     box-shadow: none !important;
+}
+
+/* --- Badges de stock: colores del diseñador --- */
+[data-color-theme="cristacer"] .badge-success {
+    background: #9FC46D !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 2px !important;
+}
+
+[data-color-theme="cristacer"] .badge-warning {
+    background: #EACB45 !important;
+    color: #1a1a1a !important;
+    border: none !important;
+    border-radius: 2px !important;
+}
+
+[data-color-theme="cristacer"] .badge-danger {
+    background: #FF4438 !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 2px !important;
 }
 
 /* --- Contenedores principales con fondo blanco --- */
@@ -392,13 +426,217 @@
     color: #1a1a1a;
 }
 
+/* ==================== ICONOS CUSTOM DEL DISEÑADOR ==================== */
+/* Ocultar SVG inline y reemplazar por los SVG del kit de Cristal        */
+
+/* --- Helper: ocultar SVG inline y usar background-image --- */
+[data-color-theme="cristacer"] .sidebar-item .sidebar-item-icon svg {
+    display: none !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-item .sidebar-item-icon {
+    width: 18px !important;
+    height: 18px !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+}
+
+/* --- Sidebar: iconos normales (negro) --- */
+[data-color-theme="cristacer"] .sidebar-item[data-page="index.html"] .sidebar-item-icon {
+    background-image: url('/assets/cristal/iconos/stocks%20bl.svg') !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-item[data-page="mis-propuestas.html"] .sidebar-item-icon {
+    background-image: url('/assets/cristal/iconos/propuestas%20bl.svg') !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-item[data-page="mis-consultas.html"] .sidebar-item-icon {
+    background-image: url('/assets/cristal/iconos/consultas%20bl.svg') !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-item[data-page="busqueda-magica.html"] .sidebar-item-icon {
+    background-image: url('/assets/cristal/iconos/busqueda%20bl.svg') !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-item[data-page="mis-favoritos.html"] .sidebar-item-icon {
+    background-image: url('/assets/cristal/iconos/favoritos%20b.svg') !important;
+}
+
+/* --- Sidebar: iconos activos (crema sobre fondo negro) --- */
+[data-color-theme="cristacer"] .sidebar-item.active[data-page="index.html"] .sidebar-item-icon {
+    background-image: url('/assets/cristal/iconos/stocks%20cr.svg') !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-item.active[data-page="mis-propuestas.html"] .sidebar-item-icon {
+    background-image: url('/assets/cristal/iconos/propuestas%20cr.svg') !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-item.active[data-page="mis-consultas.html"] .sidebar-item-icon {
+    background-image: url('/assets/cristal/iconos/consultas%20cr.svg') !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-item.active[data-page="busqueda-magica.html"] .sidebar-item-icon {
+    background-image: url('/assets/cristal/iconos/busqueda%20cr.svg') !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-item.active[data-page="mis-favoritos.html"] .sidebar-item-icon {
+    background-image: url('/assets/cristal/iconos/Group%201240.svg') !important;
+}
+
+/* --- Sidebar: icono cerrar sesión --- */
+[data-color-theme="cristacer"] .sidebar-footer .sidebar-item .sidebar-item-icon {
+    background-image: url('/assets/cristal/iconos/sesion.svg') !important;
+}
+
+/* --- Sidebar toggle: usar burger.svg del diseñador --- */
+[data-color-theme="cristacer"] .sidebar-toggle {
+    width: 34px !important;
+    height: 34px !important;
+    background-image: url('/assets/cristal/iconos/burger.svg') !important;
+    background-size: cover !important;
+    background-color: transparent !important;
+    border: none !important;
+    font-size: 0 !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-toggle:hover {
+    opacity: 0.8 !important;
+    background-color: transparent !important;
+    border: none !important;
+}
+
+/* --- Botones de acción: iconos del diseñador --- */
+[data-color-theme="cristacer"] .btn-icon-primary svg,
+[data-color-theme="cristacer"] .btn-icon-secondary svg,
+[data-color-theme="cristacer"] .btn-icon-ghost svg,
+[data-color-theme="cristacer"] .btn-icon-voice svg {
+    display: none !important;
+}
+
+[data-color-theme="cristacer"] .btn-icon-primary,
+[data-color-theme="cristacer"] .btn-icon-secondary,
+[data-color-theme="cristacer"] .btn-icon-ghost,
+[data-color-theme="cristacer"] .btn-icon-voice {
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    border: none !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+}
+
+/* Buscar: círculo negro con lupa crema */
+[data-color-theme="cristacer"] .btn-icon-primary {
+    background-image: url('/assets/cristal/iconos/boton%20buscar.svg') !important;
+    background-color: transparent !important;
+}
+
+[data-color-theme="cristacer"] .btn-icon-primary:hover {
+    background-color: transparent !important;
+    opacity: 0.8;
+}
+
+/* Ver Todos: círculo con borde negro y grid */
+[data-color-theme="cristacer"] .btn-icon-secondary {
+    background-image: url('/assets/cristal/iconos/boton%20todos.svg') !important;
+    background-color: transparent !important;
+}
+
+/* Limpiar/Borrar: icono papelera */
+[data-color-theme="cristacer"] .btn-icon-ghost {
+    background-image: url('/assets/cristal/iconos/boton%20borrar.svg') !important;
+    background-color: transparent !important;
+    background-size: contain !important;
+}
+
+/* Búsqueda por voz: círculo con borde negro y micrófono */
+[data-color-theme="cristacer"] .btn-icon-voice {
+    background-image: url('/assets/cristal/iconos/boton%20busqueda%20voz.svg') !important;
+    background-color: transparent !important;
+}
+
+/* --- Header: iconos custom --- */
+
+/* Notificación: campana del diseñador */
+[data-color-theme="cristacer"] .bell-btn svg {
+    display: none !important;
+}
+
+[data-color-theme="cristacer"] .bell-btn {
+    background-image: url('/assets/cristal/iconos/notificacion.svg') !important;
+    background-size: 19px 20px !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+}
+
+/* Usuario: icono persona del diseñador */
+[data-color-theme="cristacer"] .menu-btn .menu-icon {
+    display: none !important;
+}
+
+[data-color-theme="cristacer"] .menu-btn {
+    background-image: url('/assets/cristal/iconos/usuario.svg') !important;
+    background-size: 19px 16px !important;
+    background-repeat: no-repeat !important;
+    background-position: 10px center !important;
+    padding-left: 34px !important;
+}
+
+/* Mobile menu: burger del diseñador */
+[data-color-theme="cristacer"] .mobile-menu-btn svg {
+    display: none !important;
+}
+
+[data-color-theme="cristacer"] .mobile-menu-btn {
+    background-image: url('/assets/cristal/iconos/burger.svg') !important;
+    background-size: 30px 30px !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-color: transparent !important;
+    border: none !important;
+}
+
+/* --- Carrito flotante: SVG del diseñador --- */
+[data-color-theme="cristacer"] .carrito-btn {
+    font-size: 0 !important;
+    background-image: url('/assets/cristal/iconos/carrito.svg') !important;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-color: transparent !important;
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 50% !important;
+}
+
+[data-color-theme="cristacer"] .carrito-btn:hover {
+    background-color: transparent !important;
+    opacity: 0.9 !important;
+}
+
+/* --- Espejo: icono custom --- */
+[data-color-theme="cristacer"] .mirror-indicator svg {
+    display: none !important;
+}
+
+[data-color-theme="cristacer"] .mirror-indicator {
+    background-image: url('/assets/cristal/iconos/espejo.svg') !important;
+    background-size: 18px !important;
+    background-repeat: no-repeat !important;
+    background-position: 8px center !important;
+    padding-left: 30px !important;
+}
+
 /* ==================== LOGIN CRISTACER ==================== */
 /* Estilo flat minimalista: foto izquierda, form derecha      */
 /* Basado en mockup del diseñador de Cristal Cerámicas        */
 
 /* Fondo general beige */
 [data-color-theme="cristacer"] .login-wrapper {
-    background: #F5F0EB !important;
+    background: #F6EEE3 !important;
 }
 
 /* Sidebar izquierdo = foto a pantalla completa */
@@ -429,7 +667,7 @@
 
 /* Contenedor derecho: fondo beige, centrado */
 [data-color-theme="cristacer"] .login-container {
-    background: #F5F0EB !important;
+    background: #F6EEE3 !important;
     flex: 1 !important;
     display: flex !important;
     align-items: center !important;

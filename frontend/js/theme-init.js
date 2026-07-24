@@ -34,20 +34,26 @@
 
     // Cristacer: inyectar estilos críticos para evitar flash (fondo, header, sidebar, logo)
     if (colorTheme === 'cristacer') {
+        // Cargar tipografía Neue Haas Grotesk (Adobe Typekit)
+        var tk = document.createElement('link');
+        tk.rel = 'stylesheet';
+        tk.href = 'https://use.typekit.net/cfu7yaq.css';
+        document.head.appendChild(tk);
+
         if (theme === 'dark') {
             css += 'body{background:#1a1815!important}';
             css += '.top-header{background:#1a1815!important;border-bottom:1px solid #3d3a36!important}';
             css += '.sidebar{background:#22201d!important;border-right:1px solid #3d3a36!important}';
         } else {
-            css += 'body{background:#F5F0EB!important}';
-            css += '.top-header{background:#fff!important;border-bottom:1px solid #d4ccc3!important}';
+            css += 'body{background:#F6EEE3!important}';
+            css += '.top-header{background:#F6EEE3!important;border-bottom:1px solid #1a1a1a!important}';
             css += '.top-header-title,.header-logo-text,.top-header .user-name-display{color:#1a1a1a!important;-webkit-text-fill-color:#1a1a1a!important}';
             css += '.top-header .menu-icon,.top-header .mobile-menu-btn svg{stroke:#1a1a1a!important}';
             css += '.header-logo img{filter:none!important}';
-            css += '.sidebar{background:#fff!important;border-right:1px solid #d4ccc3!important}';
+            css += '.sidebar{background:#F6EEE3!important;border-right:1px solid #1a1a1a!important}';
             css += '.sidebar-item{color:#444!important}';
             css += '.sidebar-item svg{stroke:#444!important}';
-            css += '.login-wrapper{background:#F5F0EB!important}';
+            css += '.login-wrapper{background:#F6EEE3!important}';
             css += '.login-sidebar{border-right:none!important}';
             css += '.login-sidebar::before{display:none!important}';
             css += '.btn-login{background:#1a1a1a!important}';
