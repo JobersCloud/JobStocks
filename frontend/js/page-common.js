@@ -25,7 +25,7 @@
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
     const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
-    const API_URL = isLocalhost ? `${protocol}//${hostname}:5000` : `${protocol}//${hostname}`;
+    const API_URL = `${protocol}//${hostname}${window.location.port ? ':' + window.location.port : ''}`;
 
     let currentUser = null;
     let csrfToken = null;
