@@ -37,26 +37,38 @@
     -webkit-text-fill-color: #1a1a1a !important;
 }
 
+/* Ocultar nombre empresa (ya está el logo) */
 [data-color-theme="cristacer"] .header-logo-text {
-    color: #1a1a1a !important;
+    display: none !important;
 }
 
+/* Quitar línea vertical divisoria */
 [data-color-theme="cristacer"] .header-divider {
-    background: #d4ccc3 !important;
+    display: none !important;
 }
 
-/* Logo NO invertido (se muestra en negro original) */
+/* Logo más grande (70% del recuadro) y sin invertir */
 [data-color-theme="cristacer"] .header-logo img {
     filter: none !important;
+    height: 32px !important;
 }
 
-/* Botones del header con estilo claro */
+/* Botones del header: recuadros rectos, fondo beige, borde negro */
 [data-color-theme="cristacer"] .top-header .theme-toggle-btn,
 [data-color-theme="cristacer"] .top-header .lang-selector-header,
 [data-color-theme="cristacer"] .top-header .menu-btn {
-    background: rgba(0, 0, 0, 0.05) !important;
-    border-color: #d4ccc3 !important;
+    background: #F6EEE3 !important;
+    border: 1px solid #1a1a1a !important;
     color: #1a1a1a !important;
+    border-radius: 0 !important;
+}
+
+/* Mirror indicator: mismo estilo recto, borde negro */
+[data-color-theme="cristacer"] .mirror-indicator {
+    background: #F6EEE3 !important;
+    border: 1px solid #1a1a1a !important;
+    color: #1a1a1a !important;
+    border-radius: 0 !important;
 }
 
 [data-color-theme="cristacer"] .top-header .theme-toggle-btn:hover,
@@ -82,12 +94,7 @@
     stroke: #1a1a1a !important;
 }
 
-/* Mirror indicator */
-[data-color-theme="cristacer"] .mirror-indicator {
-    background: rgba(0, 0, 0, 0.05) !important;
-    border-color: #d4ccc3 !important;
-    color: #1a1a1a !important;
-}
+/* (mirror indicator movido arriba junto a botones header) */
 
 /* Notification bell */
 [data-color-theme="cristacer"] .notification-btn {
@@ -122,10 +129,10 @@
     stroke: white !important;
 }
 
-/* --- Tipografía sidebar: fina, limpia, sin negrita --- */
+/* --- Tipografía sidebar: negro y negrita --- */
 [data-color-theme="cristacer"] .sidebar-item {
     color: #1a1a1a !important;
-    font-weight: 400 !important;
+    font-weight: 700 !important;
     font-size: 0.9rem !important;
     letter-spacing: 0.01em !important;
 }
@@ -136,7 +143,7 @@
 }
 
 [data-color-theme="cristacer"] .sidebar-item .sidebar-item-text {
-    font-weight: 400 !important;
+    font-weight: 700 !important;
 }
 
 [data-color-theme="cristacer"] .sidebar-item:hover {
@@ -170,10 +177,10 @@
     letter-spacing: 0.05em !important;
 }
 
-/* Acordeones: misma tipografía fina */
+/* Acordeones: negro y negrita */
 [data-color-theme="cristacer"] .sidebar-accordion-header {
     color: #1a1a1a !important;
-    font-weight: 400 !important;
+    font-weight: 700 !important;
     font-size: 0.9rem !important;
 }
 
@@ -198,38 +205,42 @@
 
 [data-color-theme="cristacer"] .sidebar-accordion-title span {
     color: #1a1a1a !important;
-    font-weight: 400 !important;
+    font-weight: 700 !important;
     font-size: 0.9rem !important;
 }
 
 /* Sub-items dentro de acordeones */
 [data-color-theme="cristacer"] .sidebar-accordion-content .sidebar-item {
     font-size: 0.85rem !important;
-    font-weight: 400 !important;
+    font-weight: 700 !important;
 }
 
-/* Header title: tipografía fina */
+/* Header: logo y título centrados verticalmente */
+[data-color-theme="cristacer"] .top-header-left {
+    align-items: center !important;
+}
+
+/* Header title: bold, alineado con el cuerpo del logo (no los puntos) */
 [data-color-theme="cristacer"] .top-header-title {
-    font-weight: 500 !important;
+    font-weight: 700 !important;
     font-size: 1rem !important;
     letter-spacing: 0.01em !important;
+    margin: 0 !important;
+    margin-top: 12px !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    align-self: center !important;
 }
 
-/* Company name */
-[data-color-theme="cristacer"] .header-logo-text {
-    font-weight: 400 !important;
-    font-size: 0.85rem !important;
-}
-
-/* Cerrar sesión en footer */
+/* Cerrar sesión en footer: negro y negrita como el resto */
 [data-color-theme="cristacer"] .sidebar-footer .sidebar-item {
-    font-weight: 400 !important;
-    font-size: 0.85rem !important;
-    color: #666 !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    color: #1a1a1a !important;
 }
 
 [data-color-theme="cristacer"] .sidebar-footer .sidebar-item svg {
-    stroke: #666 !important;
+    stroke: #1a1a1a !important;
 }
 
 /* Footer del sidebar */
@@ -260,13 +271,20 @@
     background: #F6EEE3 !important;
 }
 
-/* --- Modales: header oscuro (negro en vez de color) --- */
+/* --- Modales: header negro, body beige --- */
 [data-color-theme="cristacer"] .modal-header,
 [data-color-theme="cristacer"] #edit-modal .modal-header,
 [data-color-theme="cristacer"] #detail-modal .modal-header,
 [data-color-theme="cristacer"] .quantity-modal-header,
 [data-color-theme="cristacer"] .changelog-modal-header {
     background: #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .modal-content,
+[data-color-theme="cristacer"] .modal-body,
+[data-color-theme="cristacer"] .quantity-modal-content,
+[data-color-theme="cristacer"] .changelog-modal-content {
+    background: #F6EEE3 !important;
 }
 
 /* --- Botones icono: borde fino, flat --- */
@@ -341,26 +359,36 @@
     box-shadow: none !important;
 }
 
-/* --- Badges de stock: colores del diseñador --- */
+/* Textos tarjetas en negro */
+[data-color-theme="cristacer"] .stock-image-card .stock-image-card-code,
+[data-color-theme="cristacer"] .stock-image-card .stock-image-card-desc,
+[data-color-theme="cristacer"] .stock-image-card .stock-image-card-details,
+[data-color-theme="cristacer"] .stock-card-label,
+[data-color-theme="cristacer"] .stock-card-value,
+[data-color-theme="cristacer"] .stock-card-title {
+    color: #1a1a1a !important;
+}
+
+/* --- Badges de stock: colores del diseñador, redondeados --- */
 [data-color-theme="cristacer"] .badge-success {
     background: #9FC46D !important;
     color: #fff !important;
     border: none !important;
-    border-radius: 2px !important;
+    border-radius: 20px !important;
 }
 
 [data-color-theme="cristacer"] .badge-warning {
     background: #EACB45 !important;
     color: #1a1a1a !important;
     border: none !important;
-    border-radius: 2px !important;
+    border-radius: 20px !important;
 }
 
 [data-color-theme="cristacer"] .badge-danger {
     background: #FF4438 !important;
     color: #fff !important;
     border: none !important;
-    border-radius: 2px !important;
+    border-radius: 20px !important;
 }
 
 /* --- Contenedores principales con fondo blanco --- */
@@ -372,11 +400,18 @@
     background: transparent;
 }
 
-/* --- Filtros --- */
+/* --- Filtros: mismo fondo crema, sin bordes de cuadros --- */
 [data-color-theme="cristacer"] .filters,
 [data-color-theme="cristacer"] .filters-container {
-    background: transparent !important;
-    border-color: #d4ccc3 !important;
+    background: #F6EEE3 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Más margen derecho al icono desplegable filtros */
+[data-color-theme="cristacer"] .filters-toggle-icon,
+[data-color-theme="cristacer"] .filter-collapse-btn {
+    margin-right: 8px !important;
 }
 
 /* --- Paginación --- */
@@ -385,11 +420,12 @@
     border-color: #1a1a1a;
 }
 
-/* --- Inputs/selects: esquinas rectas, borde fino, flat --- */
+/* --- Inputs/selects: fondo beige, borde negro, sin border-radius --- */
 [data-color-theme="cristacer"] input,
 [data-color-theme="cristacer"] select,
 [data-color-theme="cristacer"] textarea {
-    border-radius: 2px !important;
+    background: #F6EEE3 !important;
+    border-radius: 0 !important;
     border: 1px solid #1a1a1a !important;
     box-shadow: none !important;
 }
@@ -437,9 +473,13 @@
 [data-color-theme="cristacer"] .sidebar-item .sidebar-item-icon {
     width: 18px !important;
     height: 18px !important;
+    min-width: 18px !important;
     background-size: contain !important;
     background-repeat: no-repeat !important;
     background-position: center !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 /* --- Sidebar: iconos normales (negro) --- */
@@ -501,8 +541,9 @@
 }
 
 [data-color-theme="cristacer"] .sidebar-toggle:hover {
-    opacity: 0.8 !important;
+    opacity: 0.7 !important;
     background-color: transparent !important;
+    background-image: url('/assets/cristal/iconos/burger.svg') !important;
     border: none !important;
 }
 
@@ -526,6 +567,10 @@
     height: 34px !important;
     min-width: 34px !important;
     min-height: 34px !important;
+    vertical-align: middle !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 /* Buscar: círculo negro con lupa crema */
@@ -545,11 +590,13 @@
     background-color: transparent !important;
 }
 
-/* Limpiar/Borrar: icono papelera */
+/* Limpiar/Borrar: icono papelera más pequeño, misma altura */
 [data-color-theme="cristacer"] .btn-icon-ghost {
     background-image: url('/assets/cristal/iconos/boton%20borrar.svg') !important;
     background-color: transparent !important;
-    background-size: contain !important;
+    background-size: 20px 20px !important;
+    width: 34px !important;
+    height: 34px !important;
 }
 
 /* Búsqueda por voz: círculo con borde negro y micrófono */
@@ -567,9 +614,12 @@
 
 [data-color-theme="cristacer"] .bell-btn {
     background-image: url('/assets/cristal/iconos/notificacion.svg') !important;
-    background-size: 19px 20px !important;
+    background-size: 20px 20px !important;
     background-repeat: no-repeat !important;
     background-position: center !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    color: #1a1a1a !important;
 }
 
 /* Usuario: icono persona del diseñador */
@@ -577,11 +627,8 @@
     display: none !important;
 }
 
-[data-color-theme="cristacer"] .menu-btn {
-    background-image: url('/assets/cristal/iconos/usuario.svg') !important;
-    background-size: 19px 16px !important;
-    background-repeat: no-repeat !important;
-    background-position: 10px center !important;
+html[data-color-theme="cristacer"] .top-header .menu-btn {
+    background: #F6EEE3 url('/assets/cristal/iconos/usuario.svg') no-repeat 10px center / 18px 16px !important;
     padding-left: 34px !important;
 }
 
@@ -674,34 +721,58 @@
     justify-content: center !important;
 }
 
-/* Login box: SIN tarjeta, sin borde, sin sombra, fondo transparente */
+/* Login box: SIN tarjeta, sin borde, todo alineado izquierda */
 [data-color-theme="cristacer"] .login-box {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    max-width: 400px !important;
+    max-width: 480px !important;
     padding: 40px 20px !important;
-}
-
-/* Logo visible arriba del form (mobile-logo se reutiliza) — grande como en el mockup */
-[data-color-theme="cristacer"] .mobile-logo {
-    display: block !important;
-    height: 90px !important;
-    margin: 0 auto 40px !important;
-}
-
-/* Título y subtítulo del login */
-[data-color-theme="cristacer"] .login-header h1 {
-    color: #1a1a1a !important;
-    -webkit-text-fill-color: #1a1a1a !important;
-    font-size: 1.6rem !important;
-    font-weight: 600 !important;
     text-align: left !important;
 }
 
+/* Form alineado izquierda */
+[data-color-theme="cristacer"] .login-form {
+    text-align: left !important;
+}
+
+/* Labels con más separación */
+[data-color-theme="cristacer"] .login-form .form-group {
+    margin-bottom: 4px !important;
+}
+
+/* Login: todo alineado a la izquierda como el mockup del diseñador */
+html[data-color-theme="cristacer"] .login-header {
+    text-align: left !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+}
+
+html[data-color-theme="cristacer"] .login-header .mobile-logo {
+    display: block !important;
+    height: 42px !important;
+    margin: 0 !important;
+    margin-bottom: 40px !important;
+    margin-left: -2px !important;
+    align-self: flex-start !important;
+}
+
+/* Título: roman (no negrita), grande como el mockup */
+[data-color-theme="cristacer"] .login-header h1 {
+    color: #1a1a1a !important;
+    -webkit-text-fill-color: #1a1a1a !important;
+    font-size: 1.8rem !important;
+    font-weight: 400 !important;
+    text-align: left !important;
+    margin-bottom: 12px !important;
+}
+
+/* Subtítulo en negro y negrita */
 [data-color-theme="cristacer"] .login-subtitle {
-    color: #6b6560 !important;
-    font-size: 0.88rem !important;
+    color: #1a1a1a !important;
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
     text-align: left !important;
     line-height: 1.5 !important;
     max-width: 380px !important;
@@ -716,13 +787,13 @@
     text-transform: none !important;
 }
 
-/* Inputs: borde fino, fondo blanco, flat */
+/* Inputs: fondo beige, borde negro grueso, sin radius (como mockup) */
 [data-color-theme="cristacer"] .login-form input {
-    background: #FFFFFF !important;
-    border: 1px solid #d4ccc3 !important;
-    border-radius: 6px !important;
-    padding: 14px 16px !important;
-    font-size: 0.9rem !important;
+    background: #F6EEE3 !important;
+    border: 2px solid #1a1a1a !important;
+    border-radius: 0 !important;
+    padding: 16px 16px !important;
+    font-size: 0.95rem !important;
     color: #1a1a1a !important;
     box-shadow: none !important;
 }
