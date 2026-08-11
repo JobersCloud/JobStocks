@@ -16,6 +16,14 @@
     font-family: "neue-haas-grotesk-text", sans-serif !important;
 }
 
+/* --- Ocultar toggle dark mode (el diseñador controla la paleta completa) --- */
+[data-color-theme="cristacer"] .theme-toggle-btn,
+[data-color-theme="cristacer"] .theme-toggle-container,
+[data-color-theme="cristacer"] .dark-mode-toggle,
+[data-color-theme="cristacer"] .menu-item[onclick="toggleTheme()"] {
+    display: none !important;
+}
+
 /* --- Body --- */
 [data-color-theme="cristacer"] body {
     background: #F6EEE3 !important;
@@ -871,6 +879,11 @@ html[data-color-theme="cristacer"] .login-header .mobile-logo {
 [data-theme="dark"][data-color-theme="cristacer"] .top-header {
     background: #1a1815 !important;
     border-bottom-color: #3d3a36 !important;
+}
+
+/* Logo invertido a blanco en dark mode */
+[data-theme="dark"][data-color-theme="cristacer"] .header-logo img {
+    filter: brightness(0) invert(1) !important;
 }
 
 [data-theme="dark"][data-color-theme="cristacer"] .top-header-title,

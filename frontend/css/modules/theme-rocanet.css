@@ -4,6 +4,14 @@
 /* Sin bordes redondeados, sin sombras, sin gradientes     */
 /* ======================================================= */
 
+/* --- Ocultar toggle dark mode (tema corporativo controla la paleta) --- */
+[data-color-theme="rocanet"] .theme-toggle-btn,
+[data-color-theme="rocanet"] .theme-toggle-container,
+[data-color-theme="rocanet"] .dark-mode-toggle,
+[data-color-theme="rocanet"] .menu-item[onclick="toggleTheme()"] {
+    display: none !important;
+}
+
 /* --- Body --- */
 [data-color-theme="rocanet"] body {
     background: #e8ecf4 !important;
@@ -13,10 +21,10 @@
     background: #1a1a1e !important;
 }
 
-/* --- Header: azul corporativo con texto blanco --- */
+/* --- Header: mismo azul oscuro que el sidebar --- */
 [data-color-theme="rocanet"] .top-header {
-    background: #2a3f8f !important;
-    border-bottom: 2px solid #1a2d6d !important;
+    background: #1e2a4a !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
     box-shadow: none !important;
 }
 

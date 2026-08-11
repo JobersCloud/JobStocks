@@ -24,6 +24,12 @@
     var colorTheme = localStorage.getItem('colorTheme') || 'rubi';
     var colors = themes[colorTheme] || themes['rubi'];
 
+    // Temas custom no soportan dark mode: forzar modo claro
+    var customThemes = ['cristacer', 'rocanet'];
+    if (customThemes.indexOf(colorTheme) !== -1) {
+        theme = 'light';
+    }
+
     document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.setAttribute('data-color-theme', colorTheme);
 
