@@ -1,7 +1,7 @@
 /* ==================== TEMA ROCANET ==================== */
-/* Diseño corporativo para RocaNET (Baldocer)              */
-/* Estética: blanco/gris claro, azul corporativo, flat     */
-/* Sin bordes redondeados, sin sombras, sin gradientes     */
+/* Diseño corporativo para RocaNET (Roca Tiles)            */
+/* Colores: negro #333, verde #61a229, dorado #f4a51c      */
+/* Estética: limpio, fondo blanco, flat, sin border-radius */
 /* ======================================================= */
 
 /* --- Ocultar toggle dark mode (tema corporativo controla la paleta) --- */
@@ -12,19 +12,15 @@
     display: none !important;
 }
 
-/* --- Body --- */
+/* --- Body: fondo blanco limpio --- */
 [data-color-theme="rocanet"] body {
-    background: #e8ecf4 !important;
+    background: #f5f5f5 !important;
 }
 
-[data-theme="dark"][data-color-theme="rocanet"] body {
-    background: #1a1a1e !important;
-}
-
-/* --- Header: mismo azul oscuro que el sidebar --- */
+/* --- Header: negro con texto blanco --- */
 [data-color-theme="rocanet"] .top-header {
-    background: #1e2a4a !important;
-    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+    background: #333333 !important;
+    border-bottom: none !important;
     box-shadow: none !important;
 }
 
@@ -41,10 +37,10 @@
 }
 
 [data-color-theme="rocanet"] .header-divider {
-    background: rgba(255,255,255,0.3) !important;
+    background: rgba(255,255,255,0.2) !important;
 }
 
-/* Logo invertido (blanco sobre azul) */
+/* Logo invertido (blanco sobre negro) */
 [data-color-theme="rocanet"] .header-logo img {
     filter: brightness(0) invert(1) !important;
 }
@@ -54,7 +50,7 @@
 [data-color-theme="rocanet"] .top-header .lang-selector-header,
 [data-color-theme="rocanet"] .top-header .menu-btn {
     background: rgba(255,255,255,0.1) !important;
-    border-color: rgba(255,255,255,0.25) !important;
+    border-color: rgba(255,255,255,0.2) !important;
     color: #ffffff !important;
     border-radius: 0 !important;
 }
@@ -75,7 +71,7 @@
 
 [data-color-theme="rocanet"] .top-header .mobile-menu-btn {
     background: rgba(255,255,255,0.1) !important;
-    border-color: rgba(255,255,255,0.25) !important;
+    border-color: rgba(255,255,255,0.2) !important;
     border-radius: 0 !important;
 }
 
@@ -86,7 +82,7 @@
 /* Mirror indicator */
 [data-color-theme="rocanet"] .mirror-indicator {
     background: rgba(255,255,255,0.1) !important;
-    border-color: rgba(255,255,255,0.25) !important;
+    border-color: rgba(255,255,255,0.2) !important;
     color: #ffffff !important;
     border-radius: 0 !important;
 }
@@ -96,9 +92,9 @@
     color: #ffffff !important;
 }
 
-/* --- Sidebar: azul oscuro corporativo --- */
+/* --- Sidebar: mismo negro que header --- */
 [data-color-theme="rocanet"] .sidebar {
-    background: #1e2a4a !important;
+    background: #333333 !important;
     border-right: none !important;
 }
 
@@ -107,15 +103,15 @@
 }
 
 [data-color-theme="rocanet"] .sidebar-toggle {
-    background: #334FB4 !important;
-    border-color: #334FB4 !important;
+    background: #61a229 !important;
+    border-color: #61a229 !important;
     color: white !important;
     border-radius: 0 !important;
 }
 
 [data-color-theme="rocanet"] .sidebar-toggle:hover {
-    background: #4a65c8 !important;
-    border-color: #4a65c8 !important;
+    background: #4e8221 !important;
+    border-color: #4e8221 !important;
 }
 
 [data-color-theme="rocanet"] .sidebar-toggle svg path,
@@ -150,11 +146,11 @@
     stroke: #ffffff !important;
 }
 
-/* Item activo: azul más claro */
+/* Item activo: verde Roca */
 [data-color-theme="rocanet"] .sidebar-item.active {
-    background: #334FB4 !important;
+    background: #61a229 !important;
     color: white !important;
-    border-left: 3px solid #5B78D0 !important;
+    border-left: 3px solid #f4a51c !important;
     border-radius: 0 !important;
     font-weight: 500 !important;
 }
@@ -190,7 +186,7 @@
 }
 
 [data-color-theme="rocanet"] .sidebar-accordion.expanded > .sidebar-accordion-header {
-    background: rgba(51, 79, 180, 0.3) !important;
+    background: rgba(97, 162, 41, 0.3) !important;
     color: #ffffff !important;
     font-weight: 500 !important;
 }
@@ -238,7 +234,7 @@
 }
 
 [data-color-theme="rocanet"] .menu-dropdown .menu-header {
-    background: #334FB4 !important;
+    background: #333333 !important;
     border-radius: 0 !important;
 }
 
@@ -247,16 +243,16 @@
 }
 
 [data-color-theme="rocanet"] .menu-dropdown .menu-item:hover {
-    background: #f3f3f3 !important;
+    background: #f5f5f5 !important;
 }
 
-/* --- Modales: header azul corporativo, sin bordes redondeados --- */
+/* --- Modales: header negro, sin bordes redondeados --- */
 [data-color-theme="rocanet"] .modal-header,
 [data-color-theme="rocanet"] #edit-modal .modal-header,
 [data-color-theme="rocanet"] #detail-modal .modal-header,
 [data-color-theme="rocanet"] .quantity-modal-header,
 [data-color-theme="rocanet"] .changelog-modal-header {
-    background: #334FB4 !important;
+    background: #333333 !important;
     border-radius: 0 !important;
 }
 
@@ -271,42 +267,42 @@
 }
 
 [data-color-theme="rocanet"] .btn-icon-primary {
-    background: #334FB4 !important;
-    border-color: #334FB4 !important;
+    background: #61a229 !important;
+    border-color: #61a229 !important;
 }
 
 [data-color-theme="rocanet"] .btn-icon-primary:hover {
-    background: #1a2d7a !important;
-    border-color: #1a2d7a !important;
+    background: #4e8221 !important;
+    border-color: #4e8221 !important;
 }
 
-/* --- Botones primarios --- */
+/* --- Botones primarios: verde Roca --- */
 [data-color-theme="rocanet"] .btn-primary,
 [data-color-theme="rocanet"] .btn-action.btn-edit,
 [data-color-theme="rocanet"] button[type="submit"]:not(.btn-delete) {
-    background: #334FB4 !important;
-    border-color: #334FB4 !important;
+    background: #61a229 !important;
+    border-color: #61a229 !important;
     border-radius: 0 !important;
 }
 
 [data-color-theme="rocanet"] .btn-primary:hover,
 [data-color-theme="rocanet"] .btn-action.btn-edit:hover,
 [data-color-theme="rocanet"] button[type="submit"]:not(.btn-delete):hover {
-    background: #1a2d7a !important;
-    border-color: #1a2d7a !important;
+    background: #4e8221 !important;
+    border-color: #4e8221 !important;
 }
 
-/* --- Tablas: header azul --- */
+/* --- Tablas: header negro --- */
 [data-color-theme="rocanet"] .users-table thead,
 [data-color-theme="rocanet"] .proposals-table thead,
 [data-color-theme="rocanet"] .inquiries-table thead,
 [data-color-theme="rocanet"] .config-list thead,
 [data-color-theme="rocanet"] .audit-table thead,
 [data-color-theme="rocanet"] table thead {
-    background: #334FB4 !important;
+    background: #333333 !important;
 }
 
-/* --- Cards/paneles: fondo blanco, sin border-radius --- */
+/* --- Cards/paneles: fondo blanco, borde verde --- */
 [data-color-theme="rocanet"] .logo-card,
 [data-color-theme="rocanet"] .config-card,
 [data-color-theme="rocanet"] .email-config-card,
@@ -314,7 +310,7 @@
 [data-color-theme="rocanet"] .proposal-card,
 [data-color-theme="rocanet"] .user-card,
 [data-color-theme="rocanet"] .inquiry-card {
-    border-top-color: #334FB4;
+    border-top-color: #61a229;
     background: #ffffff;
     border-radius: 0 !important;
 }
@@ -322,13 +318,13 @@
 /* --- Stock cards: sin bordes redondeados --- */
 [data-color-theme="rocanet"] .stock-card {
     background: #ffffff;
-    border: 1px solid #cccccc !important;
+    border: 1px solid #dedfe0 !important;
     border-radius: 0 !important;
 }
 
 /* --- Tarjetas con imagen: flat, sin sombra --- */
 [data-color-theme="rocanet"] .stock-image-card {
-    border: 1px solid #cccccc !important;
+    border: 1px solid #dedfe0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     background: #ffffff !important;
@@ -337,7 +333,7 @@
 [data-color-theme="rocanet"] .stock-image-card:hover {
     transform: none !important;
     box-shadow: none !important;
-    border-color: #334FB4 !important;
+    border-color: #61a229 !important;
 }
 
 /* --- Contenedores principales --- */
@@ -353,7 +349,7 @@
 [data-color-theme="rocanet"] .filters,
 [data-color-theme="rocanet"] .filters-container {
     background: transparent !important;
-    border-color: #cccccc !important;
+    border-color: #dedfe0 !important;
 }
 
 /* --- Inputs/selects: esquinas rectas, borde gris --- */
@@ -368,14 +364,14 @@
 [data-color-theme="rocanet"] input:focus,
 [data-color-theme="rocanet"] select:focus,
 [data-color-theme="rocanet"] textarea:focus {
-    border-color: #334FB4 !important;
+    border-color: #61a229 !important;
     box-shadow: none !important;
 }
 
 /* --- Paginación --- */
 [data-color-theme="rocanet"] .pagination-btn.active {
-    background: #334FB4;
-    border-color: #334FB4;
+    background: #61a229;
+    border-color: #61a229;
     border-radius: 0 !important;
 }
 
@@ -383,43 +379,43 @@
     border-radius: 0 !important;
 }
 
-/* --- Carrito flotante: azul flat, cuadrado --- */
+/* --- Carrito flotante: verde Roca, cuadrado --- */
 [data-color-theme="rocanet"] .carrito-btn {
-    background: #334FB4 !important;
+    background: #61a229 !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
     border-radius: 0 !important;
 }
 
 [data-color-theme="rocanet"] .carrito-btn:hover {
-    background: #1a2d7a !important;
+    background: #4e8221 !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* --- Scrollbar sidebar --- */
 [data-color-theme="rocanet"] .sidebar-nav::-webkit-scrollbar-thumb {
-    background: #cccccc;
+    background: rgba(255,255,255,0.2);
     border-radius: 0;
 }
 
 [data-color-theme="rocanet"] .sidebar-nav::-webkit-scrollbar-thumb:hover {
-    background: #999;
+    background: rgba(255,255,255,0.3);
 }
 
 /* --- Links --- */
 [data-color-theme="rocanet"] a:not(.sidebar-item):not(.btn):hover {
-    color: #334FB4;
+    color: #61a229;
 }
 
 /* ==================== LOGIN ROCANET ==================== */
 
-/* Fondo general gris claro */
+/* Fondo general */
 [data-color-theme="rocanet"] .login-wrapper {
-    background: #f3f3f3 !important;
+    background: #f5f5f5 !important;
 }
 
-/* Sidebar izquierdo: fondo oscuro corporativo */
+/* Sidebar izquierdo: fondo negro */
 [data-color-theme="rocanet"] .login-sidebar {
-    background: #242833 !important;
+    background: #333333 !important;
     border-right: none !important;
 }
 
@@ -436,14 +432,14 @@
     color: rgba(255, 255, 255, 0.7) !important;
 }
 
-/* Logo en sidebar sin invertir */
+/* Logo en sidebar invertido */
 [data-color-theme="rocanet"] .sidebar-content .sidebar-logo {
     filter: brightness(0) invert(1) !important;
 }
 
 /* Contenedor derecho */
 [data-color-theme="rocanet"] .login-container {
-    background: #f3f3f3 !important;
+    background: #f5f5f5 !important;
 }
 
 /* Login box: sin tarjeta, flat */
@@ -464,14 +460,14 @@
 
 /* Título */
 [data-color-theme="rocanet"] .login-header h1 {
-    color: #121212 !important;
-    -webkit-text-fill-color: #121212 !important;
+    color: #333333 !important;
+    -webkit-text-fill-color: #333333 !important;
     font-size: 1.5rem !important;
     font-weight: 600 !important;
 }
 
 [data-color-theme="rocanet"] .login-subtitle {
-    color: #666 !important;
+    color: #999 !important;
     font-size: 0.9rem !important;
 }
 
@@ -479,7 +475,7 @@
 [data-color-theme="rocanet"] .login-form .form-group label {
     font-size: 0.8rem !important;
     font-weight: 500 !important;
-    color: #121212 !important;
+    color: #333333 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.05em !important;
 }
@@ -491,18 +487,18 @@
     border-radius: 0 !important;
     padding: 12px 14px !important;
     font-size: 0.9rem !important;
-    color: #121212 !important;
+    color: #333333 !important;
     box-shadow: none !important;
 }
 
 [data-color-theme="rocanet"] .login-form input:focus {
-    border-color: #334FB4 !important;
+    border-color: #61a229 !important;
     box-shadow: none !important;
 }
 
-/* Botón login: azul corporativo, cuadrado */
+/* Botón login: verde Roca, cuadrado */
 [data-color-theme="rocanet"] .btn-login {
-    background: #334FB4 !important;
+    background: #61a229 !important;
     box-shadow: none !important;
     border-radius: 0 !important;
     padding: 12px 32px !important;
@@ -511,13 +507,13 @@
 }
 
 [data-color-theme="rocanet"] .btn-login:hover {
-    background: #1a2d7a !important;
+    background: #4e8221 !important;
     transform: none !important;
 }
 
 /* Links */
 [data-color-theme="rocanet"] .login-link a {
-    color: #334FB4 !important;
+    color: #61a229 !important;
 }
 
 /* Password toggle */
@@ -527,13 +523,13 @@
 
 /* Password modal header */
 [data-color-theme="rocanet"] .password-modal-header {
-    background: #334FB4 !important;
+    background: #333333 !important;
     border-radius: 0 !important;
 }
 
 /* Version indicator */
 [data-color-theme="rocanet"] .version-indicator {
-    background: rgba(243, 243, 243, 0.9) !important;
+    background: rgba(245, 245, 245, 0.9) !important;
     border-color: #cccccc !important;
     border-radius: 0 !important;
 }
@@ -541,99 +537,4 @@
 /* Ocultar controles superiores del login */
 [data-color-theme="rocanet"] .login-top-controls {
     display: none !important;
-}
-
-/* ==================== ROCANET DARK MODE ==================== */
-
-[data-theme="dark"][data-color-theme="rocanet"] .top-header {
-    background: #1a1a1e !important;
-    border-bottom-color: #333 !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .top-header-title,
-[data-theme="dark"][data-color-theme="rocanet"] .header-logo-text,
-[data-theme="dark"][data-color-theme="rocanet"] .top-header .user-name-display {
-    color: #e0e0e0 !important;
-    -webkit-text-fill-color: #e0e0e0 !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .top-header .menu-icon,
-[data-theme="dark"][data-color-theme="rocanet"] .top-header .mobile-menu-btn svg {
-    stroke: #e0e0e0 !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .sidebar {
-    background: #222226 !important;
-    border-right-color: #333 !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .sidebar-item {
-    color: #b0b0b0 !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .sidebar-item svg {
-    stroke: #b0b0b0 !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .sidebar-item:hover {
-    background: #2a2a2e !important;
-    color: #e0e0e0 !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .sidebar-item:hover svg {
-    stroke: #e0e0e0 !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .sidebar-item.active {
-    background: #334FB4 !important;
-    color: white !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .sidebar-item.active svg {
-    stroke: white !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .login-wrapper {
-    background: #1a1a1e !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .login-container {
-    background: #1a1a1e !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .login-header h1 {
-    color: #e0e0e0 !important;
-    -webkit-text-fill-color: #e0e0e0 !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .login-subtitle {
-    color: #999 !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .login-form .form-group label {
-    color: #e0e0e0 !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .login-form input {
-    background: #222226 !important;
-    border-color: #444 !important;
-    color: #e0e0e0 !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .login-link a {
-    color: #5B78D0 !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .btn-login {
-    background: #334FB4 !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .btn-login:hover {
-    background: #5B78D0 !important;
-}
-
-[data-theme="dark"][data-color-theme="rocanet"] .stock-card,
-[data-theme="dark"][data-color-theme="rocanet"] .stock-image-card {
-    background: #222226 !important;
-    border-color: #444 !important;
 }

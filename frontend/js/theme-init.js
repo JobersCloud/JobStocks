@@ -18,7 +18,7 @@
         'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
         'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' },
         'cristacer': { primary: '#1a1a1a', primaryDark: '#000000', primaryLight: '#444444' },
-        'rocanet': { primary: '#334FB4', primaryDark: '#1a2d7a', primaryLight: '#5B78D0' }
+        'rocanet': { primary: '#61a229', primaryDark: '#4e8221', primaryLight: '#7bc043' }
     };
     var theme = localStorage.getItem('theme') || 'dark';
     var colorTheme = localStorage.getItem('colorTheme') || 'rubi';
