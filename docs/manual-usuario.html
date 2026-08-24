@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manual de Usuario - Gestión de Stocks</title>
+  <style>
+    /* ===================== RESET & BASE ===================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sidebar-width: 280px;
+      --sidebar-bg: #1e2533;
+      --sidebar-text: #c8cfd8;
+      --sidebar-hover: #2c3547;
+      --sidebar-active: #3a4560;
+      --sidebar-accent: #4e8ef7;
+      --sidebar-section: #8a96a8;
+      --header-height: 60px;
+      --content-bg: #f8f9fb;
+      --content-max: 900px;
+      --text-primary: #1a2035;
+      --text-secondary: #5a657a;
+      --border: #e2e6ee;
+      --white: #ffffff;
+      --info-bg: #e8f0fe;
+      --info-border: #4e8ef7;
+      --warn-bg: #fff8e1;
+      --warn-border: #f5a623;
+      --tip-bg: #e8f8f0;
+      --tip-border: #27ae60;
+      --admin-bg: #fdf3f3;
+      --admin-border: #e05252;
+      --table-head: #f0f3f9;
+      --code-bg: #f0f3f9;
+      --shadow: 0 2px 8px rgba(0,0,0,0.08);
+      --radius: 6px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-primary);
+      background: var(--content-bg);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ===================== SIDEBAR ===================== */
+    #sidebar {
+      width: var(--sidebar-width);
+      background: var(--sidebar-bg);
+      color: var(--sidebar-text);
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-track { background: transparent; }
+    #sidebar::-webkit-scrollbar-thumb { background: #3a4560; border-radius: 4px; }
+
+    .sidebar-header {
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid #2c3547;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header .doc-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--sidebar-accent);
+      margin-bottom: 6px;
+    }
+
+    .sidebar-header h2 {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #ffffff;
+      line-height: 1.4;
+    }
+
+    .sidebar-nav {
+      padding: 12px 0 24px;
+      flex: 1;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--sidebar-section);
+      padding: 16px 20px 6px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 20px;
+      color: var(--sidebar-text);
+      text-decoration: none;
+      font-size: 13px;
+      line-height: 1.4;
+      transition: background 0.15s, color 0.15s;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-link:hover {
+      background: var(--sidebar-hover);
+      color: #ffffff;
+    }
+
+    .nav-link.active {
+      background: var(--sidebar-active);
+      color: #ffffff;
+      border-left-color: var(--sidebar-accent);
+    }
+
+    .nav-link .nav-num {
+      font-size: 11px;
+      background: #2c3547;
+      color: var(--sidebar-section);
+      border-radius: 3px;
+      padding: 1px 5px;
+      min-width: 22px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .nav-link.active .nav-num {
+      background: var(--sidebar-accent);
+      color: #fff;
+    }
+
+    .nav-link .nav-icon {
+      font-size: 13px;
+      width: 16px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    /* ===================== MAIN CONTENT ===================== */
+    #main {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* TOP HEADER */
+    .top-header {
+      background: #1e2533;
+      color: #fff;
+      padding: 0 40px;
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    .top-header h1 {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .top-header .meta {
+      font-size: 12px;
+      color: #8a96a8;
+    }
+
+    /* CONTENT AREA */
+    .content-wrap {
+      padding: 40px 48px 80px;
+      max-width: calc(var(--content-max) + 96px);
+    }
+
+    /* ===================== SECTIONS ===================== */
+    .manual-section {
+      margin-bottom: 52px;
+      scroll-margin-top: calc(var(--header-height) + 20px);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .section-number {
+      background: #1e2533;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    /* Special section for ROLES (no number) */
+    .section-roles .section-header {
+      border-bottom-color: #c8cfd8;
+    }
+
+    .section-roles .section-header h2 {
+      color: #5a657a;
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 24px 0 10px;
+      padding-left: 12px;
+      border-left: 3px solid var(--sidebar-accent);
+    }
+
+    h4 {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin: 16px 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    p {
+      margin-bottom: 12px;
+      color: #2c3547;
+    }
+
+    ul, ol {
+      padding-left: 22px;
+      margin-bottom: 14px;
+    }
+
+    li {
+      margin-bottom: 5px;
+      color: #2c3547;
+    }
+
+    li strong, p strong {
+      color: var(--text-primary);
+    }
+
+    /* ===================== INFO BOXES ===================== */
+    .box {
+      border-left: 4px solid;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 13px 16px;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+
+    .box-info {
+      background: var(--info-bg);
+      border-color: var(--info-border);
+    }
+
+    .box-warn {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+    }
+
+    .box-tip {
+      background: var(--tip-bg);
+      border-color: var(--tip-border);
+    }
+
+    .box-admin {
+      background: var(--admin-bg);
+      border-color: var(--admin-border);
+    }
+
+    .box .box-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .box-info .box-title { color: #2762c4; }
+    .box-warn .box-title { color: #b5780a; }
+    .box-tip .box-title { color: #1e8449; }
+    .box-admin .box-title { color: #c0392b; }
+
+    /* ===================== TABLES ===================== */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 16px 0;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      background: var(--white);
+    }
+
+    thead th {
+      background: #1e2533;
+      color: #fff;
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    tbody td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #f5f7fb; }
+
+    td:first-child {
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    td code {
+      background: var(--code-bg);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+      color: #c0392b;
+    }
+
+    /* ===================== BADGES / TAGS ===================== */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      vertical-align: middle;
+    }
+
+    .badge-blue { background: #dbeafe; color: #1d4ed8; }
+    .badge-green { background: #d1fae5; color: #065f46; }
+    .badge-red { background: #fee2e2; color: #991b1b; }
+    .badge-orange { background: #ffedd5; color: #9a3412; }
+    .badge-gray { background: #f1f5f9; color: #475569; }
+    .badge-purple { background: #ede9fe; color: #5b21b6; }
+
+    /* ===================== PERMISSION GRID ===================== */
+    .perm-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .perm-item {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--shadow);
+    }
+
+    .perm-code {
+      background: #1e2533;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+
+    .perm-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* ===================== ROLE CARDS ===================== */
+    .role-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      margin: 18px 0;
+    }
+
+    .role-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .role-card .role-name {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .role-card ul {
+      font-size: 13px;
+      padding-left: 18px;
+    }
+
+    .role-card li {
+      margin-bottom: 3px;
+      color: var(--text-secondary);
+    }
+
+    /* ===================== FEATURE GRID ===================== */
+    .feature-list {
+      display: grid;
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    .feature-item {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .feature-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .feature-content strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .feature-content span {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* ===================== DIVIDER ===================== */
+    hr.section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 28px 0;
+    }
+
+    /* ===================== INTRO BLOCK ===================== */
+    .intro-block {
+      background: #1e2533;
+      color: #c8cfd8;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin-bottom: 36px;
+    }
+
+    .intro-block h2 {
+      color: #fff;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .intro-block p { color: #c8cfd8; font-size: 14px; margin-bottom: 0; }
+
+    /* ===================== PRINT STYLES ===================== */
+    @media print {
+      #sidebar { display: none !important; }
+      #main { margin-left: 0 !important; }
+      .top-header { position: static !important; box-shadow: none !important; background: #fff !important; color: #000 !important; border-bottom: 2px solid #000; }
+      .top-header .meta { color: #555 !important; }
+      .content-wrap { padding: 20px 24px !important; }
+      .manual-section { page-break-inside: avoid; break-inside: avoid; }
+      .section-header { border-bottom-color: #000; }
+      .section-number { background: #000 !important; }
+      .table-wrap { box-shadow: none; border: 1px solid #ccc; }
+      thead th { background: #333 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .role-card, .perm-item, .feature-item { box-shadow: none; border: 1px solid #ccc; }
+      a { color: inherit; text-decoration: none; }
+      h3 { break-after: avoid; }
+    }
+
+    /* ===================== RESPONSIVE ===================== */
+    @media (max-width: 900px) {
+      :root { --sidebar-width: 240px; }
+      .content-wrap { padding: 28px 24px 60px; }
+      .role-cards { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 680px) {
+      #sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+      #sidebar.open { transform: translateX(0); }
+      #main { margin-left: 0; }
+      .content-wrap { padding: 20px 16px 60px; }
+      .role-cards, .perm-grid { grid-template-columns: 1fr; }
+      .top-header { padding: 0 16px; }
+      .top-header h1 { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ==================== SIDEBAR ==================== -->
+<nav id="sidebar" aria-label="Tabla de contenidos">
+  <div class="sidebar-header">
+    <div class="doc-label">Manual de Usuario</div>
+    <h2>Gestión de Stocks</h2>
+  </div>
+  <div class="sidebar-nav">
+
+    <div class="nav-section-label">Introducción</div>
+    <a class="nav-link" href="#roles"><span class="nav-icon">👥</span> Roles del Sistema</a>
+
+    <div class="nav-section-label">Uso del Sistema</div>
+    <a class="nav-link" href="#sec1"><span class="nav-num">1</span> Acceso al Sistema</a>
+    <a class="nav-link" href="#sec2"><span class="nav-num">2</span> Estructura General</a>
+    <a class="nav-link" href="#sec3"><span class="nav-num">3</span> Stocks</a>
+    <a class="nav-link" href="#sec4"><span class="nav-num">4</span> Stocks Anulados</a>
+    <a class="nav-link" href="#sec5"><span class="nav-num">5</span> Mis Propuestas</a>
+    <a class="nav-link" href="#sec6"><span class="nav-num">6</span> Mis Pedidos</a>
+    <a class="nav-link" href="#sec7"><span class="nav-num">7</span> Mis Albaranes</a>
+    <a class="nav-link" href="#sec8"><span class="nav-num">8</span> Mis Facturas</a>
+    <a class="nav-link" href="#sec9"><span class="nav-num">9</span> Mis Consultas</a>
+    <a class="nav-link" href="#sec10"><span class="nav-num">10</span> Búsqueda Mágica</a>
+    <a class="nav-link" href="#sec11"><span class="nav-num">11</span> Mis Favoritos</a>
+    <a class="nav-link" href="#sec12"><span class="nav-num">12</span> Mis Clientes</a>
+
+    <div class="nav-section-label">Administración</div>
+    <a class="nav-link" href="#sec13"><span class="nav-num">13</span> Dashboard</a>
+    <a class="nav-link" href="#sec14"><span class="nav-num">14-17</span> Propuestas/Pedidos…</a>
+    <a class="nav-link" href="#sec18"><span class="nav-num">18</span> Consultas</a>
+    <a class="nav-link" href="#sec19"><span class="nav-num">19</span> Usuarios</a>
+    <a class="nav-link" href="#sec20"><span class="nav-num">20</span> Auditoría</a>
+    <a class="nav-link" href="#sec21"><span class="nav-num">21</span> Vista Almacén</a>
+    <a class="nav-link" href="#sec22"><span class="nav-num">22</span> Informe Almacén</a>
+
+    <div class="nav-section-label">Configuración</div>
+    <a class="nav-link" href="#sec23"><span class="nav-num">23</span> Configuración Email</a>
+    <a class="nav-link" href="#sec24"><span class="nav-num">24</span> Parámetros</a>
+    <a class="nav-link" href="#sec25"><span class="nav-num">25</span> API Keys</a>
+    <a class="nav-link" href="#sec26"><span class="nav-num">26</span> Logo y Apariencia</a>
+    <a class="nav-link" href="#sec27"><span class="nav-num">27</span> Control BD</a>
+
+  </div>
+</nav>
+
+<!-- ==================== MAIN ==================== -->
+<div id="main">
+
+  <!-- TOP HEADER -->
+  <header class="top-header">
+    <h1>📦 Manual de Usuario — Gestión de Stocks</h1>
+    <span class="meta">Versión del documento: 1.0 &nbsp;·&nbsp; Última revisión: agosto 2026</span>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content-wrap">
+
+    <!-- INTRO -->
+    <div class="intro-block">
+      <h2>Bienvenido al manual de usuario</h2>
+      <p>Este documento describe el funcionamiento completo del sistema de gestión de stocks. Cada sección corresponde a una página o funcionalidad de la aplicación. El contenido que ves depende de tu rol y de los permisos activados por el administrador.</p>
+    </div>
+
+    <!-- ==================== ROLES ==================== -->
+    <section class="manual-section section-roles" id="roles">
+      <div class="section-header">
+        <h2>👥 Roles del Sistema</h2>
+      </div>
+
+      <p>La aplicación tiene tres niveles de acceso jerárquicos. Cada usuario tiene asignado uno de los siguientes roles:</p>
+
+      <div class="role-cards">
+        <div class="role-card">
+          <div class="role-name"><span class="badge badge-blue">usuario</span></div>
+          <ul>
+            <li>Consulta de stocks</li>
+            <li>Propuestas (carrito)</li>
+            <li>Pedidos, albaranes, facturas</li>
+            <li>Consultas de producto</li>
+            <li>Favoritos y búsqueda mágica</li>
+            <li><em>Según permisos activados</em></li>
+          </ul>
+        </div>
+        <div class="role-card">
+          <div class="role-name"><span class="badge badge-orange">administrador</span></div>
+          <ul>
+            <li>Todo lo del rol usuario</li>
+            <li>Dashboard de estadísticas</li>
+            <li>Gestión de usuarios</li>
+            <li>Auditoría de accesos</li>
+            <li>Vista y informe de almacén</li>
+            <li>Propuestas y consultas globales</li>
+            <li>Configuración de email</li>
+          </ul>
+        </div>
+        <div class="role-card">
+          <div class="role-name"><span class="badge badge-red">superusuario</span></div>
+          <ul>
+            <li>Todo lo del rol administrador</li>
+            <li>Parámetros del sistema</li>
+            <li>Control de base de datos</li>
+            <li>Acceso total sin restricciones</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Permisos individuales por usuario</h3>
+      <p>Además del rol base, el administrador puede activar o desactivar funcionalidades específicas para cada cuenta de usuario:</p>
+
+      <div class="perm-grid">
+        <div class="perm-item"><span class="perm-code">PRO</span><span class="perm-desc">Ver precios</span></div>
+        <div class="perm-item"><span class="perm-code">PRE</span><span class="perm-desc">Ver propuestas</span></div>
+        <div class="perm-item"><span class="perm-code">PED</span><span class="perm-desc">Ver pedidos</span></div>
+        <div class="perm-item"><span class="perm-code">ALB</span><span class="perm-desc">Ver albaranes</span></div>
+        <div class="perm-item"><span class="perm-code">FAC</span><span class="perm-desc">Ver facturas</span></div>
+        <div class="perm-item"><span class="perm-code">ADM</span><span class="perm-desc">Administrador de clientes</span></div>
+        <div class="perm-item"><span class="perm-code">ANU</span><span class="perm-desc">Ver stocks anulados</span></div>
+      </div>
+
+      <div class="box box-info">
+        <div class="box-title">ℹ️ Permiso ADM</div>
+        El permiso <strong>ADM</strong> (Administrador de clientes) permite al usuario seleccionar el cliente al enviar propuestas y ver documentos (pedidos, albaranes, facturas) de varios clientes asignados a su código comercial.
+      </div>
+    </section>
+
+    <!-- ==================== 1. ACCESO ==================== -->
+    <section class="manual-section" id="sec1">
+      <div class="section-header">
+        <div class="section-number">1</div>
+        <h2>Acceso al Sistema</h2>
+      </div>
+
+      <p>Es la página de entrada al sistema. Presenta un diseño de dos paneles: el lateral izquierdo muestra el logo de la empresa y el panel derecho contiene el formulario de acceso.</p>
+
+      <h3>Campos del formulario</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Campo</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td>Usuario</td><td>Nombre de usuario asignado por el administrador. Campo de texto obligatorio.</td></tr>
+            <tr><td>Contraseña</td><td>Campo contraseña con botón para mostrar u ocultar el texto introducido (icono de ojo).</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Acciones disponibles</h3>
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="feature-icon">🔑</span>
+          <div class="feature-content">
+            <strong>Iniciar sesión</strong>
+            <span>Pulsar el botón de acceso o presionar <kbd>Enter</kbd>.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🔒</span>
+          <div class="feature-content">
+            <strong>¿Olvidaste tu contraseña?</strong>
+            <span>Enlace que despliega un formulario inline para introducir el email. El sistema envía un email con un enlace de recuperación válido durante <strong>1 hora</strong>.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">✉️</span>
+          <div class="feature-content">
+            <strong>Reenviar email de verificación</strong>
+            <span>Enlace para volver a recibir el correo de verificación de cuenta si no se recibió o expiró.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">📝</span>
+          <div class="feature-content">
+            <strong>Crear cuenta</strong>
+            <span>Enlace opcional para registrarse, solo visible si el administrador ha activado el parámetro <code>PERMITIR_REGISTRO</code>.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🌐</span>
+          <div class="feature-content">
+            <strong>Selector de idioma</strong>
+            <span>Menú desplegable con opciones: <strong>ES</strong> (español), <strong>EN</strong> (inglés), <strong>FR</strong> (francés).</span>
+          </div>
+        </div>
+      </div>
+
+      <h3>Bloqueo de cuenta</h3>
+      <div class="box box-warn">
+        <div class="box-title">⚠️ Atención</div>
+        Después de <strong>5 intentos fallidos consecutivos</strong>, la cuenta queda bloqueada durante <strong>15 minutos</strong>. Contacta con el administrador si necesitas desbloqueo inmediato.
+      </div>
+
+      <h3>Cambio de contraseña obligatorio</h3>
+      <p>Si la cuenta tiene marcado el flag "debe cambiar contraseña" (por ejemplo, en cuentas creadas por el administrador), el sistema muestra un modal inmediatamente después del inicio de sesión exitoso.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Campo del modal</th><th>Requisito</th></tr></thead>
+          <tbody>
+            <tr><td>Contraseña actual</td><td>La contraseña temporal proporcionada por el administrador.</td></tr>
+            <tr><td>Contraseña nueva</td><td>Mínimo 8 caracteres, debe contener mayúsculas, minúsculas, un número y un carácter especial.</td></tr>
+            <tr><td>Confirmación</td><td>Debe coincidir exactamente con la contraseña nueva.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== 2. ESTRUCTURA ==================== -->
+    <section class="manual-section" id="sec2">
+      <div class="section-header">
+        <div class="section-number">2</div>
+        <h2>Estructura General</h2>
+      </div>
+
+      <p>Una vez dentro del sistema, todas las páginas comparten la misma estructura de tres elementos: cabecera, barra lateral y área de contenido.</p>
+
+      <h3>Cabecera (header)</h3>
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="feature-icon">🏢</span>
+          <div class="feature-content">
+            <strong>Logo de empresa</strong>
+            <span>Cargado dinámicamente desde la base de datos según la empresa activa.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🔄</span>
+          <div class="feature-content">
+            <strong>Indicador de sincronización</strong>
+            <span>Cuando está activo, muestra "Datos sincronizados a" y la fecha/hora de la última sincronización con el ERP.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🔔</span>
+          <div class="feature-content">
+            <strong>Campana de notificaciones</strong>
+            <span>Icono con contador de notificaciones no leídas. Se actualiza automáticamente cada 30 segundos.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">👤</span>
+          <div class="feature-content">
+            <strong>Menú de usuario</strong>
+            <span>Despliega: nombre y rol del usuario, selector de idioma, tema visual, cambiar contraseña y opción de cerrar sesión.</span>
+          </div>
+        </div>
+      </div>
+
+      <h3>Barra lateral (sidebar)</h3>
+      <p>La barra lateral es colapsable mediante el botón hamburguesa o con el atajo de teclado <strong>Ctrl+B</strong>. Su contenido varía según el rol y los permisos del usuario.</p>
+
+      <div class="box box-tip">
+        <div class="box-title">💡 Consejo</div>
+        Puedes colapsar la barra lateral con <strong>Ctrl+B</strong> para ampliar el área de contenido en pantallas pequeñas.
+      </div>
+
+      <h4>Sección principal (todos los usuarios)</h4>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Opción</th><th>Permiso requerido</th></tr></thead>
+          <tbody>
+            <tr><td>Stocks</td><td>Todos los usuarios</td></tr>
+            <tr><td>Stocks Anulados</td><td>Permiso <span class="badge badge-gray">ANU</span></td></tr>
+            <tr><td>Mis Propuestas</td><td>Parámetro <code>PERMITIR_PROPUESTAS</code> activo</td></tr>
+            <tr><td>Mis Pedidos</td><td>Permiso <span class="badge badge-gray">PED</span></td></tr>
+            <tr><td>Mis Albaranes</td><td>Permiso <span class="badge badge-gray">ALB</span></td></tr>
+            <tr><td>Mis Facturas</td><td>Permiso <span class="badge badge-gray">FAC</span></td></tr>
+            <tr><td>Mis Consultas</td><td>Todos los usuarios</td></tr>
+            <tr><td>Búsqueda Mágica</td><td>Parámetro <code>VISIBLE_BUSQUEDA_MAGICA</code> activo</td></tr>
+            <tr><td>Mis Favoritos</td><td>Todos los usuarios</td></tr>
+            <tr><td>Mis Clientes</td><td>Permiso <span class="badge badge-gray">ADM</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Acordeón "Administración" 🔒</h4>
+      <p>Visible solo para usuarios con rol <span class="badge badge-orange">administrador</span> o <span class="badge badge-red">superusuario</span>:</p>
+      <ul>
+        <li>Dashboard &nbsp;·&nbsp; Propuestas &nbsp;·&nbsp; Pedidos &nbsp;·&nbsp; Albaranes &nbsp;·&nbsp; Facturas</li>
+        <li>Consultas &nbsp;·&nbsp; Usuarios &nbsp;·&nbsp; Auditoría</li>
+        <li>Vista Almacén &nbsp;·&nbsp; Informe Almacén</li>
+      </ul>
+
+      <h4>Acordeón "Configuración" 🔒</h4>
+      <p>Visible solo para usuarios con rol <span class="badge badge-orange">administrador</span> o <span class="badge badge-red">superusuario</span>:</p>
+      <ul>
+        <li>Email &nbsp;·&nbsp; API Keys &nbsp;·&nbsp; Logo</li>
+        <li>Parámetros <span class="badge badge-red">superusuario</span> &nbsp;·&nbsp; Control BD <span class="badge badge-red">superusuario</span></li>
+      </ul>
+    </section>
+
+    <!-- ==================== 3. STOCKS ==================== -->
+    <section class="manual-section" id="sec3">
+      <div class="section-header">
+        <div class="section-number">3</div>
+        <h2>Página Principal — Stocks</h2>
+      </div>
+
+      <p>Es la página central de la aplicación. Muestra el catálogo de artículos disponibles con filtros avanzados, grid configurable y acceso a detalle de cada producto.</p>
+
+      <h3>Panel de filtros</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Filtro</th><th>Tipo</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td>Buscar</td><td>Texto libre</td><td>Filtra simultáneamente por descripción y código de artículo.</td></tr>
+            <tr><td>Formato</td><td>Desplegable</td><td>Selección de formato del artículo (p. ej. 60x60, 30x60…).</td></tr>
+            <tr><td>Tipo Producto</td><td>Desplegable</td><td>Opcional. Visible si está habilitado por parámetros.</td></tr>
+            <tr><td>Modelo</td><td>Desplegable</td><td>Opcional. Visible si está habilitado por parámetros.</td></tr>
+            <tr><td>Color</td><td>Desplegable</td><td>Opcional. Visible si está habilitado por parámetros.</td></tr>
+            <tr><td>Calidad</td><td>Desplegable</td><td>Primera, Segunda, etc.</td></tr>
+            <tr><td>Existencias Mínimas</td><td>Numérico</td><td>Filtra artículos con existencias iguales o superiores al valor indicado.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Botones de acción del panel de filtros</h4>
+      <ul>
+        <li>🔍 <strong>Buscar</strong>: ejecuta la búsqueda con los filtros actuales.</li>
+        <li>📋 <strong>Ver Todos</strong>: carga el catálogo completo sin filtros.</li>
+        <li>🗑️ <strong>Limpiar</strong>: resetea todos los filtros al estado inicial.</li>
+        <li>🎙️ <strong>Búsqueda por voz</strong> (opcional): reconoce formato, calidad y descripción mediante voz.</li>
+      </ul>
+
+      <h3>Grid de resultados</h3>
+      <p>El grid muestra los artículos en formato de tabla con las siguientes columnas:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Columna</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td>Código</td><td>Referencia del artículo en el sistema.</td></tr>
+            <tr><td>Descripción</td><td>Nombre completo del artículo.</td></tr>
+            <tr><td>Formato</td><td>Dimensiones del producto.</td></tr>
+            <tr><td>Color</td><td>Color del artículo (si visible).</td></tr>
+            <tr><td>Calidad</td><td>Categoría de calidad.</td></tr>
+            <tr><td>Tono</td><td>Código de tono del lote.</td></tr>
+            <tr><td>Calibre</td><td>Calibre del artículo.</td></tr>
+            <tr><td>Existencias</td><td>Cantidad disponible con badge de color (verde/amarillo/rojo).</td></tr>
+            <tr><td>Precio</td><td>Solo visible con permiso <span class="badge badge-gray">PRO</span>.</td></tr>
+            <tr><td>Acciones</td><td>Botones: Ver detalle (👁️), Añadir al carrito (🛒), Favorito (❤️).</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Funcionalidades avanzadas del grid</h4>
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="feature-icon">↕️</span>
+          <div class="feature-content">
+            <strong>Ordenación por columna</strong>
+            <span>Clic en el encabezado de cualquier columna para ordenar de forma ascendente o descendente.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">▼</span>
+          <div class="feature-content">
+            <strong>Filtros de columna avanzados</strong>
+            <span>Clic en el icono de embudo de cada columna. Se abre un popup con dos pestañas: <strong>Valores</strong> (checkboxes de valores únicos) y <strong>Condición</strong> (operadores: contiene, igual, empieza por, termina en, etc.).</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🏷️</span>
+          <div class="feature-content">
+            <strong>Chips de filtros activos</strong>
+            <span>Los filtros de columna aplicados se muestran como etiquetas bajo la barra de filtros. Clic en la X de cada chip para eliminar ese filtro.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">⟺</span>
+          <div class="feature-content">
+            <strong>Reordenar columnas</strong>
+            <span>Arrastrar los encabezados para cambiar el orden de las columnas. El orden se guarda automáticamente.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">↔️</span>
+          <div class="feature-content">
+            <strong>Redimensionar columnas</strong>
+            <span>Arrastrar el borde derecho de cualquier columna para ajustar su anchura. Las anchuras se guardan automáticamente.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">📄</span>
+          <div class="feature-content">
+            <strong>Paginación configurable</strong>
+            <span>La cantidad de filas por página es configurable por el administrador desde los parámetros del sistema.</span>
+          </div>
+        </div>
+      </div>
+
+      <h3>Modal de detalle del artículo</h3>
+      <p>Al pulsar el botón Ver (👁️) o hacer clic en una fila, se abre el modal de detalle con toda la información del artículo:</p>
+
+      <ul>
+        <li><strong>Galería de imágenes</strong>: miniaturas ampliables. Clic en la imagen para verla a pantalla completa.</li>
+        <li><strong>Badge de existencias</strong>: indicador visual del nivel de stock.</li>
+        <li><strong>Ficha técnica PDF</strong>: botón de descarga (solo visible si existe ficha para ese artículo).</li>
+        <li><strong>Datos de empaquetado</strong>: unidades por caja, cajas por pallet, peso por caja, peso por pallet.</li>
+        <li><strong>Datos del artículo</strong>: código, EAN13, descripción, formato, modelo, color, calidad, tono, calibre, pallet, caja, existencias y precio (si permiso PRO).</li>
+      </ul>
+
+      <h4>Botones del modal de detalle</h4>
+      <ul>
+        <li>🛒 <strong>Carrito</strong>: abre el modal de cantidad para añadir al carrito.</li>
+        <li>❤️ <strong>Favorito</strong>: marca/desmarca el artículo como favorito.</li>
+        <li>💬 <strong>Consulta</strong>: abre formulario para enviar consulta por email al equipo comercial.</li>
+        <li>📱 <strong>WhatsApp</strong>: abre WhatsApp Web con mensaje prellenado con los datos del artículo.</li>
+        <li>✖️ <strong>Cerrar</strong>: cierra el modal (también con clic fuera del modal o tecla Escape).</li>
+      </ul>
+
+      <h3>Modal de cantidad</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Elemento</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td>Info del producto</td><td>Código, formato, calidad, tono y calibre del artículo seleccionado.</td></tr>
+            <tr><td>Selector de modo</td><td>Alternar entre unidad de medida y Cajas para la cantidad.</td></tr>
+            <tr><td>Botones +/−</td><td>Incrementar o decrementar la cantidad de una en una unidad.</td></tr>
+            <tr><td>Campo numérico</td><td>Introducir la cantidad directamente.</td></tr>
+            <tr><td>+1 caja / −1 caja</td><td>Botones rápidos para ajustar por unidades de caja.</td></tr>
+            <tr><td>+1 pallet / −1 pallet</td><td>Botones rápidos para ajustar por unidades de pallet.</td></tr>
+            <tr><td>Confirmar / Cancelar</td><td>Añadir al carrito o cancelar la operación.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Carrito y envío de propuesta</h3>
+      <p>El carrito se muestra como botón flotante con contador de artículos en la esquina inferior derecha de la pantalla.</p>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="feature-icon">🛒</span>
+          <div class="feature-content">
+            <strong>Lista de artículos</strong>
+            <span>Muestra todos los artículos añadidos con opción de eliminar cada uno individualmente.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🏢</span>
+          <div class="feature-content">
+            <strong>Cliente (autocomplete)</strong>
+            <span>Solo disponible con permiso <span class="badge badge-gray">ADM</span>. Permite seleccionar el cliente destinatario de la propuesta.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🔖</span>
+          <div class="feature-content">
+            <strong>Referencia</strong>
+            <span>Campo de texto libre para identificar la propuesta.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">💬</span>
+          <div class="feature-content">
+            <strong>Comentarios</strong>
+            <span>Texto libre para incluir observaciones o instrucciones adicionales.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">📧</span>
+          <div class="feature-content">
+            <strong>Copia por email</strong>
+            <span>Si se marca, el usuario recibe una copia del email de la propuesta con el PDF adjunto.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">✍️</span>
+          <div class="feature-content">
+            <strong>Firma digital</strong>
+            <span>Opcional. Permite firmar la propuesta en pantalla antes de enviar.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 4. STOCKS ANULADOS ==================== -->
+    <section class="manual-section" id="sec4">
+      <div class="section-header">
+        <div class="section-number">4</div>
+        <h2>Stocks Anulados</h2>
+      </div>
+
+      <p>Muestra artículos descatalogados que aún tienen existencias disponibles en almacén.</p>
+
+      <div class="box box-warn">
+        <div class="box-title">⚠️ Sección restringida</div>
+        Esta sección solo es visible para usuarios con el permiso <strong>ANU</strong> activado por el administrador.
+      </div>
+
+      <p>La estructura y funcionalidades son idénticas a la página principal de Stocks, con las siguientes diferencias:</p>
+      <ul>
+        <li>Se muestra una <strong>banda informativa naranja</strong> en la parte superior indicando que son artículos anulados.</li>
+        <li><strong>No dispone de carrito</strong>. Los artículos anulados no pueden ser incluidos en propuestas.</li>
+        <li>Mismo sistema de filtros, grid, detalle e imágenes que la página de Stocks.</li>
+      </ul>
+    </section>
+
+    <!-- ==================== 5. MIS PROPUESTAS ==================== -->
+    <section class="manual-section" id="sec5">
+      <div class="section-header">
+        <div class="section-number">5</div>
+        <h2>Mis Propuestas</h2>
+      </div>
+
+      <p>Lista el historial de propuestas (solicitudes de artículos) enviadas por el usuario actual.</p>
+
+      <h3>Filtros disponibles</h3>
+      <ul>
+        <li><strong>Estado</strong>: Todos / Enviada / Procesada / Cancelada</li>
+        <li><strong>Desde</strong>: fecha inicial del rango de búsqueda</li>
+        <li><strong>Hasta</strong>: fecha final del rango de búsqueda</li>
+      </ul>
+
+      <h3>Columnas del grid</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Columna</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td>ID</td><td>Identificador único de la propuesta.</td></tr>
+            <tr><td>Fecha</td><td>Fecha y hora de envío.</td></tr>
+            <tr><td>Items</td><td>Número total de artículos incluidos.</td></tr>
+            <tr><td>Estado</td><td>Badge de color: <span class="badge badge-orange">Enviada</span> <span class="badge badge-green">Procesada</span> <span class="badge badge-red">Cancelada</span></td></tr>
+            <tr><td>Comentarios</td><td>Observaciones incluidas al enviar.</td></tr>
+            <tr><td>Acciones</td><td>Ver detalle (líneas del pedido), Duplicar (crea nueva propuesta con los mismos artículos), Exportar a Excel.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== 6. MIS PEDIDOS ==================== -->
+    <section class="manual-section" id="sec6">
+      <div class="section-header">
+        <div class="section-number">6</div>
+        <h2>Mis Pedidos</h2>
+      </div>
+
+      <p>Lista los pedidos del cliente asignado a la cuenta del usuario, obtenidos directamente del ERP.</p>
+
+      <div class="box box-info">
+        <div class="box-title">ℹ️ Requisito</div>
+        Esta sección solo es visible para usuarios con el permiso <strong>PED</strong> activado.
+      </div>
+
+      <h3>Filtros disponibles</h3>
+      <ul>
+        <li><strong>Año</strong>: seleccionar año concreto</li>
+        <li><strong>Desde / Hasta</strong>: rango de fechas personalizado</li>
+        <li><strong>Presets rápidos</strong>: Hoy, Esta semana, Este mes, Último trimestre, Este año</li>
+      </ul>
+
+      <h3>Columnas del grid</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Columna</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td>Pedido</td><td>Número de pedido en el ERP.</td></tr>
+            <tr><td>Fecha</td><td>Fecha del pedido.</td></tr>
+            <tr><td>Cliente</td><td>Nombre del cliente (visible con permiso ADM cuando hay varios clientes).</td></tr>
+            <tr><td>Referencia</td><td>Referencia del cliente.</td></tr>
+            <tr><td>Total</td><td>Importe total del pedido.</td></tr>
+            <tr><td>Peso</td><td>Peso total del pedido.</td></tr>
+            <tr><td>Completo</td><td>Indicador de si el pedido está completamente servido.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El botón de detalle abre un modal con las <strong>líneas del pedido</strong>: artículo, descripción, cantidad, precio, importe, situación de servicio.</p>
+    </section>
+
+    <!-- ==================== 7. MIS ALBARANES ==================== -->
+    <section class="manual-section" id="sec7">
+      <div class="section-header">
+        <div class="section-number">7</div>
+        <h2>Mis Albaranes</h2>
+      </div>
+
+      <p>Idéntico en estructura y funcionamiento a <strong>Mis Pedidos</strong>, pero muestra los albaranes de entrega del cliente.</p>
+
+      <div class="box box-info">
+        <div class="box-title">ℹ️ Requisito</div>
+        Esta sección solo es visible para usuarios con el permiso <strong>ALB</strong> activado.
+      </div>
+
+      <p>Los filtros, columnas del grid y modal de detalle con líneas siguen exactamente el mismo patrón que la sección Mis Pedidos.</p>
+    </section>
+
+    <!-- ==================== 8. MIS FACTURAS ==================== -->
+    <section class="manual-section" id="sec8">
+      <div class="section-header">
+        <div class="section-number">8</div>
+        <h2>Mis Facturas</h2>
+      </div>
+
+      <p>Idéntico en estructura y funcionamiento a <strong>Mis Pedidos</strong>, pero muestra las facturas emitidas al cliente.</p>
+
+      <div class="box box-info">
+        <div class="box-title">ℹ️ Requisito</div>
+        Esta sección solo es visible para usuarios con el permiso <strong>FAC</strong> activado.
+      </div>
+
+      <div class="box box-tip">
+        <div class="box-title">💡 Descarga de PDF</div>
+        Si el administrador ha configurado el directorio de PDFs de facturas (<code>FACTURAS_PDF_DIRECTORIO</code>), aparecerá un botón de descarga de PDF en el modal de detalle de cada factura que cuente con documento disponible.
+      </div>
+    </section>
+
+    <!-- ==================== 9. MIS CONSULTAS ==================== -->
+    <section class="manual-section" id="sec9">
+      <div class="section-header">
+        <div class="section-number">9</div>
+        <h2>Mis Consultas</h2>
+      </div>
+
+      <p>Muestra el historial de consultas enviadas por el usuario sobre productos del catálogo.</p>
+
+      <h3>Filtros disponibles</h3>
+      <ul>
+        <li><strong>Estado</strong>: Pendiente / Respondida / Cerrada</li>
+        <li><strong>Desde / Hasta</strong>: rango de fechas</li>
+      </ul>
+
+      <h3>Columnas del grid</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Columna</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td>ID</td><td>Identificador único de la consulta.</td></tr>
+            <tr><td>Producto</td><td>Código del artículo sobre el que se hizo la consulta.</td></tr>
+            <tr><td>Descripción</td><td>Nombre del artículo.</td></tr>
+            <tr><td>Fecha</td><td>Fecha de envío de la consulta.</td></tr>
+            <tr><td>Estado</td><td>Estado actual de la consulta.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>El modal de detalle muestra: datos completos del producto, el mensaje enviado y, si existe, la respuesta del administrador.</p>
+    </section>
+
+    <!-- ==================== 10. BÚSQUEDA MÁGICA ==================== -->
+    <section class="manual-section" id="sec10">
+      <div class="section-header">
+        <div class="section-number">10</div>
+        <h2>Búsqueda Mágica</h2>
+      </div>
+
+      <p>Funcionalidad de búsqueda visual por imagen usando tecnología de similitud (CBIR — Content-Based Image Retrieval). Permite encontrar productos similares a una imagen de referencia.</p>
+
+      <div class="box box-info">
+        <div class="box-title">ℹ️ Requisito</div>
+        Esta sección solo es visible si el administrador ha activado el parámetro <code>VISIBLE_BUSQUEDA_MAGICA</code>.
+      </div>
+
+      <h3>Cómo usar la búsqueda por imagen</h3>
+      <ol>
+        <li>Arrastra una imagen directamente al área de carga, o haz clic para seleccionar un archivo.</li>
+        <li>Formatos aceptados: <strong>JPG, PNG, WEBP</strong>. Tamaño máximo: <strong>10 MB</strong>.</li>
+        <li>El sistema analiza la imagen y devuelve productos visualmente similares.</li>
+        <li>Cada resultado muestra el artículo con su <strong>porcentaje de similitud</strong>.</li>
+      </ol>
+
+      <div class="box box-tip">
+        <div class="box-title">💡 Consejo</div>
+        Para obtener mejores resultados, utiliza imágenes con buena iluminación, fondo neutro y que muestren claramente la textura o patrón del producto cerámico.
+      </div>
+    </section>
+
+    <!-- ==================== 11. MIS FAVORITOS ==================== -->
+    <section class="manual-section" id="sec11">
+      <div class="section-header">
+        <div class="section-number">11</div>
+        <h2>Mis Favoritos</h2>
+      </div>
+
+      <p>Gestiona los artículos marcados como favoritos y muestra los más pedidos históricamente.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Pestaña</th><th>Contenido</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Mis Favoritos</td>
+              <td>Artículos marcados manualmente como favoritos por el usuario mediante el icono ❤️.</td>
+            </tr>
+            <tr>
+              <td>Más Pedidos</td>
+              <td>Artículos que el usuario ha pedido con mayor frecuencia, según el historial del ERP.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Acciones disponibles</h3>
+      <ul>
+        <li>🗑️ <strong>Eliminar favorito</strong>: quitar el artículo de la lista de favoritos.</li>
+        <li>🔍 <strong>Ver en stocks</strong>: ir a la página de stocks con el artículo preseleccionado.</li>
+        <li>🛒 <strong>Añadir al carrito</strong>: incorporar directamente al carrito de propuesta.</li>
+      </ul>
+    </section>
+
+    <!-- ==================== 12. MIS CLIENTES ==================== -->
+    <section class="manual-section" id="sec12">
+      <div class="section-header">
+        <div class="section-number">12</div>
+        <h2>Mis Clientes</h2>
+      </div>
+
+      <p>Muestra la lista de clientes asignados al código comercial del usuario en el ERP.</p>
+
+      <div class="box box-admin">
+        <div class="box-title">🔒 Permiso requerido</div>
+        Esta sección solo es visible para usuarios con el permiso <strong>ADM</strong> (Administrador de clientes) activado por el administrador.
+      </div>
+
+      <p>Con permiso ADM, el usuario también puede:</p>
+      <ul>
+        <li>Seleccionar el cliente destinatario al enviar propuestas.</li>
+        <li>Ver pedidos, albaranes y facturas de todos sus clientes asignados (no solo uno).</li>
+        <li>Filtrar documentos por cliente en las páginas Mis Pedidos, Mis Albaranes y Mis Facturas.</li>
+      </ul>
+    </section>
+
+    <!-- ==================== 13. DASHBOARD ==================== -->
+    <section class="manual-section" id="sec13">
+      <div class="section-header">
+        <div class="section-number">13</div>
+        <h2>Dashboard de Estadísticas</h2>
+      </div>
+
+      <div class="box box-admin">
+        <div class="box-title">🔒 Solo administradores</div>
+        El acceso al Dashboard requiere rol <strong>administrador</strong> o <strong>superusuario</strong>.
+      </div>
+
+      <h3>Tarjetas KPI</h3>
+      <p>La parte superior del dashboard muestra tarjetas resumen con los indicadores clave del sistema:</p>
+      <ul>
+        <li>Total de propuestas</li>
+        <li>Propuestas pendientes</li>
+        <li>Usuarios activos</li>
+        <li>Consultas pendientes</li>
+        <li>Items solicitados</li>
+        <li>Stock del almacén (en M² y piezas)</li>
+      </ul>
+
+      <h3>Gráficos disponibles</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Gráfico</th><th>Tipo</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td>Propuestas por día</td><td>Línea</td><td>Evolución diaria de propuestas (últimos 7, 30 o 90 días).</td></tr>
+            <tr><td>Propuestas por estado</td><td>Doughnut</td><td>Distribución por Enviada / Procesada / Cancelada.</td></tr>
+            <tr><td>Propuestas por mes</td><td>Barras</td><td>Resumen de los últimos 6 meses.</td></tr>
+            <tr><td>Productos más solicitados</td><td>Tabla/Tarjetas</td><td>Top 10 artículos con más solicitudes.</td></tr>
+            <tr><td>Usuarios más activos</td><td>Lista</td><td>Top 10 usuarios con más propuestas enviadas.</td></tr>
+            <tr><td>Artículos más vistos</td><td>Tabla</td><td>Artículos con más visualizaciones de detalle.</td></tr>
+            <tr><td>Logins por día</td><td>Barras</td><td>Actividad de accesos al sistema.</td></tr>
+            <tr><td>Actividad por hora</td><td>Línea</td><td>Distribución horaria de la actividad.</td></tr>
+            <tr><td>Mapa de conexiones</td><td>Mapa</td><td>Localización geográfica de los accesos (Leaflet/OpenStreetMap).</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Sesiones activas</h3>
+      <p>El dashboard también incluye una sección de sesiones activas que permite ver qué usuarios están conectados en tiempo real y, si es necesario, cerrar sesiones individuales o todas a la vez (excepto la propia).</p>
+    </section>
+
+    <!-- ==================== 14-17. ADMIN DOCS ==================== -->
+    <section class="manual-section" id="sec14">
+      <div class="section-header">
+        <div class="section-number">14–17</div>
+        <h2>Propuestas / Pedidos / Albaranes / Facturas (Admin)</h2>
+      </div>
+
+      <div class="box box-admin">
+        <div class="box-title">🔒 Solo administradores</div>
+        Estas secciones requieren rol <strong>administrador</strong> o <strong>superusuario</strong>.
+      </div>
+
+      <p>Estas cuatro páginas son las versiones administrativas de los módulos de documentos. Tienen la misma estructura que las versiones del usuario pero con acceso a datos de todos los clientes, no solo el propio.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Sección</th><th>Diferencia respecto a la vista usuario</th></tr></thead>
+          <tbody>
+            <tr><td>Todas las Propuestas</td><td>Ve propuestas de todos los usuarios. Puede cambiar el estado (Enviada → Procesada → Cancelada).</td></tr>
+            <tr><td>Todos los Pedidos</td><td>Ve pedidos de todos los clientes del ERP.</td></tr>
+            <tr><td>Todos los Albaranes</td><td>Ve albaranes de todos los clientes del ERP.</td></tr>
+            <tr><td>Todas las Facturas</td><td>Ve facturas de todos los clientes. Descarga PDF si está disponible.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Todos estos grids disponen de los mismos filtros avanzados por columna, ordenación, chips de filtros activos y paginación que sus versiones usuario.</p>
+    </section>
+
+    <!-- ==================== 18. CONSULTAS ADMIN ==================== -->
+    <section class="manual-section" id="sec18">
+      <div class="section-header">
+        <div class="section-number">18</div>
+        <h2>Consultas (Admin — Todas)</h2>
+      </div>
+
+      <div class="box box-admin">
+        <div class="box-title">🔒 Solo administradores</div>
+        Requiere rol <strong>administrador</strong> o <strong>superusuario</strong>.
+      </div>
+
+      <p>Gestiona todas las consultas recibidas de cualquier usuario. Permite responder a las consultas y cerrarlas.</p>
+
+      <h3>Acciones disponibles</h3>
+      <ul>
+        <li><strong>Ver detalle</strong>: muestra todos los datos del producto, el mensaje del cliente y la respuesta si existe.</li>
+        <li><strong>Responder</strong>: formulario integrado en el modal. Al responder, se envía automáticamente un email de respuesta al cliente.</li>
+        <li><strong>Cambiar estado</strong>: Pendiente → Respondida → Cerrada.</li>
+      </ul>
+    </section>
+
+    <!-- ==================== 19. USUARIOS ==================== -->
+    <section class="manual-section" id="sec19">
+      <div class="section-header">
+        <div class="section-number">19</div>
+        <h2>Gestión de Usuarios</h2>
+      </div>
+
+      <div class="box box-admin">
+        <div class="box-title">🔒 Solo administradores</div>
+        Requiere rol <strong>administrador</strong> o <strong>superusuario</strong>.
+      </div>
+
+      <p>Panel completo para gestionar todas las cuentas de usuario del sistema.</p>
+
+      <h3>Acciones del grid de usuarios</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Acción</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td>Crear usuario</td><td>Formulario con campos: usuario, email, nombre, contraseña, empresa, cliente. Se envía email de bienvenida con credenciales automáticamente.</td></tr>
+            <tr><td>Editar</td><td>Modificar datos del usuario.</td></tr>
+            <tr><td>Eliminar</td><td>Eliminar la cuenta del usuario.</td></tr>
+            <tr><td>Cambiar rol</td><td>Asignar rol: usuario / administrador / superusuario.</td></tr>
+            <tr><td>Activar / Desactivar</td><td>Habilitar o deshabilitar el acceso al sistema.</td></tr>
+            <tr><td>Desbloquear</td><td>Desbloquear cuenta bloqueada por intentos fallidos.</td></tr>
+            <tr><td>Toggle permisos</td><td>Activar/desactivar individualmente: PRO, PRE, PED, ALB, FAC, ANU, ADM.</td></tr>
+            <tr><td>Verificar email</td><td>Marcar el email como verificado manualmente.</td></tr>
+            <tr><td>Email de bienvenida</td><td>Reenviar el email de bienvenida con credenciales.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Panel lateral de detalle del usuario</h3>
+      <p>Al seleccionar un usuario, se abre un panel lateral con 6 pestañas de información:</p>
+      <ul>
+        <li><strong>Info</strong>: datos personales, rol, estado de la cuenta y permisos.</li>
+        <li><strong>Propuestas</strong>: historial de propuestas del usuario.</li>
+        <li><strong>Pedidos</strong>: pedidos del cliente asignado.</li>
+        <li><strong>Consultas</strong>: consultas enviadas por el usuario.</li>
+        <li><strong>Sesiones</strong>: sesiones activas del usuario con opción de terminarlas.</li>
+        <li><strong>Auditoría</strong>: registro de acciones realizadas por el usuario.</li>
+      </ul>
+    </section>
+
+    <!-- ==================== 20. AUDITORÍA ==================== -->
+    <section class="manual-section" id="sec20">
+      <div class="section-header">
+        <div class="section-number">20</div>
+        <h2>Auditoría</h2>
+      </div>
+
+      <div class="box box-admin">
+        <div class="box-title">🔒 Solo administradores</div>
+        Requiere rol <strong>administrador</strong> o <strong>superusuario</strong>.
+      </div>
+
+      <p>La página de auditoría tiene dos secciones principales:</p>
+
+      <h3>Sesiones activas</h3>
+      <p>Tabla con todos los usuarios conectados en el momento actual. Información disponible:</p>
+      <ul>
+        <li>Usuario, rol y dirección IP</li>
+        <li>Hora de inicio de sesión y última actividad</li>
+        <li>Ubicación geográfica aproximada</li>
+        <li>Botón para <strong>terminar</strong> cualquier sesión activa remotamente</li>
+        <li>Botón <strong>Cerrar Todas</strong> (excepto la propia sesión del administrador)</li>
+      </ul>
+
+      <h3>Registro de auditoría</h3>
+      <p>Log completo de todas las acciones realizadas en el sistema. Filtros disponibles: fecha desde/hasta, tipo de acción, resultado (éxito/error), usuario.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Información por evento</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td>Timestamp</td><td>Fecha y hora exacta del evento.</td></tr>
+            <tr><td>Usuario</td><td>Quien realizó la acción.</td></tr>
+            <tr><td>Acción</td><td>Tipo de acción: LOGIN, LOGOUT, USER_CREATE, PROPUESTA_SEND, etc.</td></tr>
+            <tr><td>Resultado</td><td><span class="badge badge-green">SUCCESS</span> o <span class="badge badge-red">FAILURE</span></td></tr>
+            <tr><td>Recurso</td><td>Objeto afectado por la acción (ID de usuario, propuesta, etc.).</td></tr>
+            <tr><td>IP</td><td>Dirección IP desde la que se realizó la acción.</td></tr>
+            <tr><td>Ubicación</td><td>Ciudad y país estimados según la IP.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== 21. VISTA ALMACÉN ==================== -->
+    <section class="manual-section" id="sec21">
+      <div class="section-header">
+        <div class="section-number">21</div>
+        <h2>Vista Almacén</h2>
+      </div>
+
+      <div class="box box-admin">
+        <div class="box-title">🔒 Solo administradores</div>
+        Requiere rol <strong>administrador</strong> o <strong>superusuario</strong>.
+      </div>
+
+      <p>Visualización 3D interactiva del almacén construida con la librería <strong>Three.js</strong>. Permite explorar visualmente el estado del stock por ubicación física.</p>
+
+      <h3>Funcionalidades</h3>
+      <ul>
+        <li><strong>Selectores</strong>: elegir almacén y zona a visualizar.</li>
+        <li><strong>Colorización</strong>: las celdas del almacén se colorean según su nivel de stock (verde = lleno, amarillo = medio, rojo = bajo, gris = vacío).</li>
+        <li><strong>Modo paseo</strong>: navegar por el almacén en primera persona usando las teclas <strong>W, A, S, D</strong>.</li>
+        <li><strong>Clic en celda</strong>: muestra información del artículo almacenado en esa ubicación.</li>
+      </ul>
+
+      <h3>Estadísticas mostradas</h3>
+      <ul>
+        <li>Número de zonas</li>
+        <li>Total de ubicaciones</li>
+        <li>Número de artículos distintos</li>
+        <li>Existencias totales</li>
+      </ul>
+    </section>
+
+    <!-- ==================== 22. INFORME ALMACÉN ==================== -->
+    <section class="manual-section" id="sec22">
+      <div class="section-header">
+        <div class="section-number">22</div>
+        <h2>Informe Almacén</h2>
+      </div>
+
+      <div class="box box-admin">
+        <div class="box-title">🔒 Solo administradores</div>
+        Requiere rol <strong>administrador</strong> o <strong>superusuario</strong>.
+      </div>
+
+      <p>Genera informes estadísticos del estado del almacén. Los informes son descargables e imprimibles directamente desde el navegador.</p>
+
+      <p>Incluye métricas como ocupación por zona, rotación de artículos, artículos sin movimiento y comparativas temporales.</p>
+    </section>
+
+    <!-- ==================== 23. EMAIL ==================== -->
+    <section class="manual-section" id="sec23">
+      <div class="section-header">
+        <div class="section-number">23</div>
+        <h2>Configuración Email</h2>
+      </div>
+
+      <div class="box box-admin">
+        <div class="box-title">🔒 Solo administradores</div>
+        Requiere rol <strong>administrador</strong> o <strong>superusuario</strong>.
+      </div>
+
+      <p>Gestión de las configuraciones SMTP para el envío de emails del sistema (propuestas, verificación de cuentas, recuperación de contraseña, etc.).</p>
+
+      <h3>Tipos de autenticación soportados</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tipo</th><th>Descripción</th><th>Uso típico</th></tr></thead>
+          <tbody>
+            <tr><td>Basic</td><td>Usuario y contraseña SMTP estándar.</td><td>Gmail, servidores SMTP propios.</td></tr>
+            <tr><td>OAuth2</td><td>Autenticación mediante Azure Active Directory.</td><td>Office 365 / Microsoft 365.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Acciones disponibles</h3>
+      <ul>
+        <li><strong>Crear configuración</strong>: añadir nueva cuenta de envío (nombre, servidor SMTP, puerto, email remitente, destinatario).</li>
+        <li><strong>Activar</strong>: marcar una configuración como activa (solo puede haber una activa por empresa).</li>
+        <li><strong>Editar</strong>: modificar los datos de una configuración existente.</li>
+        <li><strong>Probar conexión</strong>: botón para verificar que los datos SMTP son correctos antes de guardar.</li>
+      </ul>
+
+      <div class="box box-tip">
+        <div class="box-title">💡 Consejo</div>
+        Utiliza siempre el botón <strong>Probar conexión</strong> antes de activar una configuración para asegurarte de que el envío de emails funciona correctamente.
+      </div>
+    </section>
+
+    <!-- ==================== 24. PARÁMETROS ==================== -->
+    <section class="manual-section" id="sec24">
+      <div class="section-header">
+        <div class="section-number">24</div>
+        <h2>Parámetros del Sistema</h2>
+      </div>
+
+      <div class="box box-admin">
+        <div class="box-title">🔒 Solo superusuario</div>
+        Esta sección solo es accesible para usuarios con rol <strong>superusuario</strong>.
+      </div>
+
+      <p>Configuración global que afecta al comportamiento de toda la aplicación.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Parámetro</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td>Grid con imágenes</td><td>Activar/desactivar la carga de imágenes en el grid de stocks (afecta al rendimiento).</td></tr>
+            <tr><td>Paginación</td><td>Número de filas por página en el grid de stocks.</td></tr>
+            <tr><td>Columnas opcionales</td><td>Configurar qué columnas son visibles en el grid (tipo producto, color, etc.).</td></tr>
+            <tr><td>WhatsApp</td><td>Número de WhatsApp para el botón de contacto en el detalle de artículo.</td></tr>
+            <tr><td>Registro público</td><td>Permitir o denegar el registro de nuevos usuarios desde la página de login.</td></tr>
+            <tr><td>Propuestas</td><td>Activar o desactivar el módulo de propuestas/carrito para los usuarios.</td></tr>
+            <tr><td>Firma</td><td>Activar o desactivar la firma digital en el carrito de propuestas.</td></tr>
+            <tr><td>Búsqueda mágica</td><td>Mostrar u ocultar la sección de búsqueda por imagen.</td></tr>
+            <tr><td>Modo espejo</td><td>Sincronización de datos con el ERP (configuración avanzada).</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== 25. API KEYS ==================== -->
+    <section class="manual-section" id="sec25">
+      <div class="section-header">
+        <div class="section-number">25</div>
+        <h2>API Keys</h2>
+      </div>
+
+      <div class="box box-admin">
+        <div class="box-title">🔒 Solo administradores</div>
+        Requiere rol <strong>administrador</strong> o <strong>superusuario</strong>.
+      </div>
+
+      <p>Gestión de claves de API para integraciones externas con el sistema (ERP, PowerBuilder, scripts de automatización, etc.).</p>
+
+      <h3>Funcionamiento</h3>
+      <ul>
+        <li>Cada usuario puede generar sus propias API Keys.</li>
+        <li>Al <strong>crear</strong> una clave, el valor completo se muestra <strong>una única vez</strong>. No es posible recuperarlo después.</li>
+        <li>Las claves pueden ser <strong>desactivadas</strong> temporalmente sin eliminarlas.</li>
+        <li>Las claves pueden ser <strong>eliminadas</strong> permanentemente.</li>
+      </ul>
+
+      <h3>Uso de la API Key</h3>
+      <p>La clave puede enviarse de dos formas en las peticiones a la API:</p>
+      <ul>
+        <li><strong>Header HTTP</strong>: <code>X-API-Key: tu-clave-aqui</code></li>
+        <li><strong>Query parameter</strong>: <code>?apikey=tu-clave-aqui</code></li>
+      </ul>
+
+      <div class="box box-warn">
+        <div class="box-title">⚠️ Seguridad</div>
+        Guarda la API Key en un lugar seguro justo después de crearla. Si la pierdes, deberás eliminarla y generar una nueva.
+      </div>
+    </section>
+
+    <!-- ==================== 26. LOGO ==================== -->
+    <section class="manual-section" id="sec26">
+      <div class="section-header">
+        <div class="section-number">26</div>
+        <h2>Logo y Apariencia</h2>
+      </div>
+
+      <div class="box box-admin">
+        <div class="box-title">🔒 Solo administradores</div>
+        Requiere rol <strong>administrador</strong> o <strong>superusuario</strong>.
+      </div>
+
+      <p>Personalización visual de la aplicación para cada empresa.</p>
+
+      <h3>Opciones disponibles</h3>
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="feature-icon">🖼️</span>
+          <div class="feature-content">
+            <strong>Logo de empresa</strong>
+            <span>Subir imagen del logo (PNG, SVG, JPEG, WebP). Se muestra en la cabecera de todas las páginas internas.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🔖</span>
+          <div class="feature-content">
+            <strong>Favicon</strong>
+            <span>Icono que aparece en la pestaña del navegador. Formatos aceptados: ICO, PNG, SVG.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🔄</span>
+          <div class="feature-content">
+            <strong>Invertir logo en cabecera</strong>
+            <span>Si el logo es oscuro y el header también lo es, se puede activar esta opción para invertir los colores del logo automáticamente.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🎨</span>
+          <div class="feature-content">
+            <strong>Tema de color</strong>
+            <span>Seleccionar entre 17 temas disponibles que cambian los colores principales de toda la interfaz. La vista previa se actualiza en tiempo real.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="box box-tip">
+        <div class="box-title">💡 Persistencia del tema</div>
+        El tema seleccionado se guarda en el navegador del usuario para carga instantánea sin parpadeo al abrir la aplicación.
+      </div>
+    </section>
+
+    <!-- ==================== 27. CONTROL BD ==================== -->
+    <section class="manual-section" id="sec27">
+      <div class="section-header">
+        <div class="section-number">27</div>
+        <h2>Control de Base de Datos</h2>
+      </div>
+
+      <div class="box box-admin">
+        <div class="box-title">🔒 Solo superusuario</div>
+        Esta sección solo es accesible para usuarios con rol <strong>superusuario</strong>.
+      </div>
+
+      <p>Panel de administración avanzada del servidor de base de datos SQL Server.</p>
+
+      <h3>Información del servidor</h3>
+      <ul>
+        <li>Versión de SQL Server y edición</li>
+        <li>Espacio total y disponible en disco</li>
+        <li>Lista de archivos de base de datos (MDF, LDF)</li>
+        <li>Tablas más grandes por tamaño de datos</li>
+      </ul>
+
+      <h3>Operaciones disponibles</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Operación</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td>Reducir log</td><td>Liberar espacio del archivo de log de transacciones (SHRINKFILE).</td></tr>
+            <tr><td>Reindexar imágenes CBIR</td><td>Regenerar el índice de similitud visual para la Búsqueda Mágica.</td></tr>
+            <tr><td>Backup rápido</td><td>Lanzar un backup inmediato de la base de datos.</td></tr>
+            <tr><td>Configuraciones de backup</td><td>Gestionar backups programados con destino FTP o SFTP (diario, semanal, mensual).</td></tr>
+            <tr><td>Historial de backups</td><td>Ver el registro de todos los backups realizados con su estado y tamaño.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-warn">
+        <div class="box-title">⚠️ Precaución</div>
+        Las operaciones de mantenimiento de base de datos (reducir log, reindexar) pueden afectar temporalmente al rendimiento del sistema. Ejecutarlas en horarios de baja actividad.
+      </div>
+    </section>
+
+  </div><!-- /content-wrap -->
+</div><!-- /main -->
+
+<script>
+  // Smooth scroll + active link highlighting
+  (function () {
+    const links = document.querySelectorAll('.nav-link[href^="#"]');
+    const sections = [];
+
+    links.forEach(function (link) {
+      const id = link.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if (el) sections.push({ id, el, link });
+    });
+
+    function onScroll() {
+      const scrollY = window.scrollY + 80;
+      let current = null;
+      sections.forEach(function (s) {
+        if (s.el.offsetTop <= scrollY) current = s;
+      });
+      links.forEach(function (l) { l.classList.remove('active'); });
+      if (current) current.link.classList.add('active');
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+
+</body>
+</html>

@@ -27,7 +27,7 @@
   "header": {
     "title": "Stock Management",
     "subtitle": "Real-time inventory query system",
-    "mirrorMode": "Mirror"
+    "mirrorMode": "Data synced at"
   },
   "auth": {
     "login": "Login",

@@ -27,7 +27,7 @@
   "header": {
     "title": "Gestión de Stocks",
     "subtitle": "Sistema de consulta de inventario en tiempo real",
-    "mirrorMode": "Espejo"
+    "mirrorMode": "Datos sincronizados a"
   },
   "auth": {
     "login": "Iniciar Sesión",
