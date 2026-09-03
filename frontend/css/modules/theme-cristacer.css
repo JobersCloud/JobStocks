@@ -1092,23 +1092,24 @@ html[data-color-theme="cristacer"] .login-header .mobile-logo {
     border-top-color: #1a1a1a !important;
 }
 
-/* --- Botones de accion destructiva: negro como el resto de botones del tema.
-   Cambiar solo var(--danger) los dejaba en el rojo del disenador, que sigue
-   siendo rojo y desentona con el beige/negro. El rojo se reserva para el
-   hover, que es donde hace falta avisar. --- */
+/* --- Botones de accion destructiva: iguales al resto de .btn-icon, o sea
+   fondo transparente que deja ver el beige de la pagina, borde claro y el
+   icono en el gris del tema. El rojo del disenador se reserva para el hover,
+   que es donde hace falta avisar de que la accion destruye algo. --- */
 [data-color-theme="cristacer"] .btn-icon-danger {
-    background: #1a1a1a !important;
-    border-color: #1a1a1a !important;
-    color: #F6EEE3 !important;
+    background: transparent !important;
+    border-color: #d4ccc3 !important;
+    color: var(--text-secondary) !important;
 }
 
 [data-color-theme="cristacer"] .btn-icon-danger svg {
-    stroke: #F6EEE3 !important;
+    stroke: currentColor !important;
 }
 
 [data-color-theme="cristacer"] .btn-icon-danger:hover {
     background: #FF4438 !important;
     border-color: #FF4438 !important;
+    color: #FFFFFF !important;
 }
 
 [data-color-theme="cristacer"] .btn-icon-danger:hover svg {
