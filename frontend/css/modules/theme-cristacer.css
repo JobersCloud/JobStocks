@@ -1077,10 +1077,6 @@ html[data-color-theme="cristacer"] .login-header .mobile-logo {
     --danger: #FF4438;
 }
 
-[data-color-theme="cristacer"] .btn-icon-danger:hover {
-    background: #E03A2F !important;
-}
-
 /* --- Tooltips: son div, asi que el override global de fondo beige les gana
    por especificidad (atributo + tipo vence a una clase). Como su texto es
    blanco, quedaban blanco sobre beige e ilegibles. Fondo negro del tema y
@@ -1094,4 +1090,27 @@ html[data-color-theme="cristacer"] .login-header .mobile-logo {
 
 [data-color-theme="cristacer"] .btn-icon-tooltip::after {
     border-top-color: #1a1a1a !important;
+}
+
+/* --- Botones de accion destructiva: negro como el resto de botones del tema.
+   Cambiar solo var(--danger) los dejaba en el rojo del disenador, que sigue
+   siendo rojo y desentona con el beige/negro. El rojo se reserva para el
+   hover, que es donde hace falta avisar. --- */
+[data-color-theme="cristacer"] .btn-icon-danger {
+    background: #1a1a1a !important;
+    border-color: #1a1a1a !important;
+    color: #F6EEE3 !important;
+}
+
+[data-color-theme="cristacer"] .btn-icon-danger svg {
+    stroke: #F6EEE3 !important;
+}
+
+[data-color-theme="cristacer"] .btn-icon-danger:hover {
+    background: #FF4438 !important;
+    border-color: #FF4438 !important;
+}
+
+[data-color-theme="cristacer"] .btn-icon-danger:hover svg {
+    stroke: #FFFFFF !important;
 }
