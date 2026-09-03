@@ -1068,3 +1068,15 @@ html[data-color-theme="cristacer"] .login-header .mobile-logo {
     box-shadow: none !important;
     color: #1a1a1a !important;
 }
+
+/* --- Rojo de peligro: el del disenador (#FF4438), no el generico #ef4444.
+   core.css lo define en :root; aqui gana por orden de @import. Afecta a los
+   pocos usos de var(--danger): boton "Cerrar Todas" de auditoria, borrados
+   y avisos. --- */
+[data-color-theme="cristacer"] {
+    --danger: #FF4438;
+}
+
+[data-color-theme="cristacer"] .btn-icon-danger:hover {
+    background: #E03A2F !important;
+}

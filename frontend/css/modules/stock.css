@@ -500,6 +500,16 @@
         border-radius: var(--radius-lg);
     }
 
+    /* Modal de detalle: hoja completa en movil, aprovecha toda la pantalla */
+    #detail-modal .modal-content {
+        width: 100%;
+        max-width: none;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+        padding: 20px 16px;
+    }
+
     .modal-header h2 {
         font-size: 1.25rem;
     }
@@ -612,9 +622,9 @@
 }
 
 .detail-groupbox-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
 }
 
 /* ==================== SECCIÓN DE EMPAQUETADO ==================== */
@@ -709,7 +719,7 @@
 
 .detail-imagenes-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 12px;
     width: 100%;
 }
@@ -799,6 +809,13 @@
 }
 
 @media (max-width: 768px) {
+    /* Los detalles vuelven a una sola columna. Va en este media query y no
+       en el de arriba porque la regla base de dos columnas esta declarada
+       despues y, a igual especificidad, ganaria. */
+    .detail-groupbox-content {
+        grid-template-columns: 1fr;
+    }
+
     .detail-imagenes-grid {
         grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
         gap: 8px;
