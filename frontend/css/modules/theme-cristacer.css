@@ -117,25 +117,11 @@
 
 [data-color-theme="cristacer"] .sidebar-toggle-container {
     border-bottom: 1px solid #e5ddd5 !important;
+    justify-content: flex-start !important;
+    padding-left: 12px !important;
 }
 
-[data-color-theme="cristacer"] .sidebar-toggle {
-    background: #1a1a1a !important;
-    border-color: #1a1a1a !important;
-    color: white !important;
-    border-radius: 50% !important;
-}
-
-[data-color-theme="cristacer"] .sidebar-toggle:hover {
-    background: #333333 !important;
-    border-color: #333333 !important;
-}
-
-[data-color-theme="cristacer"] .sidebar-toggle svg path,
-[data-color-theme="cristacer"] .sidebar-toggle svg rect {
-    fill: white !important;
-    stroke: white !important;
-}
+/* sidebar-toggle: estilos movidos a sección de iconos custom más abajo */
 
 /* --- Tipografía sidebar: negro y negrita --- */
 [data-color-theme="cristacer"] .sidebar-item {
@@ -163,12 +149,12 @@
     stroke: #1a1a1a !important;
 }
 
-/* Item activo: fondo oscuro, texto blanco, bordes redondeados */
+/* Item activo: fondo oscuro, texto blanco, pill shape (como botón Entrar) */
 [data-color-theme="cristacer"] .sidebar-item.active {
     background: #1a1a1a !important;
     color: white !important;
     border-left: none !important;
-    border-radius: 8px !important;
+    border-radius: 25px !important;
     font-weight: 500 !important;
 }
 
@@ -300,15 +286,7 @@
     border-color: #d4ccc3;
 }
 
-[data-color-theme="cristacer"] .btn-icon-primary {
-    background: #1a1a1a !important;
-    border-color: #1a1a1a !important;
-}
-
-[data-color-theme="cristacer"] .btn-icon-primary:hover {
-    background: #333333 !important;
-    border-color: #333333 !important;
-}
+/* btn-icon-primary: estilos movidos a sección de iconos custom más abajo */
 
 /* --- Botones primarios: negro --- */
 [data-color-theme="cristacer"] .btn-primary,
@@ -377,6 +355,11 @@
     color: #1a1a1a !important;
 }
 
+/* Descripción (nombre colección) en bold, mismo peso que el código */
+[data-color-theme="cristacer"] .stock-image-card .stock-image-card-desc {
+    font-weight: 700 !important;
+}
+
 /* --- Badges de stock: colores del diseñador, redondeados --- */
 [data-color-theme="cristacer"] .badge-success {
     background: #9FC46D !important;
@@ -399,9 +382,15 @@
     border-radius: 20px !important;
 }
 
-/* --- Contenedores principales con fondo blanco --- */
-[data-color-theme="cristacer"] .main-content-area {
-    background: transparent;
+/* --- Override global: todo fondo beige, nunca blanco --- */
+[data-color-theme="cristacer"] div,
+[data-color-theme="cristacer"] section,
+[data-color-theme="cristacer"] main,
+[data-color-theme="cristacer"] article,
+[data-color-theme="cristacer"] aside,
+[data-color-theme="cristacer"] footer,
+[data-color-theme="cristacer"] header:not(.top-header):not(.modal-header):not(.quantity-modal-header):not(.changelog-modal-header):not(.menu-header):not(.password-modal-header) {
+    background-color: #F6EEE3;
 }
 
 [data-color-theme="cristacer"] .table-container {
@@ -454,16 +443,7 @@
     background: #b8b0a7;
 }
 
-/* --- Carrito flotante: negro flat sin gradiente --- */
-[data-color-theme="cristacer"] .carrito-btn {
-    background: #1a1a1a !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
-}
-
-[data-color-theme="cristacer"] .carrito-btn:hover {
-    background: #333333 !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
-}
+/* carrito-btn: estilos movidos a sección de iconos custom más abajo */
 
 /* --- Links --- */
 [data-color-theme="cristacer"] a:not(.sidebar-item):not(.btn):hover {
@@ -541,17 +521,25 @@
 [data-color-theme="cristacer"] .sidebar-toggle {
     width: 34px !important;
     height: 34px !important;
-    background-image: url('/assets/cristal/iconos/burger.svg') !important;
-    background-size: cover !important;
-    background-color: transparent !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+    padding: 0 !important;
+    background: url('/assets/cristal/iconos/burger.svg') center/cover no-repeat transparent !important;
     border: none !important;
+    border-radius: 50% !important;
     font-size: 0 !important;
+    line-height: 0 !important;
+    box-sizing: border-box !important;
+}
+
+[data-color-theme="cristacer"] .sidebar-toggle svg path,
+[data-color-theme="cristacer"] .sidebar-toggle svg rect {
+    display: none !important;
 }
 
 [data-color-theme="cristacer"] .sidebar-toggle:hover {
     opacity: 0.7 !important;
-    background-color: transparent !important;
-    background-image: url('/assets/cristal/iconos/burger.svg') !important;
+    background: url('/assets/cristal/iconos/burger.svg') center/cover no-repeat transparent !important;
     border: none !important;
 }
 
@@ -714,9 +702,9 @@ html[data-color-theme="cristacer"] .top-header .menu-btn {
     background: #F6EEE3 !important;
 }
 
-/* Sidebar izquierdo = foto a pantalla completa */
+/* Sidebar izquierdo = foto a pantalla completa (imagen vertical) */
 [data-color-theme="cristacer"] .login-sidebar {
-    background: url('/assets/cristal/login-bg.jpg') center/cover no-repeat !important;
+    background: url('/assets/cristal/Cristacer_Stocks.jpg') center/cover no-repeat !important;
     border-right: none !important;
     flex: 1 !important;
 }
