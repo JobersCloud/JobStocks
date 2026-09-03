@@ -313,6 +313,65 @@
     background: #1a1a1a !important;
 }
 
+/* Contenedores internos del th: NO deben heredar el beige del override
+   global de más abajo (pinta todo div). Si lo heredan, la etiqueta sale
+   beige con el texto blanco encima y no se lee sobre la cabecera negra. */
+[data-color-theme="cristacer"] table thead th div,
+[data-color-theme="cristacer"] table thead th .column-header-wrapper,
+[data-color-theme="cristacer"] table thead th .sortable-header,
+[data-color-theme="cristacer"] table thead th .dg-resize-handle {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Texto e iconos de cabecera en crema sobre el negro */
+[data-color-theme="cristacer"] table thead th,
+[data-color-theme="cristacer"] table thead th .sortable-header,
+[data-color-theme="cristacer"] table thead th .sort-icon,
+[data-color-theme="cristacer"] table thead th span {
+    color: #F6EEE3 !important;
+}
+
+/* --- Grid: filas con el crema de la página, nunca blanco --- */
+[data-color-theme="cristacer"] table tbody tr,
+[data-color-theme="cristacer"] table tbody tr:nth-child(odd),
+[data-color-theme="cristacer"] table tbody tr:nth-child(even) {
+    background-color: #F6EEE3 !important;
+}
+
+[data-color-theme="cristacer"] table tbody tr:hover {
+    background-color: #EDE6DF !important;
+}
+
+/* Celdas transparentes para que se vea el fondo de la fila */
+[data-color-theme="cristacer"] table tbody td {
+    background-color: transparent !important;
+}
+
+/* Separador de filas en tono de la paleta (el gris #eee se ve blanquecino
+   sobre el crema) */
+[data-color-theme="cristacer"] table tbody td,
+[data-color-theme="cristacer"] table tbody th {
+    border-bottom-color: #E5DDD5 !important;
+}
+
+/* --- Pie del grid: lleva un gradiente gris (background-image), y el
+   override global de más abajo solo pinta background-color, por lo que no
+   lo tapa. Hay que usar el shorthand para eliminar el gradiente. --- */
+[data-color-theme="cristacer"] .grid-footer,
+[data-color-theme="cristacer"] .dg-footer {
+    background: #F6EEE3 !important;
+    border: none !important;
+    border-top: 1px solid #E5DDD5 !important;
+    border-radius: 0 !important;
+    color: #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .grid-footer .pagination-info,
+[data-color-theme="cristacer"] .dg-footer .pagination-info {
+    color: #1a1a1a !important;
+}
+
 /* --- Cards/paneles: mismo fondo beige, borde negro --- */
 [data-color-theme="cristacer"] .logo-card,
 [data-color-theme="cristacer"] .config-card,
@@ -986,4 +1045,26 @@ html[data-color-theme="cristacer"] .login-header .mobile-logo {
 
 [data-theme="dark"][data-color-theme="cristacer"] .btn-login:hover {
     background: #d4ccc3 !important;
+}
+
+/* --- Chips de filtros y "sin resultados": mismo caso que el pie, llevan
+   gradiente (background-image) y el override global solo pinta
+   background-color, así que hay que usar el shorthand --- */
+[data-color-theme="cristacer"] .column-filters-chips,
+[data-color-theme="cristacer"] .users-no-results,
+[data-color-theme="cristacer"] .proposals-no-results,
+[data-color-theme="cristacer"] .inquiries-no-results {
+    background: #F6EEE3 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .filter-chip {
+    background: #F6EEE3 !important;
+    border: 1px solid #1a1a1a !important;
+    border-radius: 20px !important;
+    box-shadow: none !important;
+    color: #1a1a1a !important;
 }
