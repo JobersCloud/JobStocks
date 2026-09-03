@@ -1080,3 +1080,18 @@ html[data-color-theme="cristacer"] .login-header .mobile-logo {
 [data-color-theme="cristacer"] .btn-icon-danger:hover {
     background: #E03A2F !important;
 }
+
+/* --- Tooltips: son div, asi que el override global de fondo beige les gana
+   por especificidad (atributo + tipo vence a una clase). Como su texto es
+   blanco, quedaban blanco sobre beige e ilegibles. Fondo negro del tema y
+   texto crema. --- */
+[data-color-theme="cristacer"] .btn-icon-tooltip,
+[data-color-theme="cristacer"] .warehouse-tooltip {
+    background: #1a1a1a !important;
+    color: #F6EEE3 !important;
+    border-radius: 0 !important;
+}
+
+[data-color-theme="cristacer"] .btn-icon-tooltip::after {
+    border-top-color: #1a1a1a !important;
+}
