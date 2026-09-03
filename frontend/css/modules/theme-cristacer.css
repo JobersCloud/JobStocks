@@ -1092,26 +1092,28 @@ html[data-color-theme="cristacer"] .login-header .mobile-logo {
     border-top-color: #1a1a1a !important;
 }
 
-/* --- Botones de accion destructiva: iguales al resto de .btn-icon, o sea
-   fondo transparente que deja ver el beige de la pagina, borde claro y el
-   icono en el gris del tema. El rojo del disenador se reserva para el hover,
-   que es donde hace falta avisar de que la accion destruye algo. --- */
+/* --- Botones de accion destructiva: iguales al resto de .btn-icon del tema.
+   Fondo transparente que deja ver el beige de la pagina, borde claro, icono
+   en negro y hover por opacidad. Sin rojo en ningun estado: el rojo del CSS
+   base se salia de la paleta beige/negro. --- */
 [data-color-theme="cristacer"] .btn-icon-danger {
     background: transparent !important;
     border-color: #d4ccc3 !important;
-    color: var(--text-secondary) !important;
+    color: #1a1a1a !important;
 }
 
 [data-color-theme="cristacer"] .btn-icon-danger svg {
-    stroke: currentColor !important;
+    stroke: #1a1a1a !important;
 }
 
+/* Hover igual que el resto de botones de icono del tema: no cambia de color,
+   solo baja la opacidad (mismo patron que .btn-icon-primary) */
 [data-color-theme="cristacer"] .btn-icon-danger:hover {
-    background: #FF4438 !important;
-    border-color: #FF4438 !important;
-    color: #FFFFFF !important;
+    background: transparent !important;
+    border-color: #d4ccc3 !important;
+    opacity: 0.8;
 }
 
 [data-color-theme="cristacer"] .btn-icon-danger:hover svg {
-    stroke: #FFFFFF !important;
+    stroke: #1a1a1a !important;
 }
