@@ -292,14 +292,33 @@
     border-color: #4e8221 !important;
 }
 
-/* --- Tablas: header negro --- */
+/* --- Tablas: header verde (mismo que DataGrid/auditoría) --- */
 [data-color-theme="rocanet"] .users-table thead,
 [data-color-theme="rocanet"] .proposals-table thead,
 [data-color-theme="rocanet"] .inquiries-table thead,
 [data-color-theme="rocanet"] .config-list thead,
 [data-color-theme="rocanet"] .audit-table thead,
 [data-color-theme="rocanet"] table thead {
-    background: #333333 !important;
+    background: #61a229 !important;
+}
+
+[data-color-theme="rocanet"] table thead th {
+    background: #61a229 !important;
+    color: white !important;
+}
+
+[data-color-theme="rocanet"] table thead th .header-label,
+[data-color-theme="rocanet"] table thead th .sortable-header,
+[data-color-theme="rocanet"] table thead th .sort-icon {
+    color: white !important;
+}
+
+[data-color-theme="rocanet"] table thead th .column-filter-btn svg {
+    stroke: rgba(255,255,255,0.7) !important;
+}
+
+[data-color-theme="rocanet"] table thead th .column-filter-btn:hover svg {
+    stroke: white !important;
 }
 
 /* --- Cards/paneles: fondo blanco, borde verde --- */
