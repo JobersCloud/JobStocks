@@ -62,7 +62,15 @@ async function getConnectionFromURL() {
 }
 
 // Aplicar tema de color
+// Delega en theme-init.js (unico punto de aplicacion de tema): aplica ademas el
+// CSS critico, la tipografia y el modo claro forzado de los temas custom.
 function applyColorTheme(tema) {
+    if (window.ThemeInit) {
+        const aplicado = window.ThemeInit.applyColorTheme(tema);
+        if (aplicado === 'cristacer') applyCristacerLoginTexts();
+        return;
+    }
+    // Fallback defensivo por si theme-init.js no cargo
     const themes = {
         'rubi': { primary: '#FF4338', primaryDark: '#D32F2F', primaryLight: '#FF6B6B' },
         'zafiro': { primary: '#2196F3', primaryDark: '#1565C0', primaryLight: '#64B5F6' },
@@ -80,7 +88,7 @@ function applyColorTheme(tema) {
         'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
         'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' },
         'cristacer': { primary: '#1a1a1a', primaryDark: '#000000', primaryLight: '#444444' },
-        'rocanet': { primary: '#334FB4', primaryDark: '#1a2d7a', primaryLight: '#5B78D0' }
+        'rocanet': { primary: '#61a229', primaryDark: '#4e8221', primaryLight: '#7bc043' }
     };
     if (!themes[tema]) tema = 'rubi';
     const colors = themes[tema];
@@ -122,6 +130,13 @@ function applyCristacerLoginTexts() {
 
 // Cargar tema guardado
 function loadTheme() {
+    // Los temas custom no soportan dark mode: se fuerza claro sin pisar la
+    // preferencia guardada del usuario (si vuelve a un tema estandar, se respeta)
+    const colorTheme = document.documentElement.getAttribute('data-color-theme');
+    if (window.ThemeInit && window.ThemeInit.isCustomTheme(colorTheme)) {
+        document.documentElement.setAttribute('data-theme', 'light');
+        return;
+    }
     const savedTheme = localStorage.getItem('theme') || 'dark';
     applyTheme(savedTheme);
 }
@@ -242,6 +257,8 @@ function ts(key, fallback) {
 
 // Mostrar error de conexión a BD Central (usa estructura del login)
 function showConnectionError(connection) {
+    // Asegurar que el documento es visible (theme-init lo oculta en primera visita)
+    if (window.ThemeInit) window.ThemeInit.reveal();
     const container = document.querySelector('.login-container');
     const html = `
         <div class="login-box" style="text-align:center;">
@@ -271,6 +288,8 @@ function showConnectionError(connection) {
 
 // Mostrar error crítico cuando falta el parámetro connection
 function showCriticalError() {
+    // Asegurar que el documento es visible (theme-init lo oculta en primera visita)
+    if (window.ThemeInit) window.ThemeInit.reveal();
     const container = document.querySelector('.login-container');
     const html = `
         <div class="login-box" style="text-align:center;">
@@ -297,6 +316,8 @@ function showCriticalError() {
 
 // Mostrar error cuando se usa parámetro 'empresa' en lugar de 'connection'
 function showInvalidParamError() {
+    // Asegurar que el documento es visible (theme-init lo oculta en primera visita)
+    if (window.ThemeInit) window.ThemeInit.reveal();
     const container = document.querySelector('.login-container');
     const html = `
         <div class="login-box" style="text-align:center;">
@@ -712,6 +733,8 @@ function checkLoginPwdReq(password, container) {
 }
 
 function showConnectionErrorModal() {
+    // Asegurar que el documento es visible (theme-init lo oculta en primera visita)
+    if (window.ThemeInit) window.ThemeInit.reveal();
     // Reemplazar el contenido del login-container con el mensaje de error
     const container = document.querySelector('.login-container');
     const html = `

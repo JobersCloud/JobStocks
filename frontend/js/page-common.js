@@ -53,6 +53,13 @@
 
     // ==================== TEMA ====================
     function loadTheme() {
+        // Los temas custom no soportan dark mode: se fuerza claro sin pisar la
+        // preferencia guardada del usuario (si vuelve a un tema estandar, se respeta)
+        const colorTheme = document.documentElement.getAttribute('data-color-theme');
+        if (window.ThemeInit && window.ThemeInit.isCustomTheme(colorTheme)) {
+            document.documentElement.setAttribute('data-theme', 'light');
+            return;
+        }
         const savedTheme = localStorage.getItem('theme') || 'dark';
         applyTheme(savedTheme);
     }
@@ -71,7 +78,12 @@
     }
 
     // ==================== COLOR THEME ====================
+    // Delega en theme-init.js (unico punto de aplicacion de tema): asi se aplica
+    // tambien el CSS critico, la tipografia y el modo claro forzado de los temas
+    // custom. Sin eso, en primera visita quedaba una mezcla del tema anterior.
     function applyColorTheme(tema) {
+        if (window.ThemeInit) return window.ThemeInit.applyColorTheme(tema);
+        // Fallback defensivo por si theme-init.js no cargo
         if (!COLOR_THEMES[tema]) tema = 'rubi';
         const colors = COLOR_THEMES[tema];
         document.documentElement.setAttribute('data-color-theme', tema);

@@ -1,7 +1,13 @@
 // theme-init.js - Inyectar colores del tema ANTES del CSS para evitar flash
 // Este archivo se carga sincronamente en <head> de todas las paginas
+//
+// Expone window.ThemeInit.applyColorTheme(tema) como UNICO punto de aplicacion
+// de tema de color. Todo el que necesite cambiar el tema (page-common.js,
+// login.js, pantalla de parametros...) debe llamar aqui: asi se aplica SIEMPRE
+// el paquete completo (atributos, variables, modo claro forzado, CSS critico y
+// tipografia) y nunca queda una mezcla del tema antiguo con el nuevo.
 (function () {
-    var themes = {
+    var THEMES = {
         'rubi': { primary: '#FF4338', primaryDark: '#D32F2F', primaryLight: '#FF6B6B' },
         'zafiro': { primary: '#2196F3', primaryDark: '#1565C0', primaryLight: '#64B5F6' },
         'esmeralda': { primary: '#4CAF50', primaryDark: '#2E7D32', primaryLight: '#81C784' },
@@ -20,57 +26,129 @@
         'cristacer': { primary: '#1a1a1a', primaryDark: '#000000', primaryLight: '#444444' },
         'rocanet': { primary: '#61a229', primaryDark: '#4e8221', primaryLight: '#7bc043' }
     };
-    var theme = localStorage.getItem('theme') || 'dark';
-    var colorTheme = localStorage.getItem('colorTheme') || 'rubi';
-    var colors = themes[colorTheme] || themes['rubi'];
 
-    // Temas custom no soportan dark mode: forzar modo claro
-    var customThemes = ['cristacer', 'rocanet'];
-    if (customThemes.indexOf(colorTheme) !== -1) {
-        theme = 'light';
+    // Temas custom: no soportan dark mode, se fuerza modo claro
+    var CUSTOM_THEMES = ['cristacer', 'rocanet'];
+
+    function isCustom(colorTheme) {
+        return CUSTOM_THEMES.indexOf(colorTheme) !== -1;
     }
 
-    document.documentElement.setAttribute('data-theme', theme);
-    document.documentElement.setAttribute('data-color-theme', colorTheme);
+    function ls(key) {
+        try { return localStorage.getItem(key); } catch (e) { return null; }
+    }
 
-    // Inyectar colores como CSS inline con !important para ganar especificidad
-    var style = document.createElement('style');
-    style.id = 'theme-colors-inline';
-    var css = ':root{--primary:' + colors.primary + '!important;--primary-dark:' + colors.primaryDark + '!important;--primary-light:' + colors.primaryLight + '!important}';
+    function lsSet(key, value) {
+        try { localStorage.setItem(key, value); } catch (e) { /* modo privado sin storage */ }
+    }
 
-    // Cristacer: inyectar estilos críticos para evitar flash (fondo, header, sidebar, logo)
-    if (colorTheme === 'cristacer') {
-        // Cargar tipografía Neue Haas Grotesk (Adobe Typekit)
-        var tk = document.createElement('link');
-        tk.rel = 'stylesheet';
-        tk.href = 'https://use.typekit.net/cfu7yaq.css';
-        document.head.appendChild(tk);
+    // CSS critico por tema: evita el flash de fondo/header/sidebar mientras
+    // carga styles.css. Se regenera en cada cambio de tema (vacio si no aplica).
+    function criticalCss(colorTheme) {
+        if (colorTheme !== 'cristacer') return '';
+        return 'body{background:#F6EEE3!important}' +
+            '.top-header{background:#F6EEE3!important;border-bottom:1px solid #1a1a1a!important}' +
+            '.top-header-title,.header-logo-text,.top-header .user-name-display{color:#1a1a1a!important;-webkit-text-fill-color:#1a1a1a!important}' +
+            '.top-header .menu-icon,.top-header .mobile-menu-btn svg{stroke:#1a1a1a!important}' +
+            '.header-logo img{filter:none!important}' +
+            '.sidebar{background:#F6EEE3!important;border-right:1px solid #1a1a1a!important}' +
+            '.sidebar-item{color:#444!important}' +
+            '.sidebar-item svg{stroke:#444!important}' +
+            '.login-wrapper{background:#F6EEE3!important}' +
+            '.login-sidebar{border-right:none!important}' +
+            '.login-sidebar::before{display:none!important}' +
+            '.btn-login{background:#1a1a1a!important}';
+    }
 
-        if (theme === 'dark') {
-            css += 'body{background:#1a1815!important}';
-            css += '.top-header{background:#1a1815!important;border-bottom:1px solid #3d3a36!important}';
-            css += '.sidebar{background:#22201d!important;border-right:1px solid #3d3a36!important}';
-        } else {
-            css += 'body{background:#F6EEE3!important}';
-            css += '.top-header{background:#F6EEE3!important;border-bottom:1px solid #1a1a1a!important}';
-            css += '.top-header-title,.header-logo-text,.top-header .user-name-display{color:#1a1a1a!important;-webkit-text-fill-color:#1a1a1a!important}';
-            css += '.top-header .menu-icon,.top-header .mobile-menu-btn svg{stroke:#1a1a1a!important}';
-            css += '.header-logo img{filter:none!important}';
-            css += '.sidebar{background:#F6EEE3!important;border-right:1px solid #1a1a1a!important}';
-            css += '.sidebar-item{color:#444!important}';
-            css += '.sidebar-item svg{stroke:#444!important}';
-            css += '.login-wrapper{background:#F6EEE3!important}';
-            css += '.login-sidebar{border-right:none!important}';
-            css += '.login-sidebar::before{display:none!important}';
-            css += '.btn-login{background:#1a1a1a!important}';
+    // Tipografias externas por tema (se cargan una sola vez)
+    var FONTS = {
+        'cristacer': 'https://use.typekit.net/cfu7yaq.css'
+    };
+    var fontsLoaded = {};
+
+    function loadFont(colorTheme) {
+        var href = FONTS[colorTheme];
+        if (!href || fontsLoaded[colorTheme]) return;
+        fontsLoaded[colorTheme] = true;
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
+    }
+
+    function criticalStyleEl() {
+        var el = document.getElementById('theme-colors-inline');
+        if (!el) {
+            el = document.createElement('style');
+            el.id = 'theme-colors-inline';
+            document.head.appendChild(el);
         }
+        return el;
     }
 
-    style.textContent = css;
-    document.head.appendChild(style);
+    // ==================== PRIMERA VISITA ====================
+    // Sin cache (incognito, navegador nuevo, cache borrada) no sabemos el tema
+    // hasta que responde /api/empresa/<id>/config. En vez de pintar el tema por
+    // defecto y cambiarlo despues (se veia una mezcla del estilo antiguo), se
+    // oculta el documento hasta que se resuelve, con timeout de seguridad.
+    var revealed = false;
+
+    function reveal() {
+        if (revealed) return;
+        revealed = true;
+        document.documentElement.style.visibility = '';
+    }
+
+    // Aplica el tema de color COMPLETO. Es idempotente y sirve tanto para el
+    // arranque (desde cache) como para cuando llega la config real de la API.
+    function applyColorTheme(colorTheme) {
+        if (!THEMES[colorTheme]) colorTheme = 'rubi';
+        var colors = THEMES[colorTheme];
+
+        // Modo claro/oscuro: los temas custom fuerzan claro, pero NO se persiste
+        // para no perder la preferencia real del usuario en temas estandar.
+        var theme = isCustom(colorTheme) ? 'light' : (ls('theme') || 'dark');
+
+        var root = document.documentElement;
+        root.setAttribute('data-theme', theme);
+        root.setAttribute('data-color-theme', colorTheme);
+        lsSet('colorTheme', colorTheme);
+
+        // Inline en <html> con !important: gana a cualquier hoja de estilos
+        root.style.setProperty('--primary', colors.primary, 'important');
+        root.style.setProperty('--primary-dark', colors.primaryDark, 'important');
+        root.style.setProperty('--primary-light', colors.primaryLight, 'important');
+
+        criticalStyleEl().textContent = criticalCss(colorTheme);
+        loadFont(colorTheme);
+
+        reveal();
+        return colorTheme;
+    }
+
+    window.ThemeInit = {
+        applyColorTheme: applyColorTheme,
+        isCustomTheme: isCustom,
+        THEMES: THEMES,
+        reveal: reveal
+    };
+
+    // Arranque: pintar ya el tema cacheado (si lo hay)
+    var cachedColorTheme = ls('colorTheme');
+    applyColorTheme(cachedColorTheme || 'rubi');
+
+    if (!cachedColorTheme) {
+        // No habia cache: 'rubi' es solo un provisional, no se da por bueno ni
+        // se cachea. Se oculta el documento hasta que la API diga el tema real.
+        try { localStorage.removeItem('colorTheme'); } catch (e) { }
+        revealed = false;
+        document.documentElement.style.visibility = 'hidden';
+        setTimeout(reveal, 1500);
+        window.addEventListener('load', function () { setTimeout(reveal, 500); });
+    }
 
     // Favicon desde cache
-    var faviconUrl = localStorage.getItem('faviconUrl');
+    var faviconUrl = ls('faviconUrl');
     if (faviconUrl) {
         var link = document.createElement('link');
         link.rel = 'icon';
@@ -79,9 +157,9 @@
     }
 
     // Pre-cargar logo y nombre empresa desde cache para evitar flash
-    var _logoUrl = localStorage.getItem('logoUrl');
-    var _companyName = localStorage.getItem('companyName');
-    var _logoInvert = localStorage.getItem('logoInvert');
+    var _logoUrl = ls('logoUrl');
+    var _companyName = ls('companyName');
+    var _logoInvert = ls('logoInvert');
     if (_logoUrl || _companyName) {
         document.addEventListener('DOMContentLoaded', function () {
             // App pages (header-logo)

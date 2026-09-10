@@ -13,6 +13,13 @@ if (hostname === 'localhost' || hostname === '127.0.0.1') {
 // ==================== MODO OSCURO ====================
 
 function loadTheme() {
+    // Los temas custom no soportan dark mode: se fuerza claro sin pisar la
+    // preferencia guardada del usuario (si vuelve a un tema estandar, se respeta)
+    const colorTheme = document.documentElement.getAttribute('data-color-theme');
+    if (window.ThemeInit && window.ThemeInit.isCustomTheme(colorTheme)) {
+        document.documentElement.setAttribute('data-theme', 'light');
+        return;
+    }
     const savedTheme = localStorage.getItem('theme') || 'dark';
     applyTheme(savedTheme);
 }
@@ -38,30 +45,9 @@ window.toggleTheme = toggleTheme;
 // ==================== TEMA DE COLOR ====================
 
 function applyColorTheme(tema) {
-    const themes = {
-        'rubi': { primary: '#FF4338', primaryDark: '#D32F2F', primaryLight: '#FF6B6B' },
-        'zafiro': { primary: '#2196F3', primaryDark: '#1565C0', primaryLight: '#64B5F6' },
-        'esmeralda': { primary: '#4CAF50', primaryDark: '#2E7D32', primaryLight: '#81C784' },
-        'amatista': { primary: '#9C27B0', primaryDark: '#6A1B9A', primaryLight: '#BA68C8' },
-        'ambar': { primary: '#FF9800', primaryDark: '#E65100', primaryLight: '#FFB74D' },
-        'grafito': { primary: '#607D8B', primaryDark: '#37474F', primaryLight: '#90A4AE' },
-        'corporativo': { primary: '#1a365d', primaryDark: '#0d1b2a', primaryLight: '#2c5282' },
-        'ejecutivo': { primary: '#2d3748', primaryDark: '#1a202c', primaryLight: '#4a5568' },
-        'oceano': { primary: '#0077b6', primaryDark: '#023e8a', primaryLight: '#0096c7' },
-        'bosque': { primary: '#2d6a4f', primaryDark: '#1b4332', primaryLight: '#40916c' },
-        'vino': { primary: '#722f37', primaryDark: '#4a1c23', primaryLight: '#a4343a' },
-        'medianoche': { primary: '#1e3a5f', primaryDark: '#0d1b2a', primaryLight: '#2e5077' },
-        'titanio': { primary: '#4a5568', primaryDark: '#2d3748', primaryLight: '#718096' },
-        'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
-        'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' }
-    };
-    if (!themes[tema]) tema = 'rubi';
-    const colors = themes[tema];
-    document.documentElement.setAttribute('data-color-theme', tema);
-    localStorage.setItem('colorTheme', tema);
-    document.documentElement.style.setProperty('--primary', colors.primary, 'important');
-    document.documentElement.style.setProperty('--primary-dark', colors.primaryDark, 'important');
-    document.documentElement.style.setProperty('--primary-light', colors.primaryLight, 'important');
+    // Delega en theme-init.js (unico punto de aplicacion de tema): aplica ademas el
+    // CSS critico, la tipografia y el modo claro forzado de los temas custom.
+    if (window.ThemeInit) window.ThemeInit.applyColorTheme(tema);
 }
 
 async function cargarTemaColor(connection) {

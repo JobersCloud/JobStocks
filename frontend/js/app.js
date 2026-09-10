@@ -445,6 +445,13 @@ let allStocksData = [];  // Todos los datos sin paginar
 
 // Cargar tema guardado
 function loadTheme() {
+    // Los temas custom no soportan dark mode: se fuerza claro sin pisar la
+    // preferencia guardada del usuario (si vuelve a un tema estandar, se respeta)
+    const colorTheme = document.documentElement.getAttribute('data-color-theme');
+    if (window.ThemeInit && window.ThemeInit.isCustomTheme(colorTheme)) {
+        document.documentElement.setAttribute('data-theme', 'light');
+        return;
+    }
     const savedTheme = localStorage.getItem('theme') || 'dark';
     applyTheme(savedTheme);
 }
@@ -478,6 +485,14 @@ function toggleTheme() {
 
 // Aplicar tema de color
 function applyColorTheme(tema) {
+    // Delega en theme-init.js (unico punto de aplicacion de tema): aplica ademas
+    // el CSS critico, la tipografia y el modo claro forzado de los temas custom.
+    // Sin esto, en primera visita quedaba una mezcla del tema anterior.
+    if (window.ThemeInit) {
+        window.ThemeInit.applyColorTheme(tema);
+        return;
+    }
+    // Fallback defensivo por si theme-init.js no cargo
     const themes = {
         'rubi': { primary: '#FF4338', primaryDark: '#D32F2F', primaryLight: '#FF6B6B' },
         'zafiro': { primary: '#2196F3', primaryDark: '#1565C0', primaryLight: '#64B5F6' },
@@ -495,7 +510,7 @@ function applyColorTheme(tema) {
         'bronce': { primary: '#8b5a2b', primaryDark: '#5c3d1e', primaryLight: '#a0522d' },
         'elegante': { primary: '#FF4438', primaryDark: '#1a1a1a', primaryLight: '#FF6B5B' },
         'cristacer': { primary: '#1a1a1a', primaryDark: '#000000', primaryLight: '#444444' },
-        'rocanet': { primary: '#334FB4', primaryDark: '#1a2d7a', primaryLight: '#5B78D0' }
+        'rocanet': { primary: '#61a229', primaryDark: '#4e8221', primaryLight: '#7bc043' }
     };
 
     if (!themes[tema]) {
