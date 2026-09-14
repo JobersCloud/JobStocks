@@ -128,7 +128,9 @@ class ClienteModel:
             params.append(f"%{filtros['empresa']}%")
 
         if filtros.get('razon'):
-            query += " AND razon LIKE ?"
+            # Busca indistintamente por razon social o por codigo de cliente
+            query += " AND (razon LIKE ? OR codigo LIKE ?)"
+            params.append(f"%{filtros['razon']}%")
             params.append(f"%{filtros['razon']}%")
 
         query += " ORDER BY razon"
