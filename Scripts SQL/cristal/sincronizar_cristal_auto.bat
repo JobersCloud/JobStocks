@@ -19,6 +19,12 @@ SET USUARIO_DESTINO=sa
 SET CLAVE_DESTINO=Crijob2015Desa
 
 SET DATOS=C:\TEMP\sync_cristal
+
+REM Carpeta del propio .bat: alli estan los scripts _sync_*.sql
+SET SQLDIR=%~dp0
+
+REM Contador de tablas que han fallado
+SET ERRORES=0
 REM Logs en la misma carpeta del script
 SET SCRIPT_DIR=%~dp0
 SET LOGS=%SCRIPT_DIR%logs
@@ -51,7 +57,20 @@ echo.
 REM ============================================
 REM VERIFICAR CONEXIONES
 REM ============================================
-echo [1/5] Verificando conexiones...
+echo [1/6] Verificando entorno...
+REM ============================================
+REM VERIFICAR SCRIPTS AUXILIARES
+REM ============================================
+set FALTAN=
+for %%F in (_sync_firma_columnas.sql _sync_firma_indices.sql _sync_gen_tabla.sql _sync_gen_indices.sql) do if not exist "%SQLDIR%%%F" set FALTAN=1
+if defined FALTAN (
+    echo     ERROR: faltan los scripts _sync_*.sql junto a este .bat
+    echo     Copia la carpeta completa, no solo el .bat
+    exit /b 1
+)
+echo     Scripts auxiliares: OK
+echo.
+echo [2/6] Verificando conexiones...
 sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -Q "SELECT 1" -h -1 -W > nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo     ERROR: No se puede conectar al ORIGEN
@@ -70,7 +89,7 @@ echo.
 REM ============================================
 REM SINCRONIZAR TABLAS NORMALES
 REM ============================================
-echo [2/5] Sincronizando tablas normales...
+echo [3/6] Sincronizando tablas normales...
 echo.
 
 call :sync_tabla empresas
@@ -104,19 +123,19 @@ echo.
 REM ============================================
 REM SINCRONIZAR TABLAS CON BLOBS
 REM ============================================
-echo [3/5] Sincronizando tablas con blobs...
+echo [4/6] Sincronizando tablas con blobs...
 echo.
 
-call :sync_imagenes
-call :sync_fichas
-call :sync_fichas_tono
+call :sync_blob ps_articulo_imagen
+call :sync_blob articulo_ficha_tecnica
+call :sync_blob articulo_ficha_tecnica_tono
 
 echo.
 
 REM ============================================
 REM VACIAR LOG DE TRANSACCIONES EN DESTINO
 REM ============================================
-echo [4/5] Vaciando log de transacciones en destino...
+echo [5/6] Vaciando log de transacciones en destino...
 sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "DECLARE @logName NVARCHAR(128); SELECT @logName = name FROM sys.master_files WHERE database_id = DB_ID('%BD%') AND type_desc = 'LOG'; ALTER DATABASE %BD% SET RECOVERY SIMPLE; DBCC SHRINKFILE (@logName, 1); ALTER DATABASE %BD% SET RECOVERY FULL;" > nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     echo     OK
@@ -129,7 +148,7 @@ echo.
 REM ============================================
 REM ACTUALIZAR FECHA DE SINCRONIZACION
 REM ============================================
-echo [5/5] Registrando fecha de sincronizacion...
+echo [6/6] Registrando fecha de sincronizacion...
 sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d ApiRestStocks -Q "UPDATE parametros SET valor = CONVERT(VARCHAR(19), GETDATE(), 120), fecha_modificacion = GETDATE() WHERE clave = 'FECHA_ULTIMA_SINCRONIZACION'" > nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     echo     OK
@@ -138,131 +157,264 @@ if %ERRORLEVEL% EQU 0 (
 )
 
 echo.
+if !ERRORES! GTR 0 (
+    echo ============================================
+    echo   ATENCION: !ERRORES! tablas con ERROR
+    echo   Revisa arriba las lineas marcadas como ERROR
+    echo ============================================
+    echo.
+)
 echo ============================================
 echo SINCRONIZACION COMPLETADA
 echo ============================================
 echo.
-exit /b 0
+exit /b !ERRORES!
 
 REM ============================================
-REM FUNCION: sync_tabla (compara CHECKSUM)
+REM FUNCION: sync_tabla
+REM
+REM   1. Compara el esquema de columnas ORIGEN vs DESTINO. Si ha cambiado
+REM      (campo nuevo, tipo distinto, tabla inexistente) reconstruye la
+REM      tabla en DESTINO con la definicion exacta del ORIGEN.
+REM   2. Compara CHECKSUM de datos y recarga con BCP si difiere.
+REM   3. Verifica que el numero de filas cargadas coincide con el ORIGEN.
+REM   4. Replica en DESTINO la PK y los indices tal y como estan en ORIGEN.
+REM
+REM   Salvaguardas:
+REM   - Si no se puede leer el esquema del ORIGEN la tabla se OMITE y el
+REM     destino no se toca: un corte de red no puede borrar nada.
+REM   - El script de reconstruccion solo se ejecuta si esta completo, es
+REM     decir si lleva el centinela "-- FIN_SCRIPT_OK" al final.
+REM   - Tras cargar se comparan filas ORIGEN vs DESTINO: si no cuadran se
+REM     marca ERROR en vez de dar la tabla por buena.
 REM ============================================
 :sync_tabla
 set TABLA=%~1
+set ETIQUETA=
+set IDXTAG=
+set FORZAR=
+set RECREAR_FALLO=
 <nul set /p="     %TABLA%... "
 
-REM Obtener checksum ORIGEN (NOLOCK para no bloquear)
+REM --- Esquema de columnas en ORIGEN ---
+sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -v TABLA="%TABLA%" -i "%SQLDIR%_sync_firma_columnas.sql" -o "%DATOS%\fcol_o.txt" > nul 2>&1
+set TAM_O=0
+for %%A in ("%DATOS%\fcol_o.txt") do set TAM_O=%%~zA
+if !TAM_O! LSS 5 (
+    echo ERROR: no se pudo leer el esquema del ORIGEN - tabla omitida
+    set /a ERRORES+=1
+    goto :eof
+)
+
+REM --- Esquema de columnas en DESTINO ---
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -v TABLA="%TABLA%" -i "%SQLDIR%_sync_firma_columnas.sql" -o "%DATOS%\fcol_d.txt" > nul 2>&1
+
+REM --- Si el esquema ha cambiado, reconstruir la tabla en DESTINO ---
+fc /b "%DATOS%\fcol_o.txt" "%DATOS%\fcol_d.txt" > nul 2>&1
+if errorlevel 1 call :recrear_tabla
+if "!RECREAR_FALLO!"=="1" goto :eof
+
+REM --- Checksum de datos ORIGEN ---
 sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT ISNULL(CHECKSUM_AGG(BINARY_CHECKSUM(*)),0) FROM dbo.%TABLA% WITH (NOLOCK)" > "%DATOS%\chk_o.txt" 2>nul
 set /p CHK_O=<"%DATOS%\chk_o.txt"
 
-REM Obtener checksum DESTINO
+REM --- Checksum de datos DESTINO ---
 sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT ISNULL(CHECKSUM_AGG(BINARY_CHECKSUM(*)),0) FROM dbo.%TABLA% WITH (NOLOCK)" > "%DATOS%\chk_d.txt" 2>nul
 set /p CHK_D=<"%DATOS%\chk_d.txt"
 
-REM Obtener count para mostrar
+REM --- Filas en ORIGEN ---
 sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.%TABLA% WITH (NOLOCK)" > "%DATOS%\cnt_o.txt" 2>nul
 set /p CNT_O=<"%DATOS%\cnt_o.txt"
 
-REM Comparar checksums
-if "!CHK_O!"=="!CHK_D!" (
-    echo !CNT_O! registros [=]
-) else (
-    bcp "SELECT * FROM %BD%.dbo.%TABLA% WITH (NOLOCK)" queryout "%DATOS%\%TABLA%.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
-    sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.%TABLA%" > nul 2>&1
-    bcp %BD%.dbo.%TABLA% in "%DATOS%\%TABLA%.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1
-    echo !CNT_O! registros [sync]
+if "!FORZAR!"=="1" goto :st_cargar
+if not "!CHK_O!"=="!CHK_D!" goto :st_cargar
+set ETIQUETA==
+set CNT_D=!CNT_O!
+goto :st_indices
+
+:st_cargar
+bcp "SELECT * FROM %BD%.dbo.%TABLA% WITH (NOLOCK)" queryout "%DATOS%\%TABLA%.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.%TABLA%" > nul 2>&1
+bcp %BD%.dbo.%TABLA% in "%DATOS%\%TABLA%.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1
+
+REM --- Verificar que se han cargado todas las filas ---
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.%TABLA% WITH (NOLOCK)" > "%DATOS%\cnt_d.txt" 2>nul
+set /p CNT_D=<"%DATOS%\cnt_d.txt"
+if not "!CNT_O!"=="!CNT_D!" (
+    echo ERROR: la carga ha fallado - ORIGEN=!CNT_O! DESTINO=!CNT_D!
+    set /a ERRORES+=1
+    goto :eof
 )
+set ETIQUETA=!ETIQUETA!sync
+
+:st_indices
+call :sync_indices
+echo !CNT_D! registros [!ETIQUETA!!IDXTAG!]
 goto :eof
 
 REM ============================================
-REM FUNCION: sync_imagenes (compara COUNT)
+REM FUNCION: recrear_tabla
+REM   Reconstruye la tabla en DESTINO con la definicion del ORIGEN.
+REM   Solo toca el destino si el script generado esta completo.
 REM ============================================
-:sync_imagenes
-<nul set /p="     ps_articulo_imagen... "
+:recrear_tabla
+set RECREAR_FALLO=
+if exist "%DATOS%\create_%TABLA%.sql" del "%DATOS%\create_%TABLA%.sql" > nul 2>&1
+sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -v TABLA="%TABLA%" -i "%SQLDIR%_sync_gen_tabla.sql" -o "%DATOS%\create_%TABLA%.sql" > nul 2>&1
 
-sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.ps_articulo_imagen WITH (NOLOCK)" > "%DATOS%\cnt_o.txt" 2>nul
+findstr /C:"-- FIN_SCRIPT_OK" "%DATOS%\create_%TABLA%.sql" > nul 2>&1
+if errorlevel 1 (
+    echo ERROR: script de creacion incompleto - la tabla NO se ha tocado
+    set /a ERRORES+=1
+    set RECREAR_FALLO=1
+    goto :eof
+)
+
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -i "%DATOS%\create_%TABLA%.sql" > nul 2>&1
+
+REM --- Comprobar que el destino ya tiene el esquema del origen ---
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -v TABLA="%TABLA%" -i "%SQLDIR%_sync_firma_columnas.sql" -o "%DATOS%\fcol_d.txt" > nul 2>&1
+fc /b "%DATOS%\fcol_o.txt" "%DATOS%\fcol_d.txt" > nul 2>&1
+if errorlevel 1 (
+    echo ERROR: no se pudo aplicar el nuevo esquema en DESTINO
+    set /a ERRORES+=1
+    set RECREAR_FALLO=1
+    goto :eof
+)
+
+set ETIQUETA=schema+
+set FORZAR=1
+goto :eof
+
+REM ============================================
+REM FUNCION: sync_indices
+REM   Deja en DESTINO la misma PK e indices que tiene el ORIGEN.
+REM   Se ejecuta despues de cargar los datos para no ralentizar el BCP.
+REM   Un fallo aqui no invalida los datos: se marca con [idx?].
+REM ============================================
+:sync_indices
+set IDXTAG=
+sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -v TABLA="%TABLA%" -i "%SQLDIR%_sync_firma_indices.sql" -o "%DATOS%\fidx_o.txt" > nul 2>&1
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -v TABLA="%TABLA%" -i "%SQLDIR%_sync_firma_indices.sql" -o "%DATOS%\fidx_d.txt" > nul 2>&1
+
+fc /b "%DATOS%\fidx_o.txt" "%DATOS%\fidx_d.txt" > nul 2>&1
+if not errorlevel 1 goto :eof
+
+if exist "%DATOS%\index_%TABLA%.sql" del "%DATOS%\index_%TABLA%.sql" > nul 2>&1
+sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -v TABLA="%TABLA%" -i "%SQLDIR%_sync_gen_indices.sql" -o "%DATOS%\index_%TABLA%.sql" > nul 2>&1
+
+findstr /C:"-- FIN_SCRIPT_OK" "%DATOS%\index_%TABLA%.sql" > nul 2>&1
+if errorlevel 1 (
+    set IDXTAG=+idx?
+    goto :eof
+)
+
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -i "%DATOS%\index_%TABLA%.sql" > nul 2>&1
+
+REM --- Comprobar que han quedado igual que en el origen ---
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -v TABLA="%TABLA%" -i "%SQLDIR%_sync_firma_indices.sql" -o "%DATOS%\fidx_d.txt" > nul 2>&1
+fc /b "%DATOS%\fidx_o.txt" "%DATOS%\fidx_d.txt" > nul 2>&1
+if errorlevel 1 (
+    set IDXTAG=+idx?
+    goto :eof
+)
+set IDXTAG=+idx
+goto :eof
+
+REM ============================================
+REM FUNCION: sync_blob (tablas con imagenes / PDF)
+REM   Compara COUNT en lugar de CHECKSUM para no leer los blobs.
+REM   Si el esquema del ORIGEN ha cambiado AVISA pero NO reconstruye la
+REM   tabla: eso obligaria a volver a transferir todos los blobs. Cuando
+REM   salga el aviso hay que ajustar la tabla a mano y relanzar.
+REM ============================================
+:sync_blob
+set TABLA=%~1
+set AVISOTAG=
+<nul set /p="     %TABLA%... "
+
+REM --- Aviso si el esquema del origen ha cambiado ---
+sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -v TABLA="%TABLA%" -i "%SQLDIR%_sync_firma_columnas.sql" -o "%DATOS%\fcol_o.txt" > nul 2>&1
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -v TABLA="%TABLA%" -i "%SQLDIR%_sync_firma_columnas.sql" -o "%DATOS%\fcol_d.txt" > nul 2>&1
+fc /b "%DATOS%\fcol_o.txt" "%DATOS%\fcol_d.txt" > nul 2>&1
+if errorlevel 1 set AVISOTAG= [AVISO: esquema distinto del origen]
+
+REM --- Filas en ORIGEN ---
+sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.%TABLA% WITH (NOLOCK)" > "%DATOS%\cnt_o.txt" 2>nul
 set /p CNT_O=<"%DATOS%\cnt_o.txt"
 
-sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.ps_articulo_imagen WITH (NOLOCK)" > "%DATOS%\cnt_d.txt" 2>nul
+REM --- Filas en DESTINO ---
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.%TABLA% WITH (NOLOCK)" > "%DATOS%\cnt_d.txt" 2>nul
 set /p CNT_D=<"%DATOS%\cnt_d.txt"
 
 if "!CNT_O!"=="!CNT_D!" (
-    echo !CNT_O! registros [=]
-) else (
-    echo sincronizando...
-    <nul set /p="                              exportando... "
-    bcp "SELECT * FROM %BD%.dbo.ps_articulo_imagen WITH (NOLOCK)" queryout "%DATOS%\ps_articulo_imagen.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
-    echo OK
-    <nul set /p="                              importando... "
-    sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.ps_articulo_imagen" > nul 2>&1
-    bcp %BD%.dbo.ps_articulo_imagen in "%DATOS%\ps_articulo_imagen.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1
-    echo OK [!CNT_O! registros] [sync]
+    echo !CNT_O! registros [=]!AVISOTAG!
+    goto :eof
 )
-goto :eof
 
-REM ============================================
-REM FUNCION: sync_fichas (compara COUNT)
-REM ============================================
-:sync_fichas
-<nul set /p="     articulo_ficha_tecnica... "
+echo sincronizando...
+<nul set /p="                              exportando... "
+bcp "SELECT * FROM %BD%.dbo.%TABLA% WITH (NOLOCK)" queryout "%DATOS%\%TABLA%.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
+echo OK
+<nul set /p="                              importando... "
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.%TABLA%" > nul 2>&1
+bcp %BD%.dbo.%TABLA% in "%DATOS%\%TABLA%.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1
 
-sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.articulo_ficha_tecnica WITH (NOLOCK)" > "%DATOS%\cnt_o.txt" 2>nul
-set /p CNT_O=<"%DATOS%\cnt_o.txt"
-
-sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.articulo_ficha_tecnica WITH (NOLOCK)" > "%DATOS%\cnt_d.txt" 2>nul
+REM --- Verificar que se han cargado todas las filas ---
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.%TABLA% WITH (NOLOCK)" > "%DATOS%\cnt_d.txt" 2>nul
 set /p CNT_D=<"%DATOS%\cnt_d.txt"
-
-if "!CNT_O!"=="!CNT_D!" (
-    echo !CNT_O! registros [=]
-) else (
-    echo sincronizando...
-    <nul set /p="                              exportando... "
-    bcp "SELECT * FROM %BD%.dbo.articulo_ficha_tecnica WITH (NOLOCK)" queryout "%DATOS%\articulo_ficha_tecnica.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
-    echo OK
-    <nul set /p="                              importando... "
-    sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.articulo_ficha_tecnica" > nul 2>&1
-    bcp %BD%.dbo.articulo_ficha_tecnica in "%DATOS%\articulo_ficha_tecnica.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1
-    echo OK [!CNT_O! registros] [sync]
+if not "!CNT_O!"=="!CNT_D!" (
+    echo ERROR: la carga ha fallado - ORIGEN=!CNT_O! DESTINO=!CNT_D!!AVISOTAG!
+    set /a ERRORES+=1
+    goto :eof
 )
+echo OK [!CNT_D! registros] [sync]!AVISOTAG!
 goto :eof
 
 REM ============================================
-REM FUNCION: sync_fichas_tono (compara COUNT)
-REM ============================================
-:sync_fichas_tono
-<nul set /p="     articulo_ficha_tecnica_tono... "
-
-sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.articulo_ficha_tecnica_tono WITH (NOLOCK)" > "%DATOS%\cnt_o.txt" 2>nul
-set /p CNT_O=<"%DATOS%\cnt_o.txt"
-
-sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.articulo_ficha_tecnica_tono WITH (NOLOCK)" > "%DATOS%\cnt_d.txt" 2>nul
-set /p CNT_D=<"%DATOS%\cnt_d.txt"
-
-if "!CNT_O!"=="!CNT_D!" (
-    echo !CNT_O! registros [=]
-) else (
-    echo sincronizando...
-    <nul set /p="                              exportando... "
-    bcp "SELECT * FROM %BD%.dbo.articulo_ficha_tecnica_tono WITH (NOLOCK)" queryout "%DATOS%\articulo_ficha_tecnica_tono.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
-    echo OK
-    <nul set /p="                              importando... "
-    sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.articulo_ficha_tecnica_tono" > nul 2>&1
-    bcp %BD%.dbo.articulo_ficha_tecnica_tono in "%DATOS%\articulo_ficha_tecnica_tono.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1
-    echo OK [!CNT_O! registros] [sync]
-)
-goto :eof
-
-REM ============================================
-REM FUNCION: sync_venped
+REM FUNCION: sync_venped (solo pedidos que tienen lineas)
+REM   Mismo control de esquema, indices y verificacion de filas.
 REM ============================================
 :sync_venped
+set TABLA=venped
+set IDXTAG=
+set RECREAR_FALLO=
 <nul set /p="     venped (con lineas)... "
 
-REM NOLOCK en ambas tablas para no bloquear
-bcp "SELECT * FROM %BD%.dbo.venped WITH (NOLOCK) WHERE pedido IN (SELECT venliped.pedido FROM %BD%.dbo.venliped WITH (NOLOCK) WHERE venliped.empresa = venped.empresa AND venliped.anyo = venped.anyo)" queryout "%DATOS%\venped.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
+REM --- Esquema de columnas en ORIGEN ---
+sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -v TABLA="venped" -i "%SQLDIR%_sync_firma_columnas.sql" -o "%DATOS%\fcol_o.txt" > nul 2>&1
+set TAM_O=0
+for %%A in ("%DATOS%\fcol_o.txt") do set TAM_O=%%~zA
+if !TAM_O! LSS 5 (
+    echo ERROR: no se pudo leer el esquema del ORIGEN - tabla omitida
+    set /a ERRORES+=1
+    goto :eof
+)
 
+REM --- Esquema de columnas en DESTINO ---
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -v TABLA="venped" -i "%SQLDIR%_sync_firma_columnas.sql" -o "%DATOS%\fcol_d.txt" > nul 2>&1
+
+fc /b "%DATOS%\fcol_o.txt" "%DATOS%\fcol_d.txt" > nul 2>&1
+if errorlevel 1 call :recrear_tabla
+if "!RECREAR_FALLO!"=="1" goto :eof
+
+REM --- Filas que se van a copiar (solo pedidos con lineas) ---
+sqlcmd -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM %BD%.dbo.venped WITH (NOLOCK) WHERE pedido IN (SELECT venliped.pedido FROM %BD%.dbo.venliped WITH (NOLOCK) WHERE venliped.empresa = venped.empresa AND venliped.anyo = venped.anyo)" > "%DATOS%\cnt_o.txt" 2>nul
+set /p CNT_O=<"%DATOS%\cnt_o.txt"
+
+bcp "SELECT * FROM %BD%.dbo.venped WITH (NOLOCK) WHERE pedido IN (SELECT venliped.pedido FROM %BD%.dbo.venliped WITH (NOLOCK) WHERE venliped.empresa = venped.empresa AND venliped.anyo = venped.anyo)" queryout "%DATOS%\venped.bcp" -S %SERVIDOR_ORIGEN% -U %USUARIO_ORIGEN% -P %CLAVE_ORIGEN% -n > nul 2>&1
 sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -Q "TRUNCATE TABLE dbo.venped" > nul 2>&1
 bcp %BD%.dbo.venped in "%DATOS%\venped.bcp" -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -n > nul 2>&1
 
-echo [sync]
+REM --- Verificar que se han cargado todas las filas ---
+sqlcmd -S %SERVIDOR_DESTINO% -U %USUARIO_DESTINO% -P %CLAVE_DESTINO% -d %BD% -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM dbo.venped WITH (NOLOCK)" > "%DATOS%\cnt_d.txt" 2>nul
+set /p CNT_D=<"%DATOS%\cnt_d.txt"
+if not "!CNT_O!"=="!CNT_D!" (
+    echo ERROR: la carga ha fallado - ORIGEN=!CNT_O! DESTINO=!CNT_D!
+    set /a ERRORES+=1
+    goto :eof
+)
+
+call :sync_indices
+echo !CNT_D! registros [sync!IDXTAG!]
 goto :eof
