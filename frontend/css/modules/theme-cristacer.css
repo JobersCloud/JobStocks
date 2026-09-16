@@ -1117,3 +1117,333 @@ html[data-color-theme="cristacer"] .login-header .mobile-logo {
 [data-color-theme="cristacer"] .btn-icon-danger:hover svg {
     stroke: #1a1a1a !important;
 }
+
+/* ==================================================================== */
+/* DETALLE DE STOCK - maqueta "Propuesta detalle stock" (sept 2026)      */
+/* ==================================================================== */
+/* Estructura plana sobre crema: sin cajas, sin sombras, sin radios.     */
+/* El orden del mockup es DISPONIBILIDAD > FICHA TECNICA > IMAGENES >    */
+/* EMPAQUETADO > DETALLES, distinto del orden del DOM, asi que se        */
+/* reordena con "order" en lugar de tocar el JS.                        */
+/* Los botones de accion los mueve verDetalle() a la cabecera.          */
+
+/* --- Contenedor: de grid a columna flex para poder reordenar --- */
+[data-color-theme="cristacer"] #detail-content.detail-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding: 0 28px 28px !important;
+}
+
+[data-color-theme="cristacer"] #detail-content .detail-stock-badge       { order: 1; }
+[data-color-theme="cristacer"] #detail-content .detail-ficha-tecnica     { order: 2; }
+[data-color-theme="cristacer"] #detail-content .detail-imagenes          { order: 3; }
+[data-color-theme="cristacer"] #detail-content .detail-packaging-section { order: 4; }
+[data-color-theme="cristacer"] #detail-content .detail-groupbox          { order: 5; }
+
+/* --- Modal: fondo crema plano --- */
+[data-color-theme="cristacer"] #detail-modal .modal-content {
+    background: #F6EEE3 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* --- Cabecera: nombre del producto + acciones + cerrar, sin pastilla negra --- */
+[data-color-theme="cristacer"] #detail-modal .modal-header {
+    background: #F6EEE3 !important;
+    border-bottom: 1px solid #1a1a1a !important;
+    border-radius: 0 !important;
+    padding: 22px 28px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px !important;
+}
+
+[data-color-theme="cristacer"] #detail-modal .modal-header h2 {
+    color: #1a1a1a !important;
+    /* cards.css fija -webkit-text-fill-color: white, que pisa a color */
+    -webkit-text-fill-color: #1a1a1a !important;
+    font-weight: 700 !important;
+    font-size: 1.35rem !important;
+    text-transform: uppercase !important;
+    margin: 0 !important;
+    flex: 0 1 auto !important;
+}
+
+/* Acciones movidas a la cabecera: iconos de linea dentro de un circulo */
+[data-color-theme="cristacer"] #detail-modal .modal-header .detail-actions {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+    /* el CSS base le pone width:100%, padding y una linea superior */
+    width: auto !important;
+    padding: 0 !important;
+    margin: 0 auto 0 0 !important;
+    border-top: none !important;
+    background: transparent !important;
+}
+
+[data-color-theme="cristacer"] #detail-modal .modal-header .detail-actions > div {
+    gap: 10px !important;
+}
+
+[data-color-theme="cristacer"] #detail-modal .modal-header .detail-actions .btn-icon {
+    width: 38px !important;
+    height: 38px !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 50% !important;
+    box-shadow: none !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: 38px 38px !important;
+}
+
+/* El SVG inline se oculta: el icono lo pone el background-image del tema */
+[data-color-theme="cristacer"] #detail-modal .modal-header .detail-actions .btn-icon svg {
+    display: none !important;
+}
+
+[data-color-theme="cristacer"] #detail-modal .modal-header .detail-actions .btn-icon:hover {
+    background-color: rgba(26, 26, 26, 0.07) !important;
+}
+
+/* El corazon de favoritos comparte estilo con el resto */
+[data-color-theme="cristacer"] #detail-modal .modal-header .detail-actions .fav-heart {
+    width: 38px !important;
+    height: 38px !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 50% !important;
+    box-shadow: none !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: 38px 38px !important;
+}
+
+[data-color-theme="cristacer"] #detail-modal .modal-header .detail-actions .fav-heart svg {
+    display: none !important;
+}
+
+/* Iconos del disenador, uno por accion */
+[data-color-theme="cristacer"] #detail-modal .modal-header [data-accion="carrito"] {
+    background-image: url('/assets/cristal/iconos/detalle%20stock%20carro.svg') !important;
+}
+
+[data-color-theme="cristacer"] #detail-modal .modal-header [data-accion="favorito"] {
+    background-image: url('/assets/cristal/iconos/detalle%20stock%20favoritos.svg') !important;
+}
+
+[data-color-theme="cristacer"] #detail-modal .modal-header [data-accion="consulta"] {
+    background-image: url('/assets/cristal/iconos/detalle%20stock%20contactar.svg') !important;
+}
+
+[data-color-theme="cristacer"] #detail-modal .modal-header [data-accion="whatsapp"] {
+    background-image: url('/assets/cristal/iconos/detalle%20stock%20whatsapp.svg') !important;
+}
+
+/* En la maqueta la X es la del propio modal, asi que este boton sobra */
+[data-color-theme="cristacer"] #detail-modal .modal-header [data-accion="cerrar"] {
+    display: none !important;
+}
+
+/* X del modal: circulo negro a la derecha */
+[data-color-theme="cristacer"] #detail-modal .modal-close {
+    width: 40px !important;
+    height: 40px !important;
+    flex: 0 0 auto !important;
+    margin-left: auto !important;
+    font-size: 0 !important;
+    color: transparent !important;
+    background: #1a1a1a url('/assets/cristal/iconos/detalle%20stock%20cerrar.svg') center/40px 40px no-repeat !important;
+    border: none !important;
+    border-radius: 50% !important;
+    opacity: 1 !important;
+}
+
+/* --- Etiquetas de seccion en versalitas --- */
+[data-color-theme="cristacer"] #detail-content .detail-packaging-title,
+[data-color-theme="cristacer"] #detail-content .detail-groupbox-title,
+[data-color-theme="cristacer"] #detail-content .detail-imagenes .detail-label {
+    color: #1a1a1a !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    background: transparent !important;
+    border-bottom: none !important;
+    padding: 0 !important;
+}
+
+/* --- DISPONIBILIDAD: etiqueta a la izquierda y pastilla a su lado --- */
+[data-color-theme="cristacer"] #detail-content .detail-stock-badge {
+    display: flex !important;
+    align-items: center !important;
+    gap: 22px !important;
+    text-align: left !important;
+    margin: 26px 0 0 0 !important;
+}
+
+[data-color-theme="cristacer"] #detail-content .detail-stock-badge::before {
+    content: "DISPONIBILIDAD";
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #1a1a1a;
+}
+
+/* --- FICHA TECNICA: sin caja, boton en pastilla negra --- */
+[data-color-theme="cristacer"] #detail-content .detail-ficha-tecnica {
+    display: flex !important;
+    align-items: center !important;
+    gap: 22px !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 18px 0 0 0 !important;
+}
+
+/* --- IMAGENES: marco fino negro, sin radios --- */
+[data-color-theme="cristacer"] #detail-content .detail-imagenes {
+    border-top: none !important;
+    margin-top: 30px !important;
+    padding-top: 0 !important;
+}
+
+[data-color-theme="cristacer"] #detail-content .detail-imagen-item {
+    border-radius: 0 !important;
+    border: 1px solid #1a1a1a !important;
+    box-shadow: none !important;
+}
+
+/* --- EMPAQUETADO: fila plana con los iconos del disenador --- */
+[data-color-theme="cristacer"] #detail-content .detail-packaging-section {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin-top: 34px !important;
+}
+
+[data-color-theme="cristacer"] #detail-content .detail-packaging-title {
+    margin-bottom: 0 !important;
+    padding-bottom: 14px !important;
+    border-bottom: 1px solid #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] #detail-content .detail-packaging-grid {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+    gap: 8px !important;
+    padding-top: 26px !important;
+}
+
+[data-color-theme="cristacer"] #detail-content .detail-packaging-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+[data-color-theme="cristacer"] #detail-content .detail-packaging-item:hover {
+    border: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* El emoji se oculta y el icono lo pone el background-image */
+[data-color-theme="cristacer"] #detail-content .detail-packaging-icon {
+    width: 34px !important;
+    height: 30px !important;
+    font-size: 0 !important;
+    color: transparent !important;
+    background-repeat: no-repeat !important;
+    background-position: left center !important;
+    background-size: contain !important;
+}
+
+/* Un icono por concepto. Se enganchan por data-pack y no por nth-child
+   porque los bloques son condicionales: no todos los articulos los traen. */
+[data-color-theme="cristacer"] [data-pack="unidades-caja"] .detail-packaging-icon {
+    background-image: url('/assets/cristal/iconos/detalle%20stock%20unidades%20caja.svg') !important;
+}
+
+[data-color-theme="cristacer"] [data-pack="piezas-caja"] .detail-packaging-icon {
+    background-image: url('/assets/cristal/iconos/detalle%20stock%20piezas%20caja.svg') !important;
+}
+
+[data-color-theme="cristacer"] [data-pack="cajas-palet"] .detail-packaging-icon {
+    background-image: url('/assets/cristal/iconos/detalle%20stock%20caja%20palet.svg') !important;
+}
+
+[data-color-theme="cristacer"] [data-pack="unidades-palet"] .detail-packaging-icon {
+    background-image: url('/assets/cristal/iconos/detalle%20stock%20unidades%20palet.svg') !important;
+}
+
+[data-color-theme="cristacer"] [data-pack="peso-caja"] .detail-packaging-icon {
+    background-image: url('/assets/cristal/iconos/detalle%20stock%20peso%20caja.svg') !important;
+}
+
+[data-color-theme="cristacer"] [data-pack="peso-palet"] .detail-packaging-icon {
+    background-image: url('/assets/cristal/iconos/detalle%20stock%20peso%20palet.svg') !important;
+}
+
+[data-color-theme="cristacer"] #detail-content .detail-packaging-label {
+    color: #1a1a1a !important;
+    font-size: 0.85rem !important;
+    margin-bottom: 2px !important;
+}
+
+[data-color-theme="cristacer"] #detail-content .detail-packaging-value {
+    color: #1a1a1a !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+}
+
+/* --- DETALLES: dos columnas, sin groupbox --- */
+[data-color-theme="cristacer"] #detail-content .detail-groupbox {
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin-top: 34px !important;
+}
+
+[data-color-theme="cristacer"] #detail-content .detail-groupbox-title {
+    position: static !important;
+    display: block !important;
+    padding: 0 0 14px 0 !important;
+    border-bottom: 1px solid #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] #detail-content .detail-groupbox-content {
+    padding-top: 26px !important;
+    gap: 14px 60px !important;
+}
+
+[data-color-theme="cristacer"] #detail-content .detail-item {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+[data-color-theme="cristacer"] #detail-content .detail-label {
+    color: #1a1a1a !important;
+    font-weight: 700 !important;
+}
+
+[data-color-theme="cristacer"] #detail-content .detail-value {
+    color: #1a1a1a !important;
+}
+
+/* En la maqueta el valor va pegado a su etiqueta, no separado al extremo */
+[data-color-theme="cristacer"] #detail-content .detail-groupbox .detail-item {
+    justify-content: flex-start !important;
+    gap: 10px !important;
+}
