@@ -1447,3 +1447,187 @@ html[data-color-theme="cristacer"] .login-header .mobile-logo {
     justify-content: flex-start !important;
     gap: 10px !important;
 }
+
+/* ==================================================================== */
+/* ANOTACIONES INTERFAZ STOCK v2 (sept 2026)                            */
+/* ==================================================================== */
+/* Repaso del disenador sobre el resto de pantallas. Cada regla lleva    */
+/* entre parentesis la pagina del PDF y el numero de anotacion.          */
+
+/* --- (P1.2) Quitar la linea divisoria bajo la cabecera del sidebar --- */
+[data-color-theme="cristacer"] .sidebar-toggle-container {
+    border-bottom: none !important;
+}
+
+/* --- (P1.3) Quitar la linea divisoria sobre "Cerrar Sesion" --- */
+[data-color-theme="cristacer"] .sidebar-footer {
+    border-top: none !important;
+}
+
+/* --- (P1.1) La caja de resultados, sin sombreado ni linea --- */
+[data-color-theme="cristacer"] .table-container,
+[data-color-theme="cristacer"] #table-container {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* --- (P2.1) Alinear las tarjetas con FORMATO y el icono de buscar --- */
+/* El padding de 24px del contenedor las desplazaba a la derecha */
+[data-color-theme="cristacer"] .table-container {
+    /* solo el izquierdo: el derecho se mantiene para que la tabla no
+       quede pegada al borde en la vista de rejilla */
+    padding-left: 0 !important;
+}
+
+/* --- Estados vacios: icono del disenador en lugar del emoji --- */
+/* El emoji se oculta con font-size 0 y el icono entra de fondo.
+   Hay que anular ademas el opacity y el grayscale que trae la base. */
+[data-color-theme="cristacer"] .empty-state-icon,
+[data-color-theme="cristacer"] .proposals-empty-icon {
+    font-size: 0 !important;
+    color: transparent !important;
+    opacity: 1 !important;
+    filter: none !important;
+    width: 56px !important;
+    height: 56px !important;
+    margin: 0 auto 18px !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: contain !important;
+}
+
+/* (P1.4) Stocks: lupa, igual que el icono de MIS CONSULTAS */
+[data-color-theme="cristacer"] .empty-state-icon {
+    background-image: url('/assets/cristal/iconos/grande%20buscar.svg') !important;
+}
+
+/* (P3.1) Mis Propuestas */
+[data-color-theme="cristacer"] #proposals-grid .proposals-empty-icon {
+    background-image: url('/assets/cristal/iconos/grande%20propuestas.svg') !important;
+}
+
+/* (P4.1) Mis Consultas: tambien la lupa */
+[data-color-theme="cristacer"] #inquiries-grid .proposals-empty-icon {
+    background-image: url('/assets/cristal/iconos/grande%20buscar.svg') !important;
+}
+
+/* (P7.1) Mas Pedidos */
+[data-color-theme="cristacer"] #frequent-grid .proposals-empty-icon {
+    background-image: url('/assets/cristal/iconos/grande%20pedidos.svg') !important;
+}
+
+/* (P1.5) Texto del estado vacio en negro */
+[data-color-theme="cristacer"] .empty-state,
+[data-color-theme="cristacer"] .empty-state p,
+[data-color-theme="cristacer"] .empty-state h3 {
+    color: #1a1a1a !important;
+}
+
+/* --- (P6.1) Pestana "Mas Pedidos": icono del disenador --- */
+[data-color-theme="cristacer"] #tab-frecuentes .favorites-tab-icon {
+    display: inline-block !important;
+    font-size: 0 !important;
+    color: transparent !important;
+    width: 20px !important;
+    height: 20px !important;
+    vertical-align: middle !important;
+    background: url('/assets/cristal/iconos/mas%20pedidos.svg') center/contain no-repeat !important;
+}
+
+/* --- (P6.2) Mis Favoritos: quitar el sombreado de la caja --- */
+[data-color-theme="cristacer"] .proposals-container,
+[data-color-theme="cristacer"] .proposals-content {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* --- (P6.3) Boton de exportar: icono de Excel del disenador --- */
+[data-color-theme="cristacer"] .dg-export-btn {
+    background-color: transparent !important;
+    background-image: url('/assets/cristal/iconos/excel.svg') !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: 20px 20px !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 0 !important;
+    color: transparent !important;
+}
+
+[data-color-theme="cristacer"] .dg-export-btn svg {
+    display: none !important;
+}
+
+[data-color-theme="cristacer"] .dg-export-btn:hover {
+    background-color: rgba(26, 26, 26, 0.07) !important;
+}
+
+/* ==================== BUSQUEDA MAGICA ==================== */
+/* Los estilos de esta pagina van en un <style> dentro del propio HTML,
+   que se carga despues que este fichero: por eso hace falta !important. */
+
+/* --- (P5.1) Subtitulo en negro --- */
+[data-color-theme="cristacer"] .magic-search-header p {
+    color: #1a1a1a !important;
+}
+
+/* --- (P5.3) Caja de arrastrar: recta, sin bordes redondeados --- */
+[data-color-theme="cristacer"] .drop-zone {
+    border-radius: 0 !important;
+}
+
+/* --- (P5.4) Panel de vista previa: recto tambien --- */
+[data-color-theme="cristacer"] .image-preview-panel {
+    border-radius: 0 !important;
+}
+
+/* --- (P5.5) Icono de arrastrar, en negro, y su texto --- */
+[data-color-theme="cristacer"] .drop-zone-icon {
+    width: 48px !important;
+    height: 48px !important;
+    margin: 0 auto 10px !important;
+    background: url('/assets/cristal/iconos/grande%20arrastrar.svg') center/contain no-repeat !important;
+    color: transparent !important;
+    font-size: 0 !important;
+}
+
+/* .drop-zone-icon es el propio <svg>: se ocultan sus trazos */
+[data-color-theme="cristacer"] .drop-zone-icon > * {
+    display: none !important;
+}
+
+[data-color-theme="cristacer"] .drop-zone-text,
+[data-color-theme="cristacer"] .drop-zone-hint {
+    color: #1a1a1a !important;
+}
+
+/* --- (P5.6) "Sin imagen seleccionada": mismo tamano y color --- */
+[data-color-theme="cristacer"] .image-preview-placeholder {
+    color: #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .image-preview-placeholder svg {
+    width: 48px !important;
+    height: 48px !important;
+    stroke: #1a1a1a !important;
+}
+
+/* --- (P5.2) Boton en pastilla redonda, como "BUSQUEDA MAGICA" del menu --- */
+[data-color-theme="cristacer"] .btn-magic-search {
+    border-radius: 999px !important;
+}
+
+/* --- (P5.7) Hover en negro con las letras en crema --- */
+[data-color-theme="cristacer"] .btn-magic-search:hover:not(:disabled) {
+    background: #1a1a1a !important;
+    color: #F6EEE3 !important;
+    border-color: #1a1a1a !important;
+}
+
+[data-color-theme="cristacer"] .btn-magic-search:hover:not(:disabled) svg {
+    stroke: #F6EEE3 !important;
+}
