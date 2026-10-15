@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Usuarios - Administración</title>
     <script src="js/theme-init.js?v=1.49.11"></script>
-    <link rel="stylesheet" href="css/styles.css?v=1.49.15">
+    <link rel="stylesheet" href="css/styles.css?v=1.49.17">
     <style>
         /* Responsive: ocultar columnas progresivamente en pantallas pequeñas */
         @media (max-width: 1400px) {
@@ -510,13 +510,19 @@
                     <input type="hidden" id="user-id">
 
                     <div class="form-group">
+                        <label data-i18n="users.email">Email</label>
+                        <input type="email" id="user-email" autocomplete="off">
+                        <p class="form-help" data-i18n="users.emailHelp">Se copia automáticamente como nombre de usuario</p>
+                    </div>
+
+                    <div class="form-group">
                         <label data-i18n="users.username">Usuario *</label>
-                        <input type="text" id="user-username" required>
+                        <input type="text" id="user-username" required autocomplete="off">
                     </div>
 
                     <div class="form-group">
                         <label data-i18n="users.password">Contraseña *</label>
-                        <input type="password" id="user-password">
+                        <input type="password" id="user-password" autocomplete="new-password">
                         <p class="form-help" id="password-help" data-i18n="users.passwordHelpCreate">Mínimo 6 caracteres</p>
                     </div>
 
@@ -531,11 +537,6 @@
                     <div class="form-group">
                         <label data-i18n="users.fullName">Nombre Completo</label>
                         <input type="text" id="user-fullname">
-                    </div>
-
-                    <div class="form-group">
-                        <label data-i18n="users.email">Email</label>
-                        <input type="email" id="user-email">
                     </div>
 
                     <div class="form-group">
@@ -658,7 +659,7 @@
     <script src="js/sidebar.js?v=1.49.11"></script>
     <script src="js/grid-filters.js?v=20260207"></script>
     <script src="js/data-grid.js?v=20260208b"></script>
-    <script src="js/page-common.js?v=1.49.11"></script>
+    <script src="js/page-common.js?v=1.49.17"></script>
     <script src="js/notifications.js"></script>
     <script>
         // ==================== PAGE: USUARIOS (Admin) ====================
@@ -1323,10 +1324,20 @@
         }
 
         // ==================== CREAR/EDITAR USUARIO ====================
+        // Ojo para ver la contrasena + boton que propone una que cumple la
+        // politica, y el email como nombre de usuario por defecto.
+        function initUserModalFields() {
+            PageCommon.enhancePasswordField('user-password', { generate: true });
+            PageCommon.mirrorEmailToUsername('user-email', 'user-username');
+        }
+
         function openCreateUserModal() {
             editingUserId = null;
             document.getElementById('user-modal-title').textContent = t('users.createUser') || 'Crear Usuario';
             document.getElementById('user-form').reset();
+            initUserModalFields();
+            PageCommon.resetPasswordField('user-password');
+            PageCommon.resetEmailMirror('user-username');
             document.getElementById('user-id').value = '';
             document.getElementById('user-password').required = true;
             document.getElementById('password-help').textContent = t('users.passwordHelpCreate') || 'Mínimo 6 caracteres';
@@ -1346,6 +1357,10 @@
         async function openEditUserModal(userId) {
             editingUserId = userId;
             document.getElementById('user-modal-title').textContent = t('users.editUser') || 'Editar Usuario';
+            initUserModalFields();
+            PageCommon.resetPasswordField('user-password');
+            // Al editar, el usuario ya existe: no se sobreescribe al tocar el email
+            document.getElementById('user-username').dataset.manualEdit = '1';
             document.getElementById('user-password').required = false;
             document.getElementById('password-help').textContent = t('users.passwordHelpEdit') || 'Dejar vacío para no cambiar';
             document.getElementById('send-email-group').style.display = 'none';
@@ -1591,7 +1606,9 @@
 
         // ==================== EVENT LISTENERS ====================
         document.getElementById('role-modal').addEventListener('click', function(e) { if (e.target === this) closeRoleModal(); });
-        document.getElementById('user-modal').addEventListener('click', function(e) { if (e.target === this) closeUserModal(); });
+        // El modal de usuario NO se cierra al pinchar fuera: tiene muchos campos
+        // y perder lo escrito por un clic accidental resultaba incomodo.
+        // Se cierra con la X, con el boton Cancelar o con Escape.
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {

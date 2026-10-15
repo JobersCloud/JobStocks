@@ -22,7 +22,10 @@
     "mobileFilterBtn": "Filter",
     "mobileFilterTitle": "Filter by column",
     "mobileClearFilters": "Clear all",
-    "unknownError": "Unknown error"
+    "unknownError": "Unknown error",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "suggestPassword": "Suggest a secure password"
   },
   "header": {
     "title": "Stock Management",
@@ -609,7 +612,7 @@
     "noUsers": "No users",
     "loading": "Loading users...",
     "createUser": "Create User",
-    "editUser": "Edit User",
+    "editUser": "Edit user",
     "newUser": "New User",
     "companyName": "Company name",
     "companyNameHelp": "Shown on proposals if no client is assigned",
@@ -652,7 +655,6 @@
     "showPrices": "Show prices",
     "showPricesEnabled": "Prices enabled",
     "showPricesDisabled": "Prices disabled",
-    "editUser": "Edit user",
     "deleteUser": "Delete user",
     "showPricesHelp": "Allows user to see prices in the grid",
     "enablePrices": "Enable prices",
@@ -689,7 +691,8 @@
     "detailOrders": "Orders",
     "detailInquiries": "Inquiries",
     "detailSessions": "Sessions",
-    "detailAudit": "Audit"
+    "detailAudit": "Audit",
+    "emailHelp": "Copied automatically as the username"
   },
   "changePassword": {
     "title": "Change Password",
@@ -1035,7 +1038,7 @@
     "mobileZone": "Zone",
     "walkMode": "Walk Mode",
     "exitWalk": "Exit walk (ESC)",
-    "walkHint": "WASD to move \u00b7 Drag to look \u00b7 ESC to exit",
+    "walkHint": "WASD to move · Drag to look · ESC to exit",
     "allZones": "All zones"
   },
   "warehouseReport": {

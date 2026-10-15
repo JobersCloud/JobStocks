@@ -22,7 +22,10 @@
     "mobileFilterBtn": "Filtrer",
     "mobileFilterTitle": "Filtrer par colonne",
     "mobileClearFilters": "Tout effacer",
-    "unknownError": "Erreur inconnue"
+    "unknownError": "Erreur inconnue",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "suggestPassword": "Proposer un mot de passe sûr"
   },
   "header": {
     "title": "Gestion des Stocks",
@@ -609,7 +612,7 @@
     "noUsers": "Aucun utilisateur",
     "loading": "Chargement des utilisateurs...",
     "createUser": "Créer Utilisateur",
-    "editUser": "Modifier Utilisateur",
+    "editUser": "Modifier l'utilisateur",
     "newUser": "Nouvel Utilisateur",
     "companyName": "Nom entreprise",
     "companyNameHelp": "Affiché sur les propositions si aucun client n'est assigné",
@@ -652,7 +655,6 @@
     "showPrices": "Voir prix",
     "showPricesEnabled": "Prix activés",
     "showPricesDisabled": "Prix désactivés",
-    "editUser": "Modifier l'utilisateur",
     "deleteUser": "Supprimer l'utilisateur",
     "showPricesHelp": "Permet à l'utilisateur de voir les prix dans le grid",
     "enablePrices": "Activer les prix",
@@ -689,7 +691,8 @@
     "detailOrders": "Commandes",
     "detailInquiries": "Demandes",
     "detailSessions": "Sessions",
-    "detailAudit": "Audit"
+    "detailAudit": "Audit",
+    "emailHelp": "Copié automatiquement comme nom d'utilisateur"
   },
   "changePassword": {
     "title": "Changer le Mot de Passe",
@@ -1035,7 +1038,7 @@
     "mobileZone": "Zone",
     "walkMode": "Mode Marche",
     "exitWalk": "Quitter marche (ESC)",
-    "walkHint": "WASD pour se d\u00e9placer \u00b7 Glisser pour regarder \u00b7 ESC pour quitter",
+    "walkHint": "WASD pour se déplacer · Glisser pour regarder · ESC pour quitter",
     "allZones": "Toutes les zones"
   },
   "warehouseReport": {

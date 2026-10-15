@@ -936,7 +936,8 @@ html[data-color-theme="cristacer"] .login-header .mobile-logo {
 }
 
 /* Password toggle */
-[data-color-theme="cristacer"] .password-toggle {
+[data-color-theme="cristacer"] .password-toggle,
+[data-color-theme="cristacer"] .password-generate {
     color: #999 !important;
 }
 

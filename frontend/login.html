@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Gestión de Stocks</title>
     <script src="js/theme-init.js?v=1.49.11"></script>
-    <link rel="stylesheet" href="css/styles.css?v=1.49.15">
+    <link rel="stylesheet" href="css/styles.css?v=1.49.17">
 </head>
 <body>
     <!-- Selector de idioma y tema fijo -->
@@ -307,6 +307,11 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.49.17', date: '2026-10-15', title: 'Mejoras al crear usuarios', items: [
+                {type: 'improve', text: 'El formulario pide primero el Email y lo copia como nombre de usuario; si escribes el usuario a mano, deja de copiarlo'},
+                {type: 'improve', text: 'Boton de ojo para ver la contrasena mientras la escribes y boton para que el sistema proponga una contrasena segura que cumple la politica'},
+                {type: 'fix', text: 'El formulario de usuario ya no se cierra al pinchar fuera: se cierra con la X, con Cancelar o con Escape'},
+            ]},
             { version: 'v1.49.16', date: '2026-10-15', title: 'Boton de crear visible en el tema Cristacer', items: [
                 {type: 'fix', text: 'El boton de crear usuario en Usuarios y el de nueva configuracion en Email mostraban la lupa de buscar en el tema Cristacer; ahora muestran su propio icono sobre el circulo negro'},
             ]},

@@ -22,7 +22,10 @@
     "mobileFilterBtn": "Filtrar",
     "mobileFilterTitle": "Filtrar por columna",
     "mobileClearFilters": "Limpiar todos",
-    "unknownError": "Error desconocido"
+    "unknownError": "Error desconocido",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
+    "suggestPassword": "Proponer contraseña segura"
   },
   "header": {
     "title": "Gestión de Stocks",
@@ -609,7 +612,7 @@
     "noUsers": "No hay usuarios",
     "loading": "Cargando usuarios...",
     "createUser": "Crear Usuario",
-    "editUser": "Editar Usuario",
+    "editUser": "Editar usuario",
     "newUser": "Nuevo Usuario",
     "companyName": "Nombre empresa",
     "companyNameHelp": "Se mostrará en las propuestas si no tiene cliente asignado",
@@ -652,7 +655,6 @@
     "showPrices": "Ver precios",
     "showPricesEnabled": "Precios habilitados",
     "showPricesDisabled": "Precios deshabilitados",
-    "editUser": "Editar usuario",
     "deleteUser": "Borrar usuario",
     "showPricesHelp": "Permite al usuario ver precios en el grid",
     "enablePrices": "Activar precios",
@@ -689,7 +691,8 @@
     "detailOrders": "Pedidos",
     "detailInquiries": "Consultas",
     "detailSessions": "Sesiones",
-    "detailAudit": "Auditoría"
+    "detailAudit": "Auditoría",
+    "emailHelp": "Se copia automáticamente como nombre de usuario"
   },
   "changePassword": {
     "title": "Cambiar Contraseña",
@@ -1035,7 +1038,7 @@
     "mobileZone": "Zona",
     "walkMode": "Modo Paseo",
     "exitWalk": "Salir paseo (ESC)",
-    "walkHint": "WASD para moverse \u00b7 Arrastra para mirar \u00b7 ESC para salir",
+    "walkHint": "WASD para moverse · Arrastra para mirar · ESC para salir",
     "allZones": "Todas las zonas"
   },
   "warehouseReport": {

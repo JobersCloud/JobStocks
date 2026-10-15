@@ -536,7 +536,8 @@
 }
 
 /* Password toggle */
-[data-color-theme="rocanet"] .password-toggle {
+[data-color-theme="rocanet"] .password-toggle,
+[data-color-theme="rocanet"] .password-generate {
     color: #999 !important;
 }
 

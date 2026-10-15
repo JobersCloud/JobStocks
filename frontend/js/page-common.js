@@ -597,6 +597,152 @@
         return Array.from(items).every(i => i.classList.contains('met'));
     }
 
+    // ==================== CAMPOS DE CONTRASENA (ojo + generador) ====================
+    // Helper reutilizable: envuelve un <input type="password"> en el mismo
+    // .password-wrapper que usa el login y le anade el boton de ojo para
+    // ver/ocultar y, opcionalmente, un boton que propone una contrasena que
+    // cumple la politica. Pensado para usarse en cualquier pagina/modal.
+
+    const _EYE_SVG = '<svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const _EYE_OFF_SVG = '<svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+    const _WAND_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8 19 13"/><path d="M17.8 6.2 19 5"/><path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/></svg>';
+
+    function _randInt(max) {
+        if (window.crypto && window.crypto.getRandomValues) {
+            const buf = new Uint32Array(1);
+            // Se rechazan los valores que sesgarian el modulo
+            const limit = Math.floor(4294967296 / max) * max;
+            let v;
+            do { window.crypto.getRandomValues(buf); v = buf[0]; } while (v >= limit);
+            return v % max;
+        }
+        return Math.floor(Math.random() * max);
+    }
+
+    function generatePassword(policy) {
+        policy = policy || _passwordPolicy || {
+            min_length: 8, require_uppercase: true, require_lowercase: true,
+            require_number: true, require_special: true
+        };
+        // Alfabetos sin caracteres ambiguos (I, l, O, 0, 1) para evitar errores
+        // al dictar o teclear la contrasena temporal
+        const UPPER = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        const LOWER = 'abcdefghijkmnopqrstuvwxyz';
+        const NUMBER = '23456789';
+        const SPECIAL = '!@#$%*?+-=';
+
+        const sets = [];
+        if (policy.require_uppercase) sets.push(UPPER);
+        if (policy.require_lowercase) sets.push(LOWER);
+        if (policy.require_number) sets.push(NUMBER);
+        if (policy.require_special) sets.push(SPECIAL);
+        // Si la politica no exige nada, letras y numeros
+        if (!sets.length) sets.push(UPPER, LOWER, NUMBER);
+
+        const length = Math.max(policy.min_length || 8, 12);
+        const pool = sets.join('');
+        // Un caracter garantizado de cada clase exigida y el resto del pool
+        const chars = sets.map(function (set) { return set[_randInt(set.length)]; });
+        while (chars.length < length) chars.push(pool[_randInt(pool.length)]);
+        // Fisher-Yates para que los obligatorios no queden siempre al principio
+        for (let i = chars.length - 1; i > 0; i--) {
+            const j = _randInt(i + 1);
+            const tmp = chars[i]; chars[i] = chars[j]; chars[j] = tmp;
+        }
+        return chars.join('');
+    }
+
+    function _setPasswordVisible(input, button, visible) {
+        input.type = visible ? 'text' : 'password';
+        if (!button) return;
+        const eye = button.querySelector('.eye-icon');
+        const eyeOff = button.querySelector('.eye-off-icon');
+        if (eye) eye.style.display = visible ? 'none' : 'block';
+        if (eyeOff) eyeOff.style.display = visible ? 'block' : 'none';
+        button.setAttribute('aria-label', visible
+            ? (t('common.hidePassword') || 'Ocultar contrasena')
+            : (t('common.showPassword') || 'Mostrar contrasena'));
+    }
+
+    function togglePasswordVisibility(input, button) {
+        if (typeof input === 'string') input = document.getElementById(input);
+        if (!input) return;
+        _setPasswordVisible(input, button, input.type === 'password');
+    }
+
+    function enhancePasswordField(input, options) {
+        options = options || {};
+        if (typeof input === 'string') input = document.getElementById(input);
+        if (!input || input.dataset.pwEnhanced) return input;
+        input.dataset.pwEnhanced = '1';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'password-wrapper';
+        if (options.generate) wrapper.classList.add('password-wrapper-gen');
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
+
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'password-toggle';
+        toggle.setAttribute('aria-label', t('common.showPassword') || 'Mostrar contrasena');
+        toggle.innerHTML = _EYE_SVG + _EYE_OFF_SVG;
+        toggle.addEventListener('click', function () { togglePasswordVisibility(input, toggle); });
+        wrapper.appendChild(toggle);
+
+        if (options.generate) {
+            const gen = document.createElement('button');
+            gen.type = 'button';
+            gen.className = 'password-generate';
+            gen.title = t('common.suggestPassword') || 'Proponer contrasena';
+            gen.setAttribute('aria-label', gen.title);
+            gen.innerHTML = _WAND_SVG;
+            gen.addEventListener('click', async function () {
+                const policy = await loadPasswordPolicy();
+                input.value = generatePassword(policy);
+                // Se muestra en claro: el admin tiene que poder leerla y copiarla
+                _setPasswordVisible(input, toggle, true);
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.focus();
+                input.select();
+            });
+            wrapper.appendChild(gen);
+        }
+        return input;
+    }
+
+    // Vuelve a ocultar el campo (al abrir un modal que lo reutiliza)
+    function resetPasswordField(input) {
+        if (typeof input === 'string') input = document.getElementById(input);
+        if (!input) return;
+        const wrapper = input.closest('.password-wrapper');
+        _setPasswordVisible(input, wrapper ? wrapper.querySelector('.password-toggle') : null, false);
+    }
+
+    // ==================== ESPEJO EMAIL -> USUARIO ====================
+    // El usuario es, por defecto, el email: se copia mientras se teclea el
+    // email y se deja de copiar en cuanto se edita el usuario a mano.
+    function mirrorEmailToUsername(emailInput, usernameInput) {
+        if (typeof emailInput === 'string') emailInput = document.getElementById(emailInput);
+        if (typeof usernameInput === 'string') usernameInput = document.getElementById(usernameInput);
+        if (!emailInput || !usernameInput || emailInput.dataset.mirrorBound) return;
+        emailInput.dataset.mirrorBound = '1';
+
+        emailInput.addEventListener('input', function () {
+            if (usernameInput.dataset.manualEdit === '1') return;
+            usernameInput.value = emailInput.value.trim();
+        });
+        usernameInput.addEventListener('input', function () {
+            usernameInput.dataset.manualEdit = '1';
+        });
+    }
+
+    // Reinicia el espejo (al abrir el modal de creacion)
+    function resetEmailMirror(usernameInput) {
+        if (typeof usernameInput === 'string') usernameInput = document.getElementById(usernameInput);
+        if (usernameInput) delete usernameInput.dataset.manualEdit;
+    }
+
     // ==================== UTILIDADES ====================
     function formatDate(dateString) {
         if (!dateString) return '-';
@@ -759,6 +905,12 @@
         buildPasswordRequirementsHtml,
         checkPasswordRequirements,
         allRequirementsMet,
+        generatePassword,
+        enhancePasswordField,
+        resetPasswordField,
+        togglePasswordVisibility,
+        mirrorEmailToUsername,
+        resetEmailMirror,
         // Utilities
         formatDate,
         formatDateTime,
