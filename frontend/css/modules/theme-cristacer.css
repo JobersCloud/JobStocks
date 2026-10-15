@@ -639,6 +639,29 @@
     opacity: 0.8;
 }
 
+/* Crear/Nuevo: el fondo generico de .btn-icon-primary es la lupa de "buscar",
+   que no representa "crear" (usuarios, configuraciones de email...). Para los
+   botones marcados con .btn-icon-create se recupera el SVG original del boton
+   en crema sobre el circulo negro del tema. */
+[data-color-theme="cristacer"] .btn-icon-primary.btn-icon-create {
+    background-image: none !important;
+    background-color: #1a1a1a !important;
+    border-radius: 50% !important;
+}
+
+[data-color-theme="cristacer"] .btn-icon-primary.btn-icon-create svg {
+    display: block !important;
+    width: 18px !important;
+    height: 18px !important;
+    stroke: #FAF0E0 !important;
+    fill: none !important;
+}
+
+[data-color-theme="cristacer"] .btn-icon-primary.btn-icon-create:hover {
+    background-color: #1a1a1a !important;
+    opacity: 0.8;
+}
+
 /* Ver Todos: círculo con borde negro y grid */
 [data-color-theme="cristacer"] .btn-icon-secondary {
     background-image: url('/assets/cristal/iconos/boton%20todos.svg') !important;
