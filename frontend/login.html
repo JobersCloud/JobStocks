@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Gestión de Stocks</title>
     <script src="js/theme-init.js?v=1.49.11"></script>
-    <link rel="stylesheet" href="css/styles.css?v=1.50.0">
+    <link rel="stylesheet" href="css/styles.css?v=1.50.1">
 </head>
 <body>
     <!-- Selector de idioma y tema fijo -->
@@ -307,6 +307,10 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.50.1', date: '2026-10-20', title: 'La tabla aprovecha el hueco de los filtros', items: [
+                {type: 'fix', text: 'Al plegar el panel de filtros la tabla no crecia y el espacio ganado se quedaba vacio. Ahora se estira hacia abajo y entran mas filas: 3 mas en pantallas grandes y hasta 4 mas en portatiles de 768px de alto'},
+                {type: 'improve', text: 'El alto de la tabla se recalcula tambien al cambiar el tamano de la ventana'},
+            ]},
             { version: 'v1.50.0', date: '2026-10-20', title: 'Panel de filtros plegable', items: [
                 {type: 'new', text: 'El panel "Filtros de Busqueda" se pliega con un clic en su titulo para dejar mas sitio a la tabla. Disponible en Mis/Todos los Pedidos, Albaranes, Facturas, Propuestas y Consultas'},
                 {type: 'new', text: 'Cada pantalla recuerda si dejaste los filtros abiertos o cerrados. Por defecto salen abiertos, como hasta ahora'},

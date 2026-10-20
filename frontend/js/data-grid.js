@@ -100,9 +100,6 @@ class DataGrid {
         this._initColumnResize();
         this._initColumnReorder();
 
-        // Resize handler for viewport fitting
-        this._resizeHandler = () => this._fitToViewport();
-        window.addEventListener('resize', this._resizeHandler);
     }
 
     // ==================== LAYOUT ====================
@@ -119,22 +116,13 @@ class DataGrid {
         }
     }
 
-    _fitToViewport() {
-        // Directly calculate and set max-height on scroll container
-        // so thead stays sticky at top, footer stays fixed at bottom
-        const sc = this._refs?.tableWrapper?.querySelector('.table-scroll-container');
-        if (!sc || this._refs.tableWrapper.style.display === 'none') return;
-
-        const scRect = sc.getBoundingClientRect();
-        const footerH = this._refs.footer?.offsetHeight || 40;
-        const padding = 25;
-        const available = window.innerHeight - scRect.top - footerH - padding;
-
-        if (available > 100) {
-            sc.style.maxHeight = available + 'px';
-            sc.style.overflowY = 'auto';
-        }
-    }
+    // Antes aqui se calculaba el alto del scroll y se clavaba como max-height
+    // inline. Se media una sola vez, asi que al plegar el panel de filtros la
+    // tabla no aprovechaba el hueco: crecia el contenedor y el scroll se
+    // quedaba con el alto viejo. Lo hace ya la cadena flex del CSS
+    // (.proposals-container / -content / -table-wrapper / .table-scroll-container,
+    // todas con flex:1 y min-height:0), que se recalcula sola al plegar, al
+    // cambiar el tamano de la ventana y al mostrar u ocultar columnas.
 
     // ==================== DOM GENERATION ====================
 
@@ -416,8 +404,6 @@ class DataGrid {
         if (this._allData.length > 0) {
             this._applyFiltersAndSort();
         }
-
-        requestAnimationFrame(() => this._fitToViewport());
     }
 
     _columnVisibilityButtonHtml() {
@@ -952,9 +938,6 @@ class DataGrid {
 
         // Update footer
         this._updateFooter(data.length);
-
-        // Adjust scroll container height to fit viewport
-        requestAnimationFrame(() => this._fitToViewport());
     }
 
     _updateFooter(count) {
@@ -1159,9 +1142,6 @@ class DataGrid {
      * Cleans up event listeners and DOM.
      */
     destroy() {
-        if (this._resizeHandler) {
-            window.removeEventListener('resize', this._resizeHandler);
-        }
         if (this._gridFilters) {
             this._gridFilters.cerrarPopupFiltro();
         }

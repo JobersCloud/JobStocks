@@ -4,6 +4,13 @@
     height: 100vh;
     min-height: unset;
     overflow: hidden;
+    /* Sin esto el height de arriba NO se aplica: este elemento es un item flex
+       de .main-wrapper con flex-basis 0%, y en el eje principal la base manda
+       sobre height. El alto acababa siendo el del contenido, el contenedor
+       recortaba por overflow:hidden y la tabla no podia repartirse el hueco
+       (de ahi el max-height que data-grid.js clavaba a mano). Con flex:none el
+       100vh vale y la cadena flex de dentro ya reparte sola. */
+    flex: none;
 }
 
 .proposals-container {
@@ -1268,6 +1275,7 @@ body:has(.sidebar.collapsed) #invoice-detail-modal {
     .main-content-area:has(.proposals-container) {
         height: auto !important;
         overflow: auto !important;
+        flex: 1 1 auto;
     }
 
     .proposals-container {
