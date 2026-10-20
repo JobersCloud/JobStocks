@@ -328,18 +328,24 @@ h1 {
     margin-bottom: 0;
 }
 
+/* El max-height lo pone sidebar.js midiendo el alto real. Aqui NO se fija un
+   tope: con uno fijo (500px) el panel abierto se recortaba en movil, donde la
+   rejilla pasa a una columna y las paginas de 6 campos se pasan de largo. */
 .filters-collapsible {
     overflow: hidden;
-    max-height: 500px;
     opacity: 1;
     transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
 }
 
 .filters-collapsed .filters-collapsible {
-    max-height: 0;
     opacity: 0;
     margin-top: 0;
     margin-bottom: 0;
+    /* Saca los campos ocultos del orden de tabulacion: sin esto se llega con el
+       teclado a inputs y botones que no se ven. El retardo deja que termine de
+       plegarse antes de ocultarlos */
+    visibility: hidden;
+    transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.3s ease, visibility 0s 0.3s;
 }
 
 .filters h2::before {

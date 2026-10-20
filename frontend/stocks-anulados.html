@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stocks Anulados - API REST</title>
     <script src="js/theme-init.js?v=1.49.11"></script>
-    <link rel="stylesheet" href="css/styles.css?v=1.49.17">
+    <link rel="stylesheet" href="css/styles.css?v=1.50.0">
 </head>
 
 <body>
@@ -543,7 +543,7 @@
 
     <script src="js/ui-feedback.js"></script>
     <script src="js/i18n/i18n.js?v=20260128"></script>
-    <script src="js/sidebar.js?v=1.49.11"></script>
+    <script src="js/sidebar.js?v=1.50.0"></script>
     <script src="js/grid-filters.js?v=20260207"></script>
     <script src="js/data-grid.js?v=20260208b"></script>
     <script src="js/page-common.js?v=1.49.17"></script>
@@ -949,12 +949,6 @@
             mostrarEstadoInicialGrid();
         }
 
-        // ==================== PANEL DE FILTROS (toggle) ====================
-        function toggleFiltersPanel() {
-            const content = document.querySelectorAll('.filters-collapsible');
-            content.forEach(el => el.classList.toggle('collapsed'));
-        }
-
         // ==================== DETALLE DEL STOCK ====================
         async function verDetalleAnulado(stock) {
             // Aceptar objeto o JSON string
@@ -1217,7 +1211,6 @@
         window.buscarStocksAnulados = buscarStocksAnulados;
         window.cargarTodosAnulados = cargarTodosAnulados;
         window.limpiarFiltrosAnulados = limpiarFiltrosAnulados;
-        window.toggleFiltersPanel = toggleFiltersPanel;
         window.toggleAccordion = toggleAccordion;
         window.toggleTheme = toggleTheme;
         window.logout = logout;

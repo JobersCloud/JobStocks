@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Gestión de Stocks</title>
     <script src="js/theme-init.js?v=1.49.11"></script>
-    <link rel="stylesheet" href="css/styles.css?v=1.49.17">
+    <link rel="stylesheet" href="css/styles.css?v=1.50.0">
 </head>
 <body>
     <!-- Selector de idioma y tema fijo -->
@@ -307,6 +307,12 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.50.0', date: '2026-10-20', title: 'Panel de filtros plegable', items: [
+                {type: 'new', text: 'El panel "Filtros de Busqueda" se pliega con un clic en su titulo para dejar mas sitio a la tabla. Disponible en Mis/Todos los Pedidos, Albaranes, Facturas, Propuestas y Consultas'},
+                {type: 'new', text: 'Cada pantalla recuerda si dejaste los filtros abiertos o cerrados. Por defecto salen abiertos, como hasta ahora'},
+                {type: 'fix', text: 'En Stocks Anulados el clic para plegar los filtros no hacia nada'},
+                {type: 'fix', text: 'En el movil el panel de filtros abierto se podia quedar recortado en las pantallas con mas campos'},
+            ]},
             { version: 'v1.49.17', date: '2026-10-15', title: 'Mejoras al crear usuarios', items: [
                 {type: 'improve', text: 'El formulario pide primero el Email y lo copia como nombre de usuario; si escribes el usuario a mano, deja de copiarlo'},
                 {type: 'improve', text: 'Boton de ojo para ver la contrasena mientras la escribes y boton para que el sistema proponga una contrasena segura que cumple la politica'},

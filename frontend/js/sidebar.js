@@ -264,3 +264,77 @@ window.addEventListener('resize', function() {
         init();
     }
 })();
+
+// ==================== PANEL DE FILTROS COLAPSABLE ====================
+// Un unico sitio para todas las paginas con panel de filtros (stocks, mis-*,
+// todas-*). El alto se mide en JS en vez de fijarlo en CSS: con un tope fijo,
+// en movil la rejilla pasa a una columna y el panel ABIERTO quedaba recortado.
+(function() {
+    var LEGACY_KEY = 'filtersCollapsed';  // clave global que uso index.html hasta la v1.49.17
+    var KEY = LEGACY_KEY + ':' + (location.pathname.split('/').pop() || 'index.html');
+
+    function panel() {
+        return document.querySelector('.filters');
+    }
+
+    function piezas() {
+        var p = panel();
+        return p ? p.querySelectorAll('.filters-collapsible') : [];
+    }
+
+    function cerrar(items, animar) {
+        Array.prototype.forEach.call(items, function(el) {
+            if (!animar) el.style.transition = 'none';
+            // Partir del alto real para que la transicion tenga de donde salir
+            el.style.maxHeight = el.scrollHeight + 'px';
+        });
+        void document.body.offsetHeight;  // forzar reflow
+        Array.prototype.forEach.call(items, function(el) {
+            el.style.maxHeight = '0px';
+            if (!animar) {
+                void el.offsetHeight;
+                el.style.transition = '';
+            }
+        });
+    }
+
+    function abrir(items) {
+        Array.prototype.forEach.call(items, function(el) {
+            el.style.maxHeight = el.scrollHeight + 'px';
+            el.addEventListener('transitionend', function fin(e) {
+                if (e.propertyName !== 'max-height') return;
+                el.removeEventListener('transitionend', fin);
+                // Sin tope: el panel puede crecer solo (opciones que cargan luego,
+                // cambio de tamano de ventana, rejilla a una columna en movil)
+                el.style.maxHeight = '';
+            });
+        });
+    }
+
+    window.toggleFiltersPanel = function() {
+        var p = panel();
+        if (!p) return;
+        var cerrado = p.classList.toggle('filters-collapsed');
+        if (cerrado) cerrar(piezas(), true); else abrir(piezas());
+        try { localStorage.setItem(KEY, cerrado ? '1' : '0'); } catch (e) {}
+    };
+
+    function restaurar() {
+        var p = panel();
+        if (!p) return;
+        var guardado = null;
+        try {
+            guardado = localStorage.getItem(KEY);
+            if (guardado === null) guardado = localStorage.getItem(LEGACY_KEY);
+        } catch (e) {}
+        if (guardado !== '1') return;  // por defecto abierto
+        p.classList.add('filters-collapsed');
+        cerrar(piezas(), false);       // sin animacion al cargar
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', restaurar);
+    } else {
+        restaurar();
+    }
+})();

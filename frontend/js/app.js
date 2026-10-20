@@ -3022,22 +3022,7 @@ function limpiarFiltros() {
     mostrarEstadoInicial();
 }
 
-// ==================== TOGGLE PANEL DE FILTROS ====================
-function toggleFiltersPanel() {
-    const filters = document.querySelector('.filters');
-    const collapsed = filters.classList.toggle('filters-collapsed');
-    localStorage.setItem('filtersCollapsed', collapsed ? '1' : '0');
-}
-
-// Restaurar estado del panel al cargar
-(function restoreFiltersState() {
-    if (localStorage.getItem('filtersCollapsed') === '1') {
-        const filters = document.querySelector('.filters');
-        if (filters) filters.classList.add('filters-collapsed');
-    }
-})();
-
-window.toggleFiltersPanel = toggleFiltersPanel;
+// El toggle del panel de filtros vive en sidebar.js (lo comparten todas las paginas)
 
 function mostrarTabla(stocks) {
     const container = document.getElementById('table-container');
