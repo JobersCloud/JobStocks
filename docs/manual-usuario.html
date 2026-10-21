@@ -530,10 +530,23 @@
     @media print {
       #sidebar { display: none !important; }
       #main { margin-left: 0 !important; }
-      .top-header { position: static !important; box-shadow: none !important; background: #fff !important; color: #000 !important; border-bottom: 2px solid #000; }
-      .top-header .meta { color: #555 !important; }
+      .top-header { position: static !important; box-shadow: none !important; background: #fff !important; color: #000 !important; border-bottom: 2px solid #000;
+        /* En papel no hay 40px de margen que gastar: sin esto el titulo se
+           partia en dos lineas y la fecha se descolgaba debajo */
+        padding: 6px 0 !important; height: auto !important; gap: 16px; }
+      .top-header h1 { font-size: 15px; white-space: nowrap; }
+      .top-header .meta { color: #555 !important; font-size: 10.5px; white-space: nowrap; }
       .content-wrap { padding: 20px 24px !important; }
-      .manual-section { page-break-inside: avoid; break-inside: avoid; }
+      /* Las secciones FLUYEN entre paginas. Forzarlas enteras dejaba 13 paginas
+         con medio folio en blanco y alguna con un solo parrafo. Lo que no debe
+         partirse son las piezas pequenas: cajas, fichas y filas de tabla. */
+      .manual-section { page-break-inside: auto; break-inside: auto; }
+      .box, .feature-item, .role-card, .perm-item { page-break-inside: avoid; break-inside: avoid; }
+      tr { page-break-inside: avoid; break-inside: avoid; }
+      thead { display: table-header-group; }  /* repite la cabecera si la tabla se parte */
+      p, li { orphans: 2; widows: 2; }
+      /* Ningun titulo se queda solo al pie */
+      .section-header, h3, h4 { page-break-after: avoid; break-after: avoid; }
       .section-header { border-bottom-color: #000; }
       .section-number { background: #000 !important; }
       .table-wrap { box-shadow: none; border: 1px solid #ccc; }
@@ -541,7 +554,6 @@
       .box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .role-card, .perm-item, .feature-item { box-shadow: none; border: 1px solid #ccc; }
       a { color: inherit; text-decoration: none; }
-      h3 { break-after: avoid; }
     }
 
     /* ===================== RESPONSIVE ===================== */
