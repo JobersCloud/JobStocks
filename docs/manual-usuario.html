@@ -318,6 +318,16 @@
     .box-tip .box-title { color: #1e8449; }
     .box-admin .box-title { color: #c0392b; }
 
+    /* ===================== PIE ===================== */
+    .manual-footer {
+      margin-top: 48px;
+      padding: 20px 0;
+      border-top: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 13px;
+      text-align: center;
+    }
+
     /* ===================== TABLES ===================== */
     .table-wrap {
       overflow-x: auto;
@@ -604,7 +614,7 @@
   <!-- TOP HEADER -->
   <header class="top-header">
     <h1>📦 Manual de Usuario — Gestión de Stocks</h1>
-    <span class="meta">Versión del documento: 1.0 &nbsp;·&nbsp; Última revisión: agosto 2026</span>
+    <span class="meta">Versión del documento: 1.1 &nbsp;·&nbsp; Aplicación v1.50.1 &nbsp;·&nbsp; Última revisión: octubre 2026</span>
   </header>
 
   <!-- CONTENT -->
@@ -840,6 +850,29 @@
         <li>Email &nbsp;·&nbsp; API Keys &nbsp;·&nbsp; Logo</li>
         <li>Parámetros <span class="badge badge-red">superusuario</span> &nbsp;·&nbsp; Control BD <span class="badge badge-red">superusuario</span></li>
       </ul>
+
+      <h3>Área de contenido</h3>
+      <p>Es la zona central de trabajo. En las páginas de listado se divide en dos partes: el <strong>panel de filtros</strong> en la parte superior y el <strong>grid de resultados</strong> debajo.</p>
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="feature-icon">🔽</span>
+          <div class="feature-content">
+            <strong>Panel de filtros plegable</strong>
+            <span>Un clic en el título <em>Filtros de Búsqueda</em> pliega el panel y el grid se estira hacia abajo, mostrando más filas. Otro clic vuelve a desplegarlo. El panel sale desplegado por defecto.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">💾</span>
+          <div class="feature-content">
+            <strong>Estado recordado por pantalla</strong>
+            <span>Cada página recuerda si se dejó el panel plegado o desplegado, de forma independiente del resto. Plegarlo en Mis Facturas no afecta a Mis Pedidos.</span>
+          </div>
+        </div>
+      </div>
+      <div class="box box-tip">
+        <div class="box-title">💡 Consejo</div>
+        En portátiles de pantalla reducida, plegar el panel de filtros junto con la barra lateral (<strong>Ctrl+B</strong>) deja el máximo espacio posible para la tabla.
+      </div>
     </section>
 
     <!-- ==================== 3. STOCKS ==================== -->
@@ -874,6 +907,7 @@
         <li>🗑️ <strong>Limpiar</strong>: resetea todos los filtros al estado inicial.</li>
         <li>🎙️ <strong>Búsqueda por voz</strong> (opcional): reconoce formato, calidad y descripción mediante voz.</li>
       </ul>
+      <p>El panel completo se puede plegar con un clic en su título para ganar espacio de tabla, tal como se describe en el apartado <em>Estructura General → Área de contenido</em>.</p>
 
       <h3>Grid de resultados</h3>
       <p>El grid muestra los artículos en formato de tabla con las siguientes columnas:</p>
@@ -943,14 +977,14 @@
       </div>
 
       <h3>Modal de detalle del artículo</h3>
-      <p>Al pulsar el botón Ver (👁️) o hacer clic en una fila, se abre el modal de detalle con toda la información del artículo:</p>
+      <p>Al pulsar el botón Ver (👁️) o hacer clic en una fila, se abre el modal de detalle con toda la información del artículo. Es más ancho que el resto de ventanas de la aplicación y reparte los datos <strong>en dos columnas</strong>, de modo que se ve todo sin desplazarse. En móvil ocupa la pantalla completa y pasa a una sola columna.</p>
 
       <ul>
         <li><strong>Galería de imágenes</strong>: miniaturas ampliables. Clic en la imagen para verla a pantalla completa.</li>
         <li><strong>Badge de existencias</strong>: indicador visual del nivel de stock.</li>
         <li><strong>Ficha técnica PDF</strong>: botón de descarga (solo visible si existe ficha para ese artículo).</li>
-        <li><strong>Datos de empaquetado</strong>: unidades por caja, cajas por pallet, peso por caja, peso por pallet.</li>
-        <li><strong>Datos del artículo</strong>: código, EAN13, descripción, formato, modelo, color, calidad, tono, calibre, pallet, caja, existencias y precio (si permiso PRO).</li>
+        <li><strong>Datos de empaquetado</strong>: unidades por caja, cajas por palet, peso por caja, peso por palet.</li>
+        <li><strong>Datos del artículo</strong>: código, EAN13, descripción, formato, modelo, color, calidad, tono, calibre, palet, caja, existencias y precio (si permiso PRO).</li>
       </ul>
 
       <h4>Botones del modal de detalle</h4>
@@ -972,7 +1006,7 @@
             <tr><td>Botones +/−</td><td>Incrementar o decrementar la cantidad de una en una unidad.</td></tr>
             <tr><td>Campo numérico</td><td>Introducir la cantidad directamente.</td></tr>
             <tr><td>+1 caja / −1 caja</td><td>Botones rápidos para ajustar por unidades de caja.</td></tr>
-            <tr><td>+1 pallet / −1 pallet</td><td>Botones rápidos para ajustar por unidades de pallet.</td></tr>
+            <tr><td>+1 palet / −1 palet</td><td>Botones rápidos para ajustar por unidades de palet.</td></tr>
             <tr><td>Confirmar / Cancelar</td><td>Añadir al carrito o cancelar la operación.</td></tr>
           </tbody>
         </table>
@@ -993,7 +1027,7 @@
           <span class="feature-icon">🏢</span>
           <div class="feature-content">
             <strong>Cliente (autocomplete)</strong>
-            <span>Solo disponible con permiso <span class="badge badge-gray">ADM</span>. Permite seleccionar el cliente destinatario de la propuesta.</span>
+            <span>Solo disponible con permiso <span class="badge badge-gray">ADM</span>. Permite seleccionar el cliente destinatario de la propuesta. La ayuda busca indistintamente por <strong>razón social o por código de cliente</strong>.</span>
           </div>
         </div>
         <div class="feature-item">
@@ -1344,7 +1378,8 @@
         </table>
       </div>
 
-      <p>Todos estos grids disponen de los mismos filtros avanzados por columna, ordenación, chips de filtros activos y paginación que sus versiones usuario.</p>
+      <p>Todos estos grids disponen de los mismos filtros avanzados por columna, ordenación, chips de filtros activos y paginación que sus versiones usuario, y su panel de filtros también se puede plegar.</p>
+      <p>Añaden además un <strong>filtro por cliente</strong> con ayuda de búsqueda, que localiza al cliente indistintamente por <strong>razón social o por código</strong>.</p>
     </section>
 
     <!-- ==================== 18. CONSULTAS ADMIN ==================== -->
@@ -1388,7 +1423,7 @@
         <table>
           <thead><tr><th>Acción</th><th>Descripción</th></tr></thead>
           <tbody>
-            <tr><td>Crear usuario</td><td>Formulario con campos: usuario, email, nombre, contraseña, empresa, cliente. Se envía email de bienvenida con credenciales automáticamente.</td></tr>
+            <tr><td>Crear usuario</td><td>Formulario con campos: email, usuario, nombre, contraseña, empresa, cliente. Se envía email de bienvenida con credenciales automáticamente.</td></tr>
             <tr><td>Editar</td><td>Modificar datos del usuario.</td></tr>
             <tr><td>Eliminar</td><td>Eliminar la cuenta del usuario.</td></tr>
             <tr><td>Cambiar rol</td><td>Asignar rol: usuario / administrador / superusuario.</td></tr>
@@ -1399,6 +1434,38 @@
             <tr><td>Email de bienvenida</td><td>Reenviar el email de bienvenida con credenciales.</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <h4>Formulario de creación y edición</h4>
+      <div class="feature-list">
+        <div class="feature-item">
+          <span class="feature-icon">📧</span>
+          <div class="feature-content">
+            <strong>El email propone el nombre de usuario</strong>
+            <span>El formulario pide primero el email y lo va copiando como nombre de usuario. Si se escribe el usuario a mano, deja de copiarlo y respeta lo introducido. Al editar un usuario existente nunca se sobrescribe.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">👁️</span>
+          <div class="feature-content">
+            <strong>Ver la contraseña</strong>
+            <span>Botón de ojo en el campo de contraseña para comprobar lo escrito antes de guardar.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🎲</span>
+          <div class="feature-content">
+            <strong>Proponer contraseña segura</strong>
+            <span>Genera una contraseña que cumple la política configurada en el sistema, sin tener que inventarla.</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🛡️</span>
+          <div class="feature-content">
+            <strong>No se cierra por un clic accidental</strong>
+            <span>Al tener muchos campos, el formulario no se cierra al pulsar fuera. Se cierra con la X, con el botón Cancelar o con la tecla Escape.</span>
+          </div>
+        </div>
       </div>
 
       <h3>Panel lateral de detalle del usuario</h3>
@@ -1704,6 +1771,9 @@
       </div>
     </section>
 
+      <footer class="manual-footer">
+        Manual de Usuario — Gestión de Stocks · Documento v1.1, correspondiente a la versión <strong>v1.50.1</strong> de la aplicación · Octubre de 2026
+      </footer>
   </div><!-- /content-wrap -->
 </div><!-- /main -->
 
