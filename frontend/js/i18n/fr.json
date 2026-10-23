@@ -555,7 +555,11 @@
     "auditAction_PROPUESTA_STATUS_CHANGE": "Changement statut proposition",
     "auditAction_CONSULTA_SEND": "Envoi de consultation",
     "auditAction_CONSULTA_RESPOND": "Réponse consultation",
-    "auditAction_ARTICLE_VIEW": "Consultation article"
+    "auditAction_ARTICLE_VIEW": "Consultation article",
+    "mapFullscreen": "Agrandir",
+    "mapExitFullscreen": "Réduire",
+    "mapExitFullscreenTitle": "Quitter le plein écran",
+    "mapFullscreenTitle": "Plein écran"
   },
   "roles": {
     "user": "Utilisateur",

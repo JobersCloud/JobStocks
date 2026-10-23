@@ -12,6 +12,20 @@
         /* Mapa oscuro sin depender de un proveedor de teselas con clave.
            Se filtra solo .leaflet-tile-pane: los marcadores viven en
            .leaflet-marker-pane y conservan su color. */
+        /* Boton de ampliar, alineado con los de periodo de las otras tarjetas */
+        .map-fs-btn { display: inline-flex; align-items: center; gap: 6px; }
+
+        /* Pantalla completa nativa */
+        #login-map-card:fullscreen { display: flex; flex-direction: column; border-radius: 0; }
+        #login-map-card:fullscreen #login-map-container { flex: 1; height: auto; min-height: 0; }
+
+        /* Respaldo por CSS si el navegador deniega la pantalla completa */
+        #login-map-card.map-card-expandido {
+            position: fixed; inset: 0; z-index: 10000;
+            display: flex; flex-direction: column; border-radius: 0; margin: 0;
+        }
+        #login-map-card.map-card-expandido #login-map-container { flex: 1; height: auto; min-height: 0; }
+
         [data-theme="dark"] #login-map-container .leaflet-tile-pane {
             filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9) saturate(0.6);
         }
@@ -656,9 +670,15 @@
 
                     <!-- Fila 7: Mapa mundial de logins -->
                     <div class="charts-row">
-                        <div class="chart-card" style="grid-column: 1 / -1;">
+                        <div class="chart-card" id="login-map-card" style="grid-column: 1 / -1;">
                             <div class="chart-header">
                                 <span class="chart-title" data-i18n="dashboard.loginWorldMap">Mapa de conexiones</span>
+                                <button class="period-btn map-fs-btn" id="map-fs-btn" onclick="toggleMapFullscreen()"
+                                        title="Pantalla completa" data-i18n-title="dashboard.mapFullscreenTitle">
+                                    <svg id="map-fs-icon-abrir" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                                    <svg id="map-fs-icon-cerrar" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+                                    <span id="map-fs-label" data-i18n="dashboard.mapFullscreen">Ampliar</span>
+                                </button>
                             </div>
                             <div id="login-map-container"></div>
                         </div>
@@ -1135,6 +1155,80 @@
         }
 
         // ==================== MAPA DE LOGINS ====================
+
+        // ==================== MAPA A PANTALLA COMPLETA ====================
+        // Se usa la API nativa del navegador, sin plugins: el mapa ya se quedo
+        // tirado una vez por depender de un tercero (las teselas de CARTO).
+        // Si el navegador la deniega (por ejemplo dentro de un iframe sin
+        // permiso) se cae a una ampliacion por CSS, que no depende de nada.
+        function mapaEstaAmpliado() {
+            const card = document.getElementById('login-map-card');
+            return document.fullscreenElement === card || (card && card.classList.contains('map-card-expandido'));
+        }
+
+        function ampliacionPorCss(card, activar) {
+            card.classList.toggle('map-card-expandido', activar);
+            document.body.style.overflow = activar ? 'hidden' : '';
+            trasRedimensionarMapa();
+        }
+
+        function toggleMapFullscreen() {
+            const card = document.getElementById('login-map-card');
+            if (!card) return;
+
+            if (mapaEstaAmpliado()) {
+                if (document.fullscreenElement === card && document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else {
+                    ampliacionPorCss(card, false);
+                }
+                return;
+            }
+
+            if (card.requestFullscreen) {
+                card.requestFullscreen().catch(() => ampliacionPorCss(card, true));
+            } else {
+                ampliacionPorCss(card, true);
+            }
+        }
+
+        // Leaflet necesita que se le avise del cambio de tamano o deja la mitad
+        // del mapa en gris
+        function trasRedimensionarMapa() {
+            const ampliado = mapaEstaAmpliado();
+            const abrir = document.getElementById('map-fs-icon-abrir');
+            const cerrar = document.getElementById('map-fs-icon-cerrar');
+            if (abrir && cerrar) {
+                abrir.style.display = ampliado ? 'none' : '';
+                cerrar.style.display = ampliado ? '' : 'none';
+            }
+            const label = document.getElementById('map-fs-label');
+            const boton = document.getElementById('map-fs-btn');
+            const clave = ampliado ? 'dashboard.mapExitFullscreen' : 'dashboard.mapFullscreen';
+            const claveTit = ampliado ? 'dashboard.mapExitFullscreenTitle' : 'dashboard.mapFullscreenTitle';
+            if (label) {
+                // Se cambia tambien el data-i18n, no solo el texto: si no, al
+                // cambiar de idioma volveria a poner "Ampliar" estando ampliado
+                label.setAttribute('data-i18n', clave);
+                label.textContent = t(clave);
+            }
+            if (boton) {
+                boton.setAttribute('data-i18n-title', claveTit);
+                boton.setAttribute('title', t(claveTit));
+            }
+            if (loginMap) setTimeout(() => loginMap.invalidateSize(), 120);
+        }
+
+        document.addEventListener('fullscreenchange', trasRedimensionarMapa);
+        // Escape ya cierra la pantalla completa nativa; esto cubre el modo CSS
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const card = document.getElementById('login-map-card');
+                if (card && card.classList.contains('map-card-expandido')) ampliacionPorCss(card, false);
+            }
+        });
+
+        window.toggleMapFullscreen = toggleMapFullscreen;
 
         // Siempre OpenStreetMap. En modo oscuro se oscurece por CSS, NO se cambia
         // de proveedor: las teselas oscuras venian de CARTO, que ha pasado a exigir
