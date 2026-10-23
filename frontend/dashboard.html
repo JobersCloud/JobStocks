@@ -8,6 +8,14 @@
     <link rel="stylesheet" href="css/styles.css?v=1.50.1">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        /* Mapa oscuro sin depender de un proveedor de teselas con clave.
+           Se filtra solo .leaflet-tile-pane: los marcadores viven en
+           .leaflet-marker-pane y conservan su color. */
+        [data-theme="dark"] #login-map-container .leaflet-tile-pane {
+            filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9) saturate(0.6);
+        }
+    </style>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
@@ -1128,19 +1136,15 @@
 
         // ==================== MAPA DE LOGINS ====================
 
+        // Siempre OpenStreetMap. En modo oscuro se oscurece por CSS, NO se cambia
+        // de proveedor: las teselas oscuras venian de CARTO, que ha pasado a exigir
+        // clave y devolvia los mosaicos estampados con "API KEY REQUIRED" (con
+        // HTTP 200, asi que no saltaba ningun error). OSM no pide clave.
         function getMapTileUrl() {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            if (isDark) {
-                return 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-            }
             return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
         }
 
         function getMapTileAttribution() {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            if (isDark) {
-                return '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>';
-            }
             return '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
         }
 
