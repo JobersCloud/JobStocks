@@ -307,6 +307,9 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.50.2', date: '2026-10-23', title: 'Actualizacion de seguridad de dependencias', items: [
+                {type: 'fix', text: 'Actualizados pip (a 26.2.2) y certifi (a 2026.10.19) en las imagenes del servidor, por un aviso de seguridad. Las imagenes se reconstruyen desde cero y el propio build falla si se cuela una version vulnerable'},
+            ]},
             { version: 'v1.50.1', date: '2026-10-20', title: 'La tabla aprovecha el hueco de los filtros', items: [
                 {type: 'fix', text: 'Al plegar el panel de filtros la tabla no crecia y el espacio ganado se quedaba vacio. Ahora se estira hacia abajo y entran mas filas: 3 mas en pantallas grandes y hasta 4 mas en portatiles de 768px de alto'},
                 {type: 'improve', text: 'El alto de la tabla se recalcula tambien al cambiar el tamano de la ventana'},

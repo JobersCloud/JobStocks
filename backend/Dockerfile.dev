@@ -32,9 +32,21 @@ RUN sed -i 's/openssl_conf = openssl_init/openssl_conf = openssl_init\n\n[openss
 # Directorio de trabajo
 WORKDIR /app
 
+# ============================================
+# Aviso de seguridad (octubre 2026): pip y certifi
+# ============================================
+# El pip que trae la imagen base es el que se queda CAPTURADO en la imagen, asi
+# que se actualiza ANTES de instalar nada: de ese modo las dependencias se
+# resuelven ya con el pip corregido. La comprobacion posterior tumba el build si
+# por cualquier via se cuela una version vulnerable, para que no haya que fiarse
+# de revisarlo a mano despues.
+RUN python -m pip install --no-cache-dir --upgrade "pip>=26.2.2" \
+    && python -c "import sys; from importlib.metadata import version; v=version('pip'); n=tuple(int(p) for p in v.split('.')[:3] if p.isdigit()); print('pip instalado:', v); sys.exit(0 if n>=(26,2,2) else 'ERROR: pip '+v+' es vulnerable, se requiere >=26.2.2')"
+
 # Copiar requirements e instalar dependencias Python
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install --no-cache-dir -r requirements.txt \
+    && python -c "import sys; from importlib.metadata import version; v=version('certifi'); n=tuple(int(p) for p in v.split('.')[:3] if p.isdigit()); print('certifi instalado:', v); sys.exit(0 if n>=(2026,10,19) else 'ERROR: certifi '+v+' es vulnerable, se requiere >=2026.10.19')"
 
 # El codigo se monta como volumen en docker-compose.dev.yml
 # No se copia aqui para permitir hot-reload
