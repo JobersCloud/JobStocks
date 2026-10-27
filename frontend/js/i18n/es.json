@@ -630,6 +630,7 @@
     "passwordRequired": "La contraseña es obligatoria",
     "passwordHelpEdit": "Dejar vacío para mantener la contraseña actual",
     "passwordHelpCreate": "Mínimo 8 caracteres",
+    "confirmDiscard": "Hay datos sin guardar en el formulario. ¿Descartar los cambios?",
     "userCreated": "Usuario creado correctamente",
     "userUpdated": "Usuario actualizado correctamente",
     "userCreatedWithEmail": "Usuario creado correctamente. Se ha enviado un email con las credenciales.",

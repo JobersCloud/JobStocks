@@ -503,7 +503,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="user-modal-title" data-i18n="users.createUser">Crear Usuario</h2>
-                <button class="modal-close" onclick="closeUserModal()">×</button>
+                <button class="modal-close" onclick="closeUserModal(true)">×</button>
             </div>
             <div class="user-modal-content">
                 <form id="user-form" onsubmit="saveUser(event)">
@@ -642,7 +642,7 @@
                     </div>
 
                     <div class="user-modal-actions btn-icon-group">
-                        <button type="button" class="btn-icon btn-icon-ghost" onclick="closeUserModal()" title="Cancelar">
+                        <button type="button" class="btn-icon btn-icon-ghost" onclick="closeUserModal(true)" title="Cancelar">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                         </button>
                         <button type="submit" class="btn-icon btn-icon-success" id="btn-save-user" title="Guardar">
@@ -1351,6 +1351,7 @@
             const currentUser = PageCommon.getCurrentUser();
             document.getElementById('role-group').style.display = currentUser && currentUser.rol === 'superusuario' ? 'block' : 'none';
             clearClientSelection();
+            snapshotUserForm();
             document.getElementById('user-modal').style.display = 'flex';
         }
 
@@ -1410,11 +1411,52 @@
                     document.getElementById('client-selected').style.display = 'flex';
                     document.getElementById('client-search-wrapper').style.display = 'none';
                 } else { clearClientSelection(); }
+                snapshotUserForm();
                 document.getElementById('user-modal').style.display = 'flex';
             } catch (error) { UIFeedback.toast('Error al cargar los datos del usuario', 'error'); }
         }
 
-        function closeUserModal() { document.getElementById('user-modal').style.display = 'none'; editingUserId = null; }
+        // Cerrar a mano avisa si hay algo escrito: perder un formulario entero
+        // por un Escape o un clic en la X resultaba muy incomodo. La foto del
+        // formulario se toma al abrirlo, asi que en edicion los datos cargados
+        // no cuentan como cambios.
+        let userFormSnapshot = '';
+
+        function serializeUserForm() {
+            const form = document.getElementById('user-form');
+            if (!form) return '';
+            return Array.from(form.elements).map(function (el) {
+                if (!el.id) return '';
+                const val = (el.type === 'checkbox' || el.type === 'radio') ? el.checked : el.value;
+                return el.id + '=' + val;
+            }).join('|');
+        }
+
+        function snapshotUserForm() { userFormSnapshot = serializeUserForm(); }
+
+        function userFormIsDirty() { return serializeUserForm() !== userFormSnapshot; }
+
+        let askingDiscard = false;
+
+        async function closeUserModal(ask) {
+            if (ask && userFormIsDirty()) {
+                // Escape dos veces no debe apilar avisos: el de UIFeedback
+                // tambien escucha Escape y deja pasar la tecla
+                if (askingDiscard) return;
+                askingDiscard = true;
+                let ok = false;
+                try {
+                    ok = await UIFeedback.confirm({
+                        message: t('users.confirmDiscard') || 'Hay datos sin guardar. Descartar los cambios?',
+                        type: 'warning'
+                    });
+                } finally { askingDiscard = false; }
+                if (!ok) return;
+            }
+            document.getElementById('user-modal').style.display = 'none';
+            editingUserId = null;
+            userFormSnapshot = '';
+        }
 
         async function saveUser(event) {
             event.preventDefault();
@@ -1620,7 +1662,7 @@
                 const gf = grid?.getFilters();
                 if (gf) gf.cerrarPopupFiltro();
                 closeRoleModal();
-                closeUserModal();
+                closeUserModal(true);
                 hideChangePasswordModal();
             }
         });

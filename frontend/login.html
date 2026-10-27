@@ -307,6 +307,10 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.51.2', date: '2026-10-27', title: 'El formulario de usuario ya no se pierde por un descuido', items: [
+                {type: 'fix', text: 'Al crear o editar un usuario, cerrar el formulario con la X, con Cancelar o con Escape avisa antes si hay datos escritos sin guardar, en vez de tirarlos sin preguntar'},
+                {type: 'fix', text: 'En las instalaciones donde el formulario de usuario se cerraba al pinchar fuera del recuadro se ha desactivado ese cierre: se sale solo con la X, Cancelar o Escape'},
+            ]},
             { version: 'v1.51.1', date: '2026-10-27', title: 'Contrasena a la vista al crear usuarios', items: [
                 {type: 'improve', text: 'En el formulario de crear/editar usuario, debajo del campo Contrasena hay dos acciones con texto: "Proponer contrasena segura" (genera una que cumple la politica y la deja a la vista) y "Copiar". Antes solo estaba el icono de varita dentro del campo y no se veia'},
                 {type: 'new', text: 'Boton "Copiar" para llevarse la contrasena al portapapeles y pasarsela al usuario'},

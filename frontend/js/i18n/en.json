@@ -630,6 +630,7 @@
     "passwordRequired": "Password is required",
     "passwordHelpEdit": "Leave empty to keep current password",
     "passwordHelpCreate": "Minimum 8 characters",
+    "confirmDiscard": "The form has unsaved data. Discard the changes?",
     "userCreated": "User created successfully",
     "userUpdated": "User updated successfully",
     "userCreatedWithEmail": "User created successfully. A welcome email with credentials has been sent.",

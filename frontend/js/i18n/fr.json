@@ -630,6 +630,7 @@
     "passwordRequired": "Le mot de passe est obligatoire",
     "passwordHelpEdit": "Laisser vide pour garder le mot de passe actuel",
     "passwordHelpCreate": "Minimum 8 caractères",
+    "confirmDiscard": "Le formulaire contient des données non enregistrées. Abandonner les modifications ?",
     "userCreated": "Utilisateur créé avec succès",
     "userUpdated": "Utilisateur mis à jour avec succès",
     "userCreatedWithEmail": "Utilisateur créé avec succès. Un email de bienvenue avec les identifiants a été envoyé.",
