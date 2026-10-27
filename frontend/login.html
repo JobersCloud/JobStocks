@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Gestión de Stocks</title>
     <script src="js/theme-init.js?v=1.49.11"></script>
-    <link rel="stylesheet" href="css/styles.css?v=1.51.1">
+    <link rel="stylesheet" href="css/styles.css?v=1.51.3">
 </head>
 <body>
     <!-- Selector de idioma y tema fijo -->
@@ -307,6 +307,10 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.51.3', date: '2026-10-27', title: 'Fotos sin marco en el tema de Cristal Ceramicas', items: [
+                {type: 'fix', text: 'En el tema cristacer las fichas con foto llevaban un filete negro que enmarcaba la imagen y no pegaba con el catalogo de la web comercial. Ahora la foto va a sangre sobre el crema y el realce al pasar por encima se hace oscureciendo el fondo'},
+                {type: 'fix', text: 'Mismo arreglo en las fotos del detalle del producto, que tambien iban enmarcadas en negro'},
+            ]},
             { version: 'v1.51.2', date: '2026-10-27', title: 'El formulario de usuario ya no se pierde por un descuido', items: [
                 {type: 'fix', text: 'Al crear o editar un usuario, cerrar el formulario con la X, con Cancelar o con Escape avisa antes si hay datos escritos sin guardar, en vez de tirarlos sin preguntar'},
                 {type: 'fix', text: 'En las instalaciones donde el formulario de usuario se cerraba al pinchar fuera del recuadro se ha desactivado ese cierre: se sale solo con la X, Cancelar o Escape'},

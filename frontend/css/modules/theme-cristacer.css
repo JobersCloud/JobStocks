@@ -391,10 +391,14 @@
     border-radius: 2px !important;
 }
 
-/* --- Tarjetas con imagen (grid con miniaturas): borde negro, flat --- */
+/* --- Tarjetas con imagen (grid con miniaturas): sin marco, manda la foto ---
+   Llevaban un filete negro que acababa enmarcando la imagen, y eso no pega con
+   el catalogo de la web comercial, donde las fotos van a sangre sobre el crema.
+   El realce al pasar por encima se hace oscureciendo el fondo (mismo tono que
+   el hover de las filas del grid), no con un borde. --- */
 [data-color-theme="cristacer"] .stock-image-card {
-    border: 1px solid #1a1a1a !important;
-    border-radius: 2px !important;
+    border: none !important;
+    border-radius: 0 !important;
     box-shadow: none !important;
     background: #F6EEE3 !important;
 }
@@ -402,6 +406,14 @@
 [data-color-theme="cristacer"] .stock-image-card:hover {
     transform: none !important;
     box-shadow: none !important;
+    background: #EDE6DF !important;
+}
+
+/* La foto, a sangre: sin marco ni fondo gris detras */
+[data-color-theme="cristacer"] .stock-image-card .stock-image-card-img {
+    background: #F6EEE3 !important;
+    border: none !important;
+    border-radius: 0 !important;
 }
 
 /* Textos tarjetas en negro */
@@ -1329,7 +1341,7 @@ html[data-color-theme="cristacer"] .login-header .mobile-logo {
     margin: 18px 0 0 0 !important;
 }
 
-/* --- IMAGENES: marco fino negro, sin radios --- */
+/* --- IMAGENES: sin marco, igual que el catalogo de la web comercial --- */
 [data-color-theme="cristacer"] #detail-content .detail-imagenes {
     border-top: none !important;
     margin-top: 30px !important;
@@ -1338,7 +1350,7 @@ html[data-color-theme="cristacer"] .login-header .mobile-logo {
 
 [data-color-theme="cristacer"] #detail-content .detail-imagen-item {
     border-radius: 0 !important;
-    border: 1px solid #1a1a1a !important;
+    border: none !important;
     box-shadow: none !important;
 }
 
