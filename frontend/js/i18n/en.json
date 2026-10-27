@@ -25,7 +25,9 @@
     "unknownError": "Unknown error",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
-    "suggestPassword": "Suggest a secure password"
+    "suggestPassword": "Suggest a secure password",
+    "copyPassword": "Copy",
+    "passwordCopied": "Password copied to clipboard"
   },
   "header": {
     "title": "Stock Management",

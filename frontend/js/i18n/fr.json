@@ -25,7 +25,9 @@
     "unknownError": "Erreur inconnue",
     "showPassword": "Afficher le mot de passe",
     "hidePassword": "Masquer le mot de passe",
-    "suggestPassword": "Proposer un mot de passe sûr"
+    "suggestPassword": "Proposer un mot de passe sûr",
+    "copyPassword": "Copier",
+    "passwordCopied": "Mot de passe copié dans le presse-papiers"
   },
   "header": {
     "title": "Gestion des Stocks",

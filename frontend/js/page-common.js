@@ -606,6 +606,7 @@
     const _EYE_SVG = '<svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
     const _EYE_OFF_SVG = '<svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
     const _WAND_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8 19 13"/><path d="M17.8 6.2 19 5"/><path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/></svg>';
+    const _COPY_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
 
     function _randInt(max) {
         if (window.crypto && window.crypto.getRandomValues) {
@@ -691,13 +692,7 @@
         wrapper.appendChild(toggle);
 
         if (options.generate) {
-            const gen = document.createElement('button');
-            gen.type = 'button';
-            gen.className = 'password-generate';
-            gen.title = t('common.suggestPassword') || 'Proponer contrasena';
-            gen.setAttribute('aria-label', gen.title);
-            gen.innerHTML = _WAND_SVG;
-            gen.addEventListener('click', async function () {
+            const fillGenerated = async function () {
                 const policy = await loadPasswordPolicy();
                 input.value = generatePassword(policy);
                 // Se muestra en claro: el admin tiene que poder leerla y copiarla
@@ -705,8 +700,53 @@
                 input.dispatchEvent(new Event('input', { bubbles: true }));
                 input.focus();
                 input.select();
-            });
+            };
+
+            const copyValue = async function () {
+                if (!input.value) return;
+                _setPasswordVisible(input, toggle, true);
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    try {
+                        await navigator.clipboard.writeText(input.value);
+                        if (window.UIFeedback && UIFeedback.toast) {
+                            UIFeedback.toast(t('common.passwordCopied') || 'Contrasena copiada', 'success');
+                        }
+                        return;
+                    } catch (e) { /* sin permiso: se copia a mano */ }
+                }
+                // Sin portapapeles (http sin TLS, navegadores antiguos): se selecciona
+                input.focus();
+                input.select();
+            };
+
+            const gen = document.createElement('button');
+            gen.type = 'button';
+            gen.className = 'password-generate';
+            gen.title = t('common.suggestPassword') || 'Proponer contrasena';
+            gen.setAttribute('aria-label', gen.title);
+            gen.innerHTML = _WAND_SVG;
+            gen.addEventListener('click', fillGenerated);
             wrapper.appendChild(gen);
+
+            // Acciones con texto debajo del campo: el icono por si solo no se ve
+            const actions = document.createElement('div');
+            actions.className = 'password-actions';
+
+            const genLink = document.createElement('button');
+            genLink.type = 'button';
+            genLink.className = 'password-action';
+            genLink.innerHTML = _WAND_SVG + '<span>' + (t('common.suggestPassword') || 'Proponer contrasena segura') + '</span>';
+            genLink.addEventListener('click', fillGenerated);
+            actions.appendChild(genLink);
+
+            const copyLink = document.createElement('button');
+            copyLink.type = 'button';
+            copyLink.className = 'password-action';
+            copyLink.innerHTML = _COPY_SVG + '<span>' + (t('common.copyPassword') || 'Copiar') + '</span>';
+            copyLink.addEventListener('click', copyValue);
+            actions.appendChild(copyLink);
+
+            wrapper.parentNode.insertBefore(actions, wrapper.nextSibling);
         }
         return input;
     }
