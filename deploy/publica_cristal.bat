@@ -1,7 +1,9 @@
 @echo off
 REM ============================================================
 REM Script de despliegue para servidor CRISTAL (10.1.99.4)
-REM Sube archivos y reinicia Docker (downtime minimo)
+REM Sube archivos y publica con canary: la imagen nueva se prueba
+REM en un contenedor aparte ANTES de tocar el que esta sirviendo,
+REM asi un fallo no deja la web caida.
 REM ============================================================
 
 echo ========================================
@@ -12,7 +14,16 @@ echo.
 
 cd /d "C:\Users\jobers\Documents\Ejercicios Python\JobStocks"
 
-echo [1/5] Subiendo archivos (sin .env ni videos promocionales)...
+echo [0/3] Comprobando que el servidor responde...
+ssh -o BatchMode=yes -o ConnectTimeout=10 administrador@10.1.99.4 "true"
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo ERROR: el servidor no responde por SSH. No se ha subido nada.
+    pause
+    exit /b 1
+)
+
+echo [1/3] Subiendo archivos (sin .env ni videos promocionales)...
 REM Backup del .env del servidor
 ssh administrador@10.1.99.4 "cp /var/jobstocks/backend/.env /tmp/.env.backup 2>/dev/null || true"
 scp docker-compose.yml administrador@10.1.99.4:/var/jobstocks/
@@ -28,27 +39,23 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo.
-echo [2/5] Ajustando permisos...
+echo [2/3] Ajustando permisos...
 ssh administrador@10.1.99.4 "chmod -R 755 /var/jobstocks/frontend"
 
 echo.
-echo [3/5] Construyendo nueva imagen (app sigue funcionando)...
-ssh administrador@10.1.99.4 "cd /var/jobstocks && echo 'crijob15' | sudo -S docker-compose build"
+echo [3/3] Publicando con canary...
+scp deploy\publica_remoto.sh administrador@10.1.99.4:/tmp/
+ssh administrador@10.1.99.4 "APP_DIR=/var/jobstocks CONTAINER=apirest-backend SUDO_PASS='crijob15' bash /tmp/publica_remoto.sh"
 
 if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: Fallo al construir imagen
+    echo.
+    echo ========================================
+    echo   DESPLIEGUE ABORTADO
+    echo   Sigue en marcha la version anterior
+    echo ========================================
     pause
     exit /b 1
 )
-
-echo.
-echo [4/5] Reiniciando contenedores (downtime minimo)...
-ssh administrador@10.1.99.4 "cd /var/jobstocks && echo 'crijob15' | sudo -S docker-compose down && echo 'crijob15' | sudo -S docker-compose up -d"
-
-echo.
-echo [5/5] Verificando version...
-timeout /t 8 /nobreak > nul
-ssh administrador@10.1.99.4 "curl -s http://localhost:5000/api/version"
 
 echo.
 echo ========================================
