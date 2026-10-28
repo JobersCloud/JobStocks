@@ -1,0 +1,6 @@
+# Los scripts que se ejecutan en los servidores Linux NO pueden llevar CRLF:
+# bash se come el \r y falla con "bash: $'\r': command not found".
+*.sh text eol=lf
+
+# Los .bat son para Windows (doble clic), ahi si queremos CRLF
+*.bat text eol=crlf
