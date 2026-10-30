@@ -4,13 +4,7 @@
 /* Estética: limpio, fondo blanco, flat, sin border-radius */
 /* ======================================================= */
 
-/* --- Ocultar toggle dark mode (tema corporativo controla la paleta) --- */
-[data-color-theme="rocanet"] .theme-toggle-btn,
-[data-color-theme="rocanet"] .theme-toggle-container,
-[data-color-theme="rocanet"] .dark-mode-toggle,
-[data-color-theme="rocanet"] .menu-item[onclick="toggleTheme()"] {
-    display: none !important;
-}
+/* --- Dark mode disponible: ver bloque "ROCANET DARK MODE" al final --- */
 
 /* --- Body: fondo blanco limpio --- */
 [data-color-theme="rocanet"] body {
@@ -554,7 +548,183 @@
     border-radius: 0 !important;
 }
 
-/* Ocultar controles superiores del login */
-[data-color-theme="rocanet"] .login-top-controls {
-    display: none !important;
+/* Controles superiores del login (tema + idioma). Solo en escritorio: por
+   debajo de 1024px el login usa los del pie (.login-mobile-footer) */
+@media (min-width: 1025px) {
+    [data-color-theme="rocanet"] .login-top-controls {
+        display: flex !important;
+    }
+}
+
+/* ==================== ROCANET DARK MODE ==================== */
+/* El tema claro de arriba fija colores con !important, asi que el modo      */
+/* oscuro los vuelve a pisar con un selector mas especifico                  */
+/* ([data-theme="dark"] + [data-color-theme="rocanet"]).                     */
+/* Paleta: fondo #141414, superficies #1f1f1f/#242424, verde Roca de acento. */
+
+/* --- Fondo general --- */
+[data-theme="dark"][data-color-theme="rocanet"] body {
+    background: #141414 !important;
+}
+
+/* --- Header y sidebar: un paso por encima del fondo --- */
+[data-theme="dark"][data-color-theme="rocanet"] .top-header {
+    background: #1f1f1f !important;
+    border-bottom: 1px solid #2f2f2f !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] .sidebar {
+    background: #1f1f1f !important;
+    border-right: 1px solid #2f2f2f !important;
+}
+
+/* El acordeon expandido queda demasiado apagado sobre fondo oscuro */
+[data-theme="dark"][data-color-theme="rocanet"] .sidebar-accordion.expanded > .sidebar-accordion-header {
+    background: rgba(97, 162, 41, 0.22) !important;
+}
+
+/* --- Menu de usuario --- */
+[data-theme="dark"][data-color-theme="rocanet"] .menu-dropdown {
+    background: #242424 !important;
+    border-color: #3a3a3a !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] .menu-dropdown .menu-header {
+    background: #1f1f1f !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] .menu-dropdown .menu-item {
+    color: #e8e8e8 !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] .menu-dropdown .menu-item:hover {
+    background: #2f2f2f !important;
+}
+
+/* --- Modales --- */
+[data-theme="dark"][data-color-theme="rocanet"] .modal-header,
+[data-theme="dark"][data-color-theme="rocanet"] #edit-modal .modal-header,
+[data-theme="dark"][data-color-theme="rocanet"] #detail-modal .modal-header,
+[data-theme="dark"][data-color-theme="rocanet"] .quantity-modal-header,
+[data-theme="dark"][data-color-theme="rocanet"] .changelog-modal-header,
+[data-theme="dark"][data-color-theme="rocanet"] .password-modal-header {
+    background: #141414 !important;
+}
+
+/* --- Cards y paneles --- */
+[data-theme="dark"][data-color-theme="rocanet"] .logo-card,
+[data-theme="dark"][data-color-theme="rocanet"] .config-card,
+[data-theme="dark"][data-color-theme="rocanet"] .email-config-card,
+[data-theme="dark"][data-color-theme="rocanet"] .param-section,
+[data-theme="dark"][data-color-theme="rocanet"] .proposal-card,
+[data-theme="dark"][data-color-theme="rocanet"] .user-card,
+[data-theme="dark"][data-color-theme="rocanet"] .inquiry-card {
+    background: #242424 !important;
+    border-top-color: #61a229 !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] .stock-card,
+[data-theme="dark"][data-color-theme="rocanet"] .stock-image-card {
+    background: #242424 !important;
+    border: 1px solid #3a3a3a !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] .stock-image-card:hover {
+    border-color: #7bc043 !important;
+}
+
+/* --- Filtros --- */
+[data-theme="dark"][data-color-theme="rocanet"] .filters,
+[data-theme="dark"][data-color-theme="rocanet"] .filters-container {
+    border-color: #3a3a3a !important;
+}
+
+/* --- Inputs (tipos explicitos: checkbox y radio se dejan nativos) --- */
+[data-theme="dark"][data-color-theme="rocanet"] input[type="text"],
+[data-theme="dark"][data-color-theme="rocanet"] input[type="number"],
+[data-theme="dark"][data-color-theme="rocanet"] input[type="email"],
+[data-theme="dark"][data-color-theme="rocanet"] input[type="password"],
+[data-theme="dark"][data-color-theme="rocanet"] input[type="date"],
+[data-theme="dark"][data-color-theme="rocanet"] input[type="search"],
+[data-theme="dark"][data-color-theme="rocanet"] input[type="tel"],
+[data-theme="dark"][data-color-theme="rocanet"] select,
+[data-theme="dark"][data-color-theme="rocanet"] textarea {
+    background: #1a1a1a !important;
+    border: 1px solid #3f3f3f !important;
+    color: #e8e8e8 !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] input[type="text"]:focus,
+[data-theme="dark"][data-color-theme="rocanet"] input[type="number"]:focus,
+[data-theme="dark"][data-color-theme="rocanet"] input[type="email"]:focus,
+[data-theme="dark"][data-color-theme="rocanet"] input[type="password"]:focus,
+[data-theme="dark"][data-color-theme="rocanet"] input[type="date"]:focus,
+[data-theme="dark"][data-color-theme="rocanet"] input[type="search"]:focus,
+[data-theme="dark"][data-color-theme="rocanet"] input[type="tel"]:focus,
+[data-theme="dark"][data-color-theme="rocanet"] select:focus,
+[data-theme="dark"][data-color-theme="rocanet"] textarea:focus {
+    border-color: #7bc043 !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] select option {
+    background: #1f1f1f !important;
+    color: #e8e8e8 !important;
+}
+
+/* --- Botones icono --- */
+[data-theme="dark"][data-color-theme="rocanet"] .btn-icon {
+    border-color: #3f3f3f !important;
+}
+
+/* --- Links --- */
+[data-theme="dark"][data-color-theme="rocanet"] a:not(.sidebar-item):not(.btn):hover {
+    color: #7bc043 !important;
+}
+
+/* ==================== LOGIN ROCANET DARK ==================== */
+
+[data-theme="dark"][data-color-theme="rocanet"] .login-wrapper,
+[data-theme="dark"][data-color-theme="rocanet"] .login-container {
+    background: #141414 !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] .login-sidebar {
+    background: #1f1f1f !important;
+}
+
+/* Logo del formulario invertido a blanco (el del sidebar ya lo esta) */
+[data-theme="dark"][data-color-theme="rocanet"] .mobile-logo {
+    filter: brightness(0) invert(1) !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] .login-header h1 {
+    color: #f0f0f0 !important;
+    -webkit-text-fill-color: #f0f0f0 !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] .login-subtitle {
+    color: #9a9a9a !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] .login-form .form-group label {
+    color: #e8e8e8 !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] .login-form input {
+    background: #1f1f1f !important;
+    border: 1px solid #3f3f3f !important;
+    color: #e8e8e8 !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] .login-form input:focus {
+    border-color: #7bc043 !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] .login-link a {
+    color: #7bc043 !important;
+}
+
+[data-theme="dark"][data-color-theme="rocanet"] .version-indicator {
+    background: rgba(31, 31, 31, 0.9) !important;
+    border-color: #3f3f3f !important;
 }

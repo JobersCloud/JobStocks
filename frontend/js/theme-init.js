@@ -27,8 +27,9 @@
         'rocanet': { primary: '#61a229', primaryDark: '#4e8221', primaryLight: '#7bc043' }
     };
 
-    // Temas custom: no soportan dark mode, se fuerza modo claro
-    var CUSTOM_THEMES = ['cristacer', 'rocanet'];
+    // Temas sin dark mode: se fuerza modo claro (su paleta no tiene variante
+    // oscura). Si un tema custom gana dark mode, hay que sacarlo de aqui.
+    var CUSTOM_THEMES = ['cristacer'];
 
     function isCustom(colorTheme) {
         return CUSTOM_THEMES.indexOf(colorTheme) !== -1;

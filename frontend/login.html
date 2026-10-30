@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Gestión de Stocks</title>
-    <script src="js/theme-init.js?v=1.49.11"></script>
-    <link rel="stylesheet" href="css/styles.css?v=1.51.3">
+    <script src="js/theme-init.js?v=1.52.0"></script>
+    <link rel="stylesheet" href="css/styles.css?v=1.52.0">
 </head>
 <body>
     <!-- Selector de idioma y tema fijo -->
@@ -307,6 +307,10 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.52.0', date: '2026-10-30', title: 'Modo oscuro disponible en el tema de RocaNET', items: [
+                {type: 'new', text: 'El tema de RocaNET ya se puede ver en modo oscuro: vuelve a aparecer el interruptor de claro/oscuro en el menu del usuario y en la pantalla de entrada, y se ha preparado la paleta oscura completa (fondos, cabecera, menu lateral, fichas, tablas, formularios y pantalla de entrada) manteniendo el verde y el negro corporativos'},
+                {type: 'improve', text: 'En la pantalla de entrada del tema de RocaNET vuelven a verse los controles de tema e idioma en la esquina superior, que estaban ocultos en ordenador'},
+            ]},
             { version: 'v1.51.3', date: '2026-10-27', title: 'Fotos sin marco en el tema de Cristal Ceramicas', items: [
                 {type: 'fix', text: 'En el tema cristacer las fichas con foto llevaban un filete negro que enmarcaba la imagen y no pegaba con el catalogo de la web comercial. Ahora la foto va a sangre sobre el crema y el realce al pasar por encima se hace oscureciendo el fondo'},
                 {type: 'fix', text: 'Mismo arreglo en las fotos del detalle del producto, que tambien iban enmarcadas en negro'},
