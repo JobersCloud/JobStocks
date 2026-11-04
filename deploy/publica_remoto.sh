@@ -24,11 +24,16 @@ cd "$APP_DIR" || exit 1
 
 # --- Como se llama a docker en este servidor ---
 if [ -n "$SUDO_PASS" ]; then
-    d() { echo "$SUDO_PASS" | sudo -S "$@" 2>/dev/null; }
+    d() { echo "$SUDO_PASS" | sudo -S -p '' "$@" 2>/dev/null; }
+    # Los logs salen por stderr: con la d() de arriba se perdian y el fallo
+    # se anunciaba sin una sola linea que explicara nada.
+    dlogs() { echo "$SUDO_PASS" | sudo -S -p '' docker logs --tail 40 "$1" 2>&1; }
 elif [ "$USE_SUDO" = "1" ]; then
     d() { sudo "$@"; }
+    dlogs() { sudo docker logs --tail 40 "$1" 2>&1; }
 else
     d() { "$@"; }
+    dlogs() { docker logs --tail 40 "$1" 2>&1; }
 fi
 
 # --- Compose v2 o v1 ---
@@ -84,20 +89,40 @@ done
 [ -n "$NET" ] && echo ">> Red: $NET"
 
 d docker rm -f "$CANARY_NAME" >/dev/null 2>&1
-# El puerto de dentro no se toca (manda el CMD de la imagen); solo se publica
-# fuera en otro puerto, y solo en loopback.
-d docker run -d --name "$CANARY_NAME" \
-    --env-file "$ENVFILE" \
-    ${NET:+--network "$NET"} \
-    $EXTRA \
-    -p "127.0.0.1:${CANARY_PORT}:${APP_PORT}" \
-    "$IMG" >/dev/null 2>&1
-RUN_RC=$?
+
+NETMODE=$(d docker inspect -f '{{.HostConfig.NetworkMode}}' "$CONTAINER" 2>/dev/null | tr -d '\r')
+
+if [ "$NETMODE" = "host" ]; then
+    # Con la red del host no hay puertos que publicar: el canary escucharia
+    # en el mismo puerto que la app en marcha y no arrancaria jamas. Se le
+    # repite su propio comando cambiandole solo el puerto de escucha.
+    CMDOVR=()
+    while IFS= read -r a; do
+        [ -z "$a" ] && continue
+        CMDOVR+=("${a//0.0.0.0:${APP_PORT}/127.0.0.1:${CANARY_PORT}}")
+    done < <(d docker inspect -f '{{range .Config.Cmd}}{{println .}}{{end}}' "$CONTAINER" 2>/dev/null | tr -d '\r')
+    echo ">> Red del host: se prueba escuchando en 127.0.0.1:${CANARY_PORT}"
+    d docker run -d --name "$CANARY_NAME" \
+        --env-file "$ENVFILE" \
+        --network host \
+        "$IMG" "${CMDOVR[@]}" >/dev/null 2>&1
+    RUN_RC=$?
+else
+    # El puerto de dentro no se toca (manda el CMD de la imagen); solo se
+    # publica fuera en otro puerto, y solo en loopback.
+    d docker run -d --name "$CANARY_NAME" \
+        --env-file "$ENVFILE" \
+        ${NET:+--network "$NET"} \
+        $EXTRA \
+        -p "127.0.0.1:${CANARY_PORT}:${APP_PORT}" \
+        "$IMG" >/dev/null 2>&1
+    RUN_RC=$?
+fi
 rm -f "$ENVFILE"
 
 if [ "$RUN_RC" != "0" ]; then
     echo "!! No se ha podido arrancar el contenedor de prueba. No se toca nada."
-    d docker logs --tail 30 "$CANARY_NAME" 2>&1 | sed 's/^/     /'
+    dlogs "$CANARY_NAME" | sed 's/^/     /'
     d docker rm -f "$CANARY_NAME" >/dev/null 2>&1
     exit 1
 fi
@@ -118,7 +143,7 @@ if [ "$CANARY_OK" != "1" ]; then
     echo ""
     echo "!! LA IMAGEN NUEVA NO ARRANCA. No se ha tocado la aplicacion en uso."
     echo "!! Ultimas lineas del error:"
-    d docker logs --tail 30 "$CANARY_NAME" 2>&1 | sed 's/^/     /'
+    dlogs "$CANARY_NAME" | sed 's/^/     /'
     d docker rm -f "$CANARY_NAME" >/dev/null 2>&1
     echo ""
     echo -n ">> Sigue sirviendo la version anterior: "
