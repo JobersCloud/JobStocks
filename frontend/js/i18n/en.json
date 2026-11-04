@@ -699,7 +699,9 @@
     "detailInquiries": "Inquiries",
     "detailSessions": "Sessions",
     "detailAudit": "Audit",
-    "emailHelp": "Copied automatically as the username"
+    "emailHelp": "It will also be the username used to sign in",
+    "usernameHelp": "This is the name used to sign in; it follows the email",
+    "emailRequired": "Email is required"
   },
   "changePassword": {
     "title": "Change Password",

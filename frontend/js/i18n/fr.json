@@ -699,7 +699,9 @@
     "detailInquiries": "Demandes",
     "detailSessions": "Sessions",
     "detailAudit": "Audit",
-    "emailHelp": "Copié automatiquement comme nom d'utilisateur"
+    "emailHelp": "Ce sera aussi son nom d'utilisateur pour se connecter",
+    "usernameHelp": "C'est le nom utilisé pour se connecter ; il suit l'email",
+    "emailRequired": "L'email est obligatoire"
   },
   "changePassword": {
     "title": "Changer le Mot de Passe",

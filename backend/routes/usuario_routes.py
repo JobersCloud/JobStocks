@@ -24,7 +24,7 @@ from utils.auth import administrador_required, superusuario_required
 from models.audit_model import AuditModel, AuditAction, AuditResult
 from database.users_db import (
     get_all_users_by_empresa, get_user_by_id,
-    get_user_by_id_and_empresa, update_user, update_user_full,
+    get_user_by_id_and_empresa, get_user_by_username, update_user, update_user_full,
     update_user_rol, deactivate_user, activate_user, create_user_admin,
     change_password, add_user_to_empresa, get_user_empresas, set_email_verified
 )
@@ -222,6 +222,13 @@ def crear_usuario():
     # Preparar datos para crear usuario
     connection = session.get('connection')
     data['empresa_erp'] = data.get('empresa_id')  # Mapear empresa_id a empresa_erp
+
+    # El email es el nombre de usuario: si ya esta dado de alta, se avisa claro
+    if get_user_by_username(data['username'], connection):
+        return jsonify({
+            'success': False,
+            'error': 'Ya existe un usuario con ese email'
+        }), 400
 
     try:
         user_id = create_user_admin(data, connection)
@@ -536,6 +543,25 @@ def actualizar_usuario(user_id):
                 'success': False,
                 'error': 'Solo un superusuario puede asignar roles de administrador o superusuario'
             }), 403
+
+    # El nombre de usuario de un usuario es su email. Si hasta ahora coincidian
+    # (lo normal), al cambiar el email se cambia tambien el nombre de usuario,
+    # que es con el que entra. Si tenia un nombre propio antiguo, se respeta.
+    nuevo_email = (data.get('email') or '').strip()
+    if nuevo_email:
+        actual = get_user_by_id_and_empresa(user_id, connection, empresa_id)
+        if actual:
+            username_actual = (actual.get('username') or '').strip()
+            email_actual = (actual.get('email') or '').strip()
+            if (username_actual.lower() == email_actual.lower()
+                    and nuevo_email.lower() != username_actual.lower()):
+                existente = get_user_by_username(nuevo_email, connection)
+                if existente and existente['id'] != user_id:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Ya existe un usuario con ese email'
+                    }), 400
+                data['username'] = nuevo_email
 
     try:
         actualizado = update_user_full(user_id, data, connection, empresa_id)

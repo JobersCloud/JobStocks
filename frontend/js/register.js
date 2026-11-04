@@ -176,7 +176,6 @@ async function initRegister() {
     verificarRegistroHabilitado();
     cargarPaises();
     setupRegisterForm();
-    setupEmailToUsername();
     injectRegPasswordRequirements();
 }
 
@@ -323,32 +322,6 @@ async function injectRegPasswordRequirements() {
     }
 }
 
-// Auto-rellenar usuario con el email introducido
-function setupEmailToUsername() {
-    const emailInput = document.getElementById('email');
-    const usernameInput = document.getElementById('username');
-    let userEditedUsername = false;
-
-    // Si el usuario edita manualmente el campo usuario, dejar de auto-rellenar
-    usernameInput.addEventListener('input', function() {
-        userEditedUsername = true;
-    });
-
-    // Al escribir el email, proponer como usuario (si no lo ha editado manualmente)
-    emailInput.addEventListener('input', function() {
-        if (!userEditedUsername) {
-            usernameInput.value = this.value.trim();
-        }
-    });
-
-    // Si el usuario borra todo el username, reactivar auto-relleno
-    usernameInput.addEventListener('change', function() {
-        if (this.value.trim() === '') {
-            userEditedUsername = false;
-        }
-    });
-}
-
 // Configurar formulario de registro
 function setupRegisterForm() {
     document.getElementById('register-form').addEventListener('submit', async function(e) {
@@ -363,7 +336,7 @@ function setupRegisterForm() {
             full_name: document.getElementById('full_name').value.trim(),
             company_name: document.getElementById('company_name').value.trim(),
             cif_nif: document.getElementById('cif_nif').value.trim(),
-            username: document.getElementById('username').value.trim(),
+            username: document.getElementById('email').value.trim(),
             email: document.getElementById('email').value.trim(),
             pais: document.getElementById('pais').value,
             password: document.getElementById('password').value,

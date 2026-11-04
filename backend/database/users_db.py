@@ -718,6 +718,10 @@ def update_user_full(user_id, data, empresa_cli_id, empresa_erp):
         user_updates = []
         user_params = []
 
+        if data.get('username'):
+            user_updates.append("username = ?")
+            user_params.append(data['username'])
+
         if 'full_name' in data:
             user_updates.append("full_name = ?")
             user_params.append(data['full_name'])

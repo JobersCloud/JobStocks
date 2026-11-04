@@ -510,14 +510,16 @@
                     <input type="hidden" id="user-id">
 
                     <div class="form-group">
-                        <label data-i18n="users.email">Email</label>
-                        <input type="email" id="user-email" autocomplete="off">
-                        <p class="form-help" data-i18n="users.emailHelp">Se copia automáticamente como nombre de usuario</p>
+                        <label><span data-i18n="users.email">Email</span> *</label>
+                        <input type="email" id="user-email" required autocomplete="off">
+                        <p class="form-help" data-i18n="users.emailHelp">Será también su nombre de usuario para entrar</p>
                     </div>
 
-                    <div class="form-group">
-                        <label data-i18n="users.username">Usuario *</label>
-                        <input type="text" id="user-username" required autocomplete="off">
+                    <!-- Solo informativo al editar: el usuario es el email -->
+                    <div class="form-group" id="username-group" style="display: none;">
+                        <label data-i18n="users.username">Usuario</label>
+                        <p id="user-username" class="user-username-value" style="margin: 0; font-weight: 600;">-</p>
+                        <p class="form-help" data-i18n="users.usernameHelp">Es el nombre con el que entra; se actualiza al cambiar el email</p>
                     </div>
 
                     <div class="form-group">
@@ -1325,10 +1327,9 @@
 
         // ==================== CREAR/EDITAR USUARIO ====================
         // Ojo para ver la contrasena + boton que propone una que cumple la
-        // politica, y el email como nombre de usuario por defecto.
+        // politica. El nombre de usuario es siempre el email.
         function initUserModalFields() {
             PageCommon.enhancePasswordField('user-password', { generate: true });
-            PageCommon.mirrorEmailToUsername('user-email', 'user-username');
         }
 
         function openCreateUserModal() {
@@ -1337,7 +1338,8 @@
             document.getElementById('user-form').reset();
             initUserModalFields();
             PageCommon.resetPasswordField('user-password');
-            PageCommon.resetEmailMirror('user-username');
+            document.getElementById('username-group').style.display = 'none';
+            document.getElementById('user-username').textContent = '';
             document.getElementById('user-id').value = '';
             document.getElementById('user-password').required = true;
             document.getElementById('password-help').textContent = t('users.passwordHelpCreate') || 'Mínimo 6 caracteres';
@@ -1360,8 +1362,8 @@
             document.getElementById('user-modal-title').textContent = t('users.editUser') || 'Editar Usuario';
             initUserModalFields();
             PageCommon.resetPasswordField('user-password');
-            // Al editar, el usuario ya existe: no se sobreescribe al tocar el email
-            document.getElementById('user-username').dataset.manualEdit = '1';
+            // El usuario ya existe: se muestra pero no se puede cambiar
+            document.getElementById('username-group').style.display = 'block';
             document.getElementById('user-password').required = false;
             document.getElementById('password-help').textContent = t('users.passwordHelpEdit') || 'Dejar vacío para no cambiar';
             document.getElementById('send-email-group').style.display = 'none';
@@ -1378,7 +1380,7 @@
                 const data = await response.json();
                 const user = data.usuario;
                 document.getElementById('user-id').value = user.id;
-                document.getElementById('user-username').value = user.username;
+                document.getElementById('user-username').textContent = user.username;
                 document.getElementById('user-password').value = '';
                 document.getElementById('user-fullname').value = user.full_name || '';
                 document.getElementById('user-email').value = user.email || '';
@@ -1460,10 +1462,14 @@
 
         async function saveUser(event) {
             event.preventDefault();
+            const email = document.getElementById('user-email').value.trim();
+            if (!email) {
+                UIFeedback.toast(t('users.emailRequired') || 'El email es obligatorio', 'error');
+                return;
+            }
             const userData = {
-                username: document.getElementById('user-username').value.trim(),
                 full_name: document.getElementById('user-fullname').value.trim(),
-                email: document.getElementById('user-email').value.trim(),
+                email: email,
                 company_name: document.getElementById('user-company-name').value.trim(),
                 pais: document.getElementById('user-pais').value,
                 cliente_id: document.getElementById('user-cliente-id').value,
@@ -1497,6 +1503,7 @@
                     await loadUsers();
                 } catch (error) { UIFeedback.toast('Error: ' + error.message, 'error'); }
             } else {
+                userData.username = email;  // el email es el nombre de usuario
                 userData.password = password;
                 userData.enviar_email = document.getElementById('user-send-email').checked;
                 try {

@@ -699,7 +699,9 @@
     "detailInquiries": "Consultas",
     "detailSessions": "Sesiones",
     "detailAudit": "Auditoría",
-    "emailHelp": "Se copia automáticamente como nombre de usuario"
+    "emailHelp": "Será también su nombre de usuario para entrar",
+    "usernameHelp": "Es el nombre con el que entra; se actualiza al cambiar el email",
+    "emailRequired": "El email es obligatorio"
   },
   "changePassword": {
     "title": "Cambiar Contraseña",
