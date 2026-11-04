@@ -261,7 +261,8 @@ def crear_usuario():
                     username=data['username'],
                     password=data['password'],
                     full_name=data.get('full_name', ''),
-                    empresa_id=data['empresa_id']
+                    empresa_id=data['empresa_id'],
+                    connection=connection
                 )
                 email_enviado = True
             except Exception as e:
@@ -292,10 +293,13 @@ def crear_usuario():
         }), 500
 
 
-def enviar_email_bienvenida(email, username, password, full_name, empresa_id):
+def enviar_email_bienvenida(email, username, password, full_name, empresa_id, connection=None):
     """Enviar email de bienvenida con credenciales al nuevo usuario"""
+    if connection is None:
+        connection = session.get('connection')
+
     # Obtener configuración de email activa
-    email_config = EmailConfigModel.get_active_config(empresa_id)
+    email_config = EmailConfigModel.get_active_config(empresa_id, connection)
     if not email_config:
         raise Exception("No hay configuración de email activa")
 
@@ -309,8 +313,8 @@ def enviar_email_bienvenida(email, username, password, full_name, empresa_id):
     # Cuerpo del email HTML
     nombre = full_name if full_name else username
 
-    # Construir URL de login con empresa
-    login_url = f"{get_base_url()}/login?empresa={empresa_id}"
+    # Construir URL de login con la conexion (el login solo acepta ?connection=)
+    login_url = f"{get_base_url()}/login{'?connection=' + str(connection) if connection else ''}"
 
     html_body = f"""
     <!DOCTYPE html>

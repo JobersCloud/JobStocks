@@ -307,6 +307,9 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.52.2', date: '2026-11-04', title: 'El enlace del correo de bienvenida vuelve a entrar', items: [
+                {type: 'fix', text: 'Al crear un usuario y enviarle el correo de bienvenida, el boton "Acceder al Sistema" llevaba a una pantalla de "Enlace incorrecto" y el usuario no podia entrar. El enlace se montaba con el parametro antiguo (empresa) en lugar del que usa hoy la aplicacion (connection), y ademas con el numero de empresa del ERP en vez del de la instalacion. Ahora el enlace apunta a la instalacion correcta'},
+            ]},
             { version: 'v1.52.1', date: '2026-11-04', title: 'El usuario entra con su email', items: [
                 {type: 'improve', text: 'En el formulario de crear usuario ya no se pide un nombre de usuario aparte: se escribe solo el email y ese es el nombre con el que entra. Antes se ensenaban los dos campos y, si se ponian distintos, el nombre de usuario que se escribia no se guardaba'},
                 {type: 'fix', text: 'Al editar un usuario, cambiarle el email le cambia tambien el nombre con el que entra, que es lo que se esperaba. Antes el email se cambiaba pero el usuario seguia entrando con el anterior'},
