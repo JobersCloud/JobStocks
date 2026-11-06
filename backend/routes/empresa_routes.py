@@ -7,6 +7,7 @@ from flask import Blueprint, jsonify, request, session
 from models.empresa_cliente_model import EmpresaClienteModel
 from models.empresa_model import EmpresaModel
 from utils.empresa import init_empresa_session, get_connection, get_empresa_info
+from utils.auth import control_key_or_superusuario_required
 
 empresa_bp = Blueprint('empresa', __name__, url_prefix='/api/empresa')
 
@@ -147,12 +148,19 @@ def current_empresa():
 
 
 @empresa_bp.route('/list', methods=['GET'])
+@control_key_or_superusuario_required
 def list_empresas():
     """
     Lista todas las empresas disponibles (para administración).
 
+    Datos del control (servidor, puerto, base de datos y CIF de cada
+    instalacion), asi que no es publica: hace falta la llave del control
+    (cabecera X-Control-Key) o una sesion de superusuario.
+
     Returns:
         200: Lista de empresas
+        401: No autenticado
+        403: Sin permiso
     """
     empresas = EmpresaClienteModel.get_all()
 

@@ -153,7 +153,7 @@ def get_client_ip():
 
 
 # Versión de la aplicación
-APP_VERSION = 'v1.52.2'
+APP_VERSION = 'v1.52.3'
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
@@ -1280,7 +1280,7 @@ def require_login():
         return None
 
     # Permitir rutas de registro, empresa y consultas sin autenticación
-    public_api_routes = ['/api/register', '/api/verify-email', '/api/resend-verification', '/api/paises', '/api/registro-habilitado', '/api/parametros/propuestas-habilitadas', '/api/parametros/busqueda-voz-habilitada', '/api/parametros/mostrar-precios', '/api/consultas/whatsapp-config', '/api/empresa/validate', '/api/empresa/init', '/api/empresa/list', '/api/default-connection', '/api/version', '/api/password-policy', '/api/forgot-password', '/api/reset-password']
+    public_api_routes = ['/api/register', '/api/verify-email', '/api/resend-verification', '/api/paises', '/api/registro-habilitado', '/api/parametros/propuestas-habilitadas', '/api/parametros/busqueda-voz-habilitada', '/api/parametros/mostrar-precios', '/api/consultas/whatsapp-config', '/api/empresa/validate', '/api/empresa/init', '/api/default-connection', '/api/version', '/api/password-policy', '/api/forgot-password', '/api/reset-password']
     if any(request.path.startswith(route) for route in public_api_routes):
         return None
 

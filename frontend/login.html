@@ -307,6 +307,9 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.52.3', date: '2026-11-06', title: 'La lista de instalaciones deja de ser publica', items: [
+                {type: 'fix', text: 'La consulta que devuelve las instalaciones dadas de alta en el control (con su servidor, puerto, base de datos y CIF) respondia a cualquiera sin necesidad de entrar. Ahora exige sesion de superusuario, o la llave del control si quien pregunta es otra aplicacion de la familia'},
+            ]},
             { version: 'v1.52.2', date: '2026-11-04', title: 'El enlace del correo de bienvenida vuelve a entrar', items: [
                 {type: 'fix', text: 'Al crear un usuario y enviarle el correo de bienvenida, el boton "Acceder al Sistema" llevaba a una pantalla de "Enlace incorrecto" y el usuario no podia entrar. El enlace se montaba con el parametro antiguo (empresa) en lugar del que usa hoy la aplicacion (connection), y ademas con el numero de empresa del ERP en vez del de la instalacion. Ahora el enlace apunta a la instalacion correcta'},
             ]},

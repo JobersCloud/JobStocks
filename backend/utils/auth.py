@@ -16,6 +16,8 @@
 # ARCHIVO: utils/auth.py
 # Decoradores de autenticación y autorización
 # ============================================
+import hmac
+import os
 from functools import wraps
 from flask import request, jsonify, g, session
 from flask_login import current_user
@@ -189,6 +191,29 @@ def superusuario_required(f):
             }), 403
 
         return f(*args, **kwargs)
+    return decorated_function
+
+
+def control_key_or_superusuario_required(f):
+    """
+    Decorador para rutas que destapan datos de la BD central (la lista de
+    instalaciones, con su servidor y base de datos). Admite dos llamadores:
+
+    1. Otra aplicacion de la familia, con la llave del control en la cabecera
+       X-Control-Key, que debe coincidir con la variable de entorno
+       CONTROL_API_KEY. Si la variable no esta puesta, no se admite por llave.
+    2. Una sesion de superusuario, que es el rol de desarrollo de Jobers.
+
+    Nunca una sesion normal ni una API Key de cliente: esa informacion no es
+    de la empresa que entra, sino del control.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        control_key = os.environ.get('CONTROL_API_KEY')
+        recibida = request.headers.get('X-Control-Key')
+        if control_key and recibida and hmac.compare_digest(recibida, control_key):
+            return f(*args, **kwargs)
+        return superusuario_required(f)(*args, **kwargs)
     return decorated_function
 
 
