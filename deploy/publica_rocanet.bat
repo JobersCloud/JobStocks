@@ -52,11 +52,21 @@ REM Backup del .env del servidor: lleva su configuracion, no la nuestra
 ssh -p %RNPORT% %RNHOST% "cp %RNDIR%/backend/.env /tmp/.env.backup 2>/dev/null || true"
 scp -P %RNPORT% -r backend %RNHOST%:%RNDIR%/
 ssh -p %RNPORT% %RNHOST% "cp /tmp/.env.backup %RNDIR%/backend/.env 2>/dev/null || true"
-REM Frontend por tar+ssh, excluyendo videos promocionales
-tar cf - --exclude="*.mp4" frontend | ssh -p %RNPORT% %RNHOST% "cd %RNDIR% && tar xf -"
+REM Frontend por tar+ssh, excluyendo videos promocionales.
+REM OJO: va con sudo y --overwrite a proposito. Parte de frontend/assets es de
+REM otro usuario en el servidor y sin esto el tar falla fichero a fichero
+REM ("Permission denied" / "File exists") pero NO aborta: extrae todo lo demas
+REM y sale con error, dejando el frontend MEZCLADO (nuevo) contra el backend
+REM viejo que sigue en marcha. Paso el 2026-11-06 y hubo que restaurar a mano.
+REM El chown final normaliza el propietario para que no se repita.
+tar cf - --exclude="*.mp4" frontend | ssh -p %RNPORT% %RNHOST% "cd %RNDIR% && sudo tar xf - --overwrite --no-same-owner && sudo chown -R $(id -un):$(id -gn) frontend"
 
 if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: Fallo al subir archivos
+    echo.
+    echo ERROR: Fallo al subir el frontend.
+    echo El frontend puede haber quedado a medias. Restaura la copia del paso 1:
+    echo   ssh -p %RNPORT% %RNHOST% "cd %RNDIR% ^&^& sudo tar xzf /tmp/frontend-backup-AAAAMMDD-HHMM.tgz"
+    echo y comprueba la version servida en /api/version antes de darlo por bueno.
     pause
     exit /b 1
 )
