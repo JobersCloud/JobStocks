@@ -127,12 +127,56 @@
         return colorTheme;
     }
 
+    // ==================== MENUS APAGADOS (anti-flash) ====================
+    // Consultas y Favoritos se ven por defecto (VISIBLE_CONSULTAS /
+    // VISIBLE_FAVORITOS), asi que una empresa que los apaga los veia aparecer y
+    // desaparecer: el menu se pintaba visible y solo se ocultaba al responder
+    // la API. Se cachea la ultima respuesta y se oculta ya desde <head>.
+    // Los demas VISIBLE_* parten de ocultos en el HTML y no necesitan esto.
+    var MENU_FLAGS = {
+        visibleConsultas: ['#sidebar-mis-consultas', '#sidebar-todas-consultas'],
+        visibleFavoritos: ['#sidebar-mis-favoritos']
+    };
+
+    function menuStyleEl() {
+        var el = document.getElementById('menu-hidden-inline');
+        if (!el) {
+            el = document.createElement('style');
+            el.id = 'menu-hidden-inline';
+            document.head.appendChild(el);
+        }
+        return el;
+    }
+
+    // Idempotente: regenera la regla completa a partir de lo cacheado, asi
+    // volver a encender un menu lo devuelve sin tocar el estilo del elemento.
+    function applyMenuVisibility() {
+        var sel = [];
+        for (var key in MENU_FLAGS) {
+            if (ls(key) === '0') sel = sel.concat(MENU_FLAGS[key]);
+        }
+        menuStyleEl().textContent = sel.length
+            ? sel.join(',') + '{display:none!important}'
+            : '';
+    }
+
+    function setMenuVisible(key, visible) {
+        if (!MENU_FLAGS[key]) return;
+        lsSet(key, visible ? '1' : '0');
+        applyMenuVisibility();
+    }
+
     window.ThemeInit = {
         applyColorTheme: applyColorTheme,
         isCustomTheme: isCustom,
         THEMES: THEMES,
-        reveal: reveal
+        reveal: reveal,
+        setMenuVisible: setMenuVisible,
+        applyMenuVisibility: applyMenuVisibility
     };
+
+    // Arranque: ocultar los menus que esta empresa tenia apagados
+    applyMenuVisibility();
 
     // Arranque: pintar ya el tema cacheado (si lo hay)
     var cachedColorTheme = ls('colorTheme');

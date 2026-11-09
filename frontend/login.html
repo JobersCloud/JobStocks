@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Gestión de Stocks</title>
-    <script src="js/theme-init.js?v=1.52.0"></script>
+    <script src="js/theme-init.js?v=1.53.1"></script>
     <link rel="stylesheet" href="css/styles.css?v=1.52.0">
 </head>
 <body>
@@ -307,6 +307,9 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.53.1', date: '2026-11-09', title: 'Los menus apagados ya no parpadean al entrar', items: [
+                {type: 'fix', text: 'En las instalaciones que han apagado Consultas o Favoritos, esas dos opciones se veian aparecer un instante en el menu y desaparecer despues. Ahora se recuerda que estan apagadas y el menu se pinta ya sin ellas'},
+            ]},
             { version: 'v1.53.0', date: '2026-11-09', title: 'Consultas y Favoritos se pueden ocultar del menu', items: [
                 {type: 'new', text: 'Dos interruptores nuevos en Parametros, dentro de Funcionalidades: VISIBLE_CONSULTAS y VISIBLE_FAVORITOS. Permiten quitar del menu lateral las opciones Mis Consultas, Consultas (administracion) y Mis Favoritos en las instalaciones que no las usan, igual que ya se podia hacer con Pedidos, Albaranes, Facturas y Propuestas'},
                 {type: 'improve', text: 'Los dos parametros llegan activados, asi que las instalaciones que ya tenian esas opciones siguen viendolas exactamente igual hasta que alguien las desactive a proposito'},

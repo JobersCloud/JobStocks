@@ -205,6 +205,20 @@
      *   'superusuario' = solo superusuario
      * @returns {object|null} datos del usuario o null si redirige
      */
+    // Guarda en cache si un menu va visible y lo aplica al momento.
+    // El ocultado real lo pone theme-init.js desde <head> en la siguiente carga.
+    async function cacheMenuVisibility(endpoint, flagKey) {
+        try {
+            const resp = await fetch(`${API_URL}/api/parametros/${endpoint}`, { credentials: 'include' });
+            if (!resp.ok) return;
+            const data = await resp.json();
+            const visible = data.habilitado !== false;
+            if (window.ThemeInit && ThemeInit.setMenuVisible) {
+                ThemeInit.setMenuVisible(flagKey, visible);
+            }
+        } catch (e) {}
+    }
+
     async function checkAuth(requiredRole) {
         try {
             const response = await fetch(`${API_URL}/api/current-user`, { credentials: 'include' });
@@ -346,31 +360,11 @@
                 }
             } catch (e) {}
 
-            // Consultas: visibles por defecto, se ocultan solo si el parametro lo dice
-            try {
-                const respCon = await fetch(`${API_URL}/api/parametros/visible-consultas`, { credentials: 'include' });
-                if (respCon.ok) {
-                    const dCon = await respCon.json();
-                    if (dCon.habilitado === false) {
-                        const el1 = document.getElementById('sidebar-mis-consultas');
-                        const el2 = document.getElementById('sidebar-todas-consultas');
-                        if (el1) el1.style.display = 'none';
-                        if (el2) el2.style.display = 'none';
-                    }
-                }
-            } catch (e) {}
-
-            // Favoritos: visibles por defecto, se ocultan solo si el parametro lo dice
-            try {
-                const respFav = await fetch(`${API_URL}/api/parametros/visible-favoritos`, { credentials: 'include' });
-                if (respFav.ok) {
-                    const dFav = await respFav.json();
-                    if (dFav.habilitado === false) {
-                        const el = document.getElementById('sidebar-mis-favoritos');
-                        if (el) el.style.display = 'none';
-                    }
-                }
-            } catch (e) {}
+            // Consultas y Favoritos: visibles por defecto, se ocultan solo si el
+            // parametro lo dice. La respuesta se cachea para que theme-init.js
+            // los oculte ya en <head> y no se vean aparecer y desaparecer.
+            await cacheMenuVisibility('visible-consultas', 'visibleConsultas');
+            await cacheMenuVisibility('visible-favoritos', 'visibleFavoritos');
 
             return data;
         } catch (error) {

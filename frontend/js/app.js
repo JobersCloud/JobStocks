@@ -702,6 +702,20 @@ function showCriticalError() {
 // ==================== PROPUESTAS ====================
 
 // Verificar si las propuestas están habilitadas
+// Guarda en cache si un menu va visible y lo aplica al momento.
+// El ocultado real lo pone theme-init.js desde <head> en la siguiente carga.
+async function cacheMenuVisibility(endpoint, flagKey) {
+    try {
+        const resp = await fetch(`${API_URL}/api/parametros/${endpoint}`, { credentials: 'include' });
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const visible = data.habilitado !== false;
+        if (window.ThemeInit && ThemeInit.setMenuVisible) {
+            ThemeInit.setMenuVisible(flagKey, visible);
+        }
+    } catch (e) {}
+}
+
 async function verificarPropuestasHabilitadas() {
     try {
         const empresaId = localStorage.getItem('empresa_id') || '1';
@@ -1476,31 +1490,11 @@ async function displayUserInfo(user) {
         }
     } catch (e) {}
 
-    // Ocultar Consultas si el parámetro lo desactiva (visibles por defecto)
-    try {
-        const respCon = await fetch(`${API_URL}/api/parametros/visible-consultas`, { credentials: 'include' });
-        if (respCon.ok) {
-            const dCon = await respCon.json();
-            if (dCon.habilitado === false) {
-                const elMisCon = document.getElementById('sidebar-mis-consultas');
-                const elTodasCon = document.getElementById('sidebar-todas-consultas');
-                if (elMisCon) elMisCon.style.display = 'none';
-                if (elTodasCon) elTodasCon.style.display = 'none';
-            }
-        }
-    } catch (e) {}
-
-    // Ocultar Favoritos si el parámetro lo desactiva (visibles por defecto)
-    try {
-        const respFav = await fetch(`${API_URL}/api/parametros/visible-favoritos`, { credentials: 'include' });
-        if (respFav.ok) {
-            const dFav = await respFav.json();
-            if (dFav.habilitado === false) {
-                const elFav = document.getElementById('sidebar-mis-favoritos');
-                if (elFav) elFav.style.display = 'none';
-            }
-        }
-    } catch (e) {}
+    // Consultas y Favoritos: visibles por defecto, se ocultan solo si el
+    // parámetro lo dice. La respuesta se cachea para que theme-init.js los
+    // oculte ya en <head> y no se vean aparecer y desaparecer.
+    await cacheMenuVisibility('visible-consultas', 'visibleConsultas');
+    await cacheMenuVisibility('visible-favoritos', 'visibleFavoritos');
 
     // Mostrar opción de contexto solo para superusuarios
     const menuItemContext = document.getElementById('menu-item-context');
