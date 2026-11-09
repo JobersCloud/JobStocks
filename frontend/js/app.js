@@ -1476,6 +1476,32 @@ async function displayUserInfo(user) {
         }
     } catch (e) {}
 
+    // Ocultar Consultas si el parámetro lo desactiva (visibles por defecto)
+    try {
+        const respCon = await fetch(`${API_URL}/api/parametros/visible-consultas`, { credentials: 'include' });
+        if (respCon.ok) {
+            const dCon = await respCon.json();
+            if (dCon.habilitado === false) {
+                const elMisCon = document.getElementById('sidebar-mis-consultas');
+                const elTodasCon = document.getElementById('sidebar-todas-consultas');
+                if (elMisCon) elMisCon.style.display = 'none';
+                if (elTodasCon) elTodasCon.style.display = 'none';
+            }
+        }
+    } catch (e) {}
+
+    // Ocultar Favoritos si el parámetro lo desactiva (visibles por defecto)
+    try {
+        const respFav = await fetch(`${API_URL}/api/parametros/visible-favoritos`, { credentials: 'include' });
+        if (respFav.ok) {
+            const dFav = await respFav.json();
+            if (dFav.habilitado === false) {
+                const elFav = document.getElementById('sidebar-mis-favoritos');
+                if (elFav) elFav.style.display = 'none';
+            }
+        }
+    } catch (e) {}
+
     // Mostrar opción de contexto solo para superusuarios
     const menuItemContext = document.getElementById('menu-item-context');
     const menuDividerContext = document.getElementById('menu-divider-context');

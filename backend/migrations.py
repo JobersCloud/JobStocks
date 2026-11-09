@@ -1647,4 +1647,36 @@ MIGRATIONS = [
         ]
     },
 
+
+    # ============================================================
+    # v67 - Parámetros VISIBLE_CONSULTAS y VISIBLE_FAVORITOS
+    # ============================================================
+    {
+        'version': 67,
+        'description': 'Parametros VISIBLE_CONSULTAS y VISIBLE_FAVORITOS para todas las empresas',
+        'app_version': 'v1.53.0',
+        'sql': [
+            """DECLARE @emp_id VARCHAR(5);
+            DECLARE emp_cursor CURSOR FOR SELECT DISTINCT empresa_id FROM parametros;
+            OPEN emp_cursor;
+            FETCH NEXT FROM emp_cursor INTO @emp_id;
+            WHILE @@FETCH_STATUS = 0
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM parametros WHERE clave = 'VISIBLE_CONSULTAS' AND empresa_id = @emp_id)
+                BEGIN
+                    INSERT INTO parametros (clave, valor, descripcion, empresa_id, fecha_modificacion)
+                    VALUES ('VISIBLE_CONSULTAS', '1', 'Mostrar seccion Consultas en el menu (0=No, 1=Si)', @emp_id, GETDATE());
+                END
+                IF NOT EXISTS (SELECT 1 FROM parametros WHERE clave = 'VISIBLE_FAVORITOS' AND empresa_id = @emp_id)
+                BEGIN
+                    INSERT INTO parametros (clave, valor, descripcion, empresa_id, fecha_modificacion)
+                    VALUES ('VISIBLE_FAVORITOS', '1', 'Mostrar seccion Favoritos en el menu (0=No, 1=Si)', @emp_id, GETDATE());
+                END
+                FETCH NEXT FROM emp_cursor INTO @emp_id;
+            END;
+            CLOSE emp_cursor;
+            DEALLOCATE emp_cursor;""",
+        ]
+    },
+
 ]

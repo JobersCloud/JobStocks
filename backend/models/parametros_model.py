@@ -43,10 +43,18 @@ class ParametrosModel:
             conn.close()
 
     @staticmethod
-    def get_bool(clave, empresa_id, connection=None):
-        """Obtiene un parámetro como booleano (1=True, 0=False)"""
+    def get_bool(clave, empresa_id, connection=None, default=False):
+        """Obtiene un parámetro como booleano (1=True, 0=False)
+
+        Args:
+            default: Valor devuelto si el parámetro no existe en la empresa.
+                     Útil para parámetros añadidos a posteriori sobre
+                     funcionalidades que ya estaban visibles.
+        """
         valor = ParametrosModel.get(clave, empresa_id, connection)
-        return valor == '1' if valor else False
+        if valor is None:
+            return default
+        return valor == '1'
 
     @staticmethod
     def set(clave, valor, empresa_id, connection=None):
@@ -157,6 +165,23 @@ class ParametrosModel:
     def visible_busqueda_magica(empresa_id, connection=None):
         """Verifica si la sección Búsqueda Mágica es visible para una empresa"""
         return ParametrosModel.get_bool('VISIBLE_BUSQUEDA_MAGICA', empresa_id, connection)
+
+    @staticmethod
+    def visible_consultas(empresa_id, connection=None):
+        """Verifica si la sección Consultas es visible para una empresa
+
+        Por defecto visible: la funcionalidad existía antes que el parámetro,
+        así que una empresa sin el registro no debe perder el menú.
+        """
+        return ParametrosModel.get_bool('VISIBLE_CONSULTAS', empresa_id, connection, default=True)
+
+    @staticmethod
+    def visible_favoritos(empresa_id, connection=None):
+        """Verifica si la sección Favoritos es visible para una empresa
+
+        Por defecto visible, igual que Consultas.
+        """
+        return ParametrosModel.get_bool('VISIBLE_FAVORITOS', empresa_id, connection, default=True)
 
     @staticmethod
     def columnas_opcionales(empresa_id, connection=None):

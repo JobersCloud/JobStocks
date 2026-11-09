@@ -476,6 +476,60 @@ def visible_busqueda_magica():
     return jsonify({'habilitado': habilitado}), 200
 
 
+@parametros_bp.route('/visible-consultas', methods=['GET'])
+def visible_consultas():
+    """
+    Verificar si la sección Consultas es visible.
+    ---
+    tags:
+      - Parámetros
+    parameters:
+      - name: empresa_id
+        in: query
+        type: string
+        required: false
+    responses:
+      200:
+        description: Estado del parámetro visible consultas
+        schema:
+          type: object
+          properties:
+            habilitado:
+              type: boolean
+    """
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+    habilitado = ParametrosModel.visible_consultas(empresa_id, connection)
+    return jsonify({'habilitado': habilitado}), 200
+
+
+@parametros_bp.route('/visible-favoritos', methods=['GET'])
+def visible_favoritos():
+    """
+    Verificar si la sección Favoritos es visible.
+    ---
+    tags:
+      - Parámetros
+    parameters:
+      - name: empresa_id
+        in: query
+        type: string
+        required: false
+    responses:
+      200:
+        description: Estado del parámetro visible favoritos
+        schema:
+          type: object
+          properties:
+            habilitado:
+              type: boolean
+    """
+    connection = get_connection()
+    empresa_id = get_empresa_id_from_connection(connection)
+    habilitado = ParametrosModel.visible_favoritos(empresa_id, connection)
+    return jsonify({'habilitado': habilitado}), 200
+
+
 @parametros_bp.route('/columnas-opcionales', methods=['GET'])
 def get_columnas_opcionales():
     """

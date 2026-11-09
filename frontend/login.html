@@ -307,6 +307,10 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.53.0', date: '2026-11-09', title: 'Consultas y Favoritos se pueden ocultar del menu', items: [
+                {type: 'new', text: 'Dos interruptores nuevos en Parametros, dentro de Funcionalidades: VISIBLE_CONSULTAS y VISIBLE_FAVORITOS. Permiten quitar del menu lateral las opciones Mis Consultas, Consultas (administracion) y Mis Favoritos en las instalaciones que no las usan, igual que ya se podia hacer con Pedidos, Albaranes, Facturas y Propuestas'},
+                {type: 'improve', text: 'Los dos parametros llegan activados, asi que las instalaciones que ya tenian esas opciones siguen viendolas exactamente igual hasta que alguien las desactive a proposito'},
+            ]},
             { version: 'v1.52.3', date: '2026-11-06', title: 'La lista de instalaciones deja de ser publica', items: [
                 {type: 'fix', text: 'La consulta que devuelve las instalaciones dadas de alta en el control (con su servidor, puerto, base de datos y CIF) respondia a cualquiera sin necesidad de entrar. Ahora exige sesion de superusuario, o la llave del control si quien pregunta es otra aplicacion de la familia'},
             ]},
