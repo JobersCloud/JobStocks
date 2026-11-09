@@ -32,6 +32,7 @@ let mostrarPrecios = false;  // Control de visualización de precios de artícul
 let columnasOpcionales = ['color'];  // Columnas opcionales visibles (color y tipo_producto)
 let csrfToken = null;  // Token CSRF para protección contra ataques
 let favoritosSet = new Set();  // Set de claves compuestas favoritos "codigo|calidad|tono|calibre|pallet|caja"
+let favoritosHabilitados = true;  // VISIBLE_FAVORITOS: si esta apagado no se pinta el corazon
 
 // Helper: genera clave serializada para un favorito
 function favKey(item) {
@@ -332,6 +333,7 @@ async function fetchWithCsrf(url, options = {}) {
 // ==================== FAVORITOS ====================
 
 async function cargarFavoritos(stocks) {
+    if (!favoritosHabilitados) return;
     try {
         const empresaId = localStorage.getItem('empresa_id') || '1';
         // Enviar items con los 6 campos de la clave compuesta
@@ -412,6 +414,7 @@ async function toggleFavorito(itemJson, event) {
 window.toggleFavorito = toggleFavorito;
 
 function getHeartIcon(stock) {
+    if (!favoritosHabilitados) return '';
     const key = favKey(stock);
     const isActive = favoritosSet.has(key);
     const esc = s => (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
@@ -713,6 +716,8 @@ async function cacheMenuVisibility(endpoint, flagKey) {
         if (window.ThemeInit && ThemeInit.setMenuVisible) {
             ThemeInit.setMenuVisible(flagKey, visible);
         }
+        // Favoritos apaga ademas el corazon de la rejilla, las tarjetas y el detalle
+        if (flagKey === 'visibleFavoritos') favoritosHabilitados = visible;
     } catch (e) {}
 }
 

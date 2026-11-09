@@ -1416,3 +1416,22 @@
         flex: 1;
     }
 }
+
+/* ==================== BOTONES EN LA MISMA FILA QUE LOS FILTROS ==================== */
+/* Buscar, ver todos, limpiar y voz son una celda mas de .filter-grid, asi que
+   siguen al ultimo filtro en lugar de ocupar una fila entera para ellos solos.
+   En portatiles esa fila se la quitaba a la rejilla de datos. */
+.filter-grid .filters-actions {
+    /* Los filtros llevan label encima: alinear los botones con los inputs */
+    align-self: end;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    /* En movil la rejilla es de una sola columna: los botones, centrados */
+    .filter-grid .filters-actions {
+        justify-content: center;
+        margin-top: 4px;
+    }
+}
