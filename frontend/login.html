@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Gestión de Stocks</title>
     <script src="js/theme-init.js?v=1.53.1"></script>
-    <link rel="stylesheet" href="css/styles.css?v=1.53.2">
+    <link rel="stylesheet" href="css/styles.css?v=1.53.3">
 </head>
 <body>
     <!-- Selector de idioma y tema fijo -->
@@ -307,6 +307,9 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.53.3', date: '2026-11-09', title: 'Ya solo se desplaza la rejilla de stocks', items: [
+                {type: 'fix', text: 'Quedaba una segunda barra de desplazamiento en la pantalla de stocks: la zona de la rejilla se desplazaba por dentro ademas de la propia tabla. Ahora la tabla ocupa el hueco exacto, el contador de registros queda fijo abajo y solo se desplaza la tabla'},
+            ]},
             { version: 'v1.53.2', date: '2026-11-09', title: 'Una sola barra de scroll en la pantalla de stocks', items: [
                 {type: 'fix', text: 'La pantalla de stocks (y la de stocks anulados) mostraba varias barras de scroll a la vez: la de la rejilla, la de la pagina y la del area de contenido. Ahora la rejilla ocupa el alto exacto de la pantalla y solo se desplaza ella, como en el resto de pantallas con rejilla. En movil no cambia nada: se siguen viendo tarjetas con el scroll normal de la pagina'},
             ]},

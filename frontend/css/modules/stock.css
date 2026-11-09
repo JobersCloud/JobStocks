@@ -1379,10 +1379,40 @@
         flex: none;
     }
 
-    /* El alto exacto lo da ya flex:1 contra el padre de 100vh. El max-height
-       global de .table-container (100vh - 120px) se quedaba corto y dejaba un
-       hueco muerto debajo de la rejilla. */
+    /* #table-container pasa a ser columna flex y deja de scrollear el: el scroll
+       lo lleva solo .table-scroll-container, que es quien tiene la cabecera
+       sticky. Antes scrolleaban los dos, uno dentro del otro, porque
+       .stock-table-wrapper llevaba un max-height fijo (100vh - 140px) mas alto
+       que el hueco real que le quedaba al contenedor. Misma forma que en
+       DataGrid (.proposals-content > -table-wrapper > .table-scroll-container). */
     .main-content-area:has(> #table-container) > #table-container {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
         max-height: none;
+    }
+
+    /* Chips arriba y pie de pagina abajo, sin encogerse */
+    .main-content-area:has(> #table-container) > #table-container > .column-filters-chips,
+    .main-content-area:has(> #table-container) > #table-container > .grid-footer {
+        flex: none;
+    }
+
+    /* El alto lo reparte ya la cadena flex: fuera el tope fijo */
+    .main-content-area:has(> #table-container) > #table-container > .stock-table-wrapper {
+        max-height: none;
+    }
+
+    /* Vista de rejilla con imagenes: ahi no hay tabla, la rejilla es el unico
+       hijo y es ella la que tiene que scrollear */
+    .main-content-area:has(> #table-container) > #table-container > .stock-grid-images {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    /* Mensajes de vacio / sin resultados: que ocupen el hueco, no que lo partan */
+    .main-content-area:has(> #table-container) > #table-container > .empty-state {
+        flex: 1;
     }
 }
