@@ -1350,3 +1350,39 @@
 [data-theme="dark"] .favorites-tab.active {
     color: var(--primary);
 }
+
+/* ==================== UN UNICO SCROLL EN LA REJILLA DE STOCKS ==================== */
+/* La pantalla de stocks (y la de stocks anulados) llegaba a tener TRES barras de
+   scroll a la vez: la del documento, la de .main-content-area (overflow-y:auto)
+   y la de la propia rejilla. El documento scrolleaba porque .main-content-area
+   mide min-height:100vh y ademas lleva 100px de padding (85 arriba + 15 abajo),
+   asi que siempre sobresalia del viewport.
+
+   Las paginas que pintan con DataGrid no lo sufren: _lockParentHeight() les
+   clava height:100vh y overflow:hidden al cargar. Aqui la tabla la pinta app.js
+   a mano, asi que se hace en CSS.
+
+   Solo en desktop: en movil se ven tarjetas y el scroll natural de la pagina es
+   el que toca. */
+@media (min-width: 769px) {
+    body:has(.main-content-area > #table-container) {
+        overflow: hidden;
+    }
+
+    .main-content-area:has(> #table-container) {
+        height: 100vh;
+        min-height: unset;
+        overflow: hidden;
+        /* Sin flex:none el height de arriba NO se aplica: es un item flex de
+           .main-wrapper con flex-basis 0%, y en el eje principal la base manda
+           sobre height. Mismo detalle que en .main-content-area:has(.proposals-container). */
+        flex: none;
+    }
+
+    /* El alto exacto lo da ya flex:1 contra el padre de 100vh. El max-height
+       global de .table-container (100vh - 120px) se quedaba corto y dejaba un
+       hueco muerto debajo de la rejilla. */
+    .main-content-area:has(> #table-container) > #table-container {
+        max-height: none;
+    }
+}

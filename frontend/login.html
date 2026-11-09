@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Gestión de Stocks</title>
     <script src="js/theme-init.js?v=1.53.1"></script>
-    <link rel="stylesheet" href="css/styles.css?v=1.52.0">
+    <link rel="stylesheet" href="css/styles.css?v=1.53.2">
 </head>
 <body>
     <!-- Selector de idioma y tema fijo -->
@@ -307,6 +307,9 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.53.2', date: '2026-11-09', title: 'Una sola barra de scroll en la pantalla de stocks', items: [
+                {type: 'fix', text: 'La pantalla de stocks (y la de stocks anulados) mostraba varias barras de scroll a la vez: la de la rejilla, la de la pagina y la del area de contenido. Ahora la rejilla ocupa el alto exacto de la pantalla y solo se desplaza ella, como en el resto de pantallas con rejilla. En movil no cambia nada: se siguen viendo tarjetas con el scroll normal de la pagina'},
+            ]},
             { version: 'v1.53.1', date: '2026-11-09', title: 'Los menus apagados ya no parpadean al entrar', items: [
                 {type: 'fix', text: 'En las instalaciones que han apagado Consultas o Favoritos, esas dos opciones se veian aparecer un instante en el menu y desaparecer despues. Ahora se recuerda que estan apagadas y el menu se pinta ya sin ellas'},
             ]},
