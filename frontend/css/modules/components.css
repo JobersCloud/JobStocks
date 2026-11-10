@@ -1021,3 +1021,96 @@ tbody tr:hover {
         max-width: 95vw;
     }
 }
+
+/* ==================== PESTANAS DE PAGINA ==================== */
+/* Para pantallas con varias rejillas: en vez de apilarlas (y dejar la de abajo
+   fuera de la pantalla, porque las paginas con DataGrid bloquean el alto a
+   100vh y no hay scroll de pagina), se ensena una cada vez. */
+/* Barra: pestanas a la izquierda y los botones de la pestana activa a la
+   derecha, en la misma linea. Asi no se come otra fila de alto la rejilla. */
+.page-tabs-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    border-bottom: 2px solid var(--border, #e0e0e0);
+    margin-bottom: 14px;
+}
+
+.page-tabs-actions {
+    padding-bottom: 6px;
+    flex: none;
+}
+
+.page-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border, #e0e0e0);
+    margin-bottom: 16px;
+    overflow-x: auto;
+}
+
+/* Dentro de la barra, el borde y el margen los pone la barra */
+.page-tabs-bar > .page-tabs {
+    border-bottom: none;
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 0;
+}
+
+.page-tab {
+    padding: 12px 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-secondary, #666);
+    border-bottom: 3px solid transparent;
+    transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.page-tab:hover {
+    color: var(--primary);
+    background: rgba(var(--primary-rgb, 255, 67, 56), 0.05);
+}
+
+.page-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.page-tab svg {
+    width: 18px;
+    height: 18px;
+}
+
+.page-tab-count {
+    background: var(--primary);
+    color: white;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .page-tab {
+        padding: 10px 14px;
+        font-size: 0.85rem;
+    }
+}
+
+[data-theme="dark"] .page-tabs,
+[data-theme="dark"] .page-tabs-bar {
+    border-bottom-color: #444;
+}
+
+[data-theme="dark"] .page-tab {
+    color: #aaa;
+}

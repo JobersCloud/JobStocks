@@ -819,3 +819,55 @@
     border-color: var(--bg-tertiary);
     border-top-color: var(--primary);
 }
+
+/* ==================== AUDITORIA EN PESTANAS ==================== */
+/* Las dos rejillas (sesiones y logs) iban apiladas. Como DataGrid bloquea
+   .main-content-area a 100vh con overflow:hidden, la segunda quedaba fuera de
+   la pantalla y no habia forma de llegar a ella: no scrolleaba ni la pagina ni
+   nada. Ahora se ensena una cada vez y la activa ocupa el alto que queda. */
+.audit-page-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.audit-section {
+    display: none;
+}
+
+.audit-section.active {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+/* Cabecera y filtros con su alto; el resto, para la rejilla */
+.audit-section > .section-header,
+.audit-section > .audit-log-filters {
+    flex: none;
+}
+
+.audit-section > .section-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+.audit-section > .grid-host {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* En movil no se bloquea el alto (DataGrid se salta _lockParentHeight), asi
+   que la rejilla crece con su contenido y scrollea la pagina */
+@media (max-width: 768px) {
+    .audit-section.active,
+    .audit-section > .grid-host {
+        flex: none;
+        min-height: 0;
+    }
+}

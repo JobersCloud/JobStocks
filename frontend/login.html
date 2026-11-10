@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Gestión de Stocks</title>
     <script src="js/theme-init.js?v=1.53.1"></script>
-    <link rel="stylesheet" href="css/styles.css?v=1.54.0">
+    <link rel="stylesheet" href="css/styles.css?v=1.55.0">
 </head>
 <body>
     <!-- Selector de idioma y tema fijo -->
@@ -307,6 +307,10 @@
         // ==================== CHANGELOG ====================
 
         const changelogData = [
+            { version: 'v1.55.0', date: '2026-11-10', title: 'Auditoria en pestanas', items: [
+                {type: 'fix', text: 'En Auditoria la rejilla de abajo (Logs de Auditoria) quedaba fuera de la pantalla y no habia forma de llegar a ella: no se podia desplazar ni la pagina ni la rejilla. Las dos rejillas estaban una debajo de la otra y no cabian'},
+                {type: 'improve', text: 'Sesiones Activas y Logs de Auditoria pasan a ser dos pestanas. Se ve una cada vez, ocupando toda la altura disponible, y se recuerda en cual estabas. Los botones de actualizar y cerrar sesiones van en la misma linea de las pestanas, para dejarle mas alto a la rejilla'},
+            ]},
             { version: 'v1.54.0', date: '2026-11-09', title: 'Mas altura para la rejilla de stocks', items: [
                 {type: 'improve', text: 'Los botones de buscar, ver todos y limpiar van ahora a continuacion del ultimo filtro, en la misma linea, en lugar de ocupar una fila entera debajo. En un portatil son unos 60 pixeles mas de alto para la rejilla, alrededor de dos filas mas de datos. En movil siguen debajo de los filtros, centrados'},
                 {type: 'fix', text: 'Con los favoritos desactivados ya no aparece el corazon en el listado de stocks, en las tarjetas ni en el detalle del producto. Antes se seguia viendo aunque la seccion estuviese apagada'},

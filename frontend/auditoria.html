@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auditoría - Administración</title>
     <script src="js/theme-init.js?v=1.53.1"></script>
-    <link rel="stylesheet" href="css/styles.css?v=1.54.0">
+    <link rel="stylesheet" href="css/styles.css?v=1.55.0">
 </head>
 <body>
     <div class="app-layout">
@@ -423,18 +423,27 @@
         <div class="main-wrapper">
             <main class="main-content-area">
                 <div class="audit-page-container">
-                    <!-- Sección: Sesiones Activas -->
-                    <section class="audit-section">
-                        <div class="section-header">
-                            <h2 class="section-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="9" cy="7" r="4"></circle>
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                </svg>
-                                Sesiones Activas (<span id="sessions-count">0</span>)
-                            </h2>
+                    <!-- Pestanas: cada rejilla en la suya -->
+                    <div class="page-tabs-bar">
+                    <div class="page-tabs" role="tablist">
+                        <button class="page-tab active" id="tab-sesiones" role="tab" onclick="switchAuditTab('sesiones')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            <span>Sesiones Activas</span>
+                            <span class="page-tab-count" id="sessions-count">0</span>
+                        </button>
+                        <button class="page-tab" id="tab-logs" role="tab" onclick="switchAuditTab('logs')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                            <span>Logs de Auditoría</span>
+                        </button>
+                    </div>
+                        <div class="page-tabs-actions" data-tab-actions="sesiones">
                             <div class="section-actions btn-icon-group">
                                 <button class="btn-icon btn-icon-secondary" onclick="loadSessions()" title="Actualizar">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
@@ -444,24 +453,22 @@
                                 </button>
                             </div>
                         </div>
-                        <div id="sessions-grid"></div>
-                    </section>
-
-                    <!-- Sección: Logs de Auditoría -->
-                    <section class="audit-section">
-                        <div class="section-header">
-                            <h2 class="section-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
-                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                                </svg>
-                                Logs de Auditoría
-                            </h2>
+                        <div class="page-tabs-actions" data-tab-actions="logs" style="display:none">
                             <div class="section-actions btn-icon-group">
                                 <button class="btn-icon btn-icon-secondary" onclick="loadAuditLogs()" title="Actualizar">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
                                 </button>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Sección: Sesiones Activas -->
+                    <section class="audit-section active" id="panel-sesiones" role="tabpanel">
+                        <div id="sessions-grid" class="grid-host"></div>
+                    </section>
+
+                    <!-- Sección: Logs de Auditoría -->
+                    <section class="audit-section" id="panel-logs" role="tabpanel">
 
                         <!-- Filtros -->
                         <div class="audit-log-filters">
@@ -500,7 +507,7 @@
                             </div>
                         </div>
 
-                        <div id="audit-grid"></div>
+                        <div id="audit-grid" class="grid-host"></div>
                     </section>
                 </div>
             </main>
@@ -558,6 +565,42 @@
         const API_URL = PageCommon.API_URL;
         let sessionsGrid;
         let auditGrid;
+
+        // ==================== PESTANAS ====================
+        // Las dos rejillas no caben apiladas: DataGrid bloquea el alto de la
+        // pagina a 100vh, asi que la de abajo quedaba inalcanzable. Se ensena
+        // una cada vez y se recuerda cual para la proxima visita.
+        const TAB_KEY = 'auditoria:tab';
+
+        function switchAuditTab(tab) {
+            const tabs = { sesiones: 'panel-sesiones', logs: 'panel-logs' };
+            if (!tabs[tab]) tab = 'sesiones';
+
+            Object.keys(tabs).forEach(nombre => {
+                const boton = document.getElementById('tab-' + nombre);
+                const panel = document.getElementById(tabs[nombre]);
+                if (boton) boton.classList.toggle('active', nombre === tab);
+                if (panel) panel.classList.toggle('active', nombre === tab);
+            });
+
+            document.querySelectorAll('[data-tab-actions]').forEach(el => {
+                el.style.display = el.dataset.tabActions === tab ? '' : 'none';
+            });
+
+            try { localStorage.setItem(TAB_KEY, tab); } catch (e) {}
+
+            // La rejilla se construyo oculta: al mostrarla se repinta para que
+            // tome el ancho y el alto reales
+            const grid = tab === 'sesiones' ? sessionsGrid : auditGrid;
+            if (grid && typeof grid.refresh === 'function') grid.refresh();
+        }
+        window.switchAuditTab = switchAuditTab;
+
+        function restaurarPestanaAuditoria() {
+            let guardada = null;
+            try { guardada = localStorage.getItem(TAB_KEY); } catch (e) {}
+            if (guardada) switchAuditTab(guardada);
+        }
 
         // ==================== MAPA (LAZY LOAD) ====================
         let _mapComponent = null;
@@ -983,6 +1026,8 @@
             });
 
             // Cargar datos
+            restaurarPestanaAuditoria();
+
             await loadSessions();
             await loadAuditActions();
             await loadAuditLogs();
